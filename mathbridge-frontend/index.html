@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathBridge - Math Tutoring Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2><i class="fas fa-calculator"></i> MathBridge</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link" onclick="showHome()">Home</a>
+                <a href="#" class="nav-link" onclick="showLogin()">Login</a>
+                <a href="#" class="nav-link" onclick="showRegister()">Register</a>
+                <a href="#" class="nav-link" id="logout-btn" onclick="logout()" style="display: none;">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Section -->
+        <section id="home-section" class="section active">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1>Welcome to MathBridge</h1>
+                    <p>Comprehensive Management System for Connecting High School Math Tutors in International Schools</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="showLogin()">Get Started</button>
+                        <button class="btn btn-secondary" onclick="showRegister()">Join Us</button>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <i class="fas fa-user-graduate"></i>
+                    <h3>Student Management</h3>
+                    <p>Track student progress and academic performance</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <h3>Tutor Management</h3>
+                    <p>Comprehensive tutor profiles and scheduling</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-book"></i>
+                    <h3>Curriculum Support</h3>
+                    <p>Cambridge IGCSE, A-Level, IB Math, AP Math programs</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Login Section -->
+        <section id="login-section" class="section">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2>Login to MathBridge</h2>
+                    <form id="login-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="login-username">Username</label>
+                            <input type="text" id="login-username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">Login</button>
+                    </form>
+                    <div class="auth-switch">
+                        <p>Don't have an account? <a href="#" onclick="showRegister()">Register here</a></p>
+                    </div>
+                    <div class="demo-accounts">
+                        <h4>Demo Accounts:</h4>
+                        <div class="demo-account">
+                            <strong>Admin:</strong> admin / admin123
+                        </div>
+                        <div class="demo-account">
+                            <strong>Student:</strong> student1 / student123
+                        </div>
+                        <div class="demo-account">
+                            <strong>Tutor:</strong> tutor1 / tutor123
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Register Section -->
+        <section id="register-section" class="section">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2>Register for MathBridge</h2>
+                    <form id="register-form" class="auth-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="register-firstname">First Name</label>
+                                <input type="text" id="register-firstname" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="register-lastname">Last Name</label>
+                                <input type="text" id="register-lastname" name="lastName" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-username">Username</label>
+                            <input type="text" id="register-username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-phone">Phone Number</label>
+                            <input type="tel" id="register-phone" name="phoneNumber">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-role">Role</label>
+                            <select id="register-role" name="role" required>
+                                <option value="">Select Role</option>
+                                <option value="STUDENT">Student</option>
+                                <option value="TUTOR">Tutor</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">Register</button>
+                    </form>
+                    <div class="auth-switch">
+                        <p>Already have an account? <a href="#" onclick="showLogin()">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="section">
+            <div class="dashboard">
+                <h2>Welcome to your Dashboard</h2>
+                <div class="user-info">
+                    <div class="info-card">
+                        <h3>User Information</h3>
+                        <p><strong>Username:</strong> <span id="dashboard-username"></span></p>
+                        <p><strong>Email:</strong> <span id="dashboard-email"></span></p>
+                        <p><strong>Role:</strong> <span id="dashboard-role"></span></p>
+                    </div>
+                </div>
+                <div class="dashboard-actions">
+                    <button class="btn btn-primary" onclick="showProfile()">View Profile</button>
+                    <button class="btn btn-secondary" onclick="showSettings()">Settings</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <span id="notification-message"></span>
+        <button onclick="hideNotification()">&times;</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
