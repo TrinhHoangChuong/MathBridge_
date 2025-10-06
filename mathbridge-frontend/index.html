@@ -1,175 +1,231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MathBridge - Math Tutoring Platform</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MathBridge</title>
+    <base href="./">
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/index.css" />
+    <script src="./assets/js/utils/includePartials.js" defer></script>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <h2><i class="fas fa-calculator"></i> MathBridge</h2>
+<header></header>
+
+<main>
+    <!-- SECTION 1: HERO (2 slide auto) -->
+    <section class="mb-hero v2">
+        <div class="mb-hero-stage">
+            <!-- ===== Slide 1 ===== -->
+            <div class="mb-hero-slide s1">
+                <div class="mb-hero-wrap">
+                    <figure class="mb-hero-figure">
+                        <img class="mb-hero-img" src="assets/img/hero1.jpg" alt="Lớp học MathBridge">
+                    </figure>
+
+                    <div class="mb-hero-right">
+                        <p class="eyebrow">Trung tâm Toán học</p>
+                        <h1 class="title">MATHBRIDGE</h1>
+                        <ul class="bullets">
+                            <li>Giỏi chuyên môn – Giỏi nghiệp vụ sư phạm</li>
+                            <li>Tận tâm – Kỹ lưỡng – Chuyên nghiệp – Đạo đức tốt</li>
+                        </ul>
+                        <div class="script-lines">
+                            <div class="line red">Dạy trọn kiến thức</div>
+                            <div class="line blue">Kèm trọn trái tim</div>
+                        </div>
+                        <!-- Slide 1: không CTA -->
+                    </div>
+                </div>
+                <div class="mb-hero-wave"></div>
             </div>
-            <div class="nav-menu">
-                <a href="#" class="nav-link" onclick="showHome()">Home</a>
-                <a href="#" class="nav-link" onclick="showLogin()">Login</a>
-                <a href="#" class="nav-link" onclick="showRegister()">Register</a>
-                <a href="#" class="nav-link" id="logout-btn" onclick="logout()" style="display: none;">Logout</a>
+
+            <!-- ===== Slide 2 ===== -->
+            <div class="mb-hero-slide s2">
+                <div class="mb-hero-wrap">
+                    <figure class="mb-hero-figure">
+                        <img class="mb-hero-img" src="assets/img/hero2.jpg" alt="Giáo viên hướng dẫn học sinh">
+                    </figure>
+
+                    <div class="mb-hero-right">
+                        <h2 class="sup-title">
+                            Thấu nỗi lòng cha mẹ trên <span>chặng đường học của con</span>
+                        </h2>
+                        <ul class="bullets">
+                            <li>Ngày con nhỏ thì sợ trễ bỏ lỡ thời điểm vàng để học <b>piano</b></li>
+                            <li>Tuổi đi học lo con chán nản, không bắt kịp <b>chương trình quốc tế</b></li>
+                            <li>Lúc định hướng đi du học thì băn khoăn nơi dạy để đạt đủ điểm </li>
+                        </ul>
+                        <p class="highlight">Hãy để <b>MATHBRIDGE</b> thay bạn theo sát việc học của trẻ!</p>
+                        <a class="cta" href="#">Giải pháp tại đây</a>
+                    </div>
+                </div>
+                <div class="mb-hero-wave"></div>
             </div>
         </div>
-    </nav>
+    </section>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Home Section -->
-        <section id="home-section" class="section active">
-            <div class="hero">
-                <div class="hero-content">
-                    <h1>Welcome to MathBridge</h1>
-                    <p>Comprehensive Management System for Connecting High School Math Tutors in International Schools</p>
-                    <div class="hero-buttons">
-                        <button class="btn btn-primary" onclick="showLogin()">Get Started</button>
-                        <button class="btn btn-secondary" onclick="showRegister()">Join Us</button>
-                    </div>
-                </div>
-                <div class="hero-image">
-                    <i class="fas fa-graduation-cap"></i>
+    <!-- SECTION 2: Stats -->
+    <section class="mb-stats">
+        <div class="mb-stats-wrap">
+            <div class="stat">
+                <div class="num">10+</div>
+                <div class="note">năm kinh nghiệm giảng<br>dạy tư vấn giáo dục</div>
+            </div>
+
+            <div class="stat">
+                <div class="num">5000+</div>
+                <div class="note">gia sư trên khắp cả nước</div>
+            </div>
+
+            <div class="stat">
+                <div class="num">75000+</div>
+                <div class="note">học viên đạt target</div>
+            </div>
+
+            <div class="stat">
+                <div class="num">100000+</div>
+                <div class="note">buổi học thành công</div>
+            </div>
+        </div>
+
+        <div class="mb-stats-wave"></div>
+    </section>
+
+    <!-- SECTION 3: Đối tượng học viên -->
+    <section class="mb-target">
+        <div class="mb-target-wrap">
+            <!-- Ảnh minh họa bên trái -->
+            <div class="mb-target-img">
+                <img src="assets/img/hero3.jpg" alt="Học sinh MathBridge học cùng giáo viên">
+                <div class="caption">
+                    Vươn tầm thành công với Toán học quốc tế cùng <span>MathBridge!</span>
                 </div>
             </div>
-            
-            <div class="features">
-                <div class="feature-card">
-                    <i class="fas fa-user-graduate"></i>
-                    <h3>Student Management</h3>
-                    <p>Track student progress and academic performance</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    <h3>Tutor Management</h3>
-                    <p>Comprehensive tutor profiles and scheduling</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-book"></i>
-                    <h3>Curriculum Support</h3>
-                    <p>Cambridge IGCSE, A-Level, IB Math, AP Math programs</p>
-                </div>
-            </div>
-        </section>
 
-        <!-- Login Section -->
-        <section id="login-section" class="section">
-            <div class="auth-container">
-                <div class="auth-card">
-                    <h2>Login to MathBridge</h2>
-                    <form id="login-form" class="auth-form">
-                        <div class="form-group">
-                            <label for="login-username">Username</label>
-                            <input type="text" id="login-username" name="username" required>
+            <!-- Nội dung bên phải -->
+            <div class="mb-target-content">
+                <h2 class="title">Khóa học này <span>dành cho ai?</span></h2>
+
+                <div class="targets">
+                    <div class="target">
+                        <div class="circle">1</div>
+                        <div class="text">
+                            <h3>Trẻ em và học sinh</h3>
+                            <p>
+                                Dành cho học sinh từ 6 đến 17 tuổi, giúp phát triển tư duy logic
+                                và kỹ năng toán học từ cơ bản đến nâng cao theo chuẩn quốc tế.
+                            </p>
                         </div>
-                        <div class="form-group">
-                            <label for="login-password">Password</label>
-                            <input type="password" id="login-password" name="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-full">Login</button>
-                    </form>
-                    <div class="auth-switch">
-                        <p>Don't have an account? <a href="#" onclick="showRegister()">Register here</a></p>
                     </div>
-                    <div class="demo-accounts">
-                        <h4>Demo Accounts:</h4>
-                        <div class="demo-account">
-                            <strong>Admin:</strong> admin / admin123
+
+                    <div class="target">
+                        <div class="circle">2</div>
+                        <div class="text">
+                            <h3>Tất cả trình độ học sinh</h3>
+                            <p>
+                                Phù hợp cho mọi trình độ – từ người mới bắt đầu đến học sinh
+                                muốn nâng cao kiến thức Toán học quốc tế (Cambridge, IB, AP...).
+                            </p>
                         </div>
-                        <div class="demo-account">
-                            <strong>Student:</strong> student1 / student123
+                    </div>
+
+                    <div class="target">
+                        <div class="circle">3</div>
+                        <div class="text">
+                            <h3>Phụ huynh quan tâm giáo dục</h3>
+                            <p>
+                                Dành cho phụ huynh muốn tìm môi trường học Toán chất lượng, uy tín,
+                                giúp con hứng thú và tự tin chinh phục các kỳ thi quốc tế.
+                            </p>
                         </div>
-                        <div class="demo-account">
-                            <strong>Tutor:</strong> tutor1 / tutor123
+                    </div>
+
+                    <div class="target">
+                        <div class="circle">4</div>
+                        <div class="text">
+                            <h3>Học sinh muốn nâng cao trình độ</h3>
+                            <p>
+                                Phù hợp với những bạn đã nắm vững nền tảng Toán học và mong muốn
+                                thử thách bản thân với các nội dung học chuyên sâu, nâng cao.
+                            </p>
                         </div>
                     </div>
                 </div>
+
+                <a href="#" class="cta">ĐĂNG KÝ TƯ VẤN</a>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Register Section -->
-        <section id="register-section" class="section">
-            <div class="auth-container">
-                <div class="auth-card">
-                    <h2>Register for MathBridge</h2>
-                    <form id="register-form" class="auth-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="register-firstname">First Name</label>
-                                <input type="text" id="register-firstname" name="firstName" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="register-lastname">Last Name</label>
-                                <input type="text" id="register-lastname" name="lastName" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="register-username">Username</label>
-                            <input type="text" id="register-username" name="username" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="register-email">Email</label>
-                            <input type="email" id="register-email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="register-password">Password</label>
-                            <input type="password" id="register-password" name="password" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="register-phone">Phone Number</label>
-                            <input type="tel" id="register-phone" name="phoneNumber">
-                        </div>
-                        <div class="form-group">
-                            <label for="register-role">Role</label>
-                            <select id="register-role" name="role" required>
-                                <option value="">Select Role</option>
-                                <option value="STUDENT">Student</option>
-                                <option value="TUTOR">Tutor</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-full">Register</button>
-                    </form>
-                    <div class="auth-switch">
-                        <p>Already have an account? <a href="#" onclick="showLogin()">Login here</a></p>
-                    </div>
-                </div>
+    <!-- SECTION 4: Tại sao chọn MathBridge -->
+    <section class="mb-why">
+        <div class="mb-why-wrap">
+            <header class="mb-why-head">
+                <h2>Tại sao <span>nên chọn MathBridge</span></h2>
+                <p>Chúng tôi khác biệt vì hiểu đúng nhu cầu học Toán quốc tế của bạn</p>
+            </header>
+
+            <div class="mb-why-grid">
+                <!-- Card 1 -->
+                <article class="why-card">
+                    <img src="assets/img/hero4.jpg" alt="" class="why-icon">
+                    <h3>Chương trình theo chuẩn quốc tế</h3>
+                    <div class="why-divider"></div>
+                    <p>
+                        Giáo trình bám sát <b>Cambridge • IB • AP</b> và Toán nâng cao Việt Nam,
+                        thiết kế theo <b>từng cấp lớp</b> với lộ trình rõ ràng từ nền tảng đến chuyên sâu.
+                    </p>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="why-card">
+                    <img src="assets/img/hero5.jpg" alt="" class="why-icon">
+                    <h3>Đội ngũ giáo viên giàu kinh nghiệm</h3>
+                    <div class="why-divider"></div>
+                    <p>
+                        Giảng dạy bởi giáo viên đạt chứng chỉ quốc tế, kinh nghiệm luyện thi
+                        <b>IGCSE/IB/AP/SAT</b>, phương pháp sư phạm hiện đại, tận tâm đồng hành.
+                    </p>
+                </article>
+
+                <!-- Card 3 -->
+                <article class="why-card">
+                    <img src="assets/img/hero6.jpg" alt="" class="why-icon">
+                    <h3>Phương pháp học tối ưu</h3>
+                    <div class="why-divider"></div>
+                    <p>
+                        Học chủ động, <b>cá nhân hóa mục tiêu</b>, hệ thống bài tập – đánh giá theo chuẩn quốc tế,
+                        tăng tốc tư duy, vững kỹ năng giải quyết vấn đề.
+                    </p>
+                </article>
+
+                <!-- Card 4 -->
+                <article class="why-card">
+                    <img src="assets/img/hero7.jpg" alt="" class="why-icon">
+                    <h3>Lớp học hiệu quả & linh hoạt</h3>
+                    <div class="why-divider"></div>
+                    <p>
+                        Sĩ số <b>tối ưu</b>, theo dõi tiến độ từng học viên, học <b>trực tuyến</b> hoặc
+                        <b>trực tiếp</b>; phụ huynh nhận báo cáo định kỳ, sẵn sàng cho các kỳ thi quốc tế.
+                    </p>
+                </article>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Dashboard Section -->
-        <section id="dashboard-section" class="section">
-            <div class="dashboard">
-                <h2>Welcome to your Dashboard</h2>
-                <div class="user-info">
-                    <div class="info-card">
-                        <h3>User Information</h3>
-                        <p><strong>Username:</strong> <span id="dashboard-username"></span></p>
-                        <p><strong>Email:</strong> <span id="dashboard-email"></span></p>
-                        <p><strong>Role:</strong> <span id="dashboard-role"></span></p>
-                    </div>
-                </div>
-                <div class="dashboard-actions">
-                    <button class="btn btn-primary" onclick="showProfile()">View Profile</button>
-                    <button class="btn btn-secondary" onclick="showSettings()">Settings</button>
-                </div>
-            </div>
-        </section>
-    </main>
+</main>
 
-    <!-- Notification -->
-    <div id="notification" class="notification">
-        <span id="notification-message"></span>
-        <button onclick="hideNotification()">&times;</button>
-    </div>
+<footer></footer>
 
-    <script src="script.js"></script>
+<script>
+    window.addEventListener('load', () => {
+      includePartials({
+        header: 'partials/header.html',
+        footer: 'partials/footer.html'
+      });
+    });
+</script>
 </body>
 </html>
