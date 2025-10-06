@@ -1,0 +1,134 @@
+.contact-page {
+    max-width: 1100px;
+    margin: 60px auto;
+    padding: 0 20px;
+  }
+  
+  .contact-hero {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .contact-hero h1 {
+    font-size: 2rem;
+    color: #1e3a8a;
+    font-weight: 800;
+  }
+  
+  .contact-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-bottom: 40px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+  
+  .contact-details, .contact-form {
+    flex: 1 1 400px;
+  }
+  .contact-details h2,
+  .contact-form h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.25rem;
+    color: #1e3a8a;
+    font-weight: 800;
+  }
+  
+  .contact-details ul {
+    list-style: none;
+    padding: 0;
+    line-height: 1.8;
+  }
+  
+  .social-links a {
+    display: inline-block;
+    margin-right: 12px;
+    color: #1e3a8a;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .social-links a:hover {
+    text-decoration: underline;
+  }
+  
+  .contact-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .contact-form label {
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+  
+  .contact-form input,
+  .contact-form textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-family: inherit;
+  }
+ .contact-form input:focus,
+ .contact-form textarea:focus {
+   outline: none;
+   border-color: #1e3a8a;
+   box-shadow: 0 0 0 3px rgba(30,58,138,0.12);
+ }
+  
+  button {
+    background: #1e3a8a;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  
+  button:hover {
+    background: #334ebd;
+  }
+  
+  #form-status {
+    margin-top: 10px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  #form-status.success { color: #047857; }
+  #form-status.error { color: #b91c1c; }
+  
+  /* Map section */
+  .map {
+    margin: 40px 0 20px;
+  }
+  .map h2 {
+    font-size: 1.25rem;
+    margin: 0 0 12px 0;
+    color: #1e3a8a;
+    font-weight: 700;
+  }
+  .map iframe {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+  
+  /* Responsive tweaks */
+  @media (max-width: 640px) {
+    .contact-page {
+      margin: 32px auto;
+    }
+    .contact-hero h1 {
+      font-size: 1.5rem;
+    }
+    .contact-info {
+      padding: 16px;
+      gap: 24px;
+    }
+  }
+  
