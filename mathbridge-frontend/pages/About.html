@@ -1,0 +1,93 @@
+<!-- pages/About.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>MathBridge</title>
+    <base href="../"> <!-- dòng này -->
+    <link rel="stylesheet" href="assets/css/header.css" /> <!-- dòng này -->
+    <link rel="stylesheet" href="assets/css/footer.css" /><!-- dòng này -->
+    <link rel="stylesheet" href="assets/css/about.css" />
+    <script src="assets/js/utils/includePartials.js" defer></script> <!-- dòng này -->
+
+</head>
+<body>
+<header></header> <!-- dòng này -->
+
+
+
+<main>
+    <section class="about-hero">
+        <h1>Giới thiệu về MathBridge</h1>
+        <p>Đồng hành cùng học sinh chinh phục Toán học quốc tế với lộ trình cá nhân hoá.</p>
+    </section>
+
+    <div class="about-divider"></div>
+
+    <section class="about-mission">
+        <h2>Sứ mệnh</h2>
+        <p>
+            MathBridge được thành lập với mục tiêu giúp học sinh Việt Nam tiếp cận
+            chương trình Toán quốc tế (Cambridge, IB, AP, SAT) một cách bài bản,
+            nuôi dưỡng niềm yêu thích Toán học và phát triển tư duy logic.
+        </p>
+    </section>
+
+    <div class="about-divider"></div>
+
+    <section class="about-values">
+        <h2>Giá trị cốt lõi</h2>
+        <div class="values-grid">
+            <article class="value-card">
+                <h3>Chuẩn quốc tế</h3>
+                <p>Giáo trình theo từng cấp lớp, rõ ràng, mạch lạc và cập nhật.</p>
+            </article>
+            <article class="value-card">
+                <h3>Cá nhân hoá</h3>
+                <p>Lộ trình xây dựng theo mục tiêu và năng lực từng học sinh.</p>
+            </article>
+            <article class="value-card">
+                <h3>Hiệu quả</h3>
+                <p>Theo dõi tiến độ, báo cáo định kỳ, tối ưu thời gian học.</p>
+            </article>
+            <article class="value-card">
+                <h3>Tận tâm</h3>
+                <p>Đồng hành, truyền cảm hứng và xây dựng nền tảng vững chắc.</p>
+            </article>
+        </div>
+    </section>
+
+    <div class="about-divider"></div>
+
+    <section class="about-story">
+        <h2>Câu chuyện của chúng tôi</h2>
+        <p>
+            Từ những lớp học nhỏ dành cho học sinh cần củng cố nền tảng, MathBridge
+            dần mở rộng thành hệ thống đào tạo Toán quốc tế, quy tụ đội ngũ giáo viên
+            giàu kinh nghiệm, am hiểu chương trình và tâm lý học sinh.
+        </p>
+    </section>
+
+    <div class="about-divider"></div>
+
+    <section class="about-team-cta">
+        <h2>Đội ngũ giáo viên</h2>
+        <p>Giỏi chuyên môn – Giỏi nghiệp vụ sư phạm – Tận tâm đồng hành.</p>
+        <a class="cta" href="#">Gặp gỡ đội ngũ</a>
+    </section>
+</main>
+
+
+
+<footer></footer> <!-- dòng này -->
+<!-- cả đoạn script này -->
+<script>
+    window.addEventListener('load', () => {
+        includePartials({
+          header: 'partials/header.html',
+          footer: 'partials/footer.html'
+        });
+    });
+</script>
+</body>
+</html>
