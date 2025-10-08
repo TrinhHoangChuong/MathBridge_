@@ -1,0 +1,21 @@
+.mb-teachers { padding: 48px 16px; }
+.mb-teachers-wrap { max-width: 1120px; margin: 0 auto; }
+.mb-teachers-head { text-align: center; margin-bottom: 24px; }
+.mb-teachers-head h1 { margin: 0 0 8px; font-size: 32px; }
+.mb-teachers-head p { margin: 0; color: #555; }
+
+.mb-teachers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.teacher-card { background: #fff; border: 1px solid #eee; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.teacher-photo { width: 100%; height: 200px; object-fit: cover; background: #f5f5f5; }
+.teacher-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.teacher-name { font-size: 18px; font-weight: 700; margin: 0; }
+.teacher-title { font-size: 14px; color: #666; margin: 0; }
+.teacher-meta { font-size: 13px; color: #444; margin: 0; }
+.teacher-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.teacher-tag { font-size: 12px; padding: 4px 8px; background: #eef3ff; color: #2a55ff; border-radius: 999px; }
+
+@media (max-width: 600px) {
+  .teacher-photo { height: 180px; }
+}
+
+

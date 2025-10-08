@@ -1,0 +1,27 @@
+.mb-careers { padding: 48px 16px; }
+.mb-careers-wrap { max-width: 1120px; margin: 0 auto; }
+.mb-careers-head { text-align: center; margin-bottom: 24px; }
+.mb-careers-head h1 { margin: 0 0 8px; font-size: 32px; }
+.mb-careers-head p { margin: 0; color: #555; }
+
+.mb-jobs-list { display: grid; gap: 16px; }
+.job-card { background: #fff; border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
+.job-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 14px 16px; gap: 8px; }
+.job-title { font-size: 18px; font-weight: 700; margin: 0; }
+.job-meta { display: flex; flex-wrap: wrap; gap: 10px; color: #555; font-size: 14px; }
+.job-tag { padding: 4px 8px; background: #eef3ff; color: #2a55ff; border-radius: 999px; font-size: 12px; }
+.job-actions { margin-left: auto; }
+.job-btn { border: 0; background: #2a55ff; color: #fff; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+.job-btn.secondary { background: #f3f4f6; color: #111; }
+
+.job-details { display: none; padding: 0 16px 16px; border-top: 1px dashed #eee; }
+.job-details.open { display: block; }
+.job-details h4 { margin: 12px 0 8px; font-size: 16px; }
+.job-details ul { margin: 0; padding-left: 18px; }
+.job-details li { margin: 4px 0; }
+
+@media (max-width: 600px) {
+  .job-top { align-items: flex-start; }
+}
+
+

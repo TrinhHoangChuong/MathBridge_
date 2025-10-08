@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Khóa học | MathBridge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Base styles (optional if already included globally) -->
+    <link rel="stylesheet" href="/assets/css/index.css">
+    <link rel="stylesheet" href="/assets/css/header.css">
+    <link rel="stylesheet" href="/assets/css/footer.css">
+    <!-- Page styles -->
+    <link rel="stylesheet" href="../assets/css/course.css">
+</head>
+<body>
+    <header></header>
+
+    <main class="course">
+        <!-- Hero / Banner -->
+        <section class="course-hero">
+            <div class="container">
+                <div class="hero-content">
+                    <span class="badge" id="courseBadge">MathBridge Program</span>
+                    <h1 id="courseTitle">Tên khóa học</h1>
+                    <p id="courseSubtitle" class="subtitle">Mô tả ngắn gọn về khóa học. Rõ ràng, súc tích, truyền cảm hứng.</p>
+                    <div class="meta">
+                        <span class="meta-item" id="courseLevel">Trình độ</span>
+                        <span class="dot"></span>
+                        <span class="meta-item" id="courseFormat">Hình thức</span>
+                        <span class="dot"></span>
+                        <span class="meta-item" id="courseDuration">Thời lượng</span>
+                    </div>
+                    <div class="cta">
+                        <a class="btn btn-primary" href="#dangky">Đăng ký lớp thử</a>
+                        <a class="btn btn-ghost" href="#chuongtrinh">Xem chương trình</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content -->
+        <section class="course-body">
+            <div class="container grid">
+                <article class="content">
+                    <!-- Tabs -->
+                    <div class="tabs" role="tablist">
+                        <button class="tab active" data-tab="overview" role="tab">Tổng quan</button>
+                        <button class="tab" data-tab="program" role="tab">Chương trình</button>
+                        <button class="tab" data-tab="faq" role="tab">FAQ</button>
+                    </div>
+
+                    <!-- Overview -->
+                    <div id="tab-overview" class="tab-panel active" role="tabpanel">
+                        <h2>Vì sao chọn khóa học này?</h2>
+                        <ul class="features" id="courseHighlights">
+                            <!-- Rendered by JS -->
+                        </ul>
+
+                        <div class="cards">
+                            <div class="card">
+                                <h3>Kết quả đạt được</h3>
+                                <ul id="courseOutcomes"></ul>
+                            </div>
+                            <div class="card">
+                                <h3>Yêu cầu đầu vào</h3>
+                                <ul id="courseRequirements"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Program -->
+                    <div id="tab-program" class="tab-panel" role="tabpanel">
+                        <h2 id="chuongtrinh">Bảng chương trình</h2>
+                        <div class="program-table-wrap">
+                            <table class="program-table" id="programTable">
+                                <thead>
+                                    <tr>
+                                        <th>Module</th>
+                                        <th>Chủ đề</th>
+                                        <th>Thời lượng</th>
+                                        <th>Kỹ năng trọng tâm</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Rendered by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- FAQ -->
+                    <div id="tab-faq" class="tab-panel" role="tabpanel">
+                        <h2>Câu hỏi thường gặp</h2>
+                        <div class="accordion" id="faqList">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sticky">
+                        <div class="sb-card">
+                            <div class="price">
+                                <span class="label">Học phí</span>
+                                <strong id="coursePrice">—</strong>
+                            </div>
+                            <ul class="sb-list">
+                                <li><span>Lịch học:</span><strong id="courseSchedule">—</strong></li>
+                                <li><span>Sĩ số tối đa:</span><strong id="courseCapacity">—</strong></li>
+                                <li><span>Giáo viên:</span><strong id="courseTeacher">—</strong></li>
+                            </ul>
+                            <a id="dangky" class="btn btn-primary btn-block" href="#">Đăng ký tư vấn</a>
+                            <p class="note">Chúng tôi sẽ liên hệ trong 24h.</p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <footer></footer>
+
+    <!-- Scripts -->
+    <script src="/assets/js/utils/includePartials.js"></script>
+    <script src="/assets/js/data/courses.data.js"></script>
+    <script src="/assets/js/config.js"></script>
+    <script>
+    includePartials({ header: "/partials/header.html", footer: "/partials/footer.html" });
+    </script>
+    <script src="/assets/js/pages/course.page.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+/* ====== Màu & font hiện đại (xanh- trắng) ====== */
+:root{
+  --primary:#2563eb;           /* xanh chủ đạo (blue-600) */
+  --text:#0f172a;              /* slate-900 */
+  --bg:#ffffff;
+  --hover:#f3f6ff;
+  --shadow:0 1px 12px rgba(0,0,0,.06);
+}
+html,body{margin:0}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+  background:#f5f5f5; color:var(--text);
+}
+header{position:sticky;top:0;background:var(--bg);box-shadow:var(--shadow);z-index:100}
+
+/* ====== Thanh menu 3 cột: trái–giữa–phải ====== */
+.mb-nav{
+  position:relative;
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;  /* trái | giữa (auto) | phải */
+  align-items:center;
+  gap:16px;
+  padding:10px 16px;
+  max-width:1200px; margin:0 auto;      /* gọn, tránh “trống vắng” */
+}
+.mb-left{justify-self:start}
+.mb-right{justify-self:end; display:flex; align-items:center; gap:8px}
+.mb-logo{
+  color:var(--primary); text-decoration:none;
+  font-weight:800; letter-spacing:.3px; font-size:18px;
+}
+
+/* ====== Menu giữa (căn giữa thật) ====== */
+.mb-links{
+  justify-self:center;
+  display:flex; align-items:center; gap:8px;
+}
+.mb-links>a, .mb-dd-btn{
+  appearance:none; border:0; background:transparent; cursor:pointer;
+  padding:12px 16px; border-radius:10px; color:var(--text);
+  font:800 22px/1.2 inherit !important; letter-spacing:.15px;
+  text-decoration:none; transition:background .15s ease, transform .05s ease;
+}
+.mb-links>a{font-weight:800}
+.mb-dd-btn{font-weight:800}
+.mb-links>a:hover, .mb-dd-btn:hover{background:var(--hover)}
+.mb-links a:active, .mb-dd-btn:active{transform:translateY(1px)}
+
+/* Active (thêm .active bằng JS) */
+.mb-links a.active{font-weight:800; text-decoration:none}
+
+/* ====== Dropdown ====== */
+.mb-dd{position:relative}
+.mb-dd-menu{
+  position:absolute; top:100%; left:0; min-width:240px;
+  background:var(--bg); box-shadow:var(--shadow); border-radius:12px;
+  padding:8px; display:none; z-index:10;
+}
+.mb-dd:hover .mb-dd-menu{display:block}
+.mb-subdd{position:relative}
+.mb-subdd-btn{appearance:none;border:0;background:transparent;cursor:pointer;display:block;width:100%;text-align:left;padding:9px 10px;border-radius:8px;font-weight:700;color:var(--text);font-size:16px !important}
+.mb-subdd-btn:hover{background:var(--hover)}
+.mb-subdd-menu{position:absolute;left:100%;top:0;min-width:200px;background:var(--bg);box-shadow:var(--shadow);border-radius:12px;padding:8px;display:none}
+.mb-subdd:hover .mb-subdd-menu{display:block}
+.mb-dd-menu a{
+  display:block; padding:9px 10px; border-radius:8px; color:var(--text); text-decoration:none;
+  font-weight:700; font-size:16px !important;
+}
+.mb-dd-menu a:hover{background:var(--hover)}
+
+/* ====== Nút đăng nhập ====== */
+.mb-login{
+  background:var(--primary); color:#fff; text-decoration:none;
+  padding:9px 14px; border-radius:12px; font-weight:800;
+  letter-spacing:.2px;
+}
+.mb-login:hover{filter:brightness(.96)}
+
+/* ====== Burger & toggle (mobile, không cần JS) ====== */
+.mb-toggle{display:none}
+.mb-burger{
+  display:none; cursor:pointer; user-select:none;
+  font-size:20px; line-height:1;
+  padding:6px 10px; border-radius:10px;
+}
+.mb-burger:hover{background:var(--hover)}
+
+/* ====== Responsive ====== */
+@media (max-width: 900px){
+  /* Ẩn menu desktop, dùng burger mở menu */
+  .mb-burger{display:block}
+  .mb-links{
+    display:none;
+    position:absolute; left:0; right:0; top:100%;   /* sát dưới thanh header */
+    background:var(--bg); box-shadow:var(--shadow);
+    padding:8px; flex-direction:column; gap:4px;
+  }
+  /* Khi checkbox được check -> mở menu */
+  #mb-toggle:checked ~ .mb-links{display:flex}
+
+  /* Dropdown trong mobile hiển thị kiểu danh sách lồng */
+  .mb-dd-menu{position:static; box-shadow:none; padding:0 0 0 6px}
+
+  /* Có thể ẩn nút login để gọn (tùy), vẫn giữ ở góc phải */
+  .mb-login{display:none}
+}
