@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tuyển dụng - MathBridge</title>
+    <base href="../">
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/careers.css" />
+    <script src="assets/js/utils/includePartials.js" defer></script>
+    <script src="assets/js/api/jobs.api.js" defer></script>
+    <script src="assets/js/pages/careers.page.js" defer></script>
+</head>
+<body>
+<header></header>
+
+<main>
+    <section class="mb-careers">
+        <div class="mb-careers-wrap">
+            <header class="mb-careers-head">
+                <h1>Cơ hội nghề nghiệp</h1>
+                <p>Tham gia đội ngũ MathBridge để cùng tạo khác biệt trong giáo dục</p>
+            </header>
+
+            <div id="jobs-list" class="mb-jobs-list"></div>
+        </div>
+    </section>
+</main>
+
+<footer></footer>
+
+<script>
+    window.addEventListener('load', () => {
+        includePartials({
+          header: 'partials/header.html',
+          footer: 'partials/footer.html'
+        });
+    });
+</script>
+</body>
+</html>
+
+
