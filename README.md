@@ -541,7 +541,11 @@ Nếu gặp vấn đề, hãy kiểm tra:
 
 Các Thiết Kế Demo Khoahoc
 http://localhost:8000/pages/Courses.html?grade=9
+
 http://localhost:8000/pages/Courses.html?grade=10
+
 http://localhost:8000/pages/Courses.html?grade=11
+
 http://localhost:8000/pages/Courses.html?grade=12
+
 http://localhost:8000/pages/Courses.html?grade=international
