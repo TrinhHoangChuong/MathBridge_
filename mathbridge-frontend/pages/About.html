@@ -3,91 +3,151 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>MathBridge</title>
-    <base href="../"> <!-- dòng này -->
-    <link rel="stylesheet" href="assets/css/header.css" /> <!-- dòng này -->
-    <link rel="stylesheet" href="assets/css/footer.css" /><!-- dòng này -->
+    <title>Giới thiệu | MathBridge</title>
+    <base href="../"> <!-- giữ base để dùng chung assets/partials -->
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
     <link rel="stylesheet" href="assets/css/about.css" />
-    <script src="assets/js/utils/includePartials.js" defer></script> <!-- dòng này -->
-
+    <script src="assets/js/utils/includePartials.js" defer></script>
 </head>
+
 <body>
-<header></header> <!-- dòng này -->
-
-
+<header></header>
 
 <main>
-    <section class="about-hero">
-        <h1>Giới thiệu về MathBridge</h1>
-        <p>Đồng hành cùng học sinh chinh phục Toán học quốc tế với lộ trình cá nhân hoá.</p>
-    </section>
+  <!-- SECTION 1: HERO -->
+  <section class="mb-hero about-hero v2">
+    <div class="mb-container hero-wrap">
+      <div class="hero-text">
+        <p class="eyebrow">Về chúng tôi</p>
+        <h1 class="title">MathBridge – Cầu nối Toán học quốc tế</h1>
+        <p class="lead">Chúng tôi đồng hành cùng học sinh Việt Nam chinh phục Toán học theo các chương trình Cambridge, IB, AP và Toán nâng cao Việt Nam.</p>
 
-    <div class="about-divider"></div>
+        <ul class="bullets">
+          <li>Giáo trình theo chuẩn quốc tế, lộ trình rõ ràng từng cấp lớp</li>
+          <li>Đội ngũ giáo viên giàu kinh nghiệm, phương pháp cá nhân hóa</li>
+          <li>Theo dõi tiến độ – báo cáo định kỳ cho phụ huynh</li>
+        </ul>
 
-    <section class="about-mission">
-        <h2>Sứ mệnh</h2>
-        <p>
-            MathBridge được thành lập với mục tiêu giúp học sinh Việt Nam tiếp cận
-            chương trình Toán quốc tế (Cambridge, IB, AP, SAT) một cách bài bản,
-            nuôi dưỡng niềm yêu thích Toán học và phát triển tư duy logic.
-        </p>
-    </section>
-
-    <div class="about-divider"></div>
-
-    <section class="about-values">
-        <h2>Giá trị cốt lõi</h2>
-        <div class="values-grid">
-            <article class="value-card">
-                <h3>Chuẩn quốc tế</h3>
-                <p>Giáo trình theo từng cấp lớp, rõ ràng, mạch lạc và cập nhật.</p>
-            </article>
-            <article class="value-card">
-                <h3>Cá nhân hoá</h3>
-                <p>Lộ trình xây dựng theo mục tiêu và năng lực từng học sinh.</p>
-            </article>
-            <article class="value-card">
-                <h3>Hiệu quả</h3>
-                <p>Theo dõi tiến độ, báo cáo định kỳ, tối ưu thời gian học.</p>
-            </article>
-            <article class="value-card">
-                <h3>Tận tâm</h3>
-                <p>Đồng hành, truyền cảm hứng và xây dựng nền tảng vững chắc.</p>
-            </article>
+        <div class="cta-row">
+          <a href="pages/Contact.html" class="cta primary">Tư vấn miễn phí</a>
+          <a href="pages/Courses.html" class="cta ghost">Xem khóa học</a>
         </div>
-    </section>
+      </div>
+      <figure class="hero-img">
+        <div class="about-hero-gallery" aria-label="Bộ sưu tập ảnh About">
+          <!-- Thêm/xóa ảnh tại đây -->
+          <img src="assets/img/hero1.jpg" alt="Lớp học 1" class="gh-item active" />
+          <img src="assets/img/hero2.jpg" alt="Lớp học 2" class="gh-item" />
+          <img src="assets/img/hero3.jpg" alt="Lớp học 3" class="gh-item" />
+          <!-- Ví dụ thêm ảnh mới: <img src="assets/img/your-image.jpg" alt="mô tả" class="gh-item" /> -->
+          <div class="gh-dots" role="tablist" aria-label="Điều hướng ảnh"></div>
+        </div>
+      </figure>
+    </div>
+    <div class="wave"></div>
+  </section>
 
-    <div class="about-divider"></div>
+  <!-- SECTION 2: SỨ MỆNH -->
+  <section class="mb-mission">
+    <div class="mb-container mission-wrap">
+      <div class="mission-text">
+        <h2>Sứ mệnh & Giá trị cốt lõi</h2>
+        <ul>
+          <li><b>Truyền cảm hứng học Toán</b> – Giúp học sinh yêu thích, chủ động và sáng tạo trong học tập.</li>
+          <li><b>Phát triển toàn diện</b> – Tư duy logic, phản biện, và kỹ năng giải quyết vấn đề.</li>
+          <li><b>Cam kết chất lượng</b> – Giảng dạy theo chuẩn quốc tế, theo sát tiến trình học của từng em.</li>
+        </ul>
+      </div>
+      <figure class="mission-img">
+        <img src="assets/img/about-mission.svg" alt="Sứ mệnh MathBridge" />
+      </figure>
+    </div>
+  </section>
 
-    <section class="about-story">
-        <h2>Câu chuyện của chúng tôi</h2>
-        <p>
-            Từ những lớp học nhỏ dành cho học sinh cần củng cố nền tảng, MathBridge
-            dần mở rộng thành hệ thống đào tạo Toán quốc tế, quy tụ đội ngũ giáo viên
-            giàu kinh nghiệm, am hiểu chương trình và tâm lý học sinh.
-        </p>
-    </section>
+  <!-- SECTION 3: ĐỘI NGŨ -->
+  <section class="mb-team">
+    <div class="mb-container">
+      <header class="team-head">
+        <h2>Đội ngũ <span>giáo viên & chuyên gia</span></h2>
+        <p>Giàu kinh nghiệm – Nhiệt huyết – Hiểu học sinh Việt Nam</p>
+      </header>
 
-    <div class="about-divider"></div>
-
-    <section class="about-team-cta">
-        <h2>Đội ngũ giáo viên</h2>
-        <p>Giỏi chuyên môn – Giỏi nghiệp vụ sư phạm – Tận tâm đồng hành.</p>
-        <a class="cta" href="#">Gặp gỡ đội ngũ</a>
-    </section>
+      <div class="team-grid">
+        <article class="member">
+          <img src="assets/img/teacher1.svg" alt="" />
+          <h3>Thầy Nguyễn Minh Trí</h3>
+          <p>Chuyên gia IB Math, hơn 10 năm kinh nghiệm giảng dạy quốc tế</p>
+        </article>
+        <article class="member">
+          <img src="assets/img/teacher2.svg" alt="" />
+          <h3>Cô Lê Thanh Hương</h3>
+          <p>Giảng viên AP/IGCSE, phương pháp học cá nhân hóa hiệu quả</p>
+        </article>
+        <article class="member">
+          <img src="assets/img/teacher3.svg" alt="" />
+          <h3>Thầy Trần Quốc Duy</h3>
+          <p>Chuyên viên luyện thi SAT & A-Level, từng du học Mỹ</p>
+        </article>
+      </div>
+    </div>
+  </section>
 </main>
 
-
-
-<footer></footer> <!-- dòng này -->
-<!-- cả đoạn script này -->
+<footer></footer>
 <script>
-    window.addEventListener('load', () => {
-        includePartials({
-          header: 'partials/header.html',
-          footer: 'partials/footer.html'
-        });
+  window.addEventListener('load', () => {
+    includePartials({
+      header: 'partials/header.html',
+      footer: 'partials/footer.html'
     });
+  });
+
+    // Auto-rotate gallery ở About hero
+    (function initAboutHeroGallery(){
+      const gallery = document.querySelector('.about-hero-gallery');
+      if (!gallery) return;
+      const imgs = Array.from(gallery.querySelectorAll('.gh-item'));
+      const dotsWrap = gallery.querySelector('.gh-dots');
+      if (imgs.length <= 1) return;
+
+      // Tạo dots theo số lượng ảnh
+      imgs.forEach((_, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gh-dot' + (i === 0 ? ' active' : '');
+        b.setAttribute('aria-label', 'Ảnh ' + (i+1));
+        b.addEventListener('click', () => go(i));
+        dotsWrap.appendChild(b);
+      });
+
+      let idx = 0;
+      let timer;
+      const intervalMs = 4000;
+
+      function render(){
+        imgs.forEach((img, i) => img.classList.toggle('active', i === idx));
+        const dots = dotsWrap.querySelectorAll('.gh-dot');
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+
+      function go(i){
+        idx = (i + imgs.length) % imgs.length;
+        render();
+        restart();
+      }
+
+      function next(){ go(idx + 1); }
+      function start(){ timer = setInterval(next, intervalMs); }
+      function stop(){ clearInterval(timer); }
+      function restart(){ stop(); start(); }
+
+      // Tạm dừng khi hover
+      gallery.addEventListener('mouseenter', stop);
+      gallery.addEventListener('mouseleave', start);
+
+      start();
+    })();
 </script>
 </body>
 </html>
