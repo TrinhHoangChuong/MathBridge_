@@ -1,27 +1,236 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Đội ngũ giáo viên - MathBridge</title>
-    <base href="../">
+    <meta charset="UTF-8" />
+    <title>Đội ngũ giảng viên - MathBridge</title>
+    <base href="../" />
+    <!-- CSS chung của site -->
     <link rel="stylesheet" href="assets/css/header.css" />
     <link rel="stylesheet" href="assets/css/footer.css" />
+    <!-- CSS riêng của trang này -->
     <link rel="stylesheet" href="assets/css/teachers.css" />
+
+    <!-- Giữ nguyên include partials của bạn -->
     <script src="assets/js/utils/includePartials.js" defer></script>
-    <script src="assets/js/pages/teachers.page.js" defer></script>
 </head>
 <body>
 <header></header>
 
-<main>
-    <section class="mb-teachers">
-        <div class="mb-teachers-wrap">
-            <header class="mb-teachers-head">
-                <h1>Đội ngũ giáo viên</h1>
-                <p>Giỏi chuyên môn – Tận tâm đồng hành – Kinh nghiệm quốc tế</p>
-            </header>
+<main class="teachers">
+    <!-- HERO -->
+    <section class="teachers__hero" aria-labelledby="teachers-title">
+        <div class="container">
+            <h1 id="teachers-title" class="teachers__title">Đội ngũ giảng viên</h1>
+            <p class="teachers__subtitle">
+                Chuyên môn vững, giàu kinh nghiệm IGCSE • A-Level • IB • AP • THPT VN.
+            </p>
+        </div>
+    </section>
 
-            <div id="teachers-grid" class="mb-teachers-grid"></div>
+    <!-- TOOLBAR: Tìm kiếm + Chip lọc + Sắp xếp -->
+    <section class="teachers__toolbar">
+        <div class="container toolbar__inner">
+            <!-- Search -->
+            <div class="search" role="search" aria-label="Tìm giảng viên">
+                <input id="q" type="search" class="search__input"
+                       placeholder="Tìm theo tên, chương trình, kỹ năng..."
+                       autocomplete="off" aria-label="Ô tìm kiếm">
+                <span class="search__icon" aria-hidden="true">🔎</span>
+            </div>
+
+            <!-- Chips: single-select -->
+            <div class="chips" role="group" aria-label="Lọc theo chương trình">
+                <!-- NOTE: aria-pressed thể hiện chip đang bật -->
+                <button class="chip" data-program="" aria-pressed="true">Tất cả</button>
+                <button class="chip" data-program="IGCSE" aria-pressed="false">IGCSE</button>
+                <button class="chip" data-program="A-Level" aria-pressed="false">A-Level</button>
+                <button class="chip" data-program="IB" aria-pressed="false">IB</button>
+                <button class="chip" data-program="AP" aria-pressed="false">AP</button>
+                <button class="chip" data-program="THPT" aria-pressed="false">THPT VN</button>
+            </div>
+
+            <!-- Sort + meta -->
+            <div class="sort">
+                <label for="sort" class="sort__label">Sắp xếp:</label>
+                <select id="sort" class="select" aria-label="Sắp xếp">
+                    <option value="exp_desc">Kinh nghiệm: cao → thấp</option>
+                    <option value="exp_asc">Kinh nghiệm: thấp → cao</option>
+                    <option value="name_asc">Tên: A → Z</option>
+                    <option value="name_desc">Tên: Z → A</option>
+                </select>
+                <span id="count" class="meta" aria-live="polite"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- GRID: Card tĩnh -->
+    <section class="teachers__grid-wrap">
+        <div class="container">
+            <div id="grid" class="teachers__grid" aria-live="polite">
+
+                <!-- CARD 1 -->
+                <article class="teacher-card" tabindex="0"
+                         data-name="Nguyễn Văn An"
+                         data-programs="THPT,IGCSE"
+                         data-exp="12">
+                    <div class="teacher-card__media">
+                        <!-- TODO: thay ảnh thật -->
+                        <img src="assets/images/teachers/an.jpg" alt="Thầy Nguyễn Văn An" class="teacher-card__img" loading="lazy">
+                        <span class="flag">THPT • IGCSE</span>
+                    </div>
+                    <div class="teacher-card__body">
+                        <h2 class="teacher-card__name">Thầy Nguyễn Văn An</h2>
+                        <p class="teacher-card__desc">
+                            Thạc sĩ Toán, 12 năm luyện thi đại học & IGCSE. Nhiều học sinh đạt giải.
+                        </p>
+                        <ul class="teacher-card__tags" aria-label="Kỹ năng">
+                            <li class="tag">Giải tích</li>
+                            <li class="tag">Hàm số</li>
+                            <li class="tag tag--outline">Tư duy toán</li>
+                        </ul>
+                    </div>
+                    <footer class="teacher-card__footer">
+                        <a href="pages/classes-an.html" class="btn btn--primary">Tham gia lớp</a>
+                        <span class="exp-badge">12 năm</span>
+                    </footer>
+                </article>
+
+                <!-- CARD 2 -->
+                <article class="teacher-card" tabindex="0"
+                         data-name="Trần Thị Bình"
+                         data-programs="A-Level,IB"
+                         data-exp="7">
+                    <div class="teacher-card__media">
+                        <img src="assets/images/teachers/binh.jpg" alt="Cô Trần Thị Bình" class="teacher-card__img" loading="lazy">
+                        <span class="flag">A-Level • IB</span>
+                    </div>
+                    <div class="teacher-card__body">
+                        <h2 class="teacher-card__name">Cô Trần Thị Bình</h2>
+                        <p class="teacher-card__desc">
+                            Phong cách sinh động, truyền cảm hứng. Mạnh Xác suất & Thống kê.
+                        </p>
+                        <ul class="teacher-card__tags" aria-label="Kỹ năng">
+                            <li class="tag">Probability</li>
+                            <li class="tag">Statistics</li>
+                            <li class="tag tag--outline">Exam skills</li>
+                        </ul>
+                    </div>
+                    <footer class="teacher-card__footer">
+                        <a href="pages/classes-binh.html" class="btn btn--primary">Tham gia lớp</a>
+                        <span class="exp-badge">7 năm</span>
+                    </footer>
+                </article>
+
+                <!-- CARD 3 -->
+                <article class="teacher-card" tabindex="0"
+                         data-name="Lê Văn Cường"
+                         data-programs="AP,THPT"
+                         data-exp="4">
+                    <div class="teacher-card__media">
+                        <img src="assets/images/teachers/cuong.jpg" alt="Thầy Lê Văn Cường" class="teacher-card__img" loading="lazy">
+                        <span class="flag">AP • THPT</span>
+                    </div>
+                    <div class="teacher-card__body">
+                        <h2 class="teacher-card__name">Thầy Lê Văn Cường</h2>
+                        <p class="teacher-card__desc">
+                            Mạnh tư duy logic & olympic. Phù hợp nhóm khá giỏi hướng đội tuyển.
+                        </p>
+                        <ul class="teacher-card__tags" aria-label="Kỹ năng">
+                            <li class="tag">Number Theory</li>
+                            <li class="tag">Combinatorics</li>
+                            <li class="tag tag--outline">Problem solving</li>
+                        </ul>
+                    </div>
+                    <footer class="teacher-card__footer">
+                        <a href="pages/classes-cuong.html" class="btn btn--primary">Tham gia lớp</a>
+                        <span class="exp-badge">4 năm</span>
+                    </footer>
+                </article>
+
+                <!-- CARD 4 -->
+                <article class="teacher-card" tabindex="0"
+                         data-name="Phạm Thu Dung"
+                         data-programs="IB,IGCSE"
+                         data-exp="9">
+                    <div class="teacher-card__media">
+                        <img src="assets/images/teachers/dung.jpg" alt="Cô Phạm Thu Dung" class="teacher-card__img" loading="lazy">
+                        <span class="flag">IB • IGCSE</span>
+                    </div>
+                    <div class="teacher-card__body">
+                        <h2 class="teacher-card__name">Cô Phạm Thu Dung</h2>
+                        <p class="teacher-card__desc">
+                            Xây nền tảng vững & kỹ năng trình bày bài thi chuẩn quốc tế.
+                        </p>
+                        <ul class="teacher-card__tags" aria-label="Kỹ năng">
+                            <li class="tag">Algebra</li>
+                            <li class="tag">Functions</li>
+                            <li class="tag tag--outline">IA coaching</li>
+                        </ul>
+                    </div>
+                    <footer class="teacher-card__footer">
+                        <a href="pages/classes-dung.html" class="btn btn--primary">Tham gia lớp</a>
+                        <span class="exp-badge">9 năm</span>
+                    </footer>
+                </article>
+
+                <!-- CARD 5 -->
+                <article class="teacher-card" tabindex="0"
+                         data-name="Ngô Minh Huy"
+                         data-programs="AP,A-Level"
+                         data-exp="6">
+                    <div class="teacher-card__media">
+                        <img src="assets/images/teachers/huy.jpg" alt="Thầy Ngô Minh Huy" class="teacher-card__img" loading="lazy">
+                        <span class="flag">AP • A-Level</span>
+                    </div>
+                    <div class="teacher-card__body">
+                        <h2 class="teacher-card__name">Thầy Ngô Minh Huy</h2>
+                        <p class="teacher-card__desc">
+                            Tối ưu điểm theo ma trận đề, lộ trình cá nhân hoá.
+                        </p>
+                        <ul class="teacher-card__tags" aria-label="Kỹ năng">
+                            <li class="tag">Calculus</li>
+                            <li class="tag">Trigonometry</li>
+                            <li class="tag tag--outline">Exam tactics</li>
+                        </ul>
+                    </div>
+                    <footer class="teacher-card__footer">
+                        <a href="pages/classes-huy.html" class="btn btn--primary">Tham gia lớp</a>
+                        <span class="exp-badge">6 năm</span>
+                    </footer>
+                </article>
+
+                <!-- CARD 6 -->
+                <article class="teacher-card" tabindex="0"
+                         data-name="Vũ Hải Yến"
+                         data-programs="THPT,IGCSE,IB"
+                         data-exp="11">
+                    <div class="teacher-card__media">
+                        <img src="assets/images/teachers/yen.jpg" alt="Cô Vũ Hải Yến" class="teacher-card__img" loading="lazy">
+                        <span class="flag">THPT • IGCSE • IB</span>
+                    </div>
+                    <div class="teacher-card__body">
+                        <h2 class="teacher-card__name">Cô Vũ Hải Yến</h2>
+                        <p class="teacher-card__desc">
+                            Kinh nghiệm đa chương trình; mạnh đồ thị & mô hình hoá.
+                        </p>
+                        <ul class="teacher-card__tags" aria-label="Kỹ năng">
+                            <li class="tag">Graphing</li>
+                            <li class="tag">Modeling</li>
+                            <li class="tag tag--outline">Study plan</li>
+                        </ul>
+                    </div>
+                    <footer class="teacher-card__footer">
+                        <a href="pages/classes-yen.html" class="btn btn--primary">Tham gia lớp</a>
+                        <span class="exp-badge">11 năm</span>
+                    </footer>
+                </article>
+
+            </div>
+
+            <!-- Empty state (ẩn/hiện bằng JS) -->
+            <div id="empty" class="empty" style="display:none">
+                Không tìm thấy giảng viên phù hợp với bộ lọc hiện tại.
+            </div>
         </div>
     </section>
 </main>
@@ -29,14 +238,101 @@
 <footer></footer>
 
 <script>
+    // Giữ header/footer cũ: include từ partials của bạn
     window.addEventListener('load', () => {
-        includePartials({
-          header: 'partials/header.html',
-          footer: 'partials/footer.html'
-        });
+      includePartials({
+        header: 'partials/header.html',
+        footer: 'partials/footer.html'
+      });
     });
+
+    /* ===========================
+       JS lọc/tìm/sắp xếp (inline)
+       - Mỗi .teacher-card có:
+         data-name="..."
+         data-programs="CSV"  (VD: "IGCSE,A-Level")
+         data-exp="SỐ NĂM"    (VD: "7")
+       =========================== */
+    const $  = (s, r=document)=>r.querySelector(s);
+    const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+    const norm = s => (s||'').toString().trim().toLowerCase();
+
+    const grid   = $('#grid');
+    const cards  = $$('.teacher-card', grid);
+    const inputQ = $('#q');
+    const chips  = $$('.chip');
+    const sortEl = $('#sort');
+    const count  = $('#count');
+    const empty  = $('#empty');
+
+    const state = { q:'', program:'', sort:'exp_desc' };
+
+    const getName = c => c.dataset.name || '';
+    const getExp  = c => Number(c.dataset.exp || 0);
+    const getPrograms = c => (c.dataset.programs||'').split(',').map(norm);
+
+    function apply(){
+      const matchText = (c)=>{
+        if(!state.q) return true;
+        const text = norm(getName(c)+' '+getPrograms(c).join(' '));
+        return text.includes(norm(state.q));
+      };
+      const matchProgram = (c)=>{
+        if(!state.program) return true;
+        return getPrograms(c).includes(norm(state.program));
+      };
+
+      // Lọc hiển thị
+      let visible = 0;
+      cards.forEach(c=>{
+        const show = matchText(c) && matchProgram(c);
+        c.style.display = show ? '' : 'none';
+        if(show) visible++;
+      });
+
+      // Sort các card đang hiển thị
+      const visibleCards = cards.filter(c=>c.style.display!=='none');
+      visibleCards.sort((a,b)=>{
+        switch(state.sort){
+          case 'exp_desc': return getExp(b)-getExp(a);
+          case 'exp_asc' : return getExp(a)-getExp(b);
+          case 'name_asc': return getName(a).localeCompare(getName(b),'vi');
+          case 'name_desc':return getName(b).localeCompare(getName(a),'vi');
+          default: return 0;
+        }
+      });
+      visibleCards.forEach(c=>grid.appendChild(c));
+
+      // Meta
+      if(count) count.textContent = `${visible} giảng viên`;
+      if(empty) empty.style.display = visible ? 'none' : '';
+    }
+
+    // Search debounce nhẹ
+    let t;
+    inputQ?.addEventListener('input', e=>{
+      clearTimeout(t);
+      t = setTimeout(()=>{ state.q = e.target.value || ''; apply(); }, 120);
+    });
+
+    // Chip single-select
+    chips.forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        chips.forEach(c=>c.setAttribute('aria-pressed','false'));
+        chip.setAttribute('aria-pressed','true');
+        state.program = chip.dataset.program || '';
+        apply();
+      });
+    });
+
+    // Sort
+    sortEl?.addEventListener('change', e=>{
+      state.sort = e.target.value;
+      apply();
+    });
+
+    // Init
+    apply();
 </script>
 </body>
 </html>
-
-
