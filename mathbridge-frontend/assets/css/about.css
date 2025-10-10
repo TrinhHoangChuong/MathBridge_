@@ -1,91 +1,223 @@
+/* ============================================================
+   MathBridge – About.css (Professional, aligned with index.css system)
+   - Uses :root brand variables (colors, spacing)
+   - Consistent container width and responsive grid
+   - Subtle dividers, cards, headings
+   ============================================================ */
+
+:root{
+  --mb-blue:       #1e3a8a;
+  --mb-blue-2:     #1f3b86;
+  --mb-accent:     #e11d48;
+  --mb-accent-deep:#b91c1c;
+  --mb-ink:        #0f172a;
+  --mb-gray-1:     #51607a;
+  --mb-gray-2:     #374151;
+  --mb-card:       #ffffff;
+  --mb-bg-soft:    #f7f8fc;
+  /* add missing reds for mission section & wave */
+  --mb-red:        #d1153b;
+  --mb-red-deep:   #b31230;
+  --mb-red-soft:   #f52c5a;
+}
+
+.mb-container{max-width:1200px;margin:0 auto;padding:0 20px}
+*, *::before, *::after{box-sizing:border-box}
+
+/* ===== Hero ===== */
 .about-hero {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 60px auto 24px;
   padding: 0 20px;
   text-align: center;
 }
 .about-hero h1 {
-  color: #1e3a8a; /* match brand blue */
-  font-size: 2rem;
-  font-weight: 800;
-  margin: 0 0 8px 0;
+  color: var(--mb-blue);
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 900;
+  margin: 0 0 10px 0;
+  letter-spacing: .2px;
 }
 .about-hero p {
-  color: #334155;
+  color: var(--mb-gray-1);
+  margin: 0;
+  font-size: 16px;
 }
 
+/* ===== Sections ===== */
 .about-mission,
 .about-values,
 .about-story,
 .about-team-cta {
-  max-width: 1100px;
-  margin: 24px auto;
+  max-width: 1200px;
+  margin: 28px auto;
   padding: 0 20px;
 }
 
 .about-divider {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 24px auto;
   padding: 0 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #e6edf7;
 }
 
 .about-mission h2,
 .about-values h2,
 .about-story h2,
 .about-team-cta h2 {
-  color: #1e3a8a;
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0 0 10px 0;
+  color: var(--mb-blue);
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 900;
+  margin: 0 0 12px 0;
+  position: relative;
+  display: inline-block;
 }
 
+/* soft underline accent */
+.about-mission h2::after,
+.about-values h2::after,
+.about-story h2::after,
+.about-team-cta h2::after{
+  content:""; display:block; height:4px; width:56%;
+  margin:8px 0 0; border-radius:999px;
+  background:linear-gradient(90deg, var(--mb-accent), rgba(225,17,72,.25));
+}
+
+/* ===== Values grid ===== */
 .values-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 20px;
 }
+
 .value-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  border: 1px solid #e9eef7;
+  border-radius: 16px;
+  padding: 18px 16px;
+  background: var(--mb-card);
+  box-shadow: 0 10px 24px rgba(2,6,23,.06);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.value-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(2,6,23,.10);
+  border-color: #dfe7f5;
 }
 .value-card h3 {
-  margin: 0 0 6px 0;
-  color: #0f172a;
-  font-size: 1.1rem;
+  margin: 0 0 8px 0;
+  color: var(--mb-blue);
+  font-size: 18px;
+  font-weight: 800;
 }
 .value-card p {
   margin: 0;
-  color: #334155;
+  color: var(--mb-gray-2);
   line-height: 1.6;
 }
 
+/* icon inside value cards */
+.value-icon{
+  width:72px; height:72px; object-fit:cover; margin:6px auto 12px; display:block;
+  background:#fff; padding:6px; border-radius:50%;
+  box-shadow: 0 8px 18px rgba(2,6,23,.08), 0 0 0 6px rgba(225,17,72,.08);
+}
+
+/* ===== Story block ===== */
+.about-story p{
+  margin: 0;
+  color: #334155;
+  line-height: 1.7;
+}
+
+/* ===== CTA ===== */
 .about-team-cta {
   text-align: center;
 }
 .about-team-cta .cta {
   display: inline-block;
-  background: #1e3a8a;
+  background: var(--mb-blue);
   color: #fff;
   text-decoration: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 800;
+  box-shadow: 0 4px 0 #142257;
+  transition: .2s;
 }
 .about-team-cta .cta:hover {
-  background: #334ebd;
+  background: var(--mb-accent);
+  box-shadow: 0 4px 0 #9f1239;
+  transform: translateY(-1px);
 }
 
-@media (max-width: 640px) {
-  .about-hero h1 {
-    font-size: 1.5rem;
-  }
-  .values-grid {
-    grid-template-columns: 1fr;
-  }
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .values-grid { grid-template-columns: repeat(2, 1fr); }
 }
+@media (max-width: 640px) {
+  .about-hero h1 { font-size: clamp(22px, 6vw, 28px); }
+  .values-grid { grid-template-columns: 1fr; }
+  .about-team-cta .cta { width: 100%; text-align: center; }
+}
+
+@import url('./index.css');
+
+/* ===== ABOUT: HERO ===== */
+.about-hero{ position:relative; background:#fff; padding:90px 0 70px }
+.about-hero.v2 .hero-wrap{ display:grid; grid-template-columns:1.1fr .9fr; gap:36px; align-items:center }
+.hero-text .eyebrow{ color:#64748b; text-transform:uppercase; font-weight:800; letter-spacing:.12em; font-size:12px; margin:0 0 10px }
+.hero-text .title{ font-size:44px; color:var(--mb-blue); margin:0 0 10px; font-weight:900 }
+.hero-text .lead{ color:#334155; margin:0 0 12px; line-height:1.6 }
+.hero-text .bullets{ margin:12px 0 18px; padding:0 0 0 18px; color:#475569 }
+.hero-text .bullets li{ margin:6px 0 }
+.hero-text .cta-row{ display:flex; gap:10px }
+.cta.primary{ background:var(--mb-blue); color:#fff; text-decoration:none; padding:10px 16px; border-radius:12px; font-weight:800; box-shadow:0 4px 0 #142257 }
+.cta.primary:hover{ filter:brightness(.96) }
+.cta.ghost{ background:transparent; color:var(--mb-blue); border:2px solid var(--mb-blue); text-decoration:none; padding:8px 14px; border-radius:12px; font-weight:800 }
+.hero-img img{ width:100%; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.1) }
+/* About hero gallery */
+.about-hero-gallery{ position:relative; width:100%; max-width:560px; aspect-ratio:16/10; border-radius:20px; overflow:hidden; box-shadow:0 12px 32px rgba(2,6,23,.12), 0 0 0 8px #fff }
+.about-hero-gallery .gh-item{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; opacity:0; transform:scale(1.02); transition:opacity .5s ease, transform .5s ease }
+.about-hero-gallery .gh-item.active{ opacity:1; transform:scale(1) }
+.about-hero-gallery .gh-dots{ position:absolute; left:50%; transform:translateX(-50%); bottom:10px; display:flex; gap:8px; padding:6px 10px; background:rgba(0,0,0,.18); border-radius:999px; backdrop-filter:saturate(120%) blur(2px) }
+.about-hero-gallery .gh-dot{ width:6px; height:6px; border-radius:999px; border:0; background:rgba(255,255,255,.6); cursor:pointer }
+.about-hero-gallery .gh-dot.active{ background:#fff }
+.about-hero .wave{ position:absolute; left:0; right:0; bottom:-1px; height:120px; background:linear-gradient(0deg, var(--mb-red) 0%, #fff 100%) }
+
+/* ===== ABOUT: MISSION ===== */
+.mb-mission{ background:var(--mb-red); color:#fff; padding:90px 0 }
+.mission-wrap{ display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center }
+.mission-text h2{ font-size:32px; font-weight:900; margin:0 0 20px }
+/* Improve mission text contrast and custom bullets */
+.mission-text ul{ list-style:none; padding:0; margin:0 }
+.mission-text li{ position:relative; padding-left:22px; margin:10px 0; color:rgba(255,255,255,.95) }
+.mission-text li::before{ content:""; position:absolute; left:0; top:.55em; width:8px; height:8px; border-radius:50%; background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.18) }
+.mission-img img{ width:100%; border-radius:20px; box-shadow:0 8px 24px rgba(0,0,0,.2) }
+
+/* ===== ABOUT: TEAM ===== */
+.mb-team{ background:var(--mb-bg-soft); padding:100px 0 80px }
+.team-head{ text-align:center; margin:0 0 48px }
+.team-head h2{ color:var(--mb-blue); font-weight:900; font-size:30px; margin:0 0 8px }
+.team-head h2 span{ color:var(--mb-accent) }
+.team-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px }
+.member{ background:#fff; border-radius:18px; text-align:center; padding:20px; box-shadow:0 10px 26px rgba(0,0,0,.06) }
+.member img{ width:100%; border-radius:14px; margin:0 0 16px }
+.member h3{ margin:0 0 6px; color:var(--mb-blue) }
+.member p{ color:var(--mb-gray-1); font-size:15px; margin:0 }
+/* Team header underline accent */
+.team-head h2{ position:relative }
+.team-head h2::after{ content:""; display:block; height:4px; width:56%; margin:8px auto 0; border-radius:999px; background:linear-gradient(90deg, var(--mb-accent), rgba(225,17,72,.25)) }
+/* Team card hover and border */
+.member{ border:1px solid #e9eef7 }
+.member:hover{ transform:translateY(-4px); box-shadow:0 16px 36px rgba(2,6,23,.10); border-color:#dfe7f5; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px){
+  .about-hero.v2 .hero-wrap{ grid-template-columns:1fr; gap:20px }
+}
+@media (max-width: 800px){
+  .about-hero .hero-wrap, .mission-wrap, .team-grid{ grid-template-columns:1fr }
+}
+
 
 
