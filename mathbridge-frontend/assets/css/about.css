@@ -211,12 +211,29 @@
 .member{ border:1px solid #e9eef7 }
 .member:hover{ transform:translateY(-4px); box-shadow:0 16px 36px rgba(2,6,23,.10); border-color:#dfe7f5; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease }
 
+/* ===== ABOUT: COMMITMENTS ===== */
+.mb-commitments{ background:var(--mb-bg-soft); padding:90px 0 }
+.commitments-head{ text-align:center; margin-bottom:48px }
+.commitments-head h2{ color:var(--mb-blue); font-weight:900; font-size:30px; margin:0 0 8px }
+.commitments-head h2 span{ color:var(--mb-accent) }
+.commitments-head p{ color:#5b6b86; margin:0 }
+.commitments-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px }
+.commitment{ background:#fff; border:1px solid #e9eef7; border-radius:18px; padding:26px 22px; text-align:center; box-shadow:0 10px 26px rgba(0,0,0,.06); transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease }
+.commitment:hover{ transform:translateY(-4px); box-shadow:0 16px 36px rgba(2,6,23,.10); border-color:#dfe7f5 }
+.commitment-icon{ width:72px; height:72px; margin:6px auto 14px; background:#fff; padding:10px; border-radius:50%; box-shadow:0 8px 18px rgba(2,6,23,.08), 0 0 0 6px rgba(225,17,72,.08); display:flex; align-items:center; justify-content:center }
+.commitment h3{ margin:0 0 12px; color:var(--mb-blue); font-size:18px; font-weight:900 }
+.commitment p{ margin:0; color:var(--mb-gray-2); line-height:1.6 }
+/* Commitments header underline accent */
+.commitments-head h2{ position:relative }
+.commitments-head h2::after{ content:""; display:block; height:4px; width:56%; margin:8px auto 0; border-radius:999px; background:linear-gradient(90deg, var(--mb-accent), rgba(225,17,72,.25)) }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px){
   .about-hero.v2 .hero-wrap{ grid-template-columns:1fr; gap:20px }
+  .commitments-grid{ grid-template-columns:repeat(2,1fr) }
 }
 @media (max-width: 800px){
-  .about-hero .hero-wrap, .mission-wrap, .team-grid{ grid-template-columns:1fr }
+  .about-hero .hero-wrap, .mission-wrap, .team-grid, .commitments-grid{ grid-template-columns:1fr }
 }
 
 
