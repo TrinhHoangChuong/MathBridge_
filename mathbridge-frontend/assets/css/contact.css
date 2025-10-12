@@ -115,7 +115,8 @@
 }
 
 .contact-form input,
-.contact-form textarea {
+.contact-form textarea,
+.contact-form select {
   padding: 12px 12px;
   border: 1px solid #d6dbe6;
   border-radius: 10px;
@@ -124,7 +125,8 @@
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 .contact-form input:focus,
-.contact-form textarea:focus {
+.contact-form textarea:focus,
+.contact-form select:focus {
   outline: none;
   border-color: var(--mb-blue);
   box-shadow: 0 0 0 3px rgba(30,58,138,0.12);
