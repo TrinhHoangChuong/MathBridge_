@@ -15,14 +15,93 @@
 <header></header>
 
 <main>
-    <section class="mb-careers">
-        <div class="mb-careers-wrap">
-            <header class="mb-careers-head">
-                <h1>Cơ hội nghề nghiệp</h1>
-                <p>Tham gia đội ngũ MathBridge để cùng tạo khác biệt trong giáo dục</p>
-            </header>
+    <!-- HERO / breadcrumb -->
+    <section class="mb-career-hero">
+        <div class="mb-career-hero-wrap">
+            <div class="hero-breadcrumbs">
+                <a href="index.html">Trang chủ</a>
+                <span>/</span>
+                <a href="pages/Careers.html">Tuyển dụng</a>
+            </div>
+            <h1 class="hero-title">Cơ hội nghề nghiệp tại MathBridge</h1>
+            <p class="hero-sub">Cùng xây cầu nối tri thức Toán học đến với hàng nghìn học sinh</p>
+        </div>
+        <div class="mb-career-wave"></div>
+    </section>
 
-            <div id="jobs-list" class="mb-jobs-list"></div>
+    <!-- CONTENT -->
+    <section class="mb-career">
+        <div class="mb-career-wrap">
+            <!-- Sidebar: danh sách vị trí -->
+            <aside class="career-aside">
+                <div class="aside-head">Vị trí đang tuyển</div>
+                <div id="job-list" class="job-list"></div>
+            </aside>
+
+            <!-- Main: chi tiết vị trí -->
+            <article class="career-main">
+                <header class="job-header">
+                    <h2 id="job-title">Đang tải...</h2>
+                    <div id="job-meta" class="job-meta"></div>
+                </header>
+
+                <section class="job-section">
+                    <h3>Mô tả công việc</h3>
+                    <div id="job-desc" class="job-desc"></div>
+                </section>
+
+                <section class="job-section">
+                    <h3>Yêu cầu</h3>
+                    <ul id="job-reqs" class="job-reqs"></ul>
+                </section>
+
+                <section class="job-section">
+                    <h3>Quyền lợi</h3>
+                    <ul id="job-benefits" class="job-benefits"></ul>
+                </section>
+
+                <section id="apply" class="job-section job-apply">
+                    <h3>Apply</h3>
+                    <form id="apply-form" class="apply-form" novalidate>
+                        <div class="grid-2">
+                            <div class="field" data-field="name">
+                                <label for="ap-name">Họ và tên:</label>
+                                <input id="ap-name" type="text" placeholder="VD: Nguyễn Văn A" required>
+                                <div class="hint">Nhập tên của bạn</div>
+                            </div>
+                            <div class="field" data-field="phone">
+                                <label for="ap-phone">Số điện thoại:</label>
+                                <input id="ap-phone" type="tel" placeholder="Nhập..." required>
+                                <div class="hint">Số điện thoại không hợp lệ</div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="field" data-field="email">
+                                <label for="ap-email">Email:</label>
+                                <input id="ap-email" type="email" placeholder="Nhập email..." required>
+                                <div class="hint">Địa chỉ email là bắt buộc</div>
+                            </div>
+                            <div class="field" data-field="position">
+                                <label for="ap-position">Vị trí ứng tuyển:</label>
+                                <input id="ap-position" type="text" readonly value="">
+                            </div>
+                        </div>
+
+                        <div class="upload-row">
+                            <label for="ap-file">Tải hồ sơ CV / Bằng cấp:</label>
+                            <div class="upload-inline">
+                                <input id="ap-file" type="file" accept=".jpg,.jpeg,.png,.pdf">
+                                <span class="note">Hỗ trợ định dạng: JPEG, JPG, PNG, PDF. Dung lượng tối đa 2 MB</span>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button type="submit" class="cta submit">Gửi thông tin ứng tuyển</button>
+                        </div>
+                    </form>
+                </section>
+            </article>
         </div>
     </section>
 </main>
@@ -30,14 +109,14 @@
 <footer></footer>
 
 <script>
-    window.addEventListener('load', () => {
-        includePartials({
-          header: 'partials/header.html',
-          footer: 'partials/footer.html'
-        });
+  window.addEventListener('load', () => {
+    includePartials({
+      header: 'partials/header.html',
+      footer: 'partials/footer.html'
     });
+  });
 </script>
 </body>
 </html>
 
-
+ 
