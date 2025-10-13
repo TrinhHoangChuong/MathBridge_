@@ -2,230 +2,407 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MathBridge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>MathBridge — Cầu nối Toán quốc tế</title>
     <base href="./">
-    <link rel="stylesheet" href="assets/css/header.css" />
-    <link rel="stylesheet" href="assets/css/footer.css" />
-    <link rel="stylesheet" href="assets/css/index.css" />
+
+    <!-- CSS core -->
+    <link rel="stylesheet" href="assets/css/header.css"/>
+    <link rel="stylesheet" href="assets/css/footer.css"/>
+    <link rel="stylesheet" href="assets/css/index.css"/>
+
+    <!-- Swiper (Hero slider) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+    <!-- Icon set (Phosphor) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <script src="./assets/js/utils/includePartials.js" defer></script>
 </head>
-<body>
+
+<body class="page-index">
 <header></header>
 
-<main>
-    <!-- SECTION 1: HERO (2 slide auto) -->
-    <section class="mb-hero v2">
-        <div class="mb-hero-stage">
-            <!-- ===== Slide 1 ===== -->
-            <div class="mb-hero-slide s1">
-                <div class="mb-hero-wrap">
-                    <figure class="mb-hero-figure">
-                        <img class="mb-hero-img" src="assets/img/hero1.jpg" alt="Lớp học MathBridge">
-                    </figure>
-
-                    <div class="mb-hero-right">
-                        <p class="eyebrow">Trung tâm Toán học</p>
-                        <h1 class="title">MATHBRIDGE</h1>
-                        <ul class="bullets">
-                            <li>Giỏi chuyên môn – Giỏi nghiệp vụ sư phạm</li>
-                            <li>Tận tâm – Kỹ lưỡng – Chuyên nghiệp – Đạo đức tốt</li>
-                        </ul>
-                        <div class="script-lines">
-                            <div class="line red">Dạy trọn kiến thức</div>
-                            <div class="line blue">Kèm trọn trái tim</div>
-                        </div>
-                        <!-- Slide 1: không CTA -->
-                    </div>
-                </div>
-                <div class="mb-hero-wave"></div>
-            </div>
-
-            <!-- ===== Slide 2 ===== -->
-            <div class="mb-hero-slide s2">
-                <div class="mb-hero-wrap">
-                    <figure class="mb-hero-figure">
-                        <img class="mb-hero-img" src="assets/img/hero2.jpg" alt="Giáo viên hướng dẫn học sinh">
-                    </figure>
-
-                    <div class="mb-hero-right">
-                        <h2 class="sup-title">
-                            Thấu nỗi lòng cha mẹ trên <span>chặng đường học của con</span>
-                        </h2>
-                        <ul class="bullets">
-                            <li>Ngày con nhỏ thì sợ trễ bỏ lỡ thời điểm vàng để học <b>piano</b></li>
-                            <li>Tuổi đi học lo con chán nản, không bắt kịp <b>chương trình quốc tế</b></li>
-                            <li>Lúc định hướng đi du học thì băn khoăn nơi dạy để đạt đủ điểm </li>
-                        </ul>
-                        <p class="highlight">Hãy để <b>MATHBRIDGE</b> thay bạn theo sát việc học của trẻ!</p>
-                        <a class="cta" href="#">Giải pháp tại đây</a>
-                    </div>
-                </div>
-                <div class="mb-hero-wave"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION 2: Stats -->
-    <section class="mb-stats">
-        <div class="mb-stats-wrap">
-            <div class="stat">
-                <div class="num">10+</div>
-                <div class="note">năm kinh nghiệm giảng<br>dạy tư vấn giáo dục</div>
-            </div>
-
-            <div class="stat">
-                <div class="num">5000+</div>
-                <div class="note">gia sư trên khắp cả nước</div>
-            </div>
-
-            <div class="stat">
-                <div class="num">75000+</div>
-                <div class="note">học viên đạt target</div>
-            </div>
-
-            <div class="stat">
-                <div class="num">100000+</div>
-                <div class="note">buổi học thành công</div>
-            </div>
+<main id="main-content" role="main">
+    <!-- ========== SECTION 1: HERO ========== -->
+    <section class="hero hero--pro" aria-label="Giới thiệu MathBridge">
+        <div class="hero-bg" aria-hidden="true">
+            <div class="bg-blob --red"></div>
+            <div class="bg-blob --blue"></div>
+            <div class="bg-grid"></div>
         </div>
 
-        <div class="mb-stats-wave"></div>
-    </section>
-
-    <!-- SECTION 3: Đối tượng học viên -->
-    <section class="mb-target">
-        <div class="mb-target-wrap">
-            <!-- Ảnh minh họa bên trái -->
-            <div class="mb-target-img">
-                <img src="assets/img/hero3.jpg" alt="Học sinh MathBridge học cùng giáo viên">
-                <div class="caption">
-                    Vươn tầm thành công với Toán học quốc tế cùng <span>MathBridge!</span>
-                </div>
-            </div>
-
-            <!-- Nội dung bên phải -->
-            <div class="mb-target-content">
-                <h2 class="title">Khóa học này <span>dành cho ai?</span></h2>
-
-                <div class="targets">
-                    <div class="target">
-                        <div class="circle">1</div>
-                        <div class="text">
-                            <h3>Trẻ em và học sinh</h3>
-                            <p>
-                                Dành cho học sinh từ 6 đến 17 tuổi, giúp phát triển tư duy logic
-                                và kỹ năng toán học từ cơ bản đến nâng cao theo chuẩn quốc tế.
-                            </p>
+        <div class="hero__container">
+            <div class="swiper hero-swiper" role="region" aria-roledescription="carousel" aria-label="Slide giới thiệu" aria-live="polite">
+                <div class="swiper-wrapper">
+                    <!-- Slide 1 -->
+                    <article class="swiper-slide hero-slide">
+                        <div class="hero__grid">
+                            <div class="hero__content" data-swiper-parallax="-80">
+                                <p class="eyebrow">Trung tâm Toán học</p>
+                                <h1 class="title">Cầu nối <span class="accent">Toán quốc tế</span> cho học sinh THPT</h1>
+                                <p class="lead">Lộ trình cá nhân hoá • Giáo trình IGCSE / IB / AP / SAT • Theo dõi định kỳ cho phụ huynh.</p>
+                                <ul class="points">
+                                    <li><i class="ph ph-check-circle"></i> Nền tảng vững – bứt phá điểm số</li>
+                                    <li><i class="ph ph-target"></i> Đặt mục tiêu rõ ràng, đo lường minh bạch</li>
+                                </ul>
+                                <div class="cta">
+                                    <a href="pages/course.html" class="btn btn--primary">Khám phá khóa học</a>
+                                </div>
+                            </div>
+                            <figure class="hero__art" data-swiper-parallax="80">
+                                <img src="assets/img/hero1.jpg" alt="Lớp học MathBridge năng động" />
+                            </figure>
                         </div>
-                    </div>
+                    </article>
 
-                    <div class="target">
-                        <div class="circle">2</div>
-                        <div class="text">
-                            <h3>Tất cả trình độ học sinh</h3>
-                            <p>
-                                Phù hợp cho mọi trình độ – từ người mới bắt đầu đến học sinh
-                                muốn nâng cao kiến thức Toán học quốc tế (Cambridge, IB, AP...).
-                            </p>
+                    <!-- Slide 2 -->
+                    <article class="swiper-slide hero-slide">
+                        <div class="hero__grid">
+                            <div class="hero__content" data-swiper-parallax="-80">
+                                <h2 class="subtitle">Thấu hiểu phụ huynh, <span class="accent">đồng hành</span> cùng con</h2>
+                                <p class="lead">Theo dõi tiến độ, báo cáo định kỳ, rèn tự học hiệu quả.</p>
+                                <ul class="points">
+                                    <li><i class="ph ph-shield-check"></i> Kỷ luật tích cực • Mentor tận tâm</li>
+                                    <li><i class="ph ph-chart-line-up"></i> Đo lường theo chuẩn quốc tế</li>
+                                </ul>
+                            </div>
+                            <figure class="hero__art" data-swiper-parallax="80">
+                                <img src="assets/img/hero2.jpg" alt="Giáo viên kèm cặp tận tâm" />
+                            </figure>
                         </div>
-                    </div>
+                    </article>
 
-                    <div class="target">
-                        <div class="circle">3</div>
-                        <div class="text">
-                            <h3>Phụ huynh quan tâm giáo dục</h3>
-                            <p>
-                                Dành cho phụ huynh muốn tìm môi trường học Toán chất lượng, uy tín,
-                                giúp con hứng thú và tự tin chinh phục các kỳ thi quốc tế.
-                            </p>
+                    <!-- Slide 3 -->
+                    <article class="swiper-slide hero-slide">
+                        <div class="hero__grid">
+                            <div class="hero__content" data-swiper-parallax="-80">
+                                <h2 class="subtitle">Từ nền tảng vững vàng đến <span class="accent">bứt phá</span></h2>
+                                <p class="lead">Luyện đề mô phỏng thi thật, chiến lược làm bài thông minh.</p>
+                                <ul class="points">
+                                    <li><i class="ph ph-compass-tool"></i> Lộ trình theo năng lực</li>
+                                    <li><i class="ph ph-rocket"></i> Bứt tốc mục tiêu điểm</li>
+                                </ul>
+                                <div class="cta">
+                                    <a href="pages/contact.html" class="btn btn--primary">Đăng ký tư vấn</a>
+                                </div>
+                            </div>
+                            <figure class="hero__art" data-swiper-parallax="80">
+                                <img src="assets/img/hero3.jpg" alt="Học sinh tự tin chinh phục kỳ thi" />
+                            </figure>
                         </div>
-                    </div>
-
-                    <div class="target">
-                        <div class="circle">4</div>
-                        <div class="text">
-                            <h3>Học sinh muốn nâng cao trình độ</h3>
-                            <p>
-                                Phù hợp với những bạn đã nắm vững nền tảng Toán học và mong muốn
-                                thử thách bản thân với các nội dung học chuyên sâu, nâng cao.
-                            </p>
-                        </div>
-                    </div>
+                    </article>
                 </div>
 
-                <a href="#" class="cta">ĐĂNG KÝ TƯ VẤN</a>
+                <!-- Controls -->
+                <div class="hero-controls">
+                    <button class="hero-nav hero-prev" aria-label="Slide trước"><i class="ph ph-caret-left"></i></button>
+                    <div class="hero-pagination"></div>
+                    <button class="hero-nav hero-next" aria-label="Slide sau"><i class="ph ph-caret-right"></i></button>
+                </div>
             </div>
         </div>
+
+        <div class="hero-wave" aria-hidden="true"></div>
     </section>
 
-    <!-- SECTION 4: Tại sao chọn MathBridge -->
-    <section class="mb-why">
-        <div class="mb-why-wrap">
-            <header class="mb-why-head">
-                <h2>Tại sao <span>nên chọn MathBridge</span></h2>
-                <p>Chúng tôi khác biệt vì hiểu đúng nhu cầu học Toán quốc tế của bạn</p>
+    <!-- ========== SECTION 2: AUDIENCE ========== -->
+    <section id="audience" class="audience section--soft" aria-labelledby="aud-title">
+        <div class="bridge-bead" aria-hidden="true"></div>
+        <div class="container">
+            <header class="section-head">
+                <h2 id="aud-title" class="section-title">
+                    Khóa học này <span class="accent">dành cho ai?</span>
+                </h2>
+                <div class="section-strap" aria-hidden="true"></div>
             </header>
 
-            <div class="mb-why-grid">
-                <!-- Card 1 -->
-                <article class="why-card">
-                    <img src="assets/img/hero4.jpg" alt="" class="why-icon">
-                    <h3>Chương trình theo chuẩn quốc tế</h3>
-                    <div class="why-divider"></div>
-                    <p>
-                        Giáo trình bám sát <b>Cambridge • IB • AP</b> và Toán nâng cao Việt Nam,
-                        thiết kế theo <b>từng cấp lớp</b> với lộ trình rõ ràng từ nền tảng đến chuyên sâu.
-                    </p>
+            <div class="audience__grid">
+                <div class="audience__left">
+                    <figure class="audience__figure">
+                        <img src="assets/img/hero8.jpg" alt="Học sinh cùng giáo viên" />
+                        <figcaption class="audience__caption">
+                            Vươn tầm thành công với Toán học quốc tế cùng <b>MathBridge</b>
+                        </figcaption>
+                    </figure>
+                </div>
+
+                <div class="audience__right">
+                    <article class="aud-card">
+                        <div class="aud-card__badge">01</div>
+                        <div class="aud-card__text">
+                            <h3 class="aud-card__title">Học sinh lớp 9–12</h3>
+                            <p class="aud-card__desc">Nền tảng → nâng cao, theo chuẩn IGCSE/IB/AP/SAT và Toán nâng cao VN.</p>
+                        </div>
+                    </article>
+
+                    <article class="aud-card">
+                        <div class="aud-card__badge">02</div>
+                        <div class="aud-card__text">
+                            <h3 class="aud-card__title">Mọi trình độ</h3>
+                            <p class="aud-card__desc">Từ mất gốc đến bứt phá top — lộ trình cá nhân hóa theo mục tiêu.</p>
+                        </div>
+                    </article>
+
+                    <article class="aud-card">
+                        <div class="aud-card__badge">03</div>
+                        <div class="aud-card__text">
+                            <h3 class="aud-card__title">Phụ huynh đồng hành</h3>
+                            <p class="aud-card__desc">Theo dõi định kỳ, báo cáo tiến độ minh bạch, cố vấn chọn kỳ thi phù hợp.</p>
+                        </div>
+                    </article>
+
+                    <div class="aud__cta">
+                        <a href="#" class="btn btn--primary">Đăng ký tư vấn</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section-wave" aria-hidden="true"></div>
+    </section>
+
+    <!-- ========== SECTION 3: REASONS ========== -->
+    <section id="reasons" class="reasons" aria-labelledby="reasons-title">
+        <div class="bridge-bead" aria-hidden="true"></div>
+        <div class="container">
+            <header class="section-head">
+                <h2 id="reasons-title" class="section-title">
+                    Tại sao <span class="accent">nên chọn MathBridge</span>
+                </h2>
+                <div class="section-strap" aria-hidden="true"></div>
+                <p class="section-sub">Khác biệt đến từ lộ trình chuẩn – phương pháp đúng – người thầy phù hợp</p>
+            </header>
+
+            <div class="reason-grid">
+                <article class="reason-card">
+                    <i class="ph ph-books reason-card__icon" aria-hidden="true"></i>
+                    <h3 class="reason-card__title">Chương trình theo chuẩn quốc tế</h3>
+                    <div class="reason-card__divider"></div>
+                    <p class="reason-card__desc">Giáo trình bám sát <b>IGCSE • IB • AP • SAT</b>, thiết kế theo từng cấp lớp.</p>
                 </article>
 
-                <!-- Card 2 -->
-                <article class="why-card">
-                    <img src="assets/img/hero5.jpg" alt="" class="why-icon">
-                    <h3>Đội ngũ giáo viên giàu kinh nghiệm</h3>
-                    <div class="why-divider"></div>
-                    <p>
-                        Giảng dạy bởi giáo viên đạt chứng chỉ quốc tế, kinh nghiệm luyện thi
-                        <b>IGCSE/IB/AP/SAT</b>, phương pháp sư phạm hiện đại, tận tâm đồng hành.
-                    </p>
+                <article class="reason-card">
+                    <i class="ph ph-chalkboard-teacher reason-card__icon" aria-hidden="true"></i>
+                    <h3 class="reason-card__title">Giáo viên giàu kinh nghiệm</h3>
+                    <div class="reason-card__divider"></div>
+                    <p class="reason-card__desc">Sư phạm hiện đại, luyện thi nhiều năm, đạo đức nghề nghiệp vững vàng.</p>
                 </article>
 
-                <!-- Card 3 -->
-                <article class="why-card">
-                    <img src="assets/img/hero6.jpg" alt="" class="why-icon">
-                    <h3>Phương pháp học tối ưu</h3>
-                    <div class="why-divider"></div>
-                    <p>
-                        Học chủ động, <b>cá nhân hóa mục tiêu</b>, hệ thống bài tập – đánh giá theo chuẩn quốc tế,
-                        tăng tốc tư duy, vững kỹ năng giải quyết vấn đề.
-                    </p>
+                <article class="reason-card">
+                    <i class="ph ph-brain reason-card__icon" aria-hidden="true"></i>
+                    <h3 class="reason-card__title">Phương pháp học tối ưu</h3>
+                    <div class="reason-card__divider"></div>
+                    <p class="reason-card__desc">Học chủ động, <b>cá nhân hóa mục tiêu</b>, bài tập – đánh giá theo chuẩn.</p>
                 </article>
 
-                <!-- Card 4 -->
-                <article class="why-card">
-                    <img src="assets/img/hero7.jpg" alt="" class="why-icon">
-                    <h3>Lớp học hiệu quả & linh hoạt</h3>
-                    <div class="why-divider"></div>
-                    <p>
-                        Sĩ số <b>tối ưu</b>, theo dõi tiến độ từng học viên, học <b>trực tuyến</b> hoặc
-                        <b>trực tiếp</b>; phụ huynh nhận báo cáo định kỳ, sẵn sàng cho các kỳ thi quốc tế.
-                    </p>
+                <article class="reason-card">
+                    <i class="ph ph-laptop reason-card__icon" aria-hidden="true"></i>
+                    <h3 class="reason-card__title">Linh hoạt & theo dõi sát</h3>
+                    <div class="reason-card__divider"></div>
+                    <p class="reason-card__desc">Online/Offline, sĩ số tối ưu, báo cáo định kỳ cho phụ huynh.</p>
                 </article>
+            </div>
+        </div>
+        <div class="section-wave --red" aria-hidden="true"></div>
+    </section>
+
+    <!-- ========== SECTION 4: STATS ========== -->
+    <section id="stats" class="stats" aria-label="Thành tựu MathBridge">
+        <div class="bridge-bead --light" aria-hidden="true"></div>
+        <div class="container">
+            <div class="stats__wrap">
+                <div class="stat">
+                    <div class="stat__num">10+</div>
+                    <div class="stat__note">năm kinh nghiệm giảng dạy<br/>và tư vấn giáo dục</div>
+                </div>
+                <div class="stat">
+                    <div class="stat__num">5.000+</div>
+                    <div class="stat__note">gia sư trên khắp cả nước</div>
+                </div>
+                <div class="stat">
+                    <div class="stat__num">75.000+</div>
+                    <div class="stat__note">học viên đạt mục tiêu</div>
+                </div>
+                <div class="stat">
+                    <div class="stat__num">100.000+</div>
+                    <div class="stat__note">buổi học thành công</div>
+                </div>
+            </div>
+
+            <div class="stats__cta">
+                <a href="#" class="btn btn--inverse">Đăng ký tư vấn ngay</a>
             </div>
         </div>
     </section>
 
+    <!-- ========== SECTION 5: TRACK ========== -->
+    <section id="track" class="track section--soft" aria-labelledby="track-title">
+        <div class="bridge-bead" aria-hidden="true"></div>
+        <div class="container">
+            <header class="section-head">
+                <h2 id="track-title" class="section-title"></h2>
+                <div class="section-strap" aria-hidden="true"></div>
+            </header>
+
+            <div class="track-list" data-accordion="single">
+                <!-- 01 -->
+                <article class="track-item">
+                    <div class="track-row">
+                        <span class="track-num">01</span>
+                        <button class="acc-toggle" aria-expanded="true" aria-controls="track-panel-1" id="track-control-1">
+                            <span class="acc-title">Cam kết hiệu quả – Cá nhân hoá 100%</span>
+                            <span class="acc-sign" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div id="track-panel-1" class="acc-panel" role="region" aria-labelledby="track-control-1">
+                        <div class="acc-body">
+                            <div class="acc-icon" aria-hidden="true">
+                                <i class="ph ph-seal-check"></i>
+                            </div>
+                            <ul class="tick-list">
+                                <li>Học <b>1 kèm 1</b> hoặc nhóm nhỏ; sửa lỗi ngay lập tức.</li>
+                                <li>Lộ trình riêng theo mục tiêu <b>IGCSE/IB/AP/SAT</b> (lớp 9→12).</li>
+                                <li><b>Cam kết đầu ra</b> bằng thoả thuận đào tạo.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 02 -->
+                <article class="track-item">
+                    <div class="track-row">
+                        <span class="track-num">02</span>
+                        <button class="acc-toggle" aria-expanded="false" aria-controls="track-panel-2" id="track-control-2">
+                            <span class="acc-title">Giáo viên chất lượng – Tự chọn theo nhu cầu</span>
+                            <span class="acc-sign" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div id="track-panel-2" class="acc-panel" role="region" aria-labelledby="track-control-2" hidden>
+                        <div class="acc-body">
+                            <div class="acc-icon" aria-hidden="true">
+                                <i class="ph ph-chalkboard-teacher"></i>
+                            </div>
+                            <ul class="tick-list">
+                                <li>GV luyện thi <b>IGCSE/IB/AP/SAT</b> nhiều năm, sư phạm hiện đại.</li>
+                                <li>Xem hồ sơ GV, <b>tự chọn</b> người phù hợp phong cách học.</li>
+                                <li>Mentor theo sát – báo cáo định kỳ cho phụ huynh.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 03 -->
+                <article class="track-item">
+                    <div class="track-row">
+                        <span class="track-num">03</span>
+                        <button class="acc-toggle" aria-expanded="false" aria-controls="track-panel-3" id="track-control-3">
+                            <span class="acc-title">Công nghệ hiện đại – Học thông minh hơn</span>
+                            <span class="acc-sign" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div id="track-panel-3" class="acc-panel" role="region" aria-labelledby="track-control-3" hidden>
+                        <div class="acc-body">
+                            <div class="acc-icon" aria-hidden="true">
+                                <i class="ph ph-cpu"></i>
+                            </div>
+                            <ul class="tick-list">
+                                <li>Dashboard tiến độ; phân tích lỗi theo chuyên đề.</li>
+                                <li>Ngân hàng đề mô phỏng thi thật; chiến lược làm bài.</li>
+                                <li>Nhắc học, sổ tay công thức, micro-lesson video.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 04 -->
+                <article class="track-item">
+                    <div class="track-row">
+                        <span class="track-num">04</span>
+                        <button class="acc-toggle" aria-expanded="false" aria-controls="track-panel-4" id="track-control-4">
+                            <span class="acc-title">Chi phí hợp lý – Học linh hoạt</span>
+                            <span class="acc-sign" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div id="track-panel-4" class="acc-panel" role="region" aria-labelledby="track-control-4" hidden>
+                        <div class="acc-body">
+                            <div class="acc-icon" aria-hidden="true">
+                                <i class="ph ph-wallet"></i>
+                            </div>
+                            <ul class="tick-list">
+                                <li>Lịch học linh hoạt (online/offline), nhóm nhỏ tối ưu chi phí.</li>
+                                <li>Học thử miễn phí; học bù – bảo lưu minh bạch.</li>
+                                <li>Nhiều gói phù hợp cấp lớp 9→12 và mục tiêu điểm.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="track-cta">
+                <a href="#" class="btn btn--primary">Đăng ký tư vấn lộ trình 9→12</a>
+            </div>
+        </div>
+        <div class="section-wave" aria-hidden="true"></div>
+    </section>
 </main>
 
 <footer></footer>
 
+<!-- JS: Swiper -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
     window.addEventListener('load', () => {
-      includePartials({
-        header: 'partials/header.html',
-        footer: 'partials/footer.html'
+      includePartials({ header: 'partials/header.html', footer: 'partials/footer.html' });
+
+      new Swiper('.hero-swiper', {
+        loop: true,
+        autoplay: { delay: 5500, disableOnInteraction: false, pauseOnMouseEnter: true },
+        slidesPerView: 1,
+        speed: 650,
+        a11y: true,
+        keyboard: { enabled: true },
+        parallax: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        pagination: { el: '.hero-pagination', clickable: true },
+        navigation: { nextEl: '.hero-next', prevEl: '.hero-prev' }
       });
     });
+
+    /* Accordion */
+    (function () {
+      const root = document.querySelector('.track-list');
+      if (!root) return;
+
+      const single = root.getAttribute('data-accordion') === 'single';
+      const toggles = root.querySelectorAll('.acc-toggle');
+
+      function close(btn) {
+        const panel = document.getElementById(btn.getAttribute('aria-controls'));
+        btn.setAttribute('aria-expanded', 'false');
+        panel.hidden = true;
+      }
+      function open(btn) {
+        const panel = document.getElementById(btn.getAttribute('aria-controls'));
+        btn.setAttribute('aria-expanded', 'true');
+        panel.hidden = false;
+      }
+
+      toggles.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const expanded = btn.getAttribute('aria-expanded') === 'true';
+          if (single) toggles.forEach(b => { if (b !== btn) close(b); });
+          expanded ? close(btn) : open(btn);
+        });
+
+        btn.addEventListener('keydown', (e) => {
+          const list = Array.from(toggles);
+          const i = list.indexOf(btn);
+          if (e.key === 'ArrowDown') { e.preventDefault(); list[Math.min(i + 1, list.length - 1)].focus(); }
+          if (e.key === 'ArrowUp')   { e.preventDefault(); list[Math.max(i - 1, 0)].focus(); }
+          if (e.key === 'Home')      { e.preventDefault(); list[0].focus(); }
+          if (e.key === 'End')       { e.preventDefault(); list[list.length - 1].focus(); }
+        });
+      });
+    })();
 </script>
 </body>
 </html>
