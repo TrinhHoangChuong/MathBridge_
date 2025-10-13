@@ -1,27 +1,143 @@
-/* Chỉ áp dụng cho footer – KHÔNG đụng tới :root hay selector chung */
-.mb-footer{background:#1d1d1f;color:#f5f5f7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;padding:40px 0 20px}
-.mb-footer *{box-sizing:border-box}
+/* ===================== MathBridge Footer (Dark, Brand-synced) ===================== */
+/* Chỉ áp dụng trong phạm vi .mb-footer */
+.mb-footer{
+  --mb-dark: #0b0c10;
+  --mb-dark-2: #121318;
+  --mb-ink: #f5f5f7;
+  --mb-ink-dim: #cfd3df;
+  --mb-ink-soft: #d8dbe6;
+  --mb-accent: #e11d48;   /* đỏ thương hiệu (match header) */
+  --mb-accent-2: #2563eb; /* xanh dương phụ để blend gradient */
+  --mb-pill-bg: #1a1b20;
 
-.mb-footer-wrap{max-width:1200px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:28px}
-.mb-fcol{min-width:240px}
+  background: linear-gradient(180deg, var(--mb-dark) 0%, var(--mb-dark-2) 100%);
+  color: var(--mb-ink);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Be Vietnam Pro", Arial, sans-serif;
+  padding: 44px 0 22px;
+  position: relative;
+}
 
-.mb-f-logo{display:inline-block;color:#ffcc00;font-size:22px;font-weight:900;letter-spacing:.4px;text-decoration:none}
-.mb-f-desc{margin:10px 0 14px;color:#ddd;line-height:1.6}
+/* Dải gradient “nối mạch” với header ở cạnh trên */
+.mb-footer::before{
+  content:"";
+  position:absolute; inset:0 0 auto 0; height:2px;
+  background: linear-gradient(90deg, var(--mb-accent), var(--mb-accent-2));
+  opacity:.85;
+}
 
-.mb-f-title{margin:0 0 10px;color:#ffcc00;font-size:16px}
+/* Halo nhẹ dưới để khối footer nổi dịu (giống vibe shadow header) */
+.mb-footer::after{
+  content:"";
+  position:absolute; left:0; right:0; top:-18px; height:28px; pointer-events:none;
+  background: radial-gradient(120% 80% at 50% 120%, rgba(225,29,72,.22), rgba(0,0,0,0) 60%);
+  filter: blur(20px);
+  opacity:.25;
+}
 
-.mb-f-list,.mb-f-links{padding:0;margin:0;list-style:none}
-.mb-f-list li,.mb-f-links li{margin-bottom:8px}
-.mb-f-list a,.mb-f-links a{color:#f5f5f7;text-decoration:none}
-.mb-f-list a:hover,.mb-f-links a:hover{color:#ffcc00}
-.mb-f-address strong{color:#fff}
+.mb-footer *{ box-sizing: border-box }
 
-.mb-f-social{margin-top:14px}
-.mb-f-social span{display:block;margin-bottom:6px;color:#eee;font-weight:700}
-.mb-f-social-icons{display:flex;gap:10px}
-.mb-f-social-icons a{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#2a2a2e;color:#fff;text-decoration:none;transition:transform .12s ease,filter .15s ease}
-.mb-f-social-icons a:hover{filter:brightness(1.1);transform:translateY(-1px)}
+/* Wrap khớp max-width của header */
+.mb-footer-wrap{
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 28px;
+}
+.mb-fcol{ min-width: 240px }
 
-.mb-footer-bottom{max-width:1200px;margin:18px auto 0;padding:14px 20px 0;border-top:1px solid #2b2b2e;text-align:center;color:#bfc3cf;font-size:14px}
+/* ========== Brand block ========== */
+.mb-f-logo{
+  display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+}
+.mb-f-mark{
+  width:28px; height:28px; border-radius:999px; flex:0 0 28px;
+  background: linear-gradient(135deg, var(--mb-accent), var(--mb-accent-2));
+  box-shadow: 0 10px 28px rgba(225,29,72,.22), inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.mb-f-brand{
+  font-size: 22px; font-weight: 900; letter-spacing: .4px;
+  background: linear-gradient(135deg, var(--mb-accent), var(--mb-accent-2));
+  -webkit-background-clip:text; background-clip:text; color: transparent;
+}
 
-@media (max-width:900px){.mb-footer-wrap{grid-template-columns:1fr;gap:20px}}
+/* Mô tả & nhóm text */
+.mb-f-desc{
+  margin: 10px 0 14px; color: var(--mb-ink-soft); line-height:1.65;
+}
+
+/* Tiêu đề cột */
+.mb-f-title{
+  margin: 0 0 10px; color: var(--mb-ink);
+  font-size: 16px; font-weight: 800; letter-spacing:.2px;
+  position: relative; padding-bottom: 8px;
+}
+.mb-f-title::after{
+  content:""; position:absolute; left:0; bottom:0; width:56px; height:3px; border-radius:999px;
+  background: linear-gradient(135deg, var(--mb-accent), var(--mb-accent-2));
+}
+
+/* Danh sách & link */
+.mb-f-list, .mb-f-links{ padding:0; margin:0; list-style:none }
+.mb-f-list li, .mb-f-links li{ margin-bottom: 8px }
+
+.mb-f-list a, .mb-f-links a{
+  color: var(--mb-ink); text-decoration:none; position:relative;
+  transition: color .15s ease, opacity .15s ease, transform .05s ease, text-underline-offset .15s ease;
+  text-underline-offset: 3px;
+}
+.mb-f-list a:hover, .mb-f-links a:hover{
+  color: #fff; text-decoration: underline;
+}
+.mb-f-list a:active, .mb-f-links a:active{ transform: translateY(1px) }
+.mb-f-address strong{ color: #fff }
+
+/* Social (pill + bóng đồng bộ header) */
+.mb-f-social{ margin-top: 14px }
+.mb-f-social span{ display:block; margin-bottom: 6px; color:#e6e8f0; font-weight:700 }
+.mb-f-social-icons{ display:flex; gap:10px }
+.mb-f-social-icons a{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:999px;
+  background: var(--mb-pill-bg); color:#fff; text-decoration:none;
+  box-shadow: 0 6px 16px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.04);
+  transition: transform .12s ease, filter .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.mb-f-social-icons a:hover{
+  filter: brightness(1.06); transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
+  background: linear-gradient(135deg, rgba(225,29,72,.18), rgba(37,99,235,.18));
+}
+.mb-f-social-icons i{ font-size: 18px }
+
+/* Bản quyền */
+.mb-footer-bottom{
+  max-width:1180px; margin: 18px auto 0; padding: 14px 20px 0;
+  border-top: 1px solid rgba(255,255,255,.08); text-align:center;
+  color: var(--mb-ink-dim); font-size: 14px;
+}
+
+/* Trợ năng: ẩn thị giác nhưng đọc màn hình thấy */
+.mb-f-visually-hidden{
+  position:absolute!important; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; border:0;
+}
+
+/* Focus ring đồng bộ đỏ thương hiệu */
+.mb-f-links a:focus-visible,
+.mb-f-list a:focus-visible,
+.mb-f-social-icons a:focus-visible{
+  outline: 3px solid color-mix(in srgb, var(--mb-accent) 80%, transparent);
+  outline-offset: 3px; border-radius: 10px;
+}
+
+/* Responsive */
+@media (max-width: 900px){
+  .mb-footer-wrap{ grid-template-columns: 1fr; gap: 20px }
+}
+
+/* Giảm chuyển động nếu người dùng chọn */
+@media (prefers-reduced-motion: reduce){
+  .mb-f-social-icons a, .mb-f-links a, .mb-f-list a{ transition: none !important }
+}
