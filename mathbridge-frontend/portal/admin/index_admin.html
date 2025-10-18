@@ -11,14 +11,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
-    <!-- Lucide, Chart.js, day.js -->
+    <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 
     <!-- App stylesheet -->
-    <base href="../">
-    <link rel="stylesheet" href="assets/css/admin.css" />
+    <link rel="stylesheet" href="css/admin.css" />
 </head>
 <body>
 <div class="app">
@@ -43,27 +40,6 @@
         </div>
 
         <div class="right">
-            <button class="btn brand" id="quickAddBtn" aria-haspopup="dialog" aria-controls="quickAddModal">
-                <i data-lucide="plus" aria-hidden="true"></i>
-                <span class="hide-sm">Thêm nhanh</span>
-            </button>
-
-            <div class="notif-wrapper">
-                <button class="icon-btn" id="notifBtn" aria-haspopup="true" aria-expanded="false" aria-controls="notifPopover" aria-label="Thông báo" title="Thông báo">
-                    <i data-lucide="bell" aria-hidden="true"></i>
-                    <span class="badge" id="notifBadge">3</span>
-                </button>
-
-                <div class="popover" id="notifPopover" role="dialog" aria-modal="false" aria-label="Thông báo mới">
-                    <div class="popover-header">
-                        <strong>Thông báo</strong>
-                        <button class="icon-btn sm" id="notifClose" aria-label="Đóng thông báo"><i data-lucide="x"></i></button>
-                    </div>
-                    <ul class="notif-list" id="notifList"></ul>
-                    <div class="popover-footer"><a href="#" class="link">Xem tất cả</a></div>
-                </div>
-            </div>
-
             <div class="profile">
                 <button class="profile-btn" id="profileBtn" aria-haspopup="true" aria-expanded="false">
                     <img class="avatar" src="https://i.pravatar.cc/40?img=13" alt="Avatar người dùng" />
@@ -84,14 +60,13 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar" aria-label="Điều hướng chính">
             <nav class="nav">
-                <!-- MỤC BẠN YÊU CẦU -->
-                <a class="nav-item active" href="#" data-key="dashboard" title="Dashboard">
+                <a class="nav-item active" href="index_admin.html" data-key="dashboard" title="Dashboard">
                     <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
                 </a>
-                <a class="nav-item" href="#" data-key="lecturers" title="Giảng Viên">
+                <a class="nav-item" href="Teacher_admin.html" data-key="lecturers" title="Giảng Viên">
                     <i data-lucide="graduation-cap"></i><span>Giảng Viên</span>
                 </a>
-                <a class="nav-item" href="#" data-key="classes" title="Lớp Học">
+                <a class="nav-item" href="LopHoc.html" data-key="classes" title="Lớp Học">
                     <i data-lucide="layers"></i><span>Lớp Học</span>
                 </a>
                 <a class="nav-item" href="#" data-key="contracts" title="Hợp đồng">
@@ -104,7 +79,6 @@
                     <i data-lucide="book-open-text"></i><span>Chương Trình Học</span>
                 </a>
 
-                <!-- GỢI Ý THÊM CHO ADMIN -->
                 <div class="nav-sep" role="separator" aria-hidden="true"></div>
                 <a class="nav-item" href="#" data-key="students" title="Học viên">
                     <i data-lucide="users"></i><span>Học viên</span>
@@ -129,319 +103,245 @@
 
         <!-- Main -->
         <main class="main" id="main" role="main">
-            <!-- Toolbar bộ lọc -->
-            <section class="filters" id="filtersToolbar" aria-label="Bộ lọc">
-                <div class="filters-row">
-                    <div class="form-field">
-                        <label for="gradeSelect">Lớp</label>
-                        <select id="gradeSelect" aria-label="Chọn lớp">
-                            <option value="all">Tất cả</option>
-                            <option value="9">Lớp 9</option>
-                            <option value="10">Lớp 10</option>
-                            <option value="11">Lớp 11</option>
-                            <option value="12">Lớp 12</option>
-                        </select>
-                    </div>
+            <!-- KHUNG TRẮNG BO TRÒN GÓI TOÀN BỘ DASHBOARD -->
+            <section class="dash-card" aria-label="Dashboard content">
+                <!-- Bộ lọc -->
+                <div class="filters filters-inline" aria-label="Bộ lọc">
+                    <div class="filters-row">
+                        <div class="form-field">
+                            <label>Kiểu lọc</label>
+                            <div class="seg-group" role="tablist" aria-label="Kiểu lọc">
+                                <button class="seg active" role="tab" aria-selected="true" data-mode="grade">
+                                    <i data-lucide="list-checks"></i><span class="hide-sm">Theo lớp</span><span class="show-sm">Lớp</span>
+                                </button>
+                                <button class="seg" role="tab" aria-selected="false" data-mode="cert">
+                                    <i data-lucide="medal"></i><span class="hide-sm">Luyện chứng chỉ</span><span class="show-sm">Chứng chỉ</span>
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="form-field">
-                        <label for="goalSelect">Mục tiêu thi chứng chỉ</label>
-                        <select id="goalSelect" aria-label="Chọn mục tiêu chứng chỉ">
-                            <option value="all">Tất cả</option>
-                            <option value="IGCSE">IGCSE</option>
-                            <option value="A-Level">A-Level</option>
-                            <option value="IB">IB</option>
-                            <option value="AP">AP</option>
-                            <option value="SAT">SAT</option>
-                        </select>
-                    </div>
+                        <div class="form-field" id="fieldGrade">
+                            <label for="gradeSelect">Lớp</label>
+                            <select id="gradeSelect" aria-label="Chọn lớp">
+                                <option value="all">Tất cả</option>
+                                <option value="9">Lớp 9</option>
+                                <option value="10">Lớp 10</option>
+                                <option value="11">Lớp 11</option>
+                                <option value="12">Lớp 12</option>
+                            </select>
+                        </div>
 
-                    <div class="form-field">
-                        <label for="campusSelect">Cơ sở</label>
-                        <select id="campusSelect" aria-label="Chọn cơ sở">
-                            <option value="all">Tất cả</option>
-                            <option value="1">Cơ sở 1</option>
-                            <option value="2">Cơ sở 2</option>
-                        </select>
-                    </div>
+                        <div class="form-field" id="fieldCert" hidden>
+                            <label for="certSelect">Chứng chỉ</label>
+                            <select id="certSelect" aria-label="Chọn chứng chỉ">
+                                <option value="all">Tất cả</option>
+                                <option value="IGCSE">IGCSE</option>
+                                <option value="A-Level">A-Level</option>
+                                <option value="IB">IB</option>
+                                <option value="AP">AP</option>
+                                <option value="SAT">SAT</option>
+                            </select>
+                        </div>
 
-                    <div class="form-field date">
-                        <label for="dateFrom">Từ ngày</label>
-                        <input id="dateFrom" type="date" aria-label="Từ ngày" />
-                    </div>
-                    <div class="form-field date">
-                        <label for="dateTo">Đến ngày</label>
-                        <input id="dateTo" type="date" aria-label="Đến ngày" />
-                    </div>
+                        <div class="form-field">
+                            <label for="campusSelect">Cơ sở</label>
+                            <select id="campusSelect" aria-label="Chọn cơ sở">
+                                <option value="all">Tất cả</option>
+                                <option value="1">Cơ sở 1</option>
+                                <option value="2">Cơ sở 2</option>
+                            </select>
+                        </div>
 
-                    <div class="filters-actions">
-                        <button id="applyBtn" class="btn brand" aria-label="Áp dụng bộ lọc">
-                            <i data-lucide="filter"></i><span>Áp dụng</span>
-                        </button>
-                        <button id="clearBtn" class="btn ghost" aria-label="Xoá bộ lọc">
-                            <i data-lucide="x-circle"></i><span>Xoá lọc</span>
-                        </button>
-                    </div>
+                        <div class="form-field">
+                            <label for="monthPicker">Theo tháng</label>
+                            <input id="monthPicker" type="month" aria-label="Chọn tháng"/>
+                        </div>
 
-                    <button class="btn outline show-drawer" id="openDrawer" aria-controls="filtersDrawer" aria-haspopup="true">
-                        <i data-lucide="filter"></i><span>Bộ lọc</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- KPI Cards -->
-            <section class="kpi-grid" aria-label="Chỉ số tổng quan">
-                <article class="card kpi" title="Số học viên đang hoạt động">
-                    <div class="kpi-head">
-                        <div class="kpi-icon"><i data-lucide="users"></i></div>
-                        <span class="kpi-label">Active Students</span>
-                    </div>
-                    <div class="kpi-main">
-                        <div class="kpi-value" id="kpiStudents">—</div>
-                        <span class="chip delta positive" id="kpiStudentsDelta">
-              <i data-lucide="arrow-up-right"></i><span>+4.2% so tháng trước</span>
-            </span>
-                    </div>
-                    <div class="sparkline"></div>
-                </article>
-
-                <article class="card kpi" title="Tỉ lệ điểm danh tuần">
-                    <div class="kpi-head">
-                        <div class="kpi-icon"><i data-lucide="calendar-check-2"></i></div>
-                        <span class="kpi-label">Tỉ lệ điểm danh tuần</span>
-                    </div>
-                    <div class="kpi-main">
-                        <div class="kpi-value" id="kpiAttendance">—</div>
-                        <span class="chip delta neutral" id="kpiAttendanceDelta">
-              <i data-lucide="minus"></i><span>-0.3% vs tuần trước</span>
-            </span>
-                    </div>
-                    <div class="sparkline"></div>
-                </article>
-
-                <article class="card kpi" title="Hóa đơn quá hạn">
-                    <div class="kpi-head">
-                        <div class="kpi-icon"><i data-lucide="alert-triangle"></i></div>
-                        <span class="kpi-label">Hóa đơn quá hạn</span>
-                    </div>
-                    <div class="kpi-main">
-                        <div class="kpi-value" id="kpiOverdue">—</div>
-                        <span class="chip delta negative" id="kpiOverdueDelta">
-              <i data-lucide="arrow-up-right"></i><span>+1.1% so tháng trước</span>
-            </span>
-                    </div>
-                    <div class="sparkline"></div>
-                </article>
-
-                <article class="card kpi" title="Doanh thu tháng">
-                    <div class="kpi-head">
-                        <div class="kpi-icon"><i data-lucide="dollar-sign"></i></div>
-                        <span class="kpi-label">Doanh thu tháng</span>
-                    </div>
-                    <div class="kpi-main">
-                        <div class="kpi-value" id="kpiRevenue">—</div>
-                        <span class="chip delta positive" id="kpiRevenueDelta">
-              <i data-lucide="arrow-up-right"></i><span>+6.5% so tháng trước</span>
-            </span>
-                    </div>
-                    <div class="sparkline"></div>
-                </article>
-            </section>
-
-            <!-- Charts -->
-            <section class="grid-2">
-                <article class="card" id="revenueCard" aria-label="Biểu đồ doanh thu theo tháng">
-                    <div class="card-head">
-                        <h3>Doanh thu theo tháng</h3>
-                        <div class="card-actions">
-                            <button class="icon-btn sm" title="Tải xuống" aria-label="Tải xuống"><i data-lucide="download"></i></button>
+                        <div class="filters-actions">
+                            <button id="clearBtn" class="btn ghost" aria-label="Xoá bộ lọc">
+                                <i data-lucide="x-circle"></i><span>Xoá lọc</span>
+                            </button>
                         </div>
                     </div>
-                    <div class="skeleton-wrap"><div class="skeleton"></div></div>
-                    <div class="card-body">
-                        <canvas id="revenueChart" height="120" aria-label="Doanh thu theo tháng" role="img"></canvas>
-                    </div>
-                </article>
-
-                <article class="card" id="enrollCard" aria-label="Ghi danh theo Chương trình">
-                    <div class="card-head">
-                        <h3>Ghi danh theo Chương trình</h3>
-                        <div class="hint">Stacked (IGCSE / A-Level / IB / AP / SAT)</div>
-                    </div>
-                    <div class="skeleton-wrap"><div class="skeleton"></div></div>
-                    <div class="card-body">
-                        <canvas id="enrollChart" height="120" aria-label="Ghi danh theo chương trình" role="img"></canvas>
-                    </div>
-                </article>
-            </section>
-
-            <!-- Table -->
-            <section class="card" id="invoiceCard" aria-label="Bảng Hóa đơn quá hạn">
-                <div class="card-head">
-                    <h3>Hóa đơn quá hạn</h3>
-                    <div class="card-actions">
-                        <label class="switch" title="Chế độ hiển thị bảng">
-                            <input type="checkbox" id="densityToggle" aria-label="Chuyển chế độ density comfy/compact" />
-                            <span>Compact</span>
-                        </label>
-                    </div>
                 </div>
 
-                <div class="skeleton-wrap"><div class="skeleton"></div></div>
+                <!-- KPI 4 chỉ số -->
+                <section class="kpi-grid kpi-4" aria-label="Tổng quan">
+                    <article class="card kpi">
+                        <div class="kpi-head">
+                            <div class="kpi-icon"><i data-lucide="users"></i></div>
+                            <span class="kpi-label">Tổng học sinh</span>
+                        </div>
+                        <div class="kpi-main">
+                            <div class="kpi-value" id="totalStudents">—</div>
+                        </div>
+                    </article>
 
-                <div class="table-wrap">
-                    <table class="table" id="invoiceTable">
-                        <thead>
-                        <tr>
-                            <th>Tên</th>
-                            <th>Liên quan</th>
-                            <th>Trạng thái</th>
-                            <th>Deadline</th>
-                            <th class="text-right">Số tiền</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody><!-- rows injected by JS --></tbody>
-                    </table>
+                    <article class="card kpi">
+                        <div class="kpi-head">
+                            <div class="kpi-icon"><i data-lucide="square-user"></i></div>
+                            <span class="kpi-label">Tổng giáo viên</span>
+                        </div>
+                        <div class="kpi-main">
+                            <div class="kpi-value" id="totalTeachers">—</div>
+                        </div>
+                    </article>
 
-                    <div class="empty" id="emptyState" hidden>
-                        <i data-lucide="search-x"></i>
-                        <p>Chưa có dữ liệu phù hợp — Hãy điều chỉnh bộ lọc.</p>
-                    </div>
+                    <article class="card kpi">
+                        <div class="kpi-head">
+                            <div class="kpi-icon"><i data-lucide="layers-3"></i></div>
+                            <span class="kpi-label">Tổng Lớp Học</span>
+                        </div>
+                        <div class="kpi-main">
+                            <div class="kpi-value" id="totalClasses">—</div>
+                        </div>
+                    </article>
+
+                    <article class="card kpi">
+                        <div class="kpi-head">
+                            <div class="kpi-icon"><i data-lucide="dollar-sign"></i></div>
+                            <span class="kpi-label">Tổng Doanh Thu</span>
+                        </div>
+                        <div class="kpi-main">
+                            <div class="kpi-value" id="totalRevenue">—</div>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- VÙNG NỘI DUNG CHÍNH (FULL CÒN LẠI MÀN HÌNH) -->
+                <div class="content" id="content" aria-label="Nội dung chính Dashboard">
+                    <article class="card content-panel">
+                        <div class="card-head">
+                            <h3>Nội dung Dashboard</h3>
+                        </div>
+                        <div class="card-body content-body">
+                            <div class="empty-lg">
+                                <i data-lucide="layout-grid"></i>
+                                <p>Chưa có nội dung. Bạn có thể thêm biểu đồ/bảng ở đây.</p>
+                            </div>
+                        </div>
+                    </article>
                 </div>
+                <!-- /content -->
             </section>
+            <!-- /dash-card -->
         </main>
     </div>
-
-    <!-- Drawer -->
-    <aside class="drawer" id="filtersDrawer" aria-label="Bộ lọc">
-        <div class="drawer-head">
-            <h3>Bộ lọc</h3>
-            <button class="icon-btn" id="closeDrawer" aria-label="Đóng bộ lọc"><i data-lucide="x"></i></button>
-        </div>
-        <div class="drawer-body">
-            <div class="form-field">
-                <label for="gradeSelectDrawer">Lớp</label>
-                <select id="gradeSelectDrawer">
-                    <option value="all">Tất cả</option>
-                    <option value="9">Lớp 9</option>
-                    <option value="10">Lớp 10</option>
-                    <option value="11">Lớp 11</option>
-                    <option value="12">Lớp 12</option>
-                </select>
-            </div>
-            <div class="form-field">
-                <label for="goalSelectDrawer">Mục tiêu thi chứng chỉ</label>
-                <select id="goalSelectDrawer">
-                    <option value="all">Tất cả</option>
-                    <option value="IGCSE">IGCSE</option>
-                    <option value="A-Level">A-Level</option>
-                    <option value="IB">IB</option>
-                    <option value="AP">AP</option>
-                    <option value="SAT">SAT</option>
-                </select>
-            </div>
-            <div class="form-field">
-                <label for="campusSelectDrawer">Cơ sở</label>
-                <select id="campusSelectDrawer">
-                    <option value="all">Tất cả</option>
-                    <option value="1">Cơ sở 1</option>
-                    <option value="2">Cơ sở 2</option>
-                </select>
-            </div>
-            <div class="form-inline">
-                <div class="form-field date">
-                    <label for="dateFromDrawer">Từ ngày</label>
-                    <input id="dateFromDrawer" type="date" />
-                </div>
-                <div class="form-field date">
-                    <label for="dateToDrawer">Đến ngày</label>
-                    <input id="dateToDrawer" type="date" />
-                </div>
-            </div>
-        </div>
-        <div class="drawer-foot">
-            <button class="btn ghost" id="clearBtnDrawer"><i data-lucide="x-circle"></i><span>Xoá lọc</span></button>
-            <button class="btn brand" id="applyBtnDrawer"><i data-lucide="filter"></i><span>Áp dụng</span></button>
-        </div>
-    </aside>
-
-    <!-- Quick Add Modal -->
-    <div class="modal" id="quickAddModal" role="dialog" aria-modal="true" aria-labelledby="quickAddTitle" hidden>
-        <div class="modal-backdrop" id="quickAddBackdrop" tabindex="-1"></div>
-        <div class="modal-panel" role="document">
-            <div class="modal-head">
-                <h3 id="quickAddTitle">Thêm nhanh</h3>
-                <button class="icon-btn" id="quickAddClose" aria-label="Đóng"><i data-lucide="x"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="tabs" role="tablist" aria-label="Loại đối tượng">
-                    <button class="tab active" data-tab="student" role="tab" aria-selected="true">Học viên</button>
-                    <button class="tab" data-tab="tutor" role="tab" aria-selected="false">Gia sư</button>
-                    <button class="tab" data-tab="contract" role="tab" aria-selected="false">Hợp đồng</button>
-                </div>
-
-                <form id="quickAddForm" class="form">
-                    <div class="tab-panel" data-panel="student">
-                        <div class="form-field">
-                            <label>Họ tên</label>
-                            <input type="text" placeholder="Nguyễn Văn A" />
-                        </div>
-                        <div class="form-field">
-                            <label>Lớp</label>
-                            <select>
-                                <option>9</option><option>10</option><option>11</option><option>12</option>
-                            </select>
-                        </div>
-                        <div class="form-field">
-                            <label>Chương trình</label>
-                            <select>
-                                <option>IGCSE</option><option>A-Level</option><option>IB</option><option>AP</option><option>SAT</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="tab-panel" data-panel="tutor" hidden>
-                        <div class="form-field">
-                            <label>Họ tên gia sư</label>
-                            <input type="text" placeholder="Trần Thị B" />
-                        </div>
-                        <div class="form-field">
-                            <label>Môn</label>
-                            <input type="text" placeholder="Toán, Lý…" />
-                        </div>
-                    </div>
-
-                    <div class="tab-panel" data-panel="contract" hidden>
-                        <div class="form-field">
-                            <label>Mã hợp đồng</label>
-                            <input type="text" placeholder="MB-HĐ-2025-001" />
-                        </div>
-                        <div class="form-field">
-                            <label>Học viên</label>
-                            <input type="text" placeholder="Nguyễn Văn A" />
-                        </div>
-                        <div class="form-field">
-                            <label>Hạn thanh toán</label>
-                            <input type="date" />
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-foot">
-                <button class="btn ghost" id="quickAddCancel">Huỷ</button>
-                <button class="btn brand" id="quickAddSubmit">Lưu</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Floating Help -->
-    <button class="help-fab" title="Trợ giúp" aria-label="Trợ giúp"><i data-lucide="help-circle"></i></button>
 </div>
 
-<!-- ============ JS như bạn đã dán, giữ nguyên ============ -->
+<!-- ============ JS (auto-apply filters) ============ -->
 <script>
-    /* nguyên phần JS của bạn không đổi — (giữ nguyên nội dung) */
-    /* ... DÁN NGUYÊN PHẦN SCRIPT BẠN GỬI Ở TRÊN VÀO ĐÂY ... */
+    const $ = (s, c=document)=>c.querySelector(s);
+    const $$ = (s, c=document)=>Array.from(c.querySelectorAll(s));
+    const fmtMoney = n => n.toLocaleString('vi-VN') + ' ₫';
+
+    // Sidebar toggle
+    $('#sidebarToggle').addEventListener('click', ()=> document.body.classList.toggle('sidebar-collapsed'));
+
+    // Profile menu
+    $('#profileBtn').addEventListener('click', ()=> $('#profileMenu').classList.toggle('open'));
+    document.addEventListener('click', (e)=>{ if(!e.target.closest('.profile')) $('#profileMenu').classList.remove('open'); });
+
+    // -------- Mock data (để KPI phản hồi theo bộ lọc) --------
+    const data = [
+      {kind:'student', grade:'9', campus:'1', date:'2025-10-02'},
+      {kind:'student', grade:'10', campus:'1', date:'2025-10-03'},
+      {kind:'student', grade:'11', campus:'2', date:'2025-10-07'},
+      {kind:'student', grade:'12', campus:'2', date:'2025-09-28'},
+      {kind:'student', cert:'IGCSE', campus:'1', date:'2025-10-04'},
+      {kind:'student', cert:'A-Level', campus:'2', date:'2025-10-08'},
+      {kind:'student', cert:'SAT', campus:'1', date:'2025-10-12'},
+      {kind:'teacher', grade:'9', campus:'1', date:'2025-10-01'},
+      {kind:'teacher', grade:'10', campus:'2', date:'2025-10-05'},
+      {kind:'teacher', cert:'IB', campus:'2', date:'2025-10-06'},
+      {kind:'class', grade:'11', campus:'1', date:'2025-10-10'},
+      {kind:'class', grade:'12', campus:'2', date:'2025-10-15'},
+      {kind:'class', cert:'AP', campus:'1', date:'2025-10-17'},
+      {kind:'revenue', grade:'9', campus:'1', date:'2025-10-03', amount: 3500000},
+      {kind:'revenue', cert:'SAT', campus:'1', date:'2025-10-12', amount: 5200000},
+      {kind:'revenue', grade:'12', campus:'2', date:'2025-10-15', amount: 7100000},
+      {kind:'revenue', cert:'IGCSE', campus:'1', date:'2025-09-25', amount: 2400000}
+    ];
+
+    // Filters state
+    const state = { mode:'grade', grade:'all', cert:'all', campus:'all', month:null };
+
+    function toISO(d){ return d.toISOString().slice(0,10); }
+    function monthStartEnd(yyyyMM){
+      const [y,m] = yyyyMM.split('-').map(Number);
+      const first = new Date(y, m-1, 1);
+      const last  = new Date(y, m, 0);
+      return { from: toISO(first), to: toISO(last) };
+    }
+
+    function applyAndRender(){
+      const inCampus = (c) => state.campus === 'all' || c === state.campus;
+      const inTrack = (row) => state.mode === 'grade'
+        ? (state.grade==='all' ? !row.cert : row.grade===state.grade)
+        : (state.cert==='all'  ? !!row.cert : row.cert===state.cert);
+      const inMonth = (d) => {
+        if (!state.month) return true;
+        const {from,to} = monthStartEnd(state.month);
+        return d >= from && d <= to;
+      };
+
+      const filtered = data.filter(r => inCampus(r.campus) && inMonth(r.date) && inTrack(r));
+
+      const totalStudents = filtered.filter(r=>r.kind==='student').length;
+      const totalTeachers = filtered.filter(r=>r.kind==='teacher').length;
+      const totalClasses  = filtered.filter(r=>r.kind==='class').length;
+      const totalRevenue  = filtered.filter(r=>r.kind==='revenue').reduce((s,r)=>s+(r.amount||0),0);
+
+      $('#totalStudents').textContent = String(totalStudents);
+      $('#totalTeachers').textContent = String(totalTeachers);
+      $('#totalClasses').textContent  = String(totalClasses);
+      $('#totalRevenue').textContent  = fmtMoney(totalRevenue);
+    }
+
+    function setMode(newMode){
+      state.mode = newMode;
+      $$('.seg').forEach(b=>{
+        const active = b.dataset.mode === newMode;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      const gradeField = $('#fieldGrade');
+      const certField  = $('#fieldCert');
+      if(newMode === 'grade'){
+        gradeField.hidden = false;  $('#gradeSelect').disabled = false;
+        certField.hidden  = true;   $('#certSelect').disabled  = true; $('#certSelect').value='all'; state.cert='all';
+      }else{
+        gradeField.hidden = true;   $('#gradeSelect').disabled = true; $('#gradeSelect').value='all'; state.grade='all';
+        certField.hidden  = false;  $('#certSelect').disabled  = false;
+      }
+      applyAndRender();
+    }
+    $$('.seg').forEach(b=> b.addEventListener('click', ()=> setMode(b.dataset.mode)));
+
+    $('#gradeSelect').addEventListener('change', e=>{ state.grade = e.target.value; applyAndRender(); });
+    $('#certSelect').addEventListener('change',  e=>{ state.cert  = e.target.value; applyAndRender(); });
+    $('#campusSelect').addEventListener('change',e=>{ state.campus = e.target.value; applyAndRender(); });
+    $('#monthPicker').addEventListener('change', e=>{ state.month = e.target.value || null; applyAndRender(); });
+
+    $('#clearBtn').addEventListener('click', ()=>{
+      setMode('grade');
+      $('#gradeSelect').value = 'all'; state.grade='all';
+      $('#certSelect').value  = 'all'; state.cert='all';
+      $('#campusSelect').value = 'all'; state.campus='all';
+      const now = new Date(), yyyy = now.getFullYear(), mm = String(now.getMonth()+1).padStart(2,'0');
+      $('#monthPicker').value = `${yyyy}-${mm}`;
+      state.month = `${yyyy}-${mm}`;
+      applyAndRender();
+    });
+
+    function init(){
+      const now = new Date(), yyyy = now.getFullYear(), mm = String(now.getMonth()+1).padStart(2,'0');
+      $('#monthPicker').value = `${yyyy}-${mm}`;
+      state.month = `${yyyy}-${mm}`;
+      setMode('grade'); // gọi render
+      lucide.createIcons();
+    }
+    document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
