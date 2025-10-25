@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đội ngũ giảng viên - MathBridge</title>
+
+    <base href="../" />
+
+    <!-- CSS core -->
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/teachers.css" />
+
+    <!-- Icon set (Phosphor) - dùng script như index -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- JS include partials -->
+    <script src="assets/js/utils/includePartials.js" defer></script>
+</head>
+<body>
+<header></header>
+
+<main class="teachers" id="main-content">
+    <section class="teachers__hero" aria-labelledby="teachers-title">
+        <div class="container">
+            <h1 id="teachers-title" class="teachers__title">Đội ngũ giảng viên</h1>
+            <p class="teachers__subtitle">
+                Chuyên môn vững, giàu kinh nghiệm IGCSE • A-Level • IB • AP • THPT VN.
+            </p>
+        </div>
+    </section>
+
+    <section class="teachers__toolbar" role="region" aria-label="Bộ công cụ lọc giảng viên">
+        <div class="container toolbar__inner">
+            <div class="filters">
+                <div class="chips chips--grades" role="group" aria-label="Lọc theo khối lớp">
+                    <span class="chips__label">Khối lớp:</span>
+                    <button class="chip" aria-pressed="false">Lớp 9</button>
+                    <button class="chip" aria-pressed="false">Lớp 10</button>
+                    <button class="chip" aria-pressed="false">Lớp 11</button>
+                    <button class="chip" aria-pressed="false">Lớp 12</button>
+                </div>
+                <div class="chips chips--goals" role="group" aria-label="Theo mục tiêu thi">
+                    <span class="chips__label">Theo mục tiêu thi…</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="teachers__grid-wrap">
+        <div class="container">
+            <div id="empty" class="empty">
+                Hiện chưa hiển thị danh sách.
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer></footer>
+
+<script>
+    window.addEventListener('load', () => {
+      /* ===== Inject header/footer sau khi mọi tài nguyên đã sẵn ===== */
+      includePartials({ header: 'partials/header.html', footer: 'partials/footer.html' });
+    });
+</script>
+</body>
+</html>
