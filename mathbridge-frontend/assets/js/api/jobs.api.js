@@ -1,53 +1,66 @@
-// API tuyển dụng (mock tạm thời)
+// Jobs API (mock). Replace with real http('/api/jobs') when BE ready.
+
+const JOBS = [
+  {
+    id: 1,
+    slug: 'giang-vien-toan-quoc-te',
+    title: 'Giảng viên Toán quốc tế',
+    location: 'TP. Hồ Chí Minh',
+    type: 'Full-time',
+    salary: 'Thoả thuận',
+    description: `
+      Giảng dạy các chương trình Toán quốc tế (IGCSE/IB/AP/SAT) hoặc Toán nâng cao Việt Nam.
+      Xây dựng kế hoạch giảng dạy theo lộ trình cá nhân hoá mục tiêu của học viên.
+      Theo dõi, đánh giá tiến độ và phối hợp với phụ huynh trong quá trình học.
+    `,
+    requirements: [
+      'Tốt nghiệp chuyên ngành Toán học/Sư phạm Toán hoặc liên quan',
+      'Ưu tiên có kinh nghiệm luyện thi IGCSE/IB/AP/SAT',
+      'Kỹ năng sư phạm tốt, giao tiếp rõ ràng',
+      'Tận tâm, trách nhiệm, làm việc nhóm tốt'
+    ],
+    benefits: [
+      'Mức lương cạnh tranh + thưởng hiệu suất',
+      'Đào tạo nâng cao chuyên môn định kỳ',
+      'Môi trường chuyên nghiệp, đồng nghiệp supportive',
+      'Lộ trình phát triển nghề nghiệp rõ ràng'
+    ],
+  },
+  {
+    id: 2,
+    slug: 'tro-giang-toan',
+    title: 'Trợ giảng Toán',
+    location: 'Hà Nội',
+    type: 'Part-time',
+    salary: 'Từ 6–10 triệu/tháng',
+    description: `
+      Hỗ trợ giảng viên trong các lớp Toán, kèm học viên làm bài tập, giải đáp thắc mắc.
+      Chuẩn bị tài liệu, chấm bài, tổng hợp báo cáo tiến độ học tập.
+    `,
+    requirements: [
+      'Sinh viên năm 3 trở lên ngành Toán/Sư phạm Toán hoặc liên quan',
+      'Kiến thức Toán tốt, ưu tiên giao tiếp tiếng Anh cơ bản',
+      'Chăm chỉ, nhiệt tình, cẩn thận',
+    ],
+    benefits: [
+      'Giờ giấc linh hoạt',
+      'Cơ hội học hỏi và phát triển nghề nghiệp',
+      'Phụ cấp theo ca + thưởng',
+    ],
+  }
+];
+
 async function fetchJobs() {
-  // TODO: Khi BE sẵn sàng, thay bằng http('/api/jobs')
-  return [
-    {
-      id: 101,
-      title: 'Giáo viên Toán quốc tế (IGCSE/IB/AP)',
-      department: 'Học thuật',
-      type: 'Full-time',
-      location: 'Hà Nội / TP.HCM / Remote',
-      level: 'Mid–Senior',
-      postedAt: '2025-10-01',
-      description: 'Giảng dạy và xây dựng nội dung Toán theo chuẩn IGCSE/IB/AP.',
-      requirements: [
-        'Tốt nghiệp các ngành Toán/Sư phạm Toán hoặc liên quan',
-        'Kinh nghiệm luyện thi IGCSE/IB/AP/SAT là lợi thế',
-        'Giao tiếp tốt, tư duy sư phạm, tận tâm',
-      ],
-    },
-    {
-      id: 102,
-      title: 'Chuyên viên tuyển sinh',
-      department: 'Vận hành',
-      type: 'Full-time',
-      location: 'TP.HCM',
-      level: 'Junior–Mid',
-      postedAt: '2025-09-24',
-      description: 'Tư vấn khóa học, theo dõi học viên và phối hợp bộ phận học thuật.',
-      requirements: [
-        'Kỹ năng giao tiếp, thuyết phục tốt',
-        'Ưu tiên có kinh nghiệm giáo dục',
-      ],
-    },
-    {
-      id: 103,
-      title: 'Marketing Executive',
-      department: 'Marketing',
-      type: 'Intern/Part-time',
-      location: 'Remote',
-      level: 'Intern–Junior',
-      postedAt: '2025-09-20',
-      description: 'Tham gia triển khai chiến dịch marketing số và nội dung.',
-      requirements: [
-        'Hiểu biết cơ bản SEO/Content/Ads',
-        'Tinh thần học hỏi, chủ động',
-      ],
-    },
-  ];
+  // Replace with: return http('/api/jobs');
+  return JOBS;
+}
+
+async function fetchJobBySlug(slug) {
+  // Replace with: return http(`/api/jobs/${slug}`);
+  return JOBS.find(j => j.slug === slug) || null;
 }
 
 window.fetchJobs = fetchJobs;
+window.fetchJobBySlug = fetchJobBySlug;
 
-
+ 
