@@ -2,11 +2,16 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Tuyển dụng - MathBridge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Khám phá cơ hội nghề nghiệp tại MathBridge - Nền tảng kết nối gia sư toán hàng đầu">
+    <meta name="keywords" content="tuyển dụng, việc làm, gia sư toán, education tech, mathbridge">
+    <title>Tuyển dụng - MathBridge | Cơ Hội Nghề Nghiệp</title>
     <base href="../">
     <link rel="stylesheet" href="assets/css/header.css" />
     <link rel="stylesheet" href="assets/css/footer.css" />
     <link rel="stylesheet" href="assets/css/careers.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="assets/js/utils/includePartials.js" defer></script>
     <script src="assets/js/api/jobs.api.js" defer></script>
     <script src="assets/js/pages/careers.page.js" defer></script>
@@ -16,17 +21,30 @@
 
 <main>
     <!-- HERO / breadcrumb -->
-    <section class="mb-career-hero">
+    <section class="mb-career-hero" aria-label="Tiêu đề trang">
         <div class="mb-career-hero-wrap">
-            <div class="hero-breadcrumbs">
+            <nav class="hero-breadcrumbs" aria-label="Breadcrumb">
                 <a href="index.html">Trang chủ</a>
-                <span>/</span>
-                <a href="pages/Careers.html">Tuyển dụng</a>
+                <span aria-hidden="true">/</span>
+                <a href="pages/Careers.html" aria-current="page">Tuyển dụng</a>
+            </nav>
+            <h1 class="hero-title animate-fade-in">Cơ hội nghề nghiệp tại MathBridge</h1>
+            <p class="hero-sub animate-fade-in-up">Cùng xây cầu nối tri thức Toán học đến với hàng nghìn học sinh</p>
+            <div class="hero-stats animate-fade-in-up">
+                <div class="stat-item">
+                    <span class="stat-number">1000+</span>
+                    <span class="stat-label">Học sinh tin tưởng</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">200+</span>
+                    <span class="stat-label">Gia sư chất lượng</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">98%</span>
+                    <span class="stat-label">Đánh giá tích cực</span>
+                </div>
             </div>
-            <h1 class="hero-title">Cơ hội nghề nghiệp tại MathBridge</h1>
-            <p class="hero-sub">Cùng xây cầu nối tri thức Toán học đến với hàng nghìn học sinh</p>
         </div>
-        <div class="mb-career-wave"></div>
     </section>
 
     <!-- CONTENT -->
@@ -61,43 +79,83 @@
                 </section>
 
                 <section id="apply" class="job-section job-apply">
-                    <h3>Apply</h3>
+                    <h3>Ứng Tuyển Ngay</h3>
                     <form id="apply-form" class="apply-form" novalidate>
                         <div class="grid-2">
                             <div class="field" data-field="name">
-                                <label for="ap-name">Họ và tên:</label>
-                                <input id="ap-name" type="text" placeholder="VD: Nguyễn Văn A" required>
-                                <div class="hint">Nhập tên của bạn</div>
+                                <label for="ap-name">Họ và tên <span class="required">*</span></label>
+                                <input 
+                                    id="ap-name" 
+                                    type="text" 
+                                    placeholder="VD: Nguyễn Văn A" 
+                                    required
+                                    pattern="^[a-zA-ZÀ-ỹ ]{2,}$"
+                                    aria-describedby="name-hint">
+                                <div id="name-hint" class="hint" aria-live="polite">Nhập họ tên đầy đủ của bạn</div>
                             </div>
                             <div class="field" data-field="phone">
-                                <label for="ap-phone">Số điện thoại:</label>
-                                <input id="ap-phone" type="tel" placeholder="Nhập..." required>
-                                <div class="hint">Số điện thoại không hợp lệ</div>
+                                <label for="ap-phone">Số điện thoại <span class="required">*</span></label>
+                                <input 
+                                    id="ap-phone" 
+                                    type="tel" 
+                                    placeholder="VD: 0912345678" 
+                                    required
+                                    pattern="^(0|84|\+84)[0-9]{9}$"
+                                    aria-describedby="phone-hint">
+                                <div id="phone-hint" class="hint" aria-live="polite">Nhập số điện thoại hợp lệ</div>
                             </div>
                         </div>
 
                         <div class="grid-2">
                             <div class="field" data-field="email">
-                                <label for="ap-email">Email:</label>
-                                <input id="ap-email" type="email" placeholder="Nhập email..." required>
-                                <div class="hint">Địa chỉ email là bắt buộc</div>
+                                <label for="ap-email">Email <span class="required">*</span></label>
+                                <input 
+                                    id="ap-email" 
+                                    type="email" 
+                                    placeholder="example@domain.com" 
+                                    required
+                                    aria-describedby="email-hint">
+                                <div id="email-hint" class="hint" aria-live="polite">Nhập địa chỉ email hợp lệ</div>
                             </div>
                             <div class="field" data-field="position">
-                                <label for="ap-position">Vị trí ứng tuyển:</label>
-                                <input id="ap-position" type="text" readonly value="">
+                                <label for="ap-position">Vị trí ứng tuyển <span class="required">*</span></label>
+                                <input id="ap-position" type="text" readonly>
                             </div>
                         </div>
 
                         <div class="upload-row">
-                            <label for="ap-file">Tải hồ sơ CV / Bằng cấp:</label>
-                            <div class="upload-inline">
-                                <input id="ap-file" type="file" accept=".jpg,.jpeg,.png,.pdf">
-                                <span class="note">Hỗ trợ định dạng: JPEG, JPG, PNG, PDF. Dung lượng tối đa 2 MB</span>
+                            <label for="ap-file">Hồ sơ CV / Bằng cấp <span class="required">*</span></label>
+                            <div class="upload-zone" id="upload-zone">
+                                <input 
+                                    id="ap-file" 
+                                    type="file" 
+                                    accept=".jpg,.jpeg,.png,.pdf"
+                                    required
+                                    aria-describedby="file-hint">
+                                <div class="upload-placeholder">
+                                    <svg class="upload-icon" viewBox="0 0 24 24" width="24" height="24">
+                                        <path d="M12 3L20 13H4L12 3Z" fill="currentColor"/>
+                                        <path d="M4 15H20V19H4V15Z" fill="currentColor"/>
+                                    </svg>
+                                    <span>Kéo thả file hoặc click để chọn</span>
+                                    <span id="file-hint" class="note">Hỗ trợ: JPEG, PNG, PDF (Tối đa 2MB)</span>
+                                </div>
+                                <div id="file-preview" class="file-preview"></div>
                             </div>
                         </div>
 
-                        <div class="actions">
-                            <button type="submit" class="cta submit">Gửi thông tin ứng tuyển</button>
+                        <div class="form-footer">
+                            <div class="privacy-notice">
+                                Bằng cách nhấn "Gửi", bạn đồng ý với 
+                                <a href="#">Điều khoản</a> và 
+                                <a href="#">Chính sách bảo mật</a> của chúng tôi
+                            </div>
+                            <div class="actions">
+                                <button type="submit" class="cta submit">
+                                    <span class="btn-text">Gửi hồ sơ ứng tuyển</span>
+                                    <div class="btn-loader"></div>
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </section>
