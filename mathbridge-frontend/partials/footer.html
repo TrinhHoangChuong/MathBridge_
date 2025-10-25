@@ -2,24 +2,35 @@
     <h2 id="footer-heading" class="mb-f-visually-hidden">Thông tin & điều hướng cuối trang</h2>
 
     <div class="mb-footer-wrap">
+
         <!-- Cột 1: Thương hiệu & mô tả -->
         <section class="mb-fcol" aria-label="Giới thiệu MathBridge">
             <a class="mb-f-logo" href="index.html" aria-label="Trang chủ MathBridge">
                 <span class="mb-f-mark" aria-hidden="true"></span>
                 <span class="mb-f-brand">MathBridge</span>
             </a>
+
             <p class="mb-f-desc">
                 Trung tâm Toán học MathBridge – cầu nối giúp học sinh chinh phục
                 Toán quốc tế (Cambridge, IB, AP, SAT) và các kỳ thi trong nước.
             </p>
 
-            <ul class="mb-f-list mb-f-address">
-                <li><strong>TP.HCM:</strong> 123 Nguyễn Văn Cừ, Quận 5</li>
-                <li><strong>Hà Nội:</strong> 45 Hoàng Quốc Việt, Cầu Giấy</li>
-                <li><strong>Hotline:</strong> <a href="tel:0901234567">0901 234 567</a></li>
-                <li><strong>Email:</strong> <a href="mailto:support@mathbridge.vn">support@mathbridge.vn</a></li>
+            <!-- Danh sách cơ sở / hotline / giờ làm việc (đổ từ API) -->
+            <div class="mb-f-address-wrapper" aria-label="Danh sách cơ sở MathBridge">
+                <ul id="footer-centers" class="mb-f-list mb-f-address">
+                    <!-- JS sẽ render các cơ sở tại đây -->
+                </ul>
+            </div>
+
+            <!-- Email: tạm thời vẫn tĩnh (vì DB của bạn hiện chưa có email trung tâm) -->
+            <ul class="mb-f-list mb-f-contact-extra">
+                <li>
+                    <strong>Email:</strong>
+                    <a href="mailto:support@mathbridge.vn">support@mathbridge.vn</a>
+                </li>
             </ul>
 
+            <!-- Social -->
             <div class="mb-f-social" aria-label="Mạng xã hội">
                 <span>Theo dõi chúng tôi</span>
                 <div class="mb-f-social-icons">
@@ -34,7 +45,9 @@
         <section class="mb-fcol" aria-label="Liên hệ">
             <h3 class="mb-f-title">Liên hệ</h3>
             <ul class="mb-f-list">
-                <li>Giờ làm việc: 08:00 – 20:30 (T2–CN)</li>
+                <!-- Sẽ được cập nhật bằng JS từ cơ sở đầu tiên -->
+                <li id="footer-working-hours">Giờ làm việc: Đang tải...</li>
+
                 <li>Tư vấn chương trình theo mục tiêu</li>
                 <li>Đăng ký lớp thử online/offline</li>
             </ul>
