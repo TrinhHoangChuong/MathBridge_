@@ -202,8 +202,8 @@
   border-radius: 12px;
   border: 1px solid #717274;
   padding: 15px 15px 14px;
-  margin: 0 0 10px
-  
+  margin: 5px 0 10px 0;
+  position: static;
 }
 
 
