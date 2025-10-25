@@ -88,6 +88,31 @@
   background: var(--mb-navy); color:#fff;
   box-shadow: 0 8px 18px rgba(15,23,42,.22);
 }
+.mb-links>a, .mb-dd-btn, .mb-dd-link{
+  appearance:none; border:0; background:transparent; cursor:pointer;
+  padding:9px 12px; border-radius:10px; color:var(--text);
+  font:600 15px/1.2 inherit; letter-spacing:.1px;
+  text-decoration:none; transition:background .15s ease, transform .05s ease;
+}
+.mb-links>a:hover, .mb-dd-btn:hover, .mb-dd-link:hover{background:var(--hover)}
+.mb-links a:active, .mb-dd-btn:active{transform:translateY(1px)}
+
+/* Active (thêm .active bằng JS) - chỉ áp dụng cho link cấp 1 */
+.mb-links > a.active, .mb-dd > a.mb-dd-link.active{font-weight:800; text-decoration:underline}
+
+/* Đảm bảo nút dropdown không bao giờ gạch dưới/đổi đậm như link active */
+.mb-links .mb-dd-btn,
+.mb-links .mb-dd-btn:focus,
+.mb-links .mb-dd-btn:active,
+.mb-links .mb-dd-btn.active,
+.mb-dd.open > .mb-dd-btn{
+  text-decoration:none !important;
+  font-weight:600 !important;
+}
+
+/* Căn cạnh nhau cho link và caret */
+.mb-dd{display:flex; align-items:center; gap:4px}
+.mb-dd-link{display:inline-block}
 .btn--navy:hover{ filter: brightness(1.06); box-shadow: 0 10px 24px rgba(15,23,42,.28); }
 
 .btn i{ font-size:18px; line-height:1; }
@@ -125,6 +150,12 @@
   opacity:0; transform:translateY(-4px); pointer-events:none; visibility:hidden; z-index:1100;
   transition: opacity .25s ease, transform .25s ease, visibility 0s linear .25s; /* delay ẩn để trượt chuột */
 }
+.mb-dd.open .mb-dd-menu{display:block}
+/* cũng mở khi hover qua khu vực dropdown */
+.mb-dd:hover .mb-dd-menu{display:block}
+.mb-dd-menu a{
+  display:block; padding:9px 10px; border-radius:8px; color:var(--text); text-decoration:none;
+  font-weight:500;
 /* Hiện menu khi hover/focus trong */
 .mb-dd:hover .mb-dd-menu, .mb-dd:focus-within .mb-dd-menu{
   opacity:1; transform:translateY(0); pointer-events:auto; visibility:visible;
