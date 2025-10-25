@@ -1,16 +1,20 @@
-<!-- partials/header.html -->
-<div class="mb-nav">
-    <!-- Logo -->
-    <div class="mb-left">
-        <a class="mb-logo" href="index.html">MATHBRIDGE</a>
-    </div>
+<!-- Header (Glass) -->
+<header class="mb-header" role="banner">
+    <div class="mb-nav" data-glass>
+        <!-- Left: Logo -->
+        <div class="mb-left">
+            <a class="mb-logo" href="index.html" aria-label="Trang chủ MathBridge">
+                <span class="logo-mark" aria-hidden="true"></span>
+                <span class="logo-text">MathBridge</span>
+            </a>
+        </div>
 
+        <!-- Mobile toggle (CSS-only) -->
+        <input id="mb-toggle" type="checkbox" class="mb-toggle" aria-label="Mở/đóng menu">
 
-    <input id="mb-toggle" type="checkbox" class="mb-toggle" aria-label="Mở menu">
-
-    <!-- Menu chính -->
-    <nav class="mb-links">
-        <a href="pages/About.html">VỀ CHÚNG TÔI</a>
+        <!-- Center: Main links -->
+        <nav class="mb-links" aria-label="Điều hướng chính">
+            <a href="pages/About.html">Về chúng tôi</a>
 
         <div class="mb-dd">
             <a href="pages/Courses.html" class="mb-dd-link">KHÓA HỌC</a>
@@ -20,17 +24,35 @@
                 <a href="#">LỚP 11</a>
                 <a href="#">LỚP 12</a>
                 <a href="#">THEO MỤC TIÊU THI (IGCSE/IB/AP/SAT/Toán nâng cao VN)</a>
+            <div class="mb-dd">
+                <button class="mb-dd-btn" type="button" aria-expanded="false" aria-haspopup="true" aria-controls="menu-khoahoc">
+                    Khóa học <i class="ph ph-caret-down" aria-hidden="true"></i>
+                </button>
+                <div id="menu-khoahoc" class="mb-dd-menu" role="menu">
+                    <a role="menuitem" href="#">Lớp 9</a>
+                    <a role="menuitem" href="#">Lớp 10</a>
+                    <a role="menuitem" href="#">Lớp 11</a>
+                    <a role="menuitem" href="#">Lớp 12</a>
+                    <a role="menuitem" href="#">Theo mục tiêu thi (IGCSE / IB / AP / SAT / Toán nâng cao VN)</a>
+                </div>
             </div>
-        </div>
 
         <a href="#">ĐỘI NGŨ GIÁO VIÊN</a>
         <a href="#">TUYỂN DỤNG</a>
         <a href="pages/Contact.html">LIÊN HỆ</a>
     </nav>
+            <a href="pages/Teachers.html">Đội ngũ giáo viên</a>
+            <a href="pages/Careers.html">Tuyển dụng</a>
+            <a href="#">Liên hệ</a>
+        </nav>
 
-    <!-- Đăng nhập -->
-    <div class="mb-right">
-        <a class="mb-login" href="#">ĐĂNG NHẬP</a>
-        <label for="mb-toggle" class="mb-burger" aria-label="Mở menu">☰</label>
+        <!-- Right: Login + Burger -->
+        <div class="mb-right">
+            <a class="mb-login btn btn--navy" href="#"><i class="ph ph-sign-in"></i><span>Đăng nhập</span></a>
+            <label for="mb-toggle" class="mb-burger" aria-label="Mở menu">
+                <i class="ph ph-list" aria-hidden="true"></i>
+            </label>
+        </div>
     </div>
-</div>
+
+</header>

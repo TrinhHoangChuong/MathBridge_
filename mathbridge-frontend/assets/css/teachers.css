@@ -1,0 +1,274 @@
+/* =========================================================
+   MathBridge — Teachers Page (Bridge Theme 2025)
+   Tông: đỏ #e11d48 / xanh-đen #0f172a / trắng / glass sáng
+   Font: Be Vietnam Pro + Inter
+   ========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+:root{ --header-h: 72px; } /* fallback, JS sẽ cập nhật đúng sau khi header load */
+html{ scroll-padding-top: calc(var(--header-h) + 12px); }
+main [id]{ scroll-margin-top: calc(var(--header-h) + 12px); }
+
+:root {
+  --brand-red: #e11d48;
+  --brand-red-700: #be123c;
+  --navy: #0f172a;
+  --ink: #111827;
+  --ink-70: #4b5563;
+  --bg: #ffffff;
+  --bg-soft: #f8fafc;
+  --line: #e5e7eb;
+
+  --shadow-sm: 0 8px 20px rgba(2,6,23,.06);
+  --shadow: 0 14px 40px rgba(2,6,23,.10);
+  --radius: 16px;
+  --radius-lg: 22px;
+
+  --container: 1200px;
+  --gap: 24px;
+
+  --grad-brand: linear-gradient(135deg, var(--brand-red), #2563eb);
+}
+
+/* ============ RESET scoped ============ */
+.teachers *, .teachers *::before, .teachers *::after { box-sizing: border-box; }
+.teachers img { display: block; max-width: 100%; }
+.teachers .container { width: min(100% - 32px, var(--container)); margin-inline: auto; }
+
+/* =========================================================
+   HERO
+========================================================= */
+.teachers .teachers__hero {
+  background:
+    radial-gradient(800px 400px at 10% -10%, rgba(37,99,235,.08), transparent 60%),
+    radial-gradient(900px 500px at 110% -20%, rgba(225,29,72,.10), transparent 60%),
+    linear-gradient(180deg, #fff, #f9fbff);
+  text-align: center;
+  padding: 72px 0 40px;
+  position: relative;
+}
+.teachers .teachers__title {
+  font-family: "Be Vietnam Pro", Inter, sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 4.2vw, 46px);
+  color: var(--navy);
+  margin: 0 0 10px;
+  letter-spacing: -0.015em;
+}
+.teachers .teachers__subtitle {
+  font-size: clamp(15px, 2vw, 17px);
+  color: var(--ink-70);
+  margin: 0 auto;
+  max-width: 720px;
+}
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+.teachers .teachers__toolbar {
+  position: sticky;
+  top: calc(var(--header-h, 72px) + 1px);
+  z-index: 10;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+.teachers .toolbar__inner {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: 1.1fr 1fr auto;
+  align-items: end;
+  padding: 14px 0;
+}
+@media (max-width: 960px) {
+  .teachers .toolbar__inner { grid-template-columns: 1fr; }
+}
+
+/* Search */
+.teachers .search { position: relative; }
+.teachers .search__input {
+  width: 100%;
+  padding: 12px 44px 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+  transition: border .2s, box-shadow .2s;
+}
+.teachers .search__input:focus {
+  border-color: var(--brand-red);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-red) 22%, transparent);
+  outline: none;
+}
+.teachers .search__icon {
+  position: absolute;
+  right: 14px; top: 50%;
+  translate: 0 -50%;
+  color: var(--ink-70);
+  font-size: 18px;
+  pointer-events: none;
+}
+
+/* Chips */
+.teachers .chips {
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.teachers .chip {
+  font-family: Inter, sans-serif;
+  font-size: 13px; padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-70);
+  cursor: pointer;
+  transition: all .18s ease;
+}
+.teachers .chip:hover { border-color: var(--brand-red); color: var(--brand-red); }
+.teachers .chip[aria-pressed="true"] {
+  background: var(--brand-red);
+  color: #fff;
+  border-color: var(--brand-red);
+  box-shadow: 0 6px 16px rgba(225,29,72,.24);
+  font-weight: 600;
+}
+
+/* Sort */
+.teachers .sort {
+  display: flex; gap: 10px; align-items: center;
+  justify-content: flex-end; flex-wrap: wrap;
+}
+.teachers .sort__label { font-size: 14px; color: var(--ink-70); }
+.teachers .select {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+}
+.teachers .meta { font-size: 13px; color: var(--ink-70); }
+
+/* =========================================================
+   GRID + CARD
+========================================================= */
+.teachers .teachers__grid-wrap {
+  background: var(--bg);
+  padding: 48px 0 72px;
+}
+.teachers .teachers__grid {
+  display: grid;
+  gap: clamp(16px, 2vw, 28px);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.teachers .teacher-card {
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(2,6,23,.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform .18s ease, box-shadow .18s ease;
+  overflow: hidden;
+  backdrop-filter: blur(6px);
+}
+.teachers .teacher-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+.teachers .teacher-card:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand-red) 30%, white);
+  outline-offset: 3px;
+}
+
+.teachers .teacher-card__media {
+  position: relative; aspect-ratio: 16/9;
+  overflow: hidden; border-bottom: 1px solid var(--line);
+}
+.teachers .teacher-card__img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .4s ease;
+}
+.teachers .teacher-card:hover .teacher-card__img {
+  transform: scale(1.05);
+}
+.teachers .flag {
+  position: absolute; top: 12px; left: 12px;
+  background: var(--grad-brand);
+  color: #fff; font-size: 12px;
+  padding: 6px 10px; border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(225,29,72,.25);
+}
+
+.teachers .teacher-card__body {
+  padding: 16px 18px 10px;
+}
+.teachers .teacher-card__name {
+  font-family: "Be Vietnam Pro", Inter, sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--navy);
+  margin: 0 0 6px;
+}
+.teachers .teacher-card__desc {
+  color: var(--ink-70);
+  margin: 0;
+  line-height: 1.55;
+  font-size: 15px;
+}
+
+.teachers .teacher-card__tags {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  list-style: none; padding: 0; margin: 12px 0 0;
+}
+.teachers .tag {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--brand-red-700, #be123c);
+  color: #fff;
+  opacity: .9;
+}
+.teachers .tag--outline {
+  background: #fff;
+  border: 1px dashed var(--line);
+  color: var(--ink-70);
+}
+
+.teachers .teacher-card__footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px 18px;
+  border-top: 1px solid var(--line);
+}
+
+.teachers .btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 10px 16px;
+  font-weight: 700; border-radius: 999px;
+  font-size: 14px; border: 2px solid transparent;
+  cursor: pointer; text-decoration: none;
+  transition: all .15s ease;
+}
+.teachers .btn--primary {
+  background: var(--grad-brand);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.teachers .btn--primary:hover {
+  filter: brightness(.96);
+  box-shadow: var(--shadow);
+}
+.teachers .exp-badge {
+  font-size: 12px;
+  color: var(--ink-70);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+/* Empty state */
+.teachers .empty {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--ink-70);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg-soft);
+}
