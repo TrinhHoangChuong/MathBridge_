@@ -3,33 +3,163 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>MathBridge</title>
-    <base href="../"> <!-- dòng này -->
-    <link rel="stylesheet" href="assets/css/header.css" /> <!-- dòng này -->
-    <link rel="stylesheet" href="assets/css/footer.css" /><!-- dòng này -->
-    <script src="assets/js/utils/includePartials.js" defer></script> <!-- dòng này -->
-
+    <title>Giới thiệu | MathBridge</title>
+    <base href="../"> <!-- giữ base để dùng chung assets/partials -->
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/about.css" />
+    <script src="assets/js/utils/includePartials.js" defer></script>
 </head>
+
 <body>
-<header></header> <!-- dòng này -->
-
-
+<header></header>
 
 <main>
-    <h1>Giới thiệu về MathBridge</h1>
+  <!-- SECTION 1: HERO -->
+  <section class="mb-hero about-hero v2">
+    <div class="mb-container hero-wrap">
+      <div class="hero-text">
+        <p class="eyebrow">Về chúng tôi</p>
+        <h1 class="title">MathBridge – Cầu nối Toán học quốc tế</h1>
+        <p class="lead">Chúng tôi đồng hành cùng học sinh Việt Nam chinh phục Toán học theo các chương trình Cambridge, IB, AP và Toán nâng cao Việt Nam.</p>
+
+        <ul class="bullets">
+          <li>Giáo trình theo chuẩn quốc tế, lộ trình rõ ràng từng cấp lớp</li>
+          <li>Đội ngũ giáo viên giàu kinh nghiệm, phương pháp cá nhân hóa</li>
+          <li>Theo dõi tiến độ – báo cáo định kỳ cho phụ huynh</li>
+        </ul>
+
+        <div class="cta-row">
+          <a href="pages/Contact.html" class="cta primary">Tư vấn miễn phí</a>
+          <a href="pages/Courses.html" class="cta ghost">Xem khóa học</a>
+        </div>
+      </div>
+      <figure class="hero-img">
+        <div class="about-hero-gallery" aria-label="Bộ sưu tập ảnh About">
+          <!-- Thêm/xóa ảnh tại đây -->
+          <img src="assets/img/hero1.jpg" alt="Lớp học 1" class="gh-item active" />
+          <img src="assets/img/hero2.jpg" alt="Lớp học 2" class="gh-item" />
+          <img src="assets/img/hero3.jpg" alt="Lớp học 3" class="gh-item" />
+          <!-- Ví dụ thêm ảnh mới: <img src="assets/img/your-image.jpg" alt="mô tả" class="gh-item" /> -->
+          <div class="gh-dots" role="tablist" aria-label="Điều hướng ảnh"></div>
+        </div>
+      </figure>
+    </div>
+    <div class="wave"></div>
+  </section>
+
+  <!-- SECTION 2: SỨ MỆNH -->
+  <section class="mb-mission">
+    <div class="mb-container mission-wrap">
+      <div class="mission-text">
+        <h2>Sứ mệnh & Giá trị cốt lõi</h2>
+        <ul>
+          <li><b>Truyền cảm hứng học Toán</b> – Giúp học sinh yêu thích, chủ động và sáng tạo trong học tập.</li>
+          <li><b>Phát triển toàn diện</b> – Tư duy logic, phản biện, và kỹ năng giải quyết vấn đề.</li>
+          <li><b>Cam kết chất lượng</b> – Giảng dạy theo chuẩn quốc tế, theo sát tiến trình học của từng em.</li>
+        </ul>
+    </div>
+      <figure class="mission-img">
+        <img src="assets/img/hero8.jpg" alt="Sứ mệnh MathBridge" />
+      </figure>
+    </div>
+  </section>
+
+  <!-- SECTION 3: CAM KẾT CỦA MATHBRIDGE -->
+  <section class="mb-commitments">
+    <div class="mb-container">
+      <header class="commitments-head">
+        <h2>Cam kết của <span>MathBridge</span></h2>
+        <p>Đồng hành cùng học sinh trên hành trình chinh phục Toán học</p>
+      </header>
+
+      <div class="commitments-grid">
+        <article class="commitment">
+          <div class="commitment-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="var(--mb-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Chất lượng giảng dạy</h3>
+          <p>Áp dụng phương pháp dạy học hiện đại, cá nhân hóa chương trình học phù hợp với từng học sinh.</p>
+        </article>
+        <article class="commitment">
+          <div class="commitment-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="var(--mb-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Hỗ trợ 24/7</h3>
+          <p>Đội ngũ tư vấn viên luôn sẵn sàng giải đáp thắc mắc và hỗ trợ học sinh mọi lúc.</p>
+        </article>
+        <article class="commitment">
+          <div class="commitment-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="var(--mb-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Đổi mới liên tục</h3>
+          <p>Không ngừng cập nhật nội dung và công nghệ để mang đến trải nghiệm học tập tốt nhất.</p>
+        </article>
+      </div>
+    </div>
+  </section>
 </main>
 
-
-
-<footer></footer> <!-- dòng này -->
-<!-- cả đoạn script này -->
+<footer></footer>
 <script>
-    window.addEventListener('load', () => {
-        includePartials({
-          header: 'partials/header.html',
-          footer: 'partials/footer.html'
-        });
+  window.addEventListener('load', () => {
+    includePartials({
+      header: 'partials/header.html',
+      footer: 'partials/footer.html'
     });
+  });
+
+    // Auto-rotate gallery ở About hero
+    (function initAboutHeroGallery(){
+      const gallery = document.querySelector('.about-hero-gallery');
+      if (!gallery) return;
+      const imgs = Array.from(gallery.querySelectorAll('.gh-item'));
+      const dotsWrap = gallery.querySelector('.gh-dots');
+      if (imgs.length <= 1) return;
+
+      // Tạo dots theo số lượng ảnh
+      imgs.forEach((_, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gh-dot' + (i === 0 ? ' active' : '');
+        b.setAttribute('aria-label', 'Ảnh ' + (i+1));
+        b.addEventListener('click', () => go(i));
+        dotsWrap.appendChild(b);
+      });
+
+      let idx = 0;
+      let timer;
+      const intervalMs = 4000;
+
+      function render(){
+        imgs.forEach((img, i) => img.classList.toggle('active', i === idx));
+        const dots = dotsWrap.querySelectorAll('.gh-dot');
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+
+      function go(i){
+        idx = (i + imgs.length) % imgs.length;
+        render();
+        restart();
+      }
+
+      function next(){ go(idx + 1); }
+      function start(){ timer = setInterval(next, intervalMs); }
+      function stop(){ clearInterval(timer); }
+      function restart(){ stop(); start(); }
+
+      // Tạm dừng khi hover
+      gallery.addEventListener('mouseenter', stop);
+      gallery.addEventListener('mouseleave', start);
+
+      start();
+    })();
 </script>
 </body>
 </html>
