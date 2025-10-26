@@ -1,66 +1,101 @@
-// Jobs API (mock). Replace with real http('/api/jobs') when BE ready.
+// Jobs API
+async function http(path) {
+  const r = await fetch(CONFIG.BASE_URL + path);
+  if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
+  return r.json();
+}
 
-const JOBS = [
+async function httpPost(path, data, isFormData = false) {
+  const opts = {
+    method: "POST",
+    headers: isFormData ? undefined : { "Content-Type": "application/json" },
+    body: isFormData ? data : JSON.stringify(data),
+  };
+  const r = await fetch(CONFIG.BASE_URL + path, opts);
+  if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
+  return r.json();
+}
+
+// Fallback sample jobs shown when backend is not running or DB empty
+const SAMPLE_JOBS = [
   {
     id: 1,
-    slug: 'giang-vien-toan-quoc-te',
-    title: 'Giảng viên Toán quốc tế',
-    location: 'TP. Hồ Chí Minh',
-    type: 'Full-time',
-    salary: 'Thoả thuận',
-    description: `
-      Giảng dạy các chương trình Toán quốc tế (IGCSE/IB/AP/SAT) hoặc Toán nâng cao Việt Nam.
-      Xây dựng kế hoạch giảng dạy theo lộ trình cá nhân hoá mục tiêu của học viên.
-      Theo dõi, đánh giá tiến độ và phối hợp với phụ huynh trong quá trình học.
-    `,
+    slug: "giang-vien-toan-quoc-te",
+    title: "Giảng viên Toán quốc tế",
+    location: "TP. Hồ Chí Minh",
+    type: "Full-time",
+    salary: "Thoả thuận",
+    description: `Giảng dạy chương trình Toán quốc tế và chăm sóc chất lượng học viên.`,
     requirements: [
-      'Tốt nghiệp chuyên ngành Toán học/Sư phạm Toán hoặc liên quan',
-      'Ưu tiên có kinh nghiệm luyện thi IGCSE/IB/AP/SAT',
-      'Kỹ năng sư phạm tốt, giao tiếp rõ ràng',
-      'Tận tâm, trách nhiệm, làm việc nhóm tốt'
+      "Tốt nghiệp chuyên ngành Toán hoặc Sư phạm",
+      "Ưu tiên có kinh nghiệm giảng dạy Quốc tế",
     ],
-    benefits: [
-      'Mức lương cạnh tranh + thưởng hiệu suất',
-      'Đào tạo nâng cao chuyên môn định kỳ',
-      'Môi trường chuyên nghiệp, đồng nghiệp supportive',
-      'Lộ trình phát triển nghề nghiệp rõ ràng'
-    ],
+    benefits: ["Lương + thưởng", "Đào tạo chuyên môn"],
   },
   {
     id: 2,
-    slug: 'tro-giang-toan',
-    title: 'Trợ giảng Toán',
-    location: 'Hà Nội',
-    type: 'Part-time',
-    salary: 'Từ 6–10 triệu/tháng',
-    description: `
-      Hỗ trợ giảng viên trong các lớp Toán, kèm học viên làm bài tập, giải đáp thắc mắc.
-      Chuẩn bị tài liệu, chấm bài, tổng hợp báo cáo tiến độ học tập.
-    `,
-    requirements: [
-      'Sinh viên năm 3 trở lên ngành Toán/Sư phạm Toán hoặc liên quan',
-      'Kiến thức Toán tốt, ưu tiên giao tiếp tiếng Anh cơ bản',
-      'Chăm chỉ, nhiệt tình, cẩn thận',
-    ],
-    benefits: [
-      'Giờ giấc linh hoạt',
-      'Cơ hội học hỏi và phát triển nghề nghiệp',
-      'Phụ cấp theo ca + thưởng',
-    ],
-  }
+    slug: "tro-giang-toan",
+    title: "Trợ giảng Toán",
+    location: "Hà Nội",
+    type: "Part-time",
+    salary: "Từ 6–10 triệu/tháng",
+    description: `Hỗ trợ giảng viên, chấm bài và hướng dẫn học sinh.`,
+    requirements: ["Sinh viên năm 3 trở lên", "Kiến thức Toán tốt"],
+    benefits: ["Giờ giấc linh hoạt"],
+  },
 ];
 
+/**
+ * Lấy danh sách tin tuyển dụng
+ * @returns {Promise<Array>} Danh sách jobs với thông tin cơ bản
+ */
 async function fetchJobs() {
-  // Replace with: return http('/api/jobs');
-  return JOBS;
+  try {
+    const data = await http("/api/public/jobs");
+    if (Array.isArray(data) && data.length > 0) return data;
+    // empty from backend -> return sample so UI isn't blank during dev
+    return SAMPLE_JOBS;
+  } catch (err) {
+    console.warn("fetchJobs failed, using SAMPLE_JOBS", err);
+    return SAMPLE_JOBS;
+  }
 }
 
+/**
+ * Lấy chi tiết tin tuyển dụng theo slug
+ * @param {string} slug - Slug của tin (sinh từ TieuDe bên BE)
+ * @returns {Promise<Object>} Chi tiết job hoặc null nếu không tìm thấy
+ */
 async function fetchJobBySlug(slug) {
-  // Replace with: return http(`/api/jobs/${slug}`);
-  return JOBS.find(j => j.slug === slug) || null;
+  try {
+    const res = await http(`/api/public/jobs/${encodeURIComponent(slug)}`);
+    if (res) return res;
+    // fallback to sample
+    return SAMPLE_JOBS.find((j) => j.slug === slug) || null;
+  } catch (e) {
+    console.warn("Job not found:", slug);
+    return SAMPLE_JOBS.find((j) => j.slug === slug) || null;
+  }
 }
 
+/**
+ * Gửi đơn ứng tuyển
+ * @param {FormData} formData - Form data với các trường: name, phone, email, position, và file (optional)
+ * @returns {Promise<Object>} Response với success và message
+ */
+async function submitApplication(formData) {
+  try {
+    return await httpPost("/api/public/jobs/apply", formData, true);
+  } catch (err) {
+    console.warn("submitApplication failed", err);
+    return {
+      success: false,
+      message: "Không thể kết nối tới backend. Thử lại sau.",
+    };
+  }
+}
+
+// Export functions for use in careers.page.js
 window.fetchJobs = fetchJobs;
 window.fetchJobBySlug = fetchJobBySlug;
-
- 
+window.submitApplication = submitApplication;
