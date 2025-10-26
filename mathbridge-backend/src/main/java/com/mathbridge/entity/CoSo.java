@@ -1,7 +1,7 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+// import java.time.LocalDateTime; (HY) xóa
 import java.time.LocalTime;
 
 @Entity
