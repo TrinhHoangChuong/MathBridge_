@@ -2,68 +2,134 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>Đội ngũ giảng viên - MathBridge</title>
 
+    <!-- Trang này nằm trong /pages/, nên base="../" giúp tất cả link/css/js tính từ project root -->
     <base href="../" />
 
-    <!-- CSS core -->
-    <link rel="stylesheet" href="assets/css/header.css" />
-    <link rel="stylesheet" href="assets/css/footer.css" />
-    <link rel="stylesheet" href="assets/css/teachers.css" />
-
-    <!-- Icon set (Phosphor) - dùng script như index -->
+    <!-- Fonts + Icons -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- JS include partials -->
+    <!-- Core site styles -->
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/index.css" />
+
+    <!-- Page styles -->
+    <link rel="stylesheet" href="assets/css/teachers.css" />
+
+    <!-- Script để inject header/footer -->
     <script src="assets/js/utils/includePartials.js" defer></script>
 </head>
-<body>
+<body class="teachers-page">
 <header></header>
 
-<main class="teachers" id="main-content">
-    <section class="teachers__hero" aria-labelledby="teachers-title">
+<main id="main-content" class="teachers-main" role="main">
+
+    <!-- ========== HERO GIỚI THIỆU ========== -->
+    <section class="teachers-hero" aria-labelledby="teachers-hero-title">
         <div class="container">
-            <h1 id="teachers-title" class="teachers__title">Đội ngũ giảng viên</h1>
-            <p class="teachers__subtitle">
-                Chuyên môn vững, giàu kinh nghiệm IGCSE • A-Level • IB • AP • THPT VN.
-            </p>
+            <div class="hero-inner">
+                <h1 id="teachers-hero-title" class="hero-title">
+                    Đội ngũ <span class="accent">giảng viên</span> MathBridge
+                </h1>
+                <p class="hero-desc">
+                    Chúng tôi quy tụ các giáo viên chuyên sâu IGCSE, A-Level, IB, SAT Math
+                    và chương trình Toán Nâng cao THPT. Mục tiêu: giúp học sinh hiểu bản chất,
+                    tự tin giải đề thi chuẩn quốc tế.
+                </p>
+            </div>
         </div>
     </section>
 
-    <section class="teachers__toolbar" role="region" aria-label="Bộ công cụ lọc giảng viên">
-        <div class="container toolbar__inner">
+    <!-- ========== THANH TOOLBAR: Lọc + Tìm kiếm ========== -->
+    <section class="teachers-toolbar" role="region" aria-label="Bộ lọc giảng viên">
+        <div class="container toolbar-inner">
+
+            <!-- Bộ lọc khối lớp -->
             <div class="filters">
-                <div class="chips chips--grades" role="group" aria-label="Lọc theo khối lớp">
-                    <span class="chips__label">Khối lớp:</span>
-                    <button class="chip" aria-pressed="false">Lớp 9</button>
-                    <button class="chip" aria-pressed="false">Lớp 10</button>
-                    <button class="chip" aria-pressed="false">Lớp 11</button>
-                    <button class="chip" aria-pressed="false">Lớp 12</button>
-                </div>
-                <div class="chips chips--goals" role="group" aria-label="Theo mục tiêu thi">
-                    <span class="chips__label">Theo mục tiêu thi…</span>
+                <div class="filters-label">Lọc theo:</div>
+
+                <div class="chips" role="group" aria-label="Chọn chương trình" id="filterChips">
+                    <!--
+                      data-filter="all" là mặc định hiển thị tất cả
+                      aria-pressed="true" = đang chọn
+                    -->
+                    <button class="chip" data-filter="all" aria-pressed="true">Tất cả</button>
+                    <button class="chip" data-filter="9" aria-pressed="false">Lớp 9</button>
+                    <button class="chip" data-filter="10" aria-pressed="false">Lớp 10</button>
+                    <button class="chip" data-filter="11" aria-pressed="false">Lớp 11</button>
+                    <button class="chip" data-filter="12" aria-pressed="false">Lớp 12</button>
+                    <button class="chip" data-filter="adv" aria-pressed="false">Toán Nâng cao &amp; Chứng chỉ</button>
                 </div>
             </div>
+
+            <!-- Tìm kiếm theo tên -->
+            <form class="search" role="search" aria-label="Tìm theo tên giảng viên" onsubmit="return false;">
+                <label class="search-label" for="teacher-search">Tìm theo tên:</label>
+
+                <div class="search-field">
+                    <input
+                            id="teacher-search"
+                            class="search-input"
+                            type="text"
+                            placeholder="Nhập tên giảng viên…"
+                            aria-label="Nhập tên giảng viên"
+                    />
+                    <i class="ph-magnifying-glass search-icon" aria-hidden="true"></i>
+                </div>
+            </form>
+
+            <!-- Meta đếm -->
+            <div class="meta">
+                <span class="meta-count">
+                    <strong id="teacherCount">0</strong> giảng viên
+                </span>
+            </div>
+
         </div>
     </section>
 
-    <section class="teachers__grid-wrap">
+    <!-- ========== GRID DANH SÁCH GIẢNG VIÊN ========== -->
+    <section class="teachers-list-section">
         <div class="container">
-            <div id="empty" class="empty">
-                Hiện chưa hiển thị danh sách.
+
+            <!-- trạng thái tải / lỗi -->
+            <div class="teacher-status hidden" data-teacher-status></div>
+
+            <!-- nơi render cards -->
+            <div class="teacher-grid" data-teacher-list role="list">
+                <!-- JS sẽ đổ <article class="teacher-card">...</article> vào đây -->
             </div>
+
+            <!-- fallback khi rỗng -->
+            <div class="teacher-empty hidden" data-empty-state>
+                Không tìm thấy giảng viên phù hợp bộ lọc / tìm kiếm.
+            </div>
+
         </div>
     </section>
+
 </main>
 
 <footer></footer>
 
 <script>
     window.addEventListener('load', () => {
-      /* ===== Inject header/footer sau khi mọi tài nguyên đã sẵn ===== */
-      includePartials({ header: 'partials/header.html', footer: 'partials/footer.html' });
+        includePartials({
+            header: 'partials/header.html',
+            footer: 'partials/footer.html'
+        });
     });
 </script>
+
+<!-- Trang teacher dùng ES Module:
+teachers.page.js import teacher.api.js, mà teacher.api.js import config.js -->
+<script type="module" src="assets/js/pages/teachers.page.js"></script>
+<script type="module" src="assets/js/pages/footer.page.js"></script>
+
 </body>
 </html>

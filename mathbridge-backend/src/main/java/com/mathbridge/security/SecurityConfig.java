@@ -40,7 +40,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // FE của bạn chạy ở http://localhost:63342
+        // FE chạy ở http://localhost:63342
         // Có thể dùng setAllowedOriginPatterns để cho phép tất cả
         config.setAllowedOriginPatterns(List.of("*"));
 

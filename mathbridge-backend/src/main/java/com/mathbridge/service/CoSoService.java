@@ -24,9 +24,9 @@ public class CoSoService {
 
         return dsCoSo.stream().map(coSo -> {
             FooterCenterDTO dto = new FooterCenterDTO();
-            dto.setId(coSo.getId());
+            dto.setId(coSo.getIdCs());
             dto.setName(coSo.getTenCoSo());
-            dto.setAddress(coSo.getDiaChi());
+            dto.setAddress(coSo.getDiaChi2());
             dto.setHotline(coSo.getHotline());
             dto.setWorkingDays(coSo.getNgayLamViec());
 

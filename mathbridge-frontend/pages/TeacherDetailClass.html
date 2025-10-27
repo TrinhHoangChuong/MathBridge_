@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>Chi tiết giảng viên | MathBridge</title>
+
+    <!-- File này nằm trong /pages nên base phải trỏ lên ../ -->
+    <base href="../" />
+
+    <!-- Fonts + Icons -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Core styles (header/footer/theme chung) -->
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/index.css" />
+
+    <!-- Page style riêng -->
+    <link rel="stylesheet" href="assets/css/teacher-detail.css" />
+
+    <!-- Script để inject header/footer -->
+    <script src="assets/js/utils/includePartials.js" defer></script>
+</head>
+
+<body class="teacher-detail-page">
+<header></header>
+
+<main id="main-content" class="td-main" role="main" tabindex="-1">
+
+    <!-- ===== PHẦN TÊN GIẢNG VIÊN ===== -->
+    <section class="td-hero" aria-labelledby="teacher-name">
+        <div class="container td-hero__inner">
+            <h1 id="teacher-name"
+                class="td-hero__name"
+                data-teacher-name>
+                <!-- JS sẽ đổ tên giáo viên -->
+                Giảng viên
+            </h1>
+        </div>
+
+        <div class="td-hero__bg" aria-hidden="true">
+            <div class="td-bg-blob --red"></div>
+            <div class="td-bg-blob --blue"></div>
+        </div>
+    </section>
+
+    <!-- ===== DANH SÁCH LỚP ===== -->
+    <section class="td-classes-section" aria-labelledby="classes-title">
+        <div class="container">
+
+            <header class="td-sec-head">
+                <div class="td-sec-left">
+                    <h2 id="classes-title" class="td-sec-title">
+                        Các lớp đang phụ trách
+                    </h2>
+                    <p class="td-sec-desc">
+                        Thông tin lớp được đồng bộ trực tiếp từ hệ thống trung tâm:
+                        lịch học, hình thức, học phí mỗi tháng, tình trạng mở lớp.
+                    </p>
+                </div>
+
+                <div class="td-sec-right">
+          <span class="td-class-count">
+            <strong data-class-count>0</strong> lớp học
+          </span>
+                </div>
+            </header>
+
+            <!-- trạng thái / thông báo lỗi / loading -->
+            <div class="td-status hidden" data-td-status></div>
+
+            <!-- GRID các lớp -->
+            <div class="td-class-grid" role="list" data-class-list>
+                <!-- JS sẽ render các .td-class-card -->
+            </div>
+
+            <!-- fallback khi không có lớp -->
+            <div class="td-empty hidden" data-class-empty>
+                Giáo viên hiện chưa có lớp công khai.
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer></footer>
+
+<!-- inject header/footer -->
+<script>
+    window.addEventListener('load', () => {
+      includePartials({
+        header: 'partials/header.html',
+        footer: 'partials/footer.html'
+      });
+    });
+</script>
+
+<!-- Config global (chứa CONFIG.BASE_URL) -->
+<script type="module" src="../assets/js/config.js"></script>
+
+<!-- Page logic riêng cho trang này -->
+<script type="module" src="../assets/js/pages/TeacherDetailClass.page.js"></script>
+
+<!-- Footer behavior -->
+<script type="module" src="../assets/js/pages/footer.page.js"></script>
+
+</body>
+</html>

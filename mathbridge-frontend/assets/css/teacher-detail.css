@@ -1,0 +1,245 @@
+/* ============================
+   Teacher Detail (simple)
+============================ */
+
+.td-main {
+  --hero-pad-y: 32px;
+  background: var(--bg);
+}
+
+/* ===== HERO (chỉ tên GV) ===== */
+.td-hero {
+  position: relative;
+  background:
+    radial-gradient(800px 480px at 10% -10%, rgba(37,99,235,.10), transparent 60%),
+    radial-gradient(900px 520px at 110% -20%, rgba(225,29,72,.10), transparent 60%),
+    linear-gradient(180deg, #fff, #f9fbff);
+  padding: var(--hero-pad-y) 0;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.td-hero__inner {
+  position: relative;
+  z-index: 2;
+}
+.td-hero__name {
+  margin: 0;
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(22px,1.6vw,26px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+}
+
+/* nền blob */
+.td-hero__bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.td-bg-blob {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(60px);
+  opacity: .25;
+}
+.td-bg-blob.--red {
+  width: 260px;
+  height: 260px;
+  background: var(--brand-red);
+  top: -60px;
+  right: -60px;
+}
+.td-bg-blob.--blue {
+  width: 200px;
+  height: 200px;
+  background: #2563eb;
+  bottom: -80px;
+  left: -80px;
+  opacity: .18;
+}
+
+/* ===== SECTION LỚP ===== */
+.td-classes-section {
+  padding: 16px 0 64px;
+  background: var(--bg);
+}
+
+.td-sec-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  row-gap: 12px;
+  margin-bottom: 20px;
+}
+
+.td-sec-title {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(18px,1.2vw,20px);
+  color: var(--navy);
+  line-height: 1.3;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.td-class-count {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-70);
+  white-space: nowrap;
+}
+.td-class-count strong {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.td-status {
+  font-size: 14px;
+  line-height: 1.4;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--ink-70);
+  background: var(--bg-soft);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Grid các lớp */
+.td-class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%),1fr));
+  gap: clamp(16px,2vw,20px);
+}
+
+/* Card lớp */
+.td-class-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(2,6,23,.06);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all .16s ease;
+}
+.td-class-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.td-class-card__body {
+  padding: 16px 18px 12px;
+  flex: 1;
+}
+
+.td-class-card__title {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--navy);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.td-class-card__program {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--brand-red);
+  margin: 0 0 12px;
+}
+
+.td-class-card__info {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-70);
+  display: grid;
+  gap: 8px;
+}
+.td-class-card__info li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.td-class-card__info i {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--brand-red);
+}
+
+/* Footer card với CTA */
+.td-class-card__footer {
+  margin-top: auto;
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn.btn--enroll {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 999px;
+
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none;
+  cursor: pointer;
+
+  background: #fff;
+  color: var(--brand-red);
+  border: 2px solid var(--brand-red);
+
+  box-shadow: var(--shadow-sm);
+  transition: all .15s ease;
+}
+.btn.btn--enroll:hover {
+  background: var(--brand-red);
+  color: #fff;
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.btn.btn--enroll:active {
+  transform: translateY(0);
+}
+.btn.btn--enroll i {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* fallback khi không có lớp */
+.td-empty {
+  margin-top: 24px;
+  text-align: center;
+  padding: 32px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-70);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg-soft);
+  box-shadow: var(--shadow-sm);
+}
