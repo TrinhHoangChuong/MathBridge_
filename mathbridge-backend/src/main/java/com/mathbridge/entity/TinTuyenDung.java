@@ -2,68 +2,73 @@ package com.mathbridge.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "TinTuyenDung", schema = "dbo")
+@Table(name = "TinTuyenDung")
 public class TinTuyenDung {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_TD")
-    private Long id;
+    @Column(name = "ID_TD", length = 10, nullable = false)
+    private String idTd;
 
-    @Column(name = "TieuDe")
+    @Column(name = "TieuDe", length = 100, nullable = false)
     private String tieuDe;
 
-    @Column(name = "ViTri")
+    @Column(name = "ViTri", length = 100, nullable = false)
     private String viTri;
 
-    @Column(name = "MoTaNgan", columnDefinition = "TEXT")
+    @Column(name = "MoTaNgan", length = 255)
     private String moTaNgan;
 
-    @Column(name = "MoTa", columnDefinition = "TEXT")
+    @Column(name = "MoTa", length = 200, nullable = false)
     private String moTa;
 
-    @Column(name = "YeuCau", columnDefinition = "TEXT")
+    @Column(name = "YeuCau", length = 255, nullable = false)
     private String yeuCau;
 
-    @Column(name = "CapBac")
+    @Column(name = "CapBac", length = 100)
     private String capBac;
 
-    @Column(name = "HinhThucLamViec")
+    @Column(name = "HinhThucLamViec", length = 100)
     private String hinhThucLamViec;
 
-    @Column(name = "MucLuongTu")
+    @Column(name = "MucLuongTu", length = 255)
     private String mucLuongTu;
 
-    @Column(name = "MucLuongDen")
+    @Column(name = "MucLuongDen", length = 255)
     private String mucLuongDen;
 
     @Column(name = "KinhNghiem")
-    private String kinhNghiem;
+    private Integer kinhNghiem;
 
     @Column(name = "SoLuongTuyen")
     private Integer soLuongTuyen;
 
     @Column(name = "HanNop")
-    private String hanNop;
+    private LocalDateTime hanNop;
 
-    @Column(name = "TrangThai")
-    private Integer trangThai;
+    @Column(name = "TrangThai", length = 60)
+    private String trangThai;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    // Liên kết ứng viên qua bảng Association_25
+    @OneToMany(mappedBy = "tinTuyenDung", fetch = FetchType.LAZY)
+    private List<Association25> ungVienLinks = new ArrayList<>();
 
     public TinTuyenDung() {
     }
 
-    // ===== getters / setters =====
-    public Long getId() {
-        return id;
+    public TinTuyenDung(String idTd) {
+        this.idTd = idTd;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getIdTd() {
+        return idTd;
+    }
+
+    public void setIdTd(String idTd) {
+        this.idTd = idTd;
     }
 
     public String getTieuDe() {
@@ -138,11 +143,11 @@ public class TinTuyenDung {
         this.mucLuongDen = mucLuongDen;
     }
 
-    public String getKinhNghiem() {
+    public Integer getKinhNghiem() {
         return kinhNghiem;
     }
 
-    public void setKinhNghiem(String kinhNghiem) {
+    public void setKinhNghiem(Integer kinhNghiem) {
         this.kinhNghiem = kinhNghiem;
     }
 
@@ -154,27 +159,27 @@ public class TinTuyenDung {
         this.soLuongTuyen = soLuongTuyen;
     }
 
-    public String getHanNop() {
+    public LocalDateTime getHanNop() {
         return hanNop;
     }
 
-    public void setHanNop(String hanNop) {
+    public void setHanNop(LocalDateTime hanNop) {
         this.hanNop = hanNop;
     }
 
-    public Integer getTrangThai() {
+    public String getTrangThai() {
         return trangThai;
     }
 
-    public void setTrangThai(Integer trangThai) {
+    public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public List<Association25> getUngVienLinks() {
+        return ungVienLinks;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setUngVienLinks(List<Association25> ungVienLinks) {
+        this.ungVienLinks = ungVienLinks;
     }
 }

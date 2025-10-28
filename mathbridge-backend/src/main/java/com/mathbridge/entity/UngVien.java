@@ -1,50 +1,55 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "UngVien", schema = "dbo")
+@Table(name = "UngVien")
 public class UngVien {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_UV")
-    private Long id;
+    @Column(name = "ID_UV", length = 10, nullable = false)
+    private String idUv;
 
-    @Column(name = "HoTen")
+    @Column(name = "HoTen", length = 100, nullable = false)
     private String hoTen;
 
-    @Column(name = "Email")
+    @Column(name = "Email", length = 100, nullable = false)
     private String email;
 
-    @Column(name = "SDT")
+    @Column(name = "SDT", length = 100, nullable = false)
     private String sdt;
 
-    @Column(name = "CV_URL")
+    @Column(name = "CV_URL", length = 255, nullable = false)
     private String cvUrl;
 
-    @Column(name = "TrangThaiHoSo")
+    @Column(name = "TrangThaiHoSo", length = 100)
     private String trangThaiHoSo;
 
-    @Column(name = "LinkProfile")
+    @Column(name = "LinkProfile", length = 255)
     private String linkProfile;
 
-    @Column(name = "GhiChu")
+    @Column(name = "GhiChu", length = 200)
     private String ghiChu;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    // Liên kết tin tuyển dụng qua Association_25
+    @OneToMany(mappedBy = "ungVien", fetch = FetchType.LAZY)
+    private List<Association25> tinTuyenDungLinks = new ArrayList<>();
 
     public UngVien() {
     }
 
-    public Long getId() {
-        return id;
+    public UngVien(String idUv) {
+        this.idUv = idUv;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getIdUv() {
+        return idUv;
+    }
+
+    public void setIdUv(String idUv) {
+        this.idUv = idUv;
     }
 
     public String getHoTen() {
@@ -103,11 +108,11 @@ public class UngVien {
         this.ghiChu = ghiChu;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public List<Association25> getTinTuyenDungLinks() {
+        return tinTuyenDungLinks;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setTinTuyenDungLinks(List<Association25> tinTuyenDungLinks) {
+        this.tinTuyenDungLinks = tinTuyenDungLinks;
     }
 }

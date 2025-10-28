@@ -45,6 +45,38 @@ const SAMPLE_JOBS = [
   },
 ];
 
+function toSlug(str) {
+  return (str || "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}+/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+function mapBeJobToFe(j) {
+  // BE fields:
+  //  - id (String idTd), tieuDe, viTri, moTaNgan, moTa, capBac, hinhThucLamViec, mucLuongTu, mucLuongDen, yeuCau (string[]), benefits (string[])
+  const title = j.tieuDe || j.title || "";
+  const location = j.viTri || j.location || "";
+  const type = j.hinhThucLamViec || j.type || "";
+  const salary = (j.mucLuongTu && j.mucLuongDen)
+    ? `${j.mucLuongTu} - ${j.mucLuongDen}`
+    : (j.mucLuongTu || j.mucLuongDen || j.salary || "");
+  return {
+    id: j.id,
+    slug: toSlug(title),
+    title,
+    location,
+    type,
+    salary,
+    description: j.moTa || j.moTaNgan || j.description || "",
+    requirements: j.yeuCau || j.requirements || [],
+    benefits: j.benefits || [],
+  };
+}
+
 /**
  * Lấy danh sách tin tuyển dụng
  * @returns {Promise<Array>} Danh sách jobs với thông tin cơ bản
@@ -52,7 +84,7 @@ const SAMPLE_JOBS = [
 async function fetchJobs() {
   try {
     const data = await http("/api/public/jobs");
-    if (Array.isArray(data) && data.length > 0) return data;
+    if (Array.isArray(data) && data.length > 0) return data.map(mapBeJobToFe);
     // empty from backend -> return sample so UI isn't blank during dev
     return SAMPLE_JOBS;
   } catch (err) {
@@ -69,7 +101,7 @@ async function fetchJobs() {
 async function fetchJobBySlug(slug) {
   try {
     const res = await http(`/api/public/jobs/${encodeURIComponent(slug)}`);
-    if (res) return res;
+    if (res) return mapBeJobToFe(res);
     // fallback to sample
     return SAMPLE_JOBS.find((j) => j.slug === slug) || null;
   } catch (e) {

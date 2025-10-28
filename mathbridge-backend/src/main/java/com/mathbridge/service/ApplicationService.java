@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -31,12 +29,13 @@ public class ApplicationService {
     public UngVien saveApplication(String name, String phone, String email, String position, MultipartFile resume)
             throws IOException {
         UngVien u = new UngVien();
+        // generate ID_UV like UV000001 timestamp-based short id
+        u.setIdUv(generateId());
         u.setHoTen(name);
         u.setSdt(phone);
         u.setEmail(email);
         u.setGhiChu(position); // store applied position in ghiChu or set LinkProfile field; schema doesn't
                                // have vi_tri for UngVien
-        u.setCreatedAt(LocalDateTime.now());
 
         if (resume != null && !resume.isEmpty()) {
             String original = resume.getOriginalFilename();
@@ -49,5 +48,12 @@ public class ApplicationService {
         }
 
         return repo.save(u);
+    }
+
+    private String generateId() {
+        // simple unique id: mili-giây của thời gian epoch (8 chữ số cuối)
+        String tail = String.valueOf(System.currentTimeMillis());
+        if (tail.length() > 8) tail = tail.substring(tail.length() - 8);
+        return "UV" + tail;
     }
 }

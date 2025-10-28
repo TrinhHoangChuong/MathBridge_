@@ -28,7 +28,7 @@ public class TinTuyenDungService {
     }
 
     public Optional<JobDTO> findBySlug(String slug) {
-        // The DB doesn't store a slug column. Generate slug from title and match in
+        // Cơ sở dữ liệu không lưu cột “slug”. Hãy tạo slug từ tiêu đề và dùng nó để đối chiếu.
         // memory.
         List<TinTuyenDung> list = repo.findAll();
         return list.stream().filter(e -> {
@@ -52,7 +52,7 @@ public class TinTuyenDungService {
 
     private JobDTO toDto(TinTuyenDung e) {
         JobDTO dto = new JobDTO();
-        dto.setId(e.getId());
+        dto.setId(e.getIdTd());
         dto.setTieuDe(e.getTieuDe());
         dto.setViTri(e.getViTri());
         dto.setMoTaNgan(e.getMoTaNgan());
@@ -63,7 +63,8 @@ public class TinTuyenDungService {
         dto.setMucLuongDen(e.getMucLuongDen());
 
         dto.setYeuCau(parseStringArray(e.getYeuCau()));
-        // benefits: there's no explicit benefits column in your table screenshot;
+        
+        // benefits: không có cột cho benefit, sẽ xóa
         // return empty
         dto.setBenefits(new java.util.ArrayList<>());
 
