@@ -26,7 +26,7 @@ public class ApplicationService {
         }
     }
 
-    public UngVien saveApplication(String name, String phone, String email, String position, MultipartFile resume)
+    public UngVien saveApplication(String name, String phone, String email, String position, String linkProfile, MultipartFile resume)
             throws IOException {
         UngVien u = new UngVien();
         // generate ID_UV like UV000001 timestamp-based short id
@@ -34,8 +34,10 @@ public class ApplicationService {
         u.setHoTen(name);
         u.setSdt(phone);
         u.setEmail(email);
-        u.setGhiChu(position); // store applied position in ghiChu or set LinkProfile field; schema doesn't
-                               // have vi_tri for UngVien
+        u.setGhiChu(position); // store applied position in ghiChu
+        if (linkProfile != null && !linkProfile.trim().isEmpty()) {
+            u.setLinkProfile(linkProfile.trim());
+        }
 
         if (resume != null && !resume.isEmpty()) {
             String original = resume.getOriginalFilename();

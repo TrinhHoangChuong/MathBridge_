@@ -214,9 +214,9 @@
   font-weight: 900
 }
 
-.job-meta {
+.job-short-desc {
   color: #475569;
-  font-size: 14px;
+  font-size: 20px;
   margin-bottom: 8px
 }
 
@@ -356,6 +356,52 @@
   }
 }
 
+/* Job details section */
+.job-details {
+  background: var(--mb-blue-light);
+  border: 1px solid var(--mb-blue-soft);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.job-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-item strong {
+  color: var(--mb-blue);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-item span {
+  color: var(--text-primary);
+  font-size: var(--font-base);
+}
+
+.status-badge {
+  display: inline-block;
+  background: var(--mb-success);
+  color: white;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 @media (max-width:980px) {
   .mb-career-wrap {
     grid-template-columns: 1fr
@@ -364,5 +410,9 @@
   .career-aside {
     position: relative;
     top: auto
+  }
+  
+  .job-details-grid {
+    grid-template-columns: 1fr;
   }
 }

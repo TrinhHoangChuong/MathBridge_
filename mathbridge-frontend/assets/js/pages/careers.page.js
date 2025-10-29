@@ -40,24 +40,74 @@ async function renderJobList(activeSlug) {
 
 function renderJobDetails(job) {
   const titleEl = document.getElementById("job-title");
-  const metaEl = document.getElementById("job-meta");
+  const shortDescEl = document.getElementById("job-short-desc");
+  const detailsEl = document.getElementById("job-details");
   const descEl = document.getElementById("job-desc");
   const reqsEl = document.getElementById("job-reqs");
-  const benefitsEl = document.getElementById("job-benefits");
   const positionInput = document.getElementById("ap-position");
 
   if (!job) {
     titleEl.textContent = "Không tìm thấy vị trí";
-    metaEl.textContent = "";
+    if (shortDescEl) shortDescEl.textContent = "";
+    if (detailsEl) detailsEl.innerHTML = "";
     descEl.textContent = "";
     reqsEl.innerHTML = "";
-    benefitsEl.innerHTML = "";
     if (positionInput) positionInput.value = "";
     return;
   }
 
   titleEl.textContent = job.title;
-  metaEl.textContent = `${job.location} • ${job.type} • ${job.salary}`;
+  
+  // Display short description under title
+  if (shortDescEl) {
+    shortDescEl.textContent = job.shortDescription || job.description || "";
+  }
+  
+  // Render job details
+  if (detailsEl) {
+    let detailsHtml = '<div class="job-details-grid">';
+    
+    // Add salary information
+    if (job.salary) {
+      detailsHtml += `<div class="detail-item">
+        <strong>Mức lương:</strong> ${job.salary}
+      </div>`;
+    }
+    
+    if (job.capBac) {
+      detailsHtml += `<div class="detail-item">
+        <strong>Cấp bậc:</strong> ${job.capBac}
+      </div>`;
+    }
+    
+    if (job.kinhNghiem) {
+      detailsHtml += `<div class="detail-item">
+        <strong>Kinh nghiệm:</strong> ${job.kinhNghiem} năm
+      </div>`;
+    }
+    
+    if (job.soLuongTuyen) {
+      detailsHtml += `<div class="detail-item">
+        <strong>Số lượng tuyển:</strong> ${job.soLuongTuyen} người
+      </div>`;
+    }
+    
+    if (job.hanNop) {
+      detailsHtml += `<div class="detail-item">
+        <strong>Hạn nộp hồ sơ:</strong> ${job.hanNop}
+      </div>`;
+    }
+    
+    if (job.trangThai) {
+      detailsHtml += `<div class="detail-item">
+        <strong>Trạng thái:</strong> <span class="status-badge">${job.trangThai}</span>
+      </div>`;
+    }
+    
+    detailsHtml += '</div>';
+    detailsEl.innerHTML = detailsHtml;
+  }
+  
   descEl.innerHTML = (job.description || "")
     .split("\n")
     .map((p) => p.trim())
@@ -66,9 +116,6 @@ function renderJobDetails(job) {
     .join("");
   reqsEl.innerHTML = (job.requirements || [])
     .map((r) => `<li>${r}</li>`)
-    .join("");
-  benefitsEl.innerHTML = (job.benefits || [])
-    .map((b) => `<li>${b}</li>`)
     .join("");
   if (positionInput) positionInput.value = job.title;
 }
@@ -96,6 +143,7 @@ function setupApplyFormValidation() {
     const name = document.getElementById("ap-name");
     const phone = document.getElementById("ap-phone");
     const email = document.getElementById("ap-email");
+    const linkProfile = document.getElementById("ap-link-profile");
     const file = document.getElementById("ap-file");
 
     let valid = true;
@@ -114,6 +162,17 @@ function setupApplyFormValidation() {
       markInvalid("email");
       valid = false;
     } else clearInvalid("email");
+    
+    // Validate LinkProfile if provided
+    if (linkProfile.value.trim()) {
+      const urlRegex = /^https?:\/\/.+/;
+      if (!urlRegex.test(linkProfile.value.trim())) {
+        markInvalid("linkProfile");
+        valid = false;
+      } else clearInvalid("linkProfile");
+    } else {
+      clearInvalid("linkProfile");
+    }
 
     if (file && file.files && file.files[0]) {
       const f = file.files[0];
@@ -135,6 +194,9 @@ function setupApplyFormValidation() {
     formData.append("phone", phone.value.trim());
     formData.append("email", email.value.trim());
     formData.append("position", pos ? pos.value : "");
+    if (linkProfile.value.trim()) {
+      formData.append("linkProfile", linkProfile.value.trim());
+    }
     if (file && file.files && file.files[0])
       formData.append("file", file.files[0]);
 

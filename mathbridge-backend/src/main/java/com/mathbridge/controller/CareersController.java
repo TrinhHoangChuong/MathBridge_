@@ -42,9 +42,10 @@ public class CareersController {
             @RequestParam String phone,
             @RequestParam String email,
             @RequestParam String position,
+            @RequestParam(required = false) String linkProfile,
             @RequestParam(required = false) MultipartFile file) {
         try {
-            applicationService.saveApplication(name, phone, email, position, file);
+            applicationService.saveApplication(name, phone, email, position, linkProfile, file);
             Map<String, Object> resp = new HashMap<>();
             resp.put("success", true);
             resp.put("message", "Ứng tuyển đã được gửi. Cảm ơn!");

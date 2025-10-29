@@ -52,17 +52,22 @@ public class TinTuyenDungService {
 
     private JobDTO toDto(TinTuyenDung e) {
         JobDTO dto = new JobDTO();
-        dto.setId(e.getIdTd());
+        dto.setIdTd(e.getIdTd());
         dto.setTieuDe(e.getTieuDe());
         dto.setViTri(e.getViTri());
         dto.setMoTaNgan(e.getMoTaNgan());
         dto.setMoTa(e.getMoTa());
+        dto.setYeuCau(e.getYeuCau());
         dto.setCapBac(e.getCapBac());
         dto.setHinhThucLamViec(e.getHinhThucLamViec());
         dto.setMucLuongTu(e.getMucLuongTu());
         dto.setMucLuongDen(e.getMucLuongDen());
+        dto.setKinhNghiem(e.getKinhNghiem());
+        dto.setSoLuongTuyen(e.getSoLuongTuyen());
+        dto.setHanNop(e.getHanNop());
+        dto.setTrangThai(e.getTrangThai());
 
-        dto.setYeuCau(parseStringArray(e.getYeuCau()));
+        dto.setYeuCauList(parseStringArray(e.getYeuCau()));
         
         // benefits: không có cột cho benefit, sẽ xóa
         // return empty

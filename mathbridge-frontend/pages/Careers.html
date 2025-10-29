@@ -61,8 +61,13 @@
             <article class="career-main">
                 <header class="job-header">
                     <h2 id="job-title">Đang tải...</h2>
-                    <div id="job-meta" class="job-meta"></div>
+                    <div id="job-short-desc" class="job-short-desc"></div>
                 </header>
+
+                <section class="job-section">
+                    <h3>Thông tin chi tiết</h3>
+                    <div id="job-details" class="job-details"></div>
+                </section>
 
                 <section class="job-section">
                     <h3>Mô tả công việc</h3>
@@ -72,11 +77,6 @@
                 <section class="job-section">
                     <h3>Yêu cầu</h3>
                     <ul id="job-reqs" class="job-reqs"></ul>
-                </section>
-
-                <section class="job-section">
-                    <h3>Quyền lợi</h3>
-                    <ul id="job-benefits" class="job-benefits"></ul>
                 </section>
 
                 <section id="apply" class="job-section job-apply">
@@ -122,6 +122,16 @@
                                 <label for="ap-position">Vị trí ứng tuyển <span class="required">*</span></label>
                                 <input id="ap-position" type="text" readonly>
                             </div>
+                        </div>
+
+                        <div class="field" data-field="linkProfile">
+                            <label for="ap-link-profile">Link Profile / Portfolio (tùy chọn)</label>
+                            <input 
+                                id="ap-link-profile" 
+                                type="url" 
+                                placeholder="https://linkedin.com/in/yourprofile hoặc https://github.com/yourusername"
+                                aria-describedby="link-profile-hint">
+                            <div id="link-profile-hint" class="hint" aria-live="polite">Chia sẻ LinkedIn, GitHub hoặc portfolio của bạn</div>
                         </div>
 
                         <div class="upload-row">

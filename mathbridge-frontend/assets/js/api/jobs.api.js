@@ -57,23 +57,38 @@ function toSlug(str) {
 
 function mapBeJobToFe(j) {
   // BE fields:
-  //  - id (String idTd), tieuDe, viTri, moTaNgan, moTa, capBac, hinhThucLamViec, mucLuongTu, mucLuongDen, yeuCau (string[]), benefits (string[])
+  //  - idTd, tieuDe, viTri, moTaNgan, moTa, yeuCau, capBac, hinhThucLamViec, 
+  //    mucLuongTu, mucLuongDen, kinhNghiem, soLuongTuyen, hanNop, trangThai, yeuCauList, benefits
   const title = j.tieuDe || j.title || "";
   const location = j.viTri || j.location || "";
   const type = j.hinhThucLamViec || j.type || "";
   const salary = (j.mucLuongTu && j.mucLuongDen)
     ? `${j.mucLuongTu} - ${j.mucLuongDen}`
     : (j.mucLuongTu || j.mucLuongDen || j.salary || "");
+  
+  // Format deadline
+  let deadline = "";
+  if (j.hanNop) {
+    const date = new Date(j.hanNop);
+    deadline = date.toLocaleDateString('vi-VN');
+  }
+  
   return {
-    id: j.id,
+    id: j.idTd || j.id,
     slug: toSlug(title),
     title,
     location,
     type,
     salary,
-    description: j.moTa || j.moTaNgan || j.description || "",
-    requirements: j.yeuCau || j.requirements || [],
-    benefits: j.benefits || [],
+    shortDescription: j.moTaNgan || "",
+    description: j.moTa || j.description || "",
+    requirements: j.yeuCauList || j.yeuCau || j.requirements || [],
+    // Additional fields from entity
+    kinhNghiem: j.kinhNghiem,
+    soLuongTuyen: j.soLuongTuyen,
+    hanNop: deadline,
+    trangThai: j.trangThai,
+    capBac: j.capBac
   };
 }
 
