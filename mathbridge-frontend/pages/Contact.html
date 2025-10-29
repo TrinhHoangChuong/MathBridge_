@@ -51,7 +51,20 @@
 
               <label>
                 <span class="label-text">Số điện thoại</span>
-                <input type="tel" name="phone" placeholder="+84 9xx xxx xxx" />
+                <input type="tel" name="phone" placeholder="+84 9xx xxx xxx" required />
+              </label>
+
+              <label>
+                <span class="label-text">Nội dung muốn tư vấn</span>
+                <select name="hinhThucTuVan" required>
+                  <option value="">Chọn nội dung tư vấn</option>
+                  <option value="Khóa học Toán">Khóa học Toán</option>
+                  <option value="Lịch học và đăng ký">Lịch học và đăng ký</option>
+                  <option value="Học phí và ưu đãi">Học phí và ưu đãi</option>
+                  <option value="Giảng viên và phương pháp giảng dạy">Giảng viên và phương pháp giảng dạy</option>
+                  <option value="Hỗ trợ học tập">Hỗ trợ học tập</option>
+                  <option value="Khác">Khác</option>
+                </select>
               </label>
 
               <label>
@@ -75,8 +88,13 @@
                 <li><a href="https://instagram.com/mathbridge" class="link">Instagram</a></li>
                 <li><a href="https://linkedin.com/company/mathbridge" class="link">LinkedIn</a></li>
               </ul>
-              <p class="contact-phone"><a href="tel:+84901234567" class="link">+84 901 234 567</a></p>
+              <p class="contact-phone">Hotline: <span id="contact-hotline">Đang tải...</span></p>
               <p class="contact-addr" id="contact-address">Đang tải...</p>
+              <p class="contact-hours">Giờ làm việc: <span id="contact-hours">Đang tải...</span></p>
+              <div id="centers-info" class="centers-info">
+                <h4>Cơ sở của chúng tôi</h4>
+                <div id="centers-list">Đang tải...</div>
+              </div>
             </div>
           </aside>
         </div>
