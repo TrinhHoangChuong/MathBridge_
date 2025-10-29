@@ -20,19 +20,26 @@ const status = document.getElementById("form-status");
 form.addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  // Validate required fields
+  const formData = new FormData(this);
   const firstName = formData.get("first_name");
   const lastName = formData.get("last_name");
   const email = formData.get("email");
   const phone = formData.get("phone");
   const hinhThucTuVan = formData.get("hinhThucTuVan");
 
+  // Validate required fields
   if (!firstName || !lastName || !email || !phone || !hinhThucTuVan) {
-    status.textContent = "❌ Vui lòng điền đầy đủ thông tin cá nhân và chọn hình thức tư vấn.";
+    status.textContent = "❌ Vui lòng điền đầy đủ thông tin cá nhân và chọn nội dung tư vấn.";
     return;
   }
 
-  const formData = new FormData(this);
+  // Validate phone number (must be exactly 10 digits)
+  const phoneRegex = /^\d{10}$/;
+  if (!phoneRegex.test(phone.replace(/\s+/g, ''))) {
+    status.textContent = "❌ Số điện thoại phải có đúng 10 chữ số.";
+    return;
+  }
+
   const contactData = {
     hoTen: firstName + " " + lastName,
     email: email,
@@ -81,15 +88,15 @@ async function loadContactInfo() {
       const centersHtml = contactData.centers.map(center => `
         <div class="center-item">
           <h5>${center.name}</h5>
-          <p><strong>Địa chỉ:</strong> ${center.address}</p>
-          <p><strong>Hotline:</strong> ${center.hotline}</p>
-          <p><strong>Giờ làm việc:</strong> ${center.workingHours}</p>
-          <p><strong>Ngày làm việc:</strong> ${center.workingDays}</p>
+          <p><strong>📍 Địa chỉ:</strong> ${center.address}</p>
+          <p><strong>📞 Hotline:</strong> ${center.hotline}</p>
+          <p><strong>🕒 Giờ làm việc:</strong> ${center.workingHours}</p>
+          <p><strong>📅 Ngày làm việc:</strong> ${center.workingDays}</p>
         </div>
       `).join('');
       centersListElement.innerHTML = centersHtml;
     } else {
-      centersListElement.innerHTML = '<p>Không có thông tin cơ sở.</p>';
+      centersListElement.innerHTML = '<p style="color: var(--ink-70); font-style: italic;">Không có thông tin cơ sở.</p>';
     }
 
   } catch (error) {

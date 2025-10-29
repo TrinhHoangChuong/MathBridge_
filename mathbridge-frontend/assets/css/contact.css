@@ -69,8 +69,17 @@ button, .contact-form button{ border-radius:10px; }
 .contact-block__desc{ margin:0 0 10px; color:var(--ink-70) }
 .contact-actions{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px }
 .contact-actions .link{ color:var(--mb-accent); text-decoration:underline }
-.contact-phone .link{ font-weight:800; color:var(--navy) }
-.contact-addr{ color:var(--ink-70); margin:0 }
+.contact-info-item{ display:flex; align-items:center; gap:12px; margin:12px 0; padding:8px 0; border-bottom:1px solid var(--line) }
+.contact-info-item:last-child{ border-bottom:none }
+.contact-icon{ font-size:20px; flex-shrink:0 }
+.contact-info-item strong{ display:block; color:var(--navy); font-weight:700; margin-bottom:2px }
+.contact-info-item span{ color:var(--ink-70) }
+.centers-info{ margin-top:16px; padding-top:16px; border-top:2px solid var(--bg-soft) }
+.centers-info h4{ margin:0 0 12px 0; color:var(--navy); font-weight:800; font-size:16px }
+.center-item{ background:var(--bg-soft); border-radius:8px; padding:12px; margin-bottom:8px; border-left:4px solid var(--brand-red) }
+.center-item h5{ margin:0 0 8px 0; color:var(--navy); font-weight:700; font-size:15px }
+.center-item p{ margin:4px 0; color:var(--ink-70); font-size:14px }
+.center-item strong{ color:var(--navy) }
 
 /* Responsive */
 @media (max-width: 900px){ .contact-grid__wrap{ grid-template-columns:1fr; } .grid-2{ grid-template-columns:1fr } }
