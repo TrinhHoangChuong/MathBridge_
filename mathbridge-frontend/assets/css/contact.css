@@ -4,17 +4,76 @@
    - Consistent container, card, headings, inputs
    ============================================================ */
 
-:root{
-  --mb-blue:       #1e3a8a;
-  --mb-blue-2:     #1f3b86;
-  --mb-accent:     #e11d48;
-  --mb-accent-deep:#b91c1c;
-  --mb-ink:        #0f172a;
-  --mb-gray-1:     #51607a;
-  --mb-gray-2:     #374151;
-  --mb-card:       #ffffff;
-  --mb-bg-soft:    #f7f8fc;
+/* Uses shared tokens from assets/css/index.css (imported in page head).
+  Map legacy contact variables to index tokens so contact.css follows the site design.
+*/
+
+/* Map legacy --mb-* variables to the tokens defined on #main-content in index.css */
+#main-content{
+  --mb-blue:      var(--navy, #1e3a8a);
+  --mb-accent:    var(--brand-red, #e11d48);
+  --mb-gray-1:    var(--ink-70, #51607a);
+  --mb-gray-2:    var(--ink, #374151);
+  --mb-card:      var(--bg, #ffffff);
+  --mb-bg-soft:   var(--bg-soft, #f7f8fc);
 }
+
+/* =================== Design tokens copied from index.css =================== */
+:root{
+  --brand-red: #e11d48;
+  --brand-red-700:#be123c;
+  --navy: #0f172a;
+  --ink: #111827;
+  --ink-70:#4b5563;
+  --bg:#ffffff;
+  --bg-soft:#f7f9fc;
+  --line:#e5e7eb;
+
+  --shadow-sm: 0 8px 20px rgba(2, 6, 23, .06);
+  --shadow:    0 14px 40px rgba(2, 6, 23, .10);
+  --radius: 16px;
+  --radius-lg: 26px;
+
+  --container: 1200px;
+  --gap: 24px;
+
+  --grad-brand: linear-gradient(135deg, var(--brand-red), #2563eb);
+}
+
+/* Basic shared components so contact page matches index look */
+.btn{ display:inline-flex; align-items:center; gap:10px; padding:12px 20px; border-radius:999px; font-weight:700; border:2px solid transparent; text-decoration:none; cursor:pointer; transition: transform .12s ease, box-shadow .12s ease, filter .12s ease; box-shadow:var(--shadow-sm); }
+.btn--primary{ background: var(--grad-brand); color:#fff }
+.btn--primary:hover{ filter: brightness(.98); box-shadow: var(--shadow) }
+.section-head{ text-align:center; margin: 0 auto 24px; max-width: 820px; }
+.section-title{ font-family:"Be Vietnam Pro", Inter, system-ui, sans-serif; font-weight:900; font-size: clamp(26px, 3.6vw, 38px); line-height:1.15; color: var(--navy); letter-spacing:-0.015em; margin:0 }
+.section-sub{ color: var(--ink-70); margin:0; font-size: clamp(14px, 1.8vw, 16px); }
+
+/* ensure contact's primary button uses brand styles */
+button, .contact-form button{ border-radius:10px; }
+
+/* ===== Contact layout ===== */
+.contact-grid__wrap{ display:grid; grid-template-columns: 1fr 380px; gap: 32px; align-items:start }
+.contact-left{}
+.contact-right{ display:flex; flex-direction:column; gap:18px }
+
+.contact-form label{ display:block; margin-bottom:12px; font-size:13px; color:var(--ink-70) }
+.contact-form .label-text{ display:block; font-weight:700; margin-bottom:6px; color:var(--mb-gray-2) }
+.contact-form input[type="text"], .contact-form input[type="email"], .contact-form input[type="tel"], .contact-form select, .contact-form textarea{ width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--bg); box-shadow:none; font-size:15px; color:var(--ink); }
+.contact-form textarea{ min-height:110px; resize:vertical }
+.grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
+.form-actions{ margin-top:12px }
+.form-status{ margin-top:10px; color:var(--mb-gray-1) }
+
+.contact-block{ background:var(--bg); border-radius:12px; padding:14px; border:1px solid rgba(2,6,23,.04); box-shadow:var(--shadow-sm) }
+.contact-block__title{ margin:0 0 8px; font-weight:800; color:var(--navy) }
+.contact-block__desc{ margin:0 0 10px; color:var(--ink-70) }
+.contact-actions{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px }
+.contact-actions .link{ color:var(--mb-accent); text-decoration:underline }
+.contact-phone .link{ font-weight:800; color:var(--navy) }
+.contact-addr{ color:var(--ink-70); margin:0 }
+
+/* Responsive */
+@media (max-width: 900px){ .contact-grid__wrap{ grid-template-columns:1fr; } .grid-2{ grid-template-columns:1fr } }
 
 .mb-container{max-width:1200px;margin:0 auto;padding:0 20px}
 *, *::before, *::after{box-sizing:border-box}

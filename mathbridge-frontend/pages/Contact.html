@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Liên hệ - MathBridge</title>
   <base href="../">
+  <link rel="stylesheet" href="assets/css/index.css" />
   <link rel="stylesheet" href="assets/css/header.css" />
   <link rel="stylesheet" href="assets/css/footer.css" />
   <link rel="stylesheet" href="assets/css/contact.css" />
   <script src="assets/js/utils/includePartials.js" defer></script>
+  <script src="assets/js/pages/contact.page.js" defer></script>
   <!-- EmailJS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
@@ -16,125 +18,82 @@
 <body>
   <header></header>
 
-  <main class="contact-page">
-    <section class="contact-hero">
-      <h1>Liên hệ với MathBridge</h1>
-      <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn trong hành trình học Toán.</p>
-    </section>
-
-    <section class="contact-info">
-      <div class="contact-details">
-        <h2>Thông tin liên hệ</h2>
-        <ul>
-          <li>
-            <span class="ci-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8 2 4 4.5 4 9c0 5.25 6.5 11.5 7.2 12.1a1 1 0 0 0 1.6 0C13.5 20.5 20 14.25 20 9c0-4.5-4-7-8-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z" fill="#e11d48"/></svg>
-            </span>
-            <b>Địa chỉ:</b> 123 Nguyễn Văn Cừ, Quận 5, TP. Hồ Chí Minh
-          </li>
-          <li>
-            <span class="ci-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.6 10.8c1.2 2.4 3.2 4.4 5.6 5.6l1.9-1.9c.3-.3.8-.4 1.1-.2 1 .4 2 .6 3.1.6.5 0 .9.4.9.9V20c0 .5-.4.9-.9.9C9.8 20.9 3.1 14.2 3.1 5.8c0-.5.4-.9.9-.9h3.2c.5 0 .9.4.9.9 0 1.1.2 2.1.6 3.1.1.4 0 .8-.3 1.1l-1.8 1.7Z" fill="#1e3a8a"/></svg>
-            </span>
-            <b>Hotline:</b> <a href="tel:0901234567">0901 234 567</a>
-          </li>
-          <li>
-            <span class="ci-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Zm2.5 0L12 10l5.5-4H6.5Z" fill="#1e3a8a"/></svg>
-            </span>
-            <b>Email:</b> <a href="mailto:support@mathbridge.vn">support@mathbridge.vn</a>
-          </li>
-          <li>
-            <span class="ci-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a1 1 0 0 1 1 1v3.6l2.4 1.4a1 1 0 1 1-1 1.8l-3-1.7A1 1 0 0 1 11 14V9a1 1 0 0 1 1-1Z" fill="#e11d48"/><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10Zm0-18C7.6 4 4 7.6 4 12s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Z" fill="#e11d48"/></svg>
-            </span>
-            <b>Giờ làm việc:</b> Thứ 2 – Thứ 7, 8:00 – 18:00
-          </li>
-        </ul>
-
-        <div class="social-links">
-          <a href="https://facebook.com/mathbridge" target="_blank" class="social social-fb" aria-label="Facebook">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1e3a8a" xmlns="http://www.w3.org/2000/svg"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7h-2.2V12h2.2V9.8c0-2.2 1.3-3.4 3.3-3.4.9 0 1.8.1 2.7.3v2.4h-1.5c-1.3 0-1.7.8-1.7 1.6V12h3l-.5 2.9h-2.5v7A10 10 0 0 0 22 12Z"/></svg>
-            Facebook
-          </a>
-          <a href="https://zalo.me/mathbridge" target="_blank" class="social social-zl" aria-label="Zalo">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1e3a8a" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/></svg>
-            Zalo
-          </a>
-          <a href="https://instagram.com/mathbridge" target="_blank" class="social social-ig" aria-label="Instagram">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1e3a8a" xmlns="http://www.w3.org/2000/svg"><path d="M16 2H8a6 6 0 0 0-6 6v8a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6V8a6 6 0 0 0-6-6Zm-4 6a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm5-1.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/></svg>
-            Instagram
-          </a>
+  <div id="main-content">
+    <main class="contact-page">
+      <section class="contact-hero">
+        <div class="mb-container">
+          <div class="section-head">
+            <h1 class="section-title">Liên hệ với MathBridge</h1>
+            <p class="section-sub">Chúng tôi luôn sẵn sàng hỗ trợ bạn trong hành trình học Toán. Chat trực tiếp hoặc gửi tin nhắn — chúng tôi phản hồi nhanh.</p>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="contact-form">
-        <h2>Gửi tin nhắn cho chúng tôi</h2>
-        <form id="contactForm">
-          <label>Họ và tên:</label>
-          <input type="text" name="name" required>
+      <section class="contact-grid section--soft">
+        <div class="mb-container contact-grid__wrap">
+          <div class="contact-left">
+            <form id="contactForm" class="contact-form" novalidate>
+              <div class="grid-2">
+                <label>
+                  <span class="label-text">Tên</span>
+                  <input type="text" name="first_name" placeholder="Tên" required />
+                </label>
+                <label>
+                  <span class="label-text">Họ</span>
+                  <input type="text" name="last_name" placeholder="Họ" required />
+                </label>
+              </div>
 
-          <label>Email:</label>
-          <input type="email" name="email" required>
+              <label>
+                <span class="label-text">Email</span>
+                <input type="email" name="email" placeholder="ban@email.com" required />
+              </label>
 
-          <label>Loại liên hệ:</label>
-          <select name="inquiry_type" required>
-            <option value="">Chọn loại liên hệ</option>
-            <option value="general">Liên hệ chung</option>
-            <option value="technical">Hỗ trợ kỹ thuật</option>
-            <option value="partnership">Cơ hội hợp tác</option>
-            <option value="feedback">Phản hồi</option>
-            <option value="other">Khác</option>
-          </select>
+              <label>
+                <span class="label-text">Số điện thoại</span>
+                <input type="tel" name="phone" placeholder="+84 9xx xxx xxx" />
+              </label>
 
-          <label>Nội dung:</label>
-          <textarea name="message" rows="5" required></textarea>
+              <label>
+                <span class="label-text">Tin nhắn</span>
+                <textarea name="message" rows="6" placeholder="Để lại tin nhắn..."></textarea>
+              </label>
 
-          <button type="submit">GỬI LIÊN HỆ</button>
-        </form>
-        <p id="form-status"></p>
-      </div>
-    </section>
+              <div class="form-actions">
+                <button type="submit" class="btn btn--primary">Send message</button>
+              </div>
+              <p id="form-status" class="form-status"></p>
+            </form>
+          </div>
 
-    <section class="map">
-      <h2>Vị trí của chúng tôi</h2>
-      <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.493351804851!2d106.68808427481867!3d10.773374959259985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f2fa8b0f113%3A0xdad6ef26dff6d058!2zMTIzIE5ndXnhu4VuIFbEg24gQ8OqLCBRdeG6rW4gNSwgUXXhuq1uIDUsIFRow6BuaCBwaOG7kSBHaeG6pXkgTeG7uSwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrQ!5e0!3m2!1svi!2s!4v1697434322337!5m2!1svi!2s"
-        width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy">
-      </iframe>
-    </section>
-  </main>
+          <aside class="contact-right">
+            <div class="contact-block">
+              <h3 class="contact-block__title">Thông tin liên hệ</h3>
+              <p class="contact-block__desc">Theo dõi chúng tôi trên mạng xã hội và ghé thăm văn phòng.</p>
+              <ul class="contact-actions">
+                <li><a href="https://facebook.com/mathbridge" class="link">Facebook</a></li>
+                <li><a href="https://instagram.com/mathbridge" class="link">Instagram</a></li>
+                <li><a href="https://linkedin.com/company/mathbridge" class="link">LinkedIn</a></li>
+              </ul>
+              <p class="contact-phone"><a href="tel:+84901234567" class="link">+84 901 234 567</a></p>
+              <p class="contact-addr" id="contact-address">Đang tải...</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="map section--soft">
+        <div class="mb-container">
+          <h2 class="section-title">Vị trí của chúng tôi</h2>
+          <div class="map-iframe" style="margin-top:12px">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.493351804851!2d106.68808427481867!3d10.773374959259985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f2fa8b0f113%3A0xdad6ef26dff6d058!2zMTIzIE5ndXnhu4VuIFbEg24gQ8OqLCBRdeG6rW4gNSwgUXXhuq1uIDUsIFRow6BuaCBwaOG7kSBHaeG6pXkgTeG7uSwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrQ!5e0!3m2!1svi!2s!4v1697434322337!5m2!1svi!2s" width="100%" height="340" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy"></iframe>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <footer></footer>
 
-  <script>
-    // Include header/footer
-    window.addEventListener("load", () => {
-      includePartials({
-        header: "partials/header.html",
-        footer: "partials/footer.html",
-      });
-    });
-
-    // EmailJS setup
-    (function() {
-      emailjs.init("YOUR_PUBLIC_KEY"); // 🔹 Thay bằng public key EmailJS của bạn
-    })();
-
-    const form = document.getElementById("contactForm");
-    const status = document.getElementById("form-status");
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      emailjs.sendForm("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", this)
-        .then(() => {
-          status.textContent = "✅ Tin nhắn của bạn đã được gửi thành công!";
-          form.reset();
-        }, (err) => {
-          status.textContent = "❌ Gửi thất bại. Vui lòng thử lại sau.";
-          console.error(err);
-        });
-    });
-  </script>
 </body>
 </html>

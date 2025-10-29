@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Giới thiệu | MathBridge</title>
     <base href="../"> <!-- giữ base để dùng chung assets/partials -->
+  <link rel="stylesheet" href="assets/css/index.css" />
     <link rel="stylesheet" href="assets/css/header.css" />
     <link rel="stylesheet" href="assets/css/footer.css" />
     <link rel="stylesheet" href="assets/css/about.css" />
@@ -14,6 +15,7 @@
 <body>
 <header></header>
 
+<div id="main-content">
 <main>
   <!-- SECTION 1: HERO -->
   <section class="mb-hero about-hero v2">
@@ -46,6 +48,110 @@
       </figure>
     </div>
     <div class="wave"></div>
+  </section>
+
+  <!-- SECTION 4: VALUES (CORE PRINCIPLES) -->
+  <section class="about-values">
+    <div class="mb-container">
+      <header class="section-head">
+        <h2 class="section-title">Giá trị cốt lõi</h2>
+        <p class="section-sub">Những nguyên tắc dẫn dắt mọi quyết định của MathBridge.</p>
+      </header>
+
+      <div class="values-grid">
+        <div class="value-card">
+          <div class="value-img placeholder" aria-hidden="true"><span class="vh-text">PT</span></div>
+          <h3>Phát triển tư duy</h3>
+          <p>Khuyến khích tư duy độc lập, logic và sáng tạo ở học sinh.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-img placeholder" aria-hidden="true"><span class="vh-text">HM</span></div>
+          <h3>Hướng mục tiêu</h3>
+          <p>Thiết kế lộ trình rõ ràng phù hợp mục tiêu thi quốc tế và trong nước.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-img placeholder" aria-hidden="true"><span class="vh-text">ĐH</span></div>
+          <h3>Đồng hành</h3>
+          <p>Theo sát tiến trình, báo cáo định kỳ và tư vấn cá nhân hóa.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-img placeholder" aria-hidden="true"><span class="vh-text">KB</span></div>
+          <h3>Kết quả bền vững</h3>
+          <p>Tập trung vào nền tảng lâu dài thay vì chỉ điểm số ngắn hạn.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: APPROACH & PROGRAMS (reworked) -->
+  <section class="section--soft" style="padding:56px 0">
+    <div class="mb-container">
+      <div class="section-head">
+        <h2 class="section-title">Phương pháp & Chương trình</h2>
+        <p class="section-sub">Cách tiếp cận của chúng tôi: hệ thống, có dữ liệu, tập trung vào kết quả và tư duy dài hạn.</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1.05fr .95fr; gap:28px; align-items:start; margin-top:22px">
+        <!-- Left: Approach narrative with small highlights -->
+        <div>
+          <p style="color:var(--mb-gray-1); margin:0 0 14px">MathBridge áp dụng phương pháp học tập dựa trên năng lực kết hợp với mô phỏng đề thi thực tế. Mỗi học sinh được đánh giá đầu vào để tạo lộ trình cá nhân; tiến độ được đo bằng bài kiểm tra định kỳ và phân tích dữ liệu học tập.</p>
+
+          <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px">
+            <div class="reason-card" style="padding:14px; display:flex; gap:12px; align-items:flex-start">
+              <div class="aud-card__badge" style="min-width:44px; height:44px; border-radius:10px; display:grid; place-items:center; font-weight:900; background:var(--grad-brand); color:#fff">A</div>
+              <div>
+                <strong>Đánh giá cá nhân</strong>
+                <p class="reason-card__desc">Khảo sát năng lực ban đầu để thiết kế lộ trình phù hợp.</p>
+              </div>
+            </div>
+
+            <div class="reason-card" style="padding:14px; display:flex; gap:12px; align-items:flex-start">
+              <div class="aud-card__badge" style="min-width:44px; height:44px; border-radius:10px; display:grid; place-items:center; font-weight:900; background:linear-gradient(90deg,var(--mb-accent),#2563eb); color:#fff">B</div>
+              <div>
+                <strong>Phản hồi tức thì</strong>
+                <p class="reason-card__desc">Bài tập & bài kiểm tra có phân tích, giúp học sinh điều chỉnh nhanh.</p>
+              </div>
+            </div>
+
+            <div class="reason-card" style="padding:14px; display:flex; gap:12px; align-items:flex-start">
+              <div class="aud-card__badge" style="min-width:44px; height:44px; border-radius:10px; display:grid; place-items:center; font-weight:900; background:linear-gradient(90deg,var(--mb-accent),#2563eb); color:#fff">B</div>
+              <div>
+                <strong>Luyện thi mô phỏng</strong>
+                <p class="reason-card__desc">Mock test định kỳ, phân tích lỗi để tối ưu kỹ năng làm bài.</p>
+              </div>
+            </div>
+
+            <div class="reason-card" style="padding:14px; display:flex; gap:12px; align-items:flex-start">
+              <div class="aud-card__badge" style="min-width:44px; height:44px; border-radius:10px; display:grid; place-items:center; font-weight:900; background:linear-gradient(90deg,#06b6d4,var(--mb-accent)); color:#fff">D</div>
+              <div>
+                <strong>Hỗ trợ phụ huynh</strong>
+                <p class="reason-card__desc">Báo cáo tiến độ rõ ràng và khuyến nghị phát triển cho phụ huynh.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Featured programs as stacked cards -->
+        <div>
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div class="reason-card" style="padding:16px; background:linear-gradient(180deg,#fff,#fbfdff)">
+              <h4 style="margin:0 0 6px">Track Nền tảng (Lớp 6–9)</h4>
+              <p class="reason-card__desc">Nền tảng logic, số & hình, bài tập theo chuyên đề, đặt mục tiêu phát triển tư duy.</p>
+            </div>
+
+            <div class="reason-card" style="padding:16px; background:linear-gradient(180deg,#fff,#fff7fb)">
+              <h4 style="margin:0 0 6px">Track Chuẩn quốc tế (IGCSE / IB / AP)</h4>
+              <p class="reason-card__desc">Chương trình bám sát đề thi quốc tế, mock test và chiến lược thi.</p>
+            </div>
+
+            <div class="reason-card" style="padding:16px; background:linear-gradient(180deg,#fff,#f7fff9)">
+              <h4 style="margin:0 0 6px">Track Nâng cao & HS giỏi</h4>
+              <p class="reason-card__desc">Bài tập suy luận cao cấp, luyện thi tuyển chọn và thi học sinh giỏi.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- SECTION 2: SỨ MỆNH -->
@@ -104,7 +210,240 @@
       </div>
     </div>
   </section>
+
+  <!-- SECTION: STATS (enhanced visual) -->
+  <section class="stats" style="padding:48px 0 30px">
+    <div class="mb-container">
+      <div class="section-head">
+        <h2 class="section-title">Một số con số nổi bật</h2>
+        <p class="section-sub">Kết quả đã được kiểm chứng qua dữ liệu nội bộ và phản hồi học sinh/phụ huynh.</p>
+      </div>
+
+      <div class="stats__wrap" style="margin-top:18px; display:grid; grid-template-columns:repeat(4,1fr); gap:18px">
+        <div class="stat">
+          <div class="stat__num">98%</div>
+          <div class="stat__note">Học sinh tiến bộ sau 3 tháng</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num">1,200+</div>
+          <div class="stat__note">Học sinh đang theo học</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num">85%</div>
+          <div class="stat__note">Đạt mục tiêu thi quốc tế</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num">10+</div>
+          <div class="stat__note">Năm kinh nghiệm chuyên sâu</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: REASONS / KEY BENEFITS -->
+  <section class="reasons section--soft">
+    <div class="mb-container">
+      <div class="section-head">
+        <h2 class="section-title">Tại sao chọn MathBridge</h2>
+        <p class="section-sub">Hệ thống học tập được thiết kế để tối ưu kết quả và phát triển tư duy.</p>
+      </div>
+
+      <div class="reason-grid" style="margin-top:18px">
+        <div class="reason-card">
+          <div class="reason-card__icon">📚</div>
+          <h3 class="reason-card__title">Lộ trình cá nhân hóa</h3>
+          <div class="reason-card__divider"></div>
+          <p class="reason-card__desc">Đánh giá đầu vào, lộ trình theo mục tiêu và báo cáo tiến độ định kỳ.</p>
+        </div>
+        <div class="reason-card">
+          <div class="reason-card__icon">👩‍🏫</div>
+          <h3 class="reason-card__title">Giáo viên chuyên sâu</h3>
+          <div class="reason-card__divider"></div>
+          <p class="reason-card__desc">Đội ngũ có chứng chỉ quốc tế, kinh nghiệm luyện thi và giảng dạy nâng cao.</p>
+        </div>
+        <div class="reason-card">
+          <div class="reason-card__icon">🧩</div>
+          <h3 class="reason-card__title">Phương pháp tương tác</h3>
+          <div class="reason-card__divider"></div>
+          <p class="reason-card__desc">Bài tập theo cấp độ, phản hồi tức thì và mô phỏng đề thi chuẩn.</p>
+        </div>
+        <div class="reason-card">
+          <div class="reason-card__icon">🔬</div>
+          <h3 class="reason-card__title">Kiểm tra & Đo lường</h3>
+          <div class="reason-card__divider"></div>
+          <p class="reason-card__desc">Phân tích tiến trình học bằng báo cáo dữ liệu, tối ưu lộ trình học.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: CURRICULUM / TRACKS (cards + accordion) -->
+  <section class="section--soft track" style="padding:40px 0">
+    <div class="mb-container">
+      <div class="section-head">
+        <h2 class="section-title">Chương trình & Lộ trình</h2>
+        <p class="section-sub">Lộ trình rõ ràng, theo từng mục tiêu — từ nền tảng đến luyện thi chuyên sâu.</p>
+      </div>
+
+      <!-- Track cards (compact, clickable) -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:18px">
+        <div class="reason-card" style="padding:18px; cursor:pointer" data-track="0">
+          <div style="display:flex; gap:12px; align-items:center">
+            <div class="track-num" style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--grad-brand);color:#fff;font-weight:900">1</div>
+            <div>
+              <strong>Track A — Nền tảng</strong>
+              <p class="reason-card__desc" style="margin:6px 0 0">Củng cố kiến thức cơ bản và phát triển tư duy giải quyết vấn đề.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="reason-card" style="padding:18px; cursor:pointer" data-track="1">
+          <div style="display:flex; gap:12px; align-items:center">
+            <div class="track-num" style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(90deg,var(--mb-accent),#2563eb);color:#fff;font-weight:900">2</div>
+            <div>
+              <strong>Track B — Chuẩn quốc tế</strong>
+              <p class="reason-card__desc" style="margin:6px 0 0">Chuẩn bị kỹ năng và chiến lược học tập cho IGCSE / IB / AP.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="reason-card" style="padding:18px; cursor:pointer" data-track="2">
+          <div style="display:flex; gap:12px; align-items:center">
+            <div class="track-num" style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(90deg,var(--mb-accent),#2563eb);color:#fff;font-weight:900">3</div>
+            <div>
+              <strong>Track C — Nâng cao & HS giỏi</strong>
+              <p class="reason-card__desc" style="margin:6px 0 0">Thử thách cao cấp, luyện thi và thi tuyển.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden accordion panels (toggle by JS below) -->
+      <div class="track-panels" style="margin-top:18px">
+        <div class="acc-panel" id="panel-0" hidden>
+          <div class="acc-body">
+            <div class="acc-illust"><img src="assets/img/curriculum1.jpg" alt="curriculum" style="border-radius:12px; max-width:240px"/></div>
+            <div>
+              <h4>Track A — Lộ trình nền tảng</h4>
+              <p>Nhấn mạnh kiến thức nền, bài tập theo chủ đề và đánh giá tiến độ định kỳ.</p>
+              <ul class="tick-list"><li>Đại số cơ bản</li><li>Hình học trực quan</li><li>Kỹ năng giải bài</li></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="acc-panel" id="panel-1" hidden>
+          <div class="acc-body">
+            <div class="acc-illust"><img src="assets/img/curriculum2.jpg" alt="curriculum" style="border-radius:12px; max-width:240px"/></div>
+            <div>
+              <h4>Track B — Chuẩn quốc tế</h4>
+              <p>Chiến lược thi quốc tế, phân tích đề mẫu và mock tests.</p>
+              <ul class="tick-list"><li>Phân tích đề</li><li>Chiến lược thời gian</li><li>Mock tests</li></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="acc-panel" id="panel-2" hidden>
+          <div class="acc-body">
+            <div class="acc-illust"><img src="assets/img/curriculum3.jpg" alt="curriculum" style="border-radius:12px; max-width:240px"/></div>
+            <div>
+              <h4>Track C — Nâng cao & HS giỏi</h4>
+              <p>Bài tập suy luận cao cấp, huấn luyện thi học sinh giỏi.</p>
+              <ul class="tick-list"><li>Bài toán nâng cao</li><li>Huấn luyện thi</li></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="track-cta" style="margin-top:18px"><a href="pages/Courses.html" class="btn btn--primary">Xem chi tiết chương trình</a></div>
+    </div>
+  </section>
+
+  <!-- SECTION: TESTIMONIALS -->
+  <section class="section--soft" style="padding:40px 0">
+    <div class="mb-container">
+      <div class="section-head">
+        <h2 class="section-title">Lời chứng thực</h2>
+        <p class="section-sub">Phụ huynh & học sinh chia sẻ về hành trình với MathBridge.</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:18px">
+        <div style="background:#fff; padding:18px; border-radius:12px; box-shadow:0 6px 18px rgba(2,6,23,.06)">
+          <p>"Con tiến bộ rõ rệt sau 2 tháng. Giáo viên rất tận tâm và phương pháp rõ ràng."</p>
+          <p style="font-weight:700; margin-top:8px">— Phụ huynh H.</p>
+        </div>
+        <div style="background:#fff; padding:18px; border-radius:12px; box-shadow:0 6px 18px rgba(2,6,23,.06)">
+          <p>"Các bài tập bám sát đề thi, giúp em tự tin hơn khi vào đề chính thức."</p>
+          <p style="font-weight:700; margin-top:8px">— Học sinh L.</p>
+        </div>
+        <div style="background:#fff; padding:18px; border-radius:12px; box-shadow:0 6px 18px rgba(2,6,23,.06)">
+          <p>"Báo cáo tiến độ chi tiết giúp phụ huynh theo dõi sát sao kết quả học tập."</p>
+          <p style="font-weight:700; margin-top:8px">— Phụ huynh T.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: FAQ -->
+  <section class="section--soft" style="padding:40px 0">
+    <div class="mb-container">
+      <div class="section-head">
+        <h2 class="section-title">Câu hỏi thường gặp</h2>
+        <p class="section-sub">Một vài câu trả lời nhanh về chương trình và đăng ký.</p>
+      </div>
+
+      <div style="margin-top:18px">
+        <details style="margin-bottom:12px"><summary style="font-weight:800">Ai phù hợp với khóa học?</summary>
+          <p>Học sinh từ lớp 6–12, đặc biệt phù hợp với em chuẩn bị thi quốc tế hoặc muốn nâng cao tư duy.</p>
+        </details>
+        <details style="margin-bottom:12px"><summary style="font-weight:800">Hình thức học?</summary>
+          <p>Cả online và offline; lớp nhỏ, lịch linh hoạt, hỗ trợ học lại và mock test.</p>
+        </details>
+        <details style="margin-bottom:12px"><summary style="font-weight:800">Làm sao để đăng ký tư vấn?</summary>
+          <p>Nhấn "Tư vấn miễn phí" phía trên hoặc đến trang Liên hệ để gửi thông tin.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: CASE STUDIES / RESULTS -->
+  <section style="padding:40px 0">
+    <div class="mb-container">
+      <div class="section-head">
+        <h2 class="section-title">Kết quả tiêu biểu</h2>
+        <p class="section-sub">Một vài ví dụ về học sinh đạt thành tích nổi bật sau chương trình.</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:18px">
+        <div class="reason-card">
+          <h3 class="reason-card__title">Học sinh A – IGCSE</h3>
+          <p class="reason-card__desc">Từ điểm trung bình thấp lên A*/A trong 1 học kỳ với lộ trình cá nhân.</p>
+        </div>
+        <div class="reason-card">
+          <h3 class="reason-card__title">Học sinh B – IB</h3>
+          <p class="reason-card__desc">Cải thiện kỹ năng làm bài thời gian ngắn và tư duy phản biện.</p>
+        </div>
+        <div class="reason-card">
+          <h3 class="reason-card__title">Học sinh C – Olympic</h3>
+          <p class="reason-card__desc">Huấn luyện chuyên sâu giành giải cao trong kỳ thi cấp quận/tỉnh.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section style="text-align:center; padding:40px 20px; background:linear-gradient(180deg,#fff,#f8fbff)">
+    <div class="mb-container">
+      <h2 style="margin:0 0 12px">Sẵn sàng bắt đầu?</h2>
+      <p style="margin:0 0 18px; color:#475569">Đặt lịch tư vấn miễn phí hoặc tham gia lớp thử để trải nghiệm phương pháp giảng dạy.</p>
+      <div style="display:flex; gap:12px; justify-content:center">
+        <a class="btn btn--primary" href="pages/Contact.html">Đặt lịch tư vấn</a>
+        <a class="btn btn--inverse" href="pages/Courses.html">Xem khóa học</a>
+      </div>
+    </div>
+  </section>
+
 </main>
+</div>
 
 <footer></footer>
 <script>
@@ -160,6 +499,54 @@
 
       start();
     })();
+</script>
+<script>
+  // Accordion for curriculum tracks
+  (function initAccordions(){
+    // support legacy .acc-toggle elements
+    const toggles = Array.from(document.querySelectorAll('.acc-toggle'));
+    // support new track cards (click to open panels)
+    const cards = Array.from(document.querySelectorAll('.reason-card[data-track]'));
+
+    function closeAllPanels(){
+      // hide legacy panels
+      toggles.forEach(x => {
+        x.setAttribute('aria-expanded','false');
+        const p = x.closest('.track-item')?.querySelector('.acc-panel'); if(p) p.hidden = true;
+      });
+      // hide new panels
+      const panels = document.querySelectorAll('.track-panels .acc-panel');
+      panels.forEach(p => p.hidden = true);
+    }
+
+    // wire legacy toggles (if any)
+    toggles.forEach(t => {
+      t.addEventListener('click', () => {
+        const expanded = t.getAttribute('aria-expanded') === 'true';
+        closeAllPanels();
+        if (!expanded) {
+          t.setAttribute('aria-expanded','true');
+          const panel = t.closest('.track-item')?.querySelector('.acc-panel');
+          if (panel) panel.hidden = false;
+        }
+      });
+    });
+
+    // wire new track cards
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = card.getAttribute('data-track');
+        if (idx == null) return;
+        const panel = document.getElementById('panel-' + idx);
+        if (!panel) return;
+        const isOpen = !panel.hidden;
+        closeAllPanels();
+        if (!isOpen) panel.hidden = false;
+        // scroll to panel smoothly
+        setTimeout(() => { panel.scrollIntoView({behavior:'smooth', block:'center'}); }, 120);
+      });
+    });
+  })();
 </script>
 </body>
 </html>
