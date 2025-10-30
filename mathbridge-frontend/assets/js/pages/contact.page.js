@@ -1,106 +1,121 @@
 // Include header/footer
 window.addEventListener("load", () => {
-  includePartials({
-    header: "partials/header.html",
-    footer: "partials/footer.html",
-  });
+    includePartials({
+        header: "partials/header.html",
+        footer: "partials/footer.html",
+    });
 
-  // Load contact info from API
-  loadContactInfo();
+    // Load contact info from API
+    loadContactInfo();
 });
 
 // EmailJS setup
-(function() {
-  emailjs.init("YOUR_PUBLIC_KEY"); // 🔹 Thay bằng public key EmailJS của bạn
+(function () {
+    emailjs.init("YOUR_PUBLIC_KEY"); // 🔹 Thay bằng public key EmailJS của bạn
 })();
 
 const form = document.getElementById("contactForm");
 const status = document.getElementById("form-status");
 
 form.addEventListener("submit", async function (e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const formData = new FormData(this);
-  const firstName = formData.get("first_name");
-  const lastName = formData.get("last_name");
-  const email = formData.get("email");
-  const phone = formData.get("phone");
-  const hinhThucTuVan = formData.get("hinhThucTuVan");
+    const formData = new FormData(this);
+    const firstName = formData.get("first_name");
+    const lastName = formData.get("last_name");
+    const email = formData.get("email");
+    const phone = formData.get("phone");
+    const hinhThucTuVan = formData.get("hinhThucTuVan");
 
-  // Validate required fields
-  if (!firstName || !lastName || !email || !phone || !hinhThucTuVan) {
-    status.textContent = "❌ Vui lòng điền đầy đủ thông tin cá nhân và chọn nội dung tư vấn.";
-    return;
-  }
+    // Validate required fields
+    if (!firstName || !lastName || !email || !phone || !hinhThucTuVan) {
+        status.textContent = "❌ Vui lòng điền đầy đủ thông tin và chọn nội dung tư vấn.";
+        return;
+    }
 
-  // Validate phone number (must be exactly 10 digits)
-  const phoneRegex = /^\d{10}$/;
-  if (!phoneRegex.test(phone.replace(/\s+/g, ''))) {
-    status.textContent = "❌ Số điện thoại phải có đúng 10 chữ số.";
-    return;
-  }
+    const contactData = {
+        hoTen: firstName + " " + lastName,
+        email: email,
+        sdt: phone,
+        tieuDe: "Liên hệ từ trang Contact",
+        noiDung: formData.get("message"),
+        hinhThucTuVan: hinhThucTuVan,
+    };
 
-  const contactData = {
-    hoTen: firstName + " " + lastName,
-    email: email,
-    sdt: phone,
-    tieuDe: "Liên hệ từ trang Contact",
-    noiDung: formData.get("message"),
-    hinhThucTuVan: hinhThucTuVan
-  };
-
-  try {
-    const message = await submitContactForm(contactData);
-    status.textContent = "✅ " + message;
-    form.reset();
-  } catch (error) {
-    status.textContent = "❌ Gửi thất bại. Vui lòng thử lại sau.";
-    console.error('Error submitting form:', error);
-  }
+    try {
+        const message = await submitContactForm(contactData);
+        status.textContent = "✅ " + message;
+        form.reset();
+    } catch (error) {
+        status.textContent = "❌ Gửi thất bại. Vui lòng thử lại sau.";
+        console.error("Error submitting form:", error);
+    }
 });
 
-// Load contact info from API
+// 🔹 API: Lấy thông tin liên hệ
+async function getContactInfo() {
+    try {
+        const response = await fetch("http://localhost:8080/api/public/contact");
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("❌ Lỗi khi tải thông tin liên hệ:", error);
+        throw error;
+    }
+}
+
+// 🔹 API: Gửi form liên hệ
+async function submitContactForm(contactData) {
+    try {
+        const response = await fetch("http://localhost:8080/api/public/contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(contactData),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.text();
+    } catch (error) {
+        console.error("❌ Lỗi khi gửi form liên hệ:", error);
+        throw error;
+    }
+}
+
+// Load contact info and render on page
 async function loadContactInfo() {
-  try {
-    const contactData = await getContactInfo();
+    try {
+        const contactData = await getContactInfo();
 
-    // Update address
-    const addressElement = document.getElementById('contact-address');
-    if (addressElement && contactData.address) {
-      addressElement.textContent = contactData.address;
-    }
+        // Cập nhật thông tin chính
+        const addressElement = document.getElementById("contact-address");
+        const hotlineElement = document.getElementById("contact-hotline");
+        const hoursElement = document.getElementById("contact-hours");
+        const centersListElement = document.getElementById("centers-list");
 
-    // Update hotline
-    const hotlineElement = document.getElementById('contact-hotline');
-    if (hotlineElement && contactData.hotline) {
-      hotlineElement.textContent = contactData.hotline;
-    }
+        if (addressElement && contactData.address) addressElement.textContent = contactData.address;
+        if (hotlineElement && contactData.hotline) hotlineElement.textContent = contactData.hotline;
+        if (hoursElement && contactData.workingHours) hoursElement.textContent = contactData.workingHours;
 
-    // Update working hours
-    const hoursElement = document.getElementById('contact-hours');
-    if (hoursElement && contactData.workingHours) {
-      hoursElement.textContent = contactData.workingHours;
-    }
-
-    // Display centers information
-    const centersListElement = document.getElementById('centers-list');
-    if (centersListElement && contactData.centers && contactData.centers.length > 0) {
-      const centersHtml = contactData.centers.map(center => `
-        <div class="center-item">
-          <h5>${center.name}</h5>
+        // Hiển thị danh sách cơ sở
+        if (centersListElement && contactData.centers?.length > 0) {
+            centersListElement.innerHTML = contactData.centers
+                .map(
+                    (center) => `
+        <div class="center-item" style="background:#fafafa; padding:10px 15px; border-radius:10px; margin-bottom:10px;">
+          <h5 style="color:#d63384; margin-bottom:5px;">${center.name}</h5>
           <p><strong>📍 Địa chỉ:</strong> ${center.address}</p>
-          <p><strong>📞 Hotline:</strong> ${center.hotline}</p>
-          <p><strong>🕒 Giờ làm việc:</strong> ${center.workingHours}</p>
-          <p><strong>📅 Ngày làm việc:</strong> ${center.workingDays}</p>
-        </div>
-      `).join('');
-      centersListElement.innerHTML = centersHtml;
-    } else {
-      centersListElement.innerHTML = '<p style="color: var(--ink-70); font-style: italic;">Không có thông tin cơ sở.</p>';
+        </div>`
+                )
+                .join("");
+        } else if (centersListElement) {
+            centersListElement.innerHTML = '<p style="font-style:italic;">Không có thông tin cơ sở.</p>';
+        }
+    } catch (error) {
+        console.error("Failed to load contact info:", error);
     }
-
-  } catch (error) {
-    console.error('Failed to load contact info:', error);
-    // Fallback: keep static content
-  }
 }
