@@ -216,12 +216,18 @@ function setupApplyFormValidation() {
       if (window.submitApplication) {
         const res = await window.submitApplication(formData);
         // Expecting { success: true, message: '...' } or similar
-        if (res && (res.success === true || res.status === "ok")) {
-          alert(
-            res.message || "Gửi ứng tuyển thành công. Chúng tôi sẽ liên hệ sớm."
-          );
-          form.reset();
-        } else {
+         if (res && (res.success === true || res.status === "ok")) {
+           alert(
+             res.message || "Gửi ứng tuyển thành công. Hồ sơ của bạn đang chờ duyệt. Chúng tôi sẽ liên hệ sớm."
+           );
+           form.reset();
+           // Reset file preview
+           const filePreview = document.getElementById('file-preview');
+           if (filePreview) {
+             filePreview.classList.remove('show');
+             filePreview.innerHTML = '';
+           }
+         } else {
           throw new Error(
             res && res.message ? res.message : "Lỗi khi gửi ứng tuyển"
           );

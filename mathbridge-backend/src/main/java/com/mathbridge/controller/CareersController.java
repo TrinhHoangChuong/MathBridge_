@@ -48,13 +48,43 @@ public class CareersController {
             applicationService.saveApplication(name, phone, email, position, linkProfile, file);
             Map<String, Object> resp = new HashMap<>();
             resp.put("success", true);
-            resp.put("message", "Ứng tuyển đã được gửi. Cảm ơn!");
+            resp.put("message", "Ứng tuyển đã được gửi. Hồ sơ của bạn đang chờ duyệt. Cảm ơn!");
             return ResponseEntity.ok(resp);
         } catch (Exception ex) {
             Map<String, Object> resp = new HashMap<>();
             resp.put("success", false);
             resp.put("message", "Lỗi khi gửi hồ sơ: " + ex.getMessage());
             return ResponseEntity.status(500).body(resp);
+        }
+    }
+
+    @PutMapping("/applications/{idUv}/status")
+    public ResponseEntity<?> updateApplicationStatus(@PathVariable String idUv, 
+                                                   @RequestParam String status) {
+        try {
+            applicationService.updateApplicationStatus(idUv, status);
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("success", true);
+            resp.put("message", "Trạng thái hồ sơ đã được cập nhật thành: " + status);
+            return ResponseEntity.ok(resp);
+        } catch (Exception ex) {
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("success", false);
+            resp.put("message", "Lỗi khi cập nhật trạng thái: " + ex.getMessage());
+            return ResponseEntity.status(500).body(resp);
+        }
+    }
+
+    @GetMapping("/applications/{idUv}")
+    public ResponseEntity<?> getApplication(@PathVariable String idUv) {
+        try {
+            var application = applicationService.getApplicationById(idUv);
+            return ResponseEntity.ok(application);
+        } catch (Exception ex) {
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("success", false);
+            resp.put("message", "Không tìm thấy hồ sơ: " + ex.getMessage());
+            return ResponseEntity.status(404).body(resp);
         }
     }
 }

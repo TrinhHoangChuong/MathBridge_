@@ -908,6 +908,52 @@
   letter-spacing: 0.5px;
 }
 
+/* Application Status Styles */
+.status-pending {
+  background: #f59e0b;
+  color: white;
+}
+
+.status-reviewing {
+  background: #3b82f6;
+  color: white;
+}
+
+.status-approved {
+  background: #10b981;
+  color: white;
+}
+
+.status-rejected {
+  background: #ef4444;
+  color: white;
+}
+
+.status-interview-scheduled {
+  background: #8b5cf6;
+  color: white;
+}
+
+.status-interviewed {
+  background: #06b6d4;
+  color: white;
+}
+
+.status-hired {
+  background: #059669;
+  color: white;
+}
+
+.status-not-selected {
+  background: #6b7280;
+  color: white;
+}
+
+.status-unknown {
+  background: #6b7280;
+  color: white;
+}
+
 /* ===========================
    RESPONSIVE
 =========================== */

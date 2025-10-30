@@ -35,6 +35,8 @@ public class ApplicationService {
         u.setSdt(phone);
         u.setEmail(email);
         u.setGhiChu(position); // store applied position in ghiChu
+        u.setTrangThaiHoSo("Đang chờ duyệt"); // Set initial status as "Đang chờ duyệt"
+        
         if (linkProfile != null && !linkProfile.trim().isEmpty()) {
             u.setLinkProfile(linkProfile.trim());
         }
@@ -50,6 +52,20 @@ public class ApplicationService {
         }
 
         return repo.save(u);
+    }
+
+    public UngVien updateApplicationStatus(String idUv, String newStatus) {
+        return repo.findById(idUv)
+                .map(ungVien -> {
+                    ungVien.setTrangThaiHoSo(newStatus);
+                    return repo.save(ungVien);
+                })
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ứng viên với ID: " + idUv));
+    }
+
+    public UngVien getApplicationById(String idUv) {
+        return repo.findById(idUv)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ứng viên với ID: " + idUv));
     }
 
     private String generateId() {
