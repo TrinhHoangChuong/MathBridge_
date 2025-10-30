@@ -76,7 +76,7 @@ function renderJobDetails(job) {
     
     if (job.capBac) {
       detailsHtml += `<div class="detail-item">
-        <strong>Cấp bậc:</strong> ${job.capBac}
+        <strong>Trình độ:</strong> ${job.capBac} Level
       </div>`;
     }
     
