@@ -131,6 +131,7 @@ async function renderCareerPage() {
   renderJobDetails(job);
 
   setupApplyFormValidation();
+  setupModernUpload();
 }
 
 window.addEventListener("DOMContentLoaded", renderCareerPage);
@@ -253,4 +254,116 @@ function clearInvalid(field) {
   if (el) {
     el.style.borderColor = "#e5e7eb";
   }
+}
+
+// Modern Upload Features
+function setupModernUpload() {
+  const uploadZone = document.getElementById('upload-zone');
+  const fileInput = document.getElementById('ap-file');
+  const filePreview = document.getElementById('file-preview');
+  
+  if (!uploadZone || !fileInput || !filePreview) return;
+
+  // Drag and drop events
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+
+  uploadZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      fileInput.files = files;
+      handleFileSelect(files[0]);
+    }
+  });
+
+  // Click to upload
+  uploadZone.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // File input change
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFileSelect(e.target.files[0]);
+    }
+  });
+
+  function handleFileSelect(file) {
+    // Validate file
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    
+    if (!allowedTypes.includes(file.type)) {
+      alert('Chỉ hỗ trợ file JPEG, PNG, PDF');
+      return;
+    }
+    
+    if (file.size > maxSize) {
+      alert('File quá lớn. Kích thước tối đa 2MB');
+      return;
+    }
+
+    // Show file preview
+    showFilePreview(file);
+  }
+
+  function showFilePreview(file) {
+    const fileIcon = getFileIcon(file.type);
+    const fileSize = formatFileSize(file.size);
+    
+    filePreview.innerHTML = `
+      <div class="file-preview-item">
+        <svg class="file-icon" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          ${fileIcon}
+        </svg>
+        <div class="file-info">
+          <div class="file-name">${file.name}</div>
+          <div class="file-size">${fileSize}</div>
+        </div>
+        <button type="button" class="file-remove" onclick="removeFile()">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    `;
+    
+    filePreview.classList.add('show');
+  }
+
+  function getFileIcon(type) {
+    if (type.startsWith('image/')) {
+      return '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21,15 16,10 5,21"></polyline>';
+    } else if (type === 'application/pdf') {
+      return '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14,2 14,8 20,8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10,9 9,9 8,9"></polyline>';
+    } else {
+      return '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14,2 14,8 20,8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10,9 9,9 8,9"></polyline>';
+    }
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Global function to remove file
+  window.removeFile = function() {
+    fileInput.value = '';
+    filePreview.classList.remove('show');
+    filePreview.innerHTML = '';
+  };
 }

@@ -564,55 +564,291 @@
   line-height: 1.4;
 }
 
-.apply-form .upload-row {
-  margin-top: 16px;
-  padding: 16px;
-  background: var(--bg-page-light);
-  border: 1px dashed var(--border-soft);
-  border-radius: var(--radius-card);
+/* Modern Upload Zone */
+.upload-row {
+  margin-top: 24px;
+}
+
+.upload-zone {
+  margin-top: 10px;
+  position: relative;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 30px 24px;
   text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
 }
 
-.apply-form .upload-inline {
+.upload-zone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.upload-zone:hover {
+  border-color: var(--brand-red);
+  background: linear-gradient(135deg, #fef2f2 0%, #f0f9ff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.upload-zone:hover::before {
+  opacity: 1;
+}
+
+.upload-zone.dragover {
+  border-color: var(--brand-red);
+  background: linear-gradient(135deg, #fef2f2 0%, #f0f9ff 100%);
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px -10px rgba(248, 113, 113, 0.3);
+}
+
+.upload-zone.dragover::before {
+  opacity: 1;
+}
+
+.upload-zone input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.upload-placeholder {
+  position: relative;
+  z-index: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  justify-content: center;
+  gap: 16px;
 }
 
-.apply-form .note {
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--brand-red);
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(248, 113, 113, 0.2));
+}
+
+.upload-zone:hover .upload-icon {
+  transform: scale(1.1) rotate(5deg);
+  color: var(--brand-red-dark);
+}
+
+.upload-placeholder span:first-of-type {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.note {
   font-family: Inter, system-ui, sans-serif;
   color: var(--text-dim);
   font-size: 0.875rem;
   line-height: 1.5;
-  margin-top: 8px;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.apply-form .actions {
-  margin-top: 32px;
+/* File Preview */
+.file-preview {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  backdrop-filter: blur(10px);
+  display: none;
+}
+
+.file-preview.show {
+  display: block;
+  animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.file-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--brand-red);
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.875rem;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size {
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.file-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.file-remove:hover {
+  color: var(--mb-error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Form Footer */
+.form-footer {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.actions {
   display: flex;
   gap: 16px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
+/* Modern Submit Button */
 .apply-form .submit {
   font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
-  background: var(--brand-red);
+  background: linear-gradient(135deg, var(--brand-red) 0%, #dc2626 100%);
   color: white;
   border: none;
-  padding: 14px 32px;
-  border-radius: var(--radius-card);
-  font-weight: 600;
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
-  transition: all var(--transition-normal) ease;
-  box-shadow: var(--shadow-card-soft);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px 0 rgba(248, 113, 113, 0.4);
+  position: relative;
+  overflow: hidden;
+  text-transform: none;
+  letter-spacing: 0.025em;
+}
+
+.apply-form .submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
 .apply-form .submit:hover {
-  background: var(--brand-red-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-card);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px 0 rgba(248, 113, 113, 0.5);
+}
+
+.apply-form .submit:hover::before {
+  left: 100%;
+}
+
+.apply-form .submit:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px 0 rgba(248, 113, 113, 0.4);
+}
+
+.apply-form .submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.apply-form .submit:disabled:hover {
+  background: #9ca3af;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Button Loading State */
+.btn-loader {
+  display: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+.apply-form .submit.loading .btn-text {
+  opacity: 0.7;
+}
+
+.apply-form .submit.loading .btn-loader {
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width:720px) {
@@ -722,6 +958,4 @@
   .job-title {
     font-size: 1.5rem;
   }
-}
-
 }
