@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface LopHocRepository extends JpaRepository<LopHoc, String> {
 
-    // lấy tất cả lớp mà giáo viên này phụ trách
+    // SELECT * FROM LopHoc WHERE ID_NV = :idNv
     List<LopHoc> findByNhanVien_IdNv(String idNv);
-
 }
