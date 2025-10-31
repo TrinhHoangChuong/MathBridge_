@@ -5,36 +5,34 @@ import java.time.LocalDateTime;
 
 public class LopHocDTO {
 
-    private String idLop;          // ID_LH
-    private String tenLop;         // TenLop
-    private String chuongTrinh;    // TenCT của ChuongTrinh
-    private String hinhThucHoc;    // Online / Offline
+    private String tenLop;
+    private String loaiNgay;
+    private String soBuoi;
+    private String hinhThucHoc;
     private LocalDateTime ngayBatDau;
-    private BigDecimal hocPhiThang; // MucGia_thang
-    private String trangThai;      // TrangThai
+    private BigDecimal mucGiaThang;
+    private String trangThai;
+    private String moTa;
 
-    public LopHocDTO(String idLop,
-                          String tenLop,
-                          String chuongTrinh,
-                          String hinhThucHoc,
-                          LocalDateTime ngayBatDau,
-                          BigDecimal hocPhiThang,
-                          String trangThai) {
-        this.idLop = idLop;
+    public LopHocDTO() {
+    }
+
+    public LopHocDTO(String tenLop,
+                     String loaiNgay,
+                     String soBuoi,
+                     String hinhThucHoc,
+                     LocalDateTime ngayBatDau,
+                     BigDecimal mucGiaThang,
+                     String trangThai,
+                     String moTa) {
         this.tenLop = tenLop;
-        this.chuongTrinh = chuongTrinh;
+        this.loaiNgay = loaiNgay;
+        this.soBuoi = soBuoi;
         this.hinhThucHoc = hinhThucHoc;
         this.ngayBatDau = ngayBatDau;
-        this.hocPhiThang = hocPhiThang;
+        this.mucGiaThang = mucGiaThang;
         this.trangThai = trangThai;
-    }
-
-    public String getIdLop() {
-        return idLop;
-    }
-
-    public void setIdLop(String idLop) {
-        this.idLop = idLop;
+        this.moTa = moTa;
     }
 
     public String getTenLop() {
@@ -45,12 +43,20 @@ public class LopHocDTO {
         this.tenLop = tenLop;
     }
 
-    public String getChuongTrinh() {
-        return chuongTrinh;
+    public String getLoaiNgay() {
+        return loaiNgay;
     }
 
-    public void setChuongTrinh(String chuongTrinh) {
-        this.chuongTrinh = chuongTrinh;
+    public void setLoaiNgay(String loaiNgay) {
+        this.loaiNgay = loaiNgay;
+    }
+
+    public String getSoBuoi() {
+        return soBuoi;
+    }
+
+    public void setSoBuoi(String soBuoi) {
+        this.soBuoi = soBuoi;
     }
 
     public String getHinhThucHoc() {
@@ -69,12 +75,12 @@ public class LopHocDTO {
         this.ngayBatDau = ngayBatDau;
     }
 
-    public BigDecimal getHocPhiThang() {
-        return hocPhiThang;
+    public BigDecimal getMucGiaThang() {
+        return mucGiaThang;
     }
 
-    public void setHocPhiThang(BigDecimal hocPhiThang) {
-        this.hocPhiThang = hocPhiThang;
+    public void setMucGiaThang(BigDecimal mucGiaThang) {
+        this.mucGiaThang = mucGiaThang;
     }
 
     public String getTrangThai() {
@@ -83,5 +89,13 @@ public class LopHocDTO {
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public String getMoTa() {
+        return moTa;
+    }
+
+    public void setMoTa(String moTa) {
+        this.moTa = moTa;
     }
 }
