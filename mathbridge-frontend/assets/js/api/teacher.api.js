@@ -1,13 +1,22 @@
 // assets/js/api/teacher.api.js
-// API lớp public để lấy danh sách giáo viên
-// backend: GET /api/public/nhanvien
-// response kỳ vọng: { teachers: [ { hoTen, chuyenMon, kinhNghiem }, ... ] }
+// Lấy danh sách giáo viên để hiển thị ở trang /pages/Teacher.html
+// backend: GET /api/public/nhanvien/giaovien
+// backend trả: [ { idNv, ho, tenDem, ten, chuyenMon, kinhNghiem }, ... ]
+// FE cần: { teachers: [ { idNv, hoTen, chuyenMon, kinhNghiem }, ... ] }
 
 import { CONFIG } from "../config.js";
 
+function buildFullName(ho, tenDem, ten) {
+  const parts = [];
+  if (ho) parts.push(ho);
+  if (tenDem) parts.push(tenDem);
+  if (ten) parts.push(ten);
+  return parts.join(" ").trim();
+}
+
 export async function getTeachersFromApi() {
   try {
-    const res = await fetch(CONFIG.BASE_URL + "/api/public/nhanvien", {
+    const res = await fetch(CONFIG.BASE_URL + "/api/public/nhanvien/giaovien", {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -21,11 +30,17 @@ export async function getTeachersFromApi() {
 
     const data = await res.json();
 
-    if (data && Array.isArray(data.teachers)) {
-      return data; // { teachers: [...] }
-    } else {
-      return { teachers: [] };
+    if (Array.isArray(data)) {
+      const teachers = data.map(item => ({
+        idNv: item.idNv || "",
+        hoTen: buildFullName(item.ho, item.tenDem, item.ten),
+        chuyenMon: item.chuyenMon || "",
+        kinhNghiem: item.kinhNghiem ?? null
+      }));
+      return { teachers };
     }
+
+    return { teachers: [] };
 
   } catch (err) {
     console.error("teachers API exception:", err);

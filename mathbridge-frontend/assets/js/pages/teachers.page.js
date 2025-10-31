@@ -1,35 +1,28 @@
 // assets/js/pages/teachers.page.js
 //
-// Chức năng:
-// - Fetch danh sách giảng viên từ API public
-// - Lọc theo chip (lớp 9,10,11,12, "adv")
-// - Tìm kiếm theo tên
-// - Render card có avatar initials + CTA "Đăng ký lớp học"
+// Trang list giáo viên:
+// - gọi API getTeachersFromApi()
+// - render card
+// - filter + search
 //
-// YÊU CẦU kèm theo:
-// - File này load bằng <script type="module"> trong teacher.html
-// - teacher.api.js import CONFIG, nên không cần import config trực tiếp ở đây
 
 import { getTeachersFromApi } from "../api/teacher.api.js";
 
 let allTeachers = [];
-let activeFilter = "all"; // "all" | "9" | "10" | "11" | "12" | "adv"
+let activeFilter = "all";
 let searchQuery = "";
 
-/* Utilities -------------------------------------------------- */
-
-// Tạo chữ initials từ tên: "Trần Quang Huy" -> "TQH"
+/* utils -------------------------------------------------- */
 function getInitials(fullName = "") {
   return fullName
     .trim()
     .split(/\s+/)
     .map(part => part[0] || "")
     .join("")
-    .slice(0,3) // giới hạn 3 ký tự
+    .slice(0, 3)
     .toUpperCase();
 }
 
-// Hash nhẹ -> số -> dùng để tạo màu HSL ổn định cho mỗi tên
 function hashStringToNumber(str = "") {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -39,11 +32,9 @@ function hashStringToNumber(str = "") {
   return Math.abs(hash);
 }
 
-// Trả về 1 màu HSL mềm dựa trên tên, để avatar khác nhau
 function getColorForName(name = "") {
   const hash = hashStringToNumber(name);
-  const hue = hash % 360; // 0..359
-  // pastel-ish: saturation thấp hơn, lightness cao
+  const hue = hash % 360;
   return `hsl(${hue} 70% 45%)`;
 }
 
@@ -52,11 +43,16 @@ function expText(years) {
   return `${years}+ năm kinh nghiệm`;
 }
 
-/* Lọc ------------------------------------------------------- */
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
 
+/* filter ------------------------------------------------- */
 function teacherMatchesFilter(teacher, filterKey) {
   if (filterKey === "all") return true;
-
   const spec = (teacher.chuyenMon || "").toLowerCase();
 
   if (filterKey === "9")  return /lớp\s*9\b/.test(spec);
@@ -83,27 +79,18 @@ function teacherMatchesSearch(teacher, query) {
   return name.includes(query.toLowerCase());
 }
 
-/* Render ---------------------------------------------------- */
-
-function escapeHTML(str) {
-  return String(str)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
-}
-
-// Tạo HTML cho card giáo viên với avatar + CTA
+/* render ------------------------------------------------- */
 function createTeacherCardHTML(teacher) {
   const hoTen = teacher.hoTen || "Giảng viên";
   const chuyenMon = teacher.chuyenMon || "Chuyên môn đang cập nhật";
   const kn = expText(teacher.kinhNghiem);
 
-  // avatar
   const initials = getInitials(hoTen);
   const avatarColor = getColorForName(hoTen);
 
-  // CTA link (tạm encode tên, sau này chuyển sang idNv)
-  const detailUrl = `pages/TeacherDetailClass.html?teacher=${encodeURIComponent(hoTen)}`;
+  // thêm id vào URL để trang detail gọi được lớp
+  const idParam = teacher.idNv ? `id=${encodeURIComponent(teacher.idNv)}&` : "";
+  const detailUrl = `pages/TeacherDetailClass.html?${idParam}teacher=${encodeURIComponent(hoTen)}`;
 
   return `
     <article class="teacher-card" role="listitem" tabindex="0">
@@ -111,14 +98,12 @@ function createTeacherCardHTML(teacher) {
         <div class="teacher-card__avatar" style="background:${avatarColor}">
           ${escapeHTML(initials)}
         </div>
-
         <div class="teacher-card__body">
           <h3 class="teacher-card__name">${escapeHTML(hoTen)}</h3>
           <p class="teacher-card__spec">${escapeHTML(chuyenMon)}</p>
           <p class="teacher-card__exp">${escapeHTML(kn)}</p>
         </div>
       </div>
-
       <div class="teacher-card__footer">
         <a class="teacher-card__ctaBtn" href="${detailUrl}">
           <i class="ph-pencil-line" aria-hidden="true"></i>
@@ -147,14 +132,10 @@ function renderTeachers() {
     return;
   }
 
-  const html = visible.map(createTeacherCardHTML).join("");
-  listEl.innerHTML = html;
-
+  listEl.innerHTML = visible.map(createTeacherCardHTML).join("");
   if (emptyEl) emptyEl.classList.add("hidden");
   if (countEl) countEl.textContent = String(visible.length);
 }
-
-/* Loading / Error UI --------------------------------------- */
 
 function showLoadingSkeleton() {
   const listEl   = document.querySelector("[data-teacher-list]");
@@ -186,32 +167,7 @@ function hideStatusMessage() {
   }
 }
 
-function showErrorState(msg) {
-  const listEl   = document.querySelector("[data-teacher-list]");
-  const statusEl = document.querySelector("[data-teacher-status]");
-  const emptyEl  = document.querySelector("[data-empty-state]");
-  const countEl  = document.getElementById("teacherCount");
-
-  if (listEl) {
-    listEl.innerHTML = `
-      <div class="teacher-empty">
-        Không tải được danh sách giảng viên.<br/>
-        Vui lòng thử lại sau.
-      </div>
-    `;
-  }
-
-  if (statusEl) {
-    statusEl.textContent = msg || "Lỗi tải dữ liệu";
-    statusEl.classList.remove("hidden");
-  }
-
-  if (emptyEl) emptyEl.classList.add("hidden");
-  if (countEl) countEl.textContent = "0";
-}
-
-/* Events ---------------------------------------------------- */
-
+/* events ------------------------------------------------- */
 function initFilterChips() {
   const chipsWrap = document.getElementById("filterChips");
   if (!chipsWrap) return;
@@ -224,7 +180,6 @@ function initFilterChips() {
 
     activeFilter = newFilter;
 
-    // cập nhật aria-pressed
     chipsWrap.querySelectorAll(".chip").forEach(chip => {
       chip.setAttribute("aria-pressed", chip === btn ? "true" : "false");
     });
@@ -243,21 +198,14 @@ function initSearchBox() {
   });
 }
 
-/* Init ------------------------------------------------------ */
-
+/* init --------------------------------------------------- */
 export async function initTeachersPage() {
   showLoadingSkeleton();
 
   const { teachers } = await getTeachersFromApi();
 
-  if (!teachers) {
-    showErrorState("API không trả dữ liệu teachers");
-    return;
-  }
-
-  allTeachers = teachers;
+  allTeachers = teachers || [];
   hideStatusMessage();
-
   renderTeachers();
   initFilterChips();
   initSearchBox();

@@ -54,10 +54,6 @@
                 <div class="filters-label">Lọc theo:</div>
 
                 <div class="chips" role="group" aria-label="Chọn chương trình" id="filterChips">
-                    <!--
-                      data-filter="all" là mặc định hiển thị tất cả
-                      aria-pressed="true" = đang chọn
-                    -->
                     <button class="chip" data-filter="all" aria-pressed="true">Tất cả</button>
                     <button class="chip" data-filter="9" aria-pressed="false">Lớp 9</button>
                     <button class="chip" data-filter="10" aria-pressed="false">Lớp 10</button>
@@ -126,8 +122,7 @@
     });
 </script>
 
-<!-- Trang teacher dùng ES Module:
-teachers.page.js import teacher.api.js, mà teacher.api.js import config.js -->
+<!-- Lưu ý: backend thực tế: GET /api/public/nhanvien/giaovien -->
 <script type="module" src="assets/js/pages/teachers.page.js"></script>
 <script type="module" src="assets/js/pages/footer.page.js"></script>
 

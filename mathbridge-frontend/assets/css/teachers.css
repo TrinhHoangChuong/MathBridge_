@@ -1,427 +1,404 @@
 /* =========================================================
-   MathBridge — Teachers Page
-   Tone: trắng / xám nhạt / viền mỏng / accent đỏ thương hiệu
-   (đồng bộ header.css, index.css: dùng Inter và Be Vietnam Pro)
+   MathBridge — Teachers List Page
+   Đồng bộ với Teacher Detail (2025)
+   - dùng cùng token: --mb-red, --mb-navy, --mb-bg, ...
+   - cùng radius, shadow, glass
 ========================================================= */
+:root {
+  /* brand & text (trùng với teacher-detail.css) */
+  --mb-red: #e11d48;
+  --mb-red-soft: rgba(225, 29, 72, 0.08);
+  --mb-navy: #0f172a;
+  --mb-ink: #111827;
+  --mb-muted: #64748b;
+  --mb-muted-2: #94a3b8;
 
-/* Nếu header cố định thì có thể đặt biến này để tránh overlap */
-.teachers-page #main-content,
+  /* surfaces */
+  --mb-bg: #f8fafc;      /* giống trang detail */
+  --mb-surface: #ffffff;
+  --mb-line: rgba(15, 23, 42, 0.05);
+
+  /* radius + shadow (giống detail) */
+  --mb-radius-sm: 0.625rem;     /* 10px */
+  --mb-radius: 1rem;            /* 16px */
+  --mb-radius-lg: 1.25rem;      /* 20px ~ detail dùng 1.25rem */
+  --mb-shadow-sm: 0 6px 24px rgba(15, 23, 42, 0.04);
+  --mb-shadow: 0 16px 44px rgba(15, 23, 42, 0.12);
+
+  /* alias để không vỡ code cũ */
+  --mb-brand: var(--mb-red);
+  --mb-page: var(--mb-bg);
+}
+
+/* =====================================
+   PAGE WRAPPER
+===================================== */
+.teachers-page {
+  background: radial-gradient(circle at top, rgba(225, 29, 72, 0.02), #f8fafc 52%);
+  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  color: var(--mb-navy);
+}
+
+.teachers-page .container {
+  width: min(1100px, 100% - 2.5rem); /* giống detail */
+  margin-inline: auto;
+}
+
+/* nếu header cố định: main phải chừa khoảng */
 .teachers-main {
   --header-h: 72px;
-  --brand-red: #e11d48; /* rose-600-ish */
-  --bg-page: #f8fafc;
-  --border-card: rgba(0,0,0,.07);
-  --text-main: #0f172a;
-  --text-dim: #6b7280;
-  --radius-card: 8px;
-  --radius-chip: 999px;
-  --shadow-card: 0 16px 32px -8px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.06);
-  --shadow-card-soft: 0 10px 24px -6px rgba(15,23,42,.04), 0 1px 2px rgba(15,23,42,.05);
-  --line-soft: rgba(0,0,0,.06);
-  --chip-bg: #ffffff;
-  --chip-border: rgba(0,0,0,.08);
-  --chip-active-bg: #fff1f2;
-  --chip-active-border: #fecdd3;
-  --chip-active-text: #e11d48;
-  --bg-toolbar: rgba(255,255,255,.9);
-  --bg-card: #ffffff;
-  --bg-empty: #fff;
-  --bg-hero-grad1: radial-gradient(800px 480px at 10% -10%, rgba(37,99,235,.08), transparent 60%);
-  --bg-hero-grad2: radial-gradient(900px 520px at 110% -20%, rgba(225,29,72,.08), transparent 60%);
 }
 
-/* Basic container helper if chưa có trong index.css */
-.container {
-  width: min(1280px, 100%);
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-/* ===========================
+/* =====================================
    HERO
-=========================== */
+   (giống tone hero của teacher-detail)
+===================================== */
 .teachers-hero {
   background:
-    var(--bg-hero-grad1),
-    var(--bg-hero-grad2),
-    linear-gradient(180deg,#fff,#f9fbff);
-  padding: 40px 0 24px;
-  text-align: center;
+    radial-gradient(650px 380px at 7% -12%, rgba(225, 29, 72, 0.09), transparent 60%),
+    radial-gradient(520px 300px at 100% 5%, rgba(15, 23, 42, 0.08), transparent 55%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 54%);
+  padding: 6.25rem 0 1.6rem; /* chừa header như detail */
 }
 
 .teachers-hero .hero-inner {
-  max-width: 760px;
+  text-align: center;
+  max-width: 670px;
   margin: 0 auto;
 }
 
 .teachers-hero .hero-title {
-  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
-  font-size: clamp(1.5rem,2vw,2rem);
-  line-height: 1.2;
+  font-family: "Be Vietnam Pro", system-ui, sans-serif;
+  font-size: clamp(1.6rem, 3.1vw, 2.15rem);
   font-weight: 800;
-  color: var(--text-main);
-  margin: 0 0 12px;
-  letter-spacing: -0.02em;
+  color: var(--mb-navy);
+  margin-bottom: 0.45rem;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
 }
-
 .teachers-hero .hero-title .accent {
-  color: var(--brand-red);
+  color: var(--mb-red);
 }
 
 .teachers-hero .hero-desc {
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  color: var(--mb-muted);
   line-height: 1.5;
-  color: var(--text-dim);
-  margin: 0;
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
-/* ===========================
-   TOOLBAR (sticky trên cùng khi scroll)
-=========================== */
+/* =====================================
+   TOOLBAR (lọc + search)
+   - sticky cùng top với detail
+   - dùng pill giống td-filters
+===================================== */
 .teachers-toolbar {
   position: sticky;
-  top: calc(var(--header-h) + 0px);
-  z-index: 50;
-  background: var(--bg-toolbar);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--line-soft);
-  box-shadow: 0 8px 16px rgba(0,0,0,.04);
+  top: 72px; /* khớp detail */
+  z-index: 45;
+  background: rgba(248, 250, 252, 0.65);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .toolbar-inner {
   display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 16px;
-  padding: 16px 0;
+  grid-template-columns: 1.1fr 0.6fr auto;
+  gap: 0.9rem;
+  padding: 0.85rem 0;
   align-items: end;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 950px) {
   .toolbar-inner {
     grid-template-columns: 1fr;
-    align-items: stretch;
   }
 }
 
-/* Filters group */
 .filters {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-family: Inter, system-ui, sans-serif;
+  gap: 0.45rem;
 }
 
 .filters-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: var(--text-dim);
-  line-height: 1.4;
+  color: var(--mb-muted);
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.35rem;
 }
 
+/* chip = giống filter button của detail (td-filter) */
 .chip {
-  appearance: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem 0.33rem;
+  font-size: 0.67rem;
+  font-weight: 500;
+  color: #64748b;
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.04);
+  transition: 0.14s ease;
   cursor: pointer;
-  border-radius: var(--radius-chip);
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 1.3;
-  font-weight: 600;
-  padding: 8px 14px;
-  border: 1px solid var(--chip-border);
-  background: var(--chip-bg);
-  color: var(--text-dim);
-  box-shadow: var(--shadow-card-soft);
-  transition: all .16s ease;
 }
-
 .chip:hover {
-  box-shadow: var(--shadow-card);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--mb-navy);
 }
-
-/* Trạng thái active filter */
 .chip[aria-pressed="true"] {
-  background: var(--chip-active-bg);
-  border-color: var(--chip-active-border);
-  color: var(--chip-active-text);
-  box-shadow:
-    0 0 0 3px rgba(0,0,0,.03),
-    var(--shadow-card);
-  transform: translateY(-1px);
+  background: #ffffff;
+  color: var(--mb-navy);
+  border-color: rgba(225, 29, 72, 0.3);
+  box-shadow: 0 8px 18px rgba(225, 29, 72, 0.22);
 }
 
-/* Search box */
 .search {
-  min-width: min(260px,100%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-family: Inter, system-ui, sans-serif;
+  gap: 0.3rem;
 }
-
 .search-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: var(--text-dim);
-  line-height: 1.4;
+  color: var(--mb-muted);
 }
-
 .search-field {
   position: relative;
 }
-
 .search-input {
   width: 100%;
-  padding: 10px 40px 10px 12px;
-  font-size: 14px;
-  font-family: Inter, system-ui, sans-serif;
-
-  border-radius: 8px;
-  border: 1px solid var(--line-soft);
-  outline: none;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.03);
   background: #fff;
-
-  transition: border .18s ease, box-shadow .18s ease;
+  padding: 0.45rem 2.4rem 0.45rem 0.75rem;
+  font-size: 0.74rem;
+  transition: 0.12s ease;
 }
-
 .search-input:focus {
-  border-color: var(--brand-red);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-red) 20%, transparent);
+  outline: none;
+  border-color: rgba(225, 29, 72, 0.6);
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.08);
 }
-
 .search-icon {
   position: absolute;
-  right: 12px;
-  top: 50%;
-  translate: 0 -50%;
-  font-size: 18px;
-  line-height: 1;
-  color: var(--text-dim);
+  inset: 0.3rem 0.5rem 0 auto;
+  width: 1.7rem;
+  display: grid;
+  place-items: center;
+  color: #94a3b8;
   pointer-events: none;
 }
 
-/* Meta count */
 .meta {
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--text-dim);
-  white-space: nowrap;
   text-align: right;
-  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.67rem;
+  color: var(--mb-muted-2);
 }
-.meta-count strong {
-  color: var(--text-main);
-  font-weight: 700;
+.meta strong {
+  color: var(--mb-navy);
 }
-
-@media (max-width: 900px) {
+@media (max-width: 950px) {
   .meta {
-    order: -1;
     text-align: left;
   }
 }
 
-/* ===========================
-   TEACHER LIST SECTION
-=========================== */
+/* =====================================
+   LIST SECTION
+===================================== */
 .teachers-list-section {
-  background: var(--bg-page);
-  padding: 24px 0 64px;
+  padding: 1.5rem 0 3.5rem;
 }
 
-/* trạng thái thông báo loading / lỗi */
 .teacher-status {
-  margin-bottom: 16px;
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
-  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+  font-size: 0.7rem;
+  color: var(--mb-muted-2);
 }
 .teacher-status.hidden {
   display: none;
 }
 
-/* grid card */
+/* grid card giống td-class-grid */
 .teacher-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(min(280px,100%),1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.85rem;
+  align-items: stretch;
 }
-/* CARD GIẢNG VIÊN (cập nhật) */
+
+/* CARD = đồng bộ với td-class-card nhưng theo layout giảng viên */
 .teacher-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card-soft);
-  padding: 16px;
-  font-family: Inter, system-ui, sans-serif;
-  transition: box-shadow .16s ease, transform .16s ease;
+  background: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 1.25rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.03);
+  padding: 0.9rem 0.85rem 0.75rem;
   display: flex;
   flex-direction: column;
-  min-height: 150px;
+  gap: 0.6rem;
+  min-height: 175px;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border 0.14s ease;
+  animation: tlFadeUp 0.16s ease;
 }
 .teacher-card:hover {
-  box-shadow: var(--shadow-card);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  border-color: rgba(225, 29, 72, 0.25);
+  box-shadow: 0 20px 42px rgba(225, 29, 72, 0.08);
 }
 
-/* Hàng top: avatar + text */
 .teacher-card__top {
   display: flex;
+  gap: 0.65rem;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
 }
 
-/* Avatar tròn với initials */
+/* avatar giống td-avatar */
 .teacher-card__avatar {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #e2e8f0; /* fallback */
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(145deg, #e11d48 0%, #f97316 95%);
+  display: grid;
+  place-items: center;
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: Inter, system-ui, sans-serif;
-  line-height: 44px;
-  text-align: center;
-  text-transform: uppercase;
-  box-shadow: 0 8px 16px rgba(15,23,42,.15);
+  font-weight: 700;
+  font-size: 0.7rem;
+  font-family: "Be Vietnam Pro", system-ui, sans-serif;
+  box-shadow: 0 10px 26px rgba(225, 29, 72, 0.4);
+  flex: 0 0 auto;
 }
 
-/* Thông tin text */
 .teacher-card__body {
   flex: 1;
   min-width: 0;
 }
 
 .teacher-card__name {
-  margin: 0 0 4px;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--text-main);
-  word-break: break-word;
+  margin: 0 0 0.15rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--mb-navy);
+  line-height: 1.3;
 }
 
 .teacher-card__spec {
-  margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--brand-red);
-  word-break: break-word;
+  margin: 0 0 0.3rem;
+  font-size: 0.67rem;
+  font-weight: 600;
+  color: var(--mb-red);
 }
 
 .teacher-card__exp {
   margin: 0;
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 0.63rem;
+  color: var(--mb-muted);
   line-height: 1.4;
-  color: var(--text-dim);
 }
 
-/* Footer của card: CTA */
-.teacher-card__footer {
-  margin-top: auto;
-  padding-top: 12px;
+/* tags nhỏ (nếu bạn có) */
+.teacher-card__tags {
   display: flex;
-  justify-content: flex-start;
-  border-top: 1px solid var(--line-soft);
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+.teacher-card__tag {
+  background: rgba(248, 250, 252, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.09);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem 0.25rem;
+  font-size: 0.55rem;
+  color: #475569;
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+.teacher-card__tag::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  background: #e11d48;
+  border-radius: 999px;
 }
 
-/* Nút CTA */
+/* footer của card giống td-class-card__footer */
+.teacher-card__footer {
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  margin-top: auto;
+  padding-top: 0.55rem;
+  display: flex;
+  gap: 0.4rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .teacher-card__ctaBtn {
   display: inline-flex;
+  gap: 0.3rem;
   align-items: center;
-  gap: 6px;
-
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.3;
-  text-decoration: none;
-
-  min-height: 36px;
-  padding: 8px 12px;
   border-radius: 999px;
-
-  background: #fff;
-  color: var(--brand-red);
-  border: 2px solid var(--brand-red);
-
-  box-shadow: var(--shadow-card-soft);
-  transition: all .15s ease;
+  background: rgba(225, 29, 72, 0.05);
+  border: 1px solid rgba(225, 29, 72, 0.32);
+  color: var(--mb-red);
+  font-size: 0.58rem;
+  font-weight: 600;
+  padding: 0.28rem 0.7rem 0.35rem;
+  text-decoration: none;
+  transition: 0.12s ease;
 }
-
 .teacher-card__ctaBtn:hover {
-  background: var(--brand-red);
+  background: #e11d48;
+  border-color: #e11d48;
   color: #fff;
-  box-shadow: var(--shadow-card);
-  transform: translateY(-1px);
-}
-.teacher-card__ctaBtn:active {
-  transform: translateY(0);
 }
 
-/* icon trong CTA */
-.teacher-card__ctaBtn i {
-  font-size: 15px;
-  line-height: 1;
-}
-
-/* skeleton giữ nguyên như trước (OK) */
-/* empty giữ nguyên như trước (OK) */
-
-
-/* skeleton trong lúc load */
-.teacher-card--skeleton {
-  min-height: 96px;
-  background: linear-gradient(
-    100deg,
-    #f1f5f9 20%,
-    #f8fafc 40%,
-    #f1f5f9 60%
-  );
-  background-size: 200% 100%;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--border-card);
-  animation: skeleton-wave 1.4s ease infinite;
-  box-shadow: var(--shadow-card-soft);
-}
-@keyframes skeleton-wave {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* empty state */
 .teacher-empty {
-  margin-top: 24px;
+  margin-top: 1.1rem;
+  background: rgba(248, 250, 252, 0.7);
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 0.875rem;
+  padding: 0.8rem 0.7rem;
   text-align: center;
-  background: var(--bg-empty);
-  border: 1px dashed var(--line-soft);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card-soft);
-  color: var(--text-dim);
-  font-size: 14px;
-  line-height: 1.5;
-  padding: 32px 16px;
-  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.65rem;
+  color: var(--mb-muted-2);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.02);
 }
 .teacher-empty.hidden {
   display: none;
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+@media (max-width: 768px) {
+  .teachers-hero {
+    padding-top: 5.5rem;
+  }
+  .teachers-page .container {
+    width: min(100%, 100% - 1.5rem);
+  }
+  .teacher-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes tlFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
