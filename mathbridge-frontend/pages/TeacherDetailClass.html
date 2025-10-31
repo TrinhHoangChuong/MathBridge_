@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>Chi tiết giảng viên | MathBridge</title>
 
-    <!-- File này nằm trong /pages nên base phải trỏ lên ../ -->
+    <!-- Trang trong /pages/ -->
     <base href="../" />
 
     <!-- Fonts + Icons -->
@@ -13,83 +13,117 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- Core styles (header/footer/theme chung) -->
+    <!-- Core site styles -->
     <link rel="stylesheet" href="assets/css/header.css" />
     <link rel="stylesheet" href="assets/css/footer.css" />
     <link rel="stylesheet" href="assets/css/index.css" />
 
-    <!-- Page style riêng -->
+    <!-- Page style -->
     <link rel="stylesheet" href="assets/css/teacher-detail.css" />
 
-    <!-- Script để inject header/footer -->
+    <!-- Inject header/footer -->
     <script src="assets/js/utils/includePartials.js" defer></script>
 </head>
-
 <body class="teacher-detail-page">
 <header></header>
 
-<main id="main-content" class="td-main" role="main" tabindex="-1">
-
-    <!-- ===== PHẦN TÊN GIẢNG VIÊN ===== -->
-    <section class="td-hero" aria-labelledby="teacher-name">
-        <div class="container td-hero__inner">
-            <h1 id="teacher-name"
-                class="td-hero__name"
-                data-teacher-name>
-                <!-- JS sẽ đổ tên giáo viên -->
-                Giảng viên
-            </h1>
-        </div>
-
-        <div class="td-hero__bg" aria-hidden="true">
-            <div class="td-bg-blob --red"></div>
-            <div class="td-bg-blob --blue"></div>
-        </div>
-    </section>
-
-    <!-- ===== DANH SÁCH LỚP ===== -->
-    <section class="td-classes-section" aria-labelledby="classes-title">
-        <div class="container">
-
-            <header class="td-sec-head">
-                <div class="td-sec-left">
-                    <h2 id="classes-title" class="td-sec-title">
-                        Các lớp đang phụ trách
-                    </h2>
-                    <p class="td-sec-desc">
-                        Thông tin lớp được đồng bộ trực tiếp từ hệ thống trung tâm:
-                        lịch học, hình thức, học phí mỗi tháng, tình trạng mở lớp.
-                    </p>
+<main id="main-content" class="td-page" role="main">
+    <!-- HERO -->
+    <section class="td-hero" aria-label="Thông tin giảng viên">
+        <div class="container td-hero__grid">
+            <!-- left -->
+            <div class="td-hero__info">
+                <div class="td-avatar" data-teacher-avatar>MB</div>
+                <div class="td-hero__text">
+                    <h1 class="td-name" data-teacher-name>Giảng viên MathBridge</h1>
+                    <p class="td-role" data-teacher-meta>Toán THCS/THPT · Chuyên sâu quốc tế</p>
+                    <div class="td-tags">
+                        <span class="td-tag">Trung tâm MathBridge</span>
+                        <span class="td-tag td-tag--ghost">Dữ liệu đồng bộ</span>
+                    </div>
                 </div>
-
-                <div class="td-sec-right">
-          <span class="td-class-count">
-            <strong data-class-count>0</strong> lớp học
-          </span>
-                </div>
-            </header>
-
-            <!-- trạng thái / thông báo lỗi / loading -->
-            <div class="td-status hidden" data-td-status></div>
-
-            <!-- GRID các lớp -->
-            <div class="td-class-grid" role="list" data-class-list>
-                <!-- JS sẽ render các .td-class-card -->
             </div>
 
-            <!-- fallback khi không có lớp -->
-            <div class="td-empty hidden" data-class-empty>
-                Giáo viên hiện chưa có lớp công khai.
+            <!-- right -->
+            <div class="td-hero__stats">
+                <article class="td-stat">
+                    <p class="td-stat__label">Số lớp đang phụ trách</p>
+                    <p class="td-stat__value" data-class-total>0</p>
+                    <p class="td-stat__hint">Đồng bộ trực tiếp từ hệ thống.</p>
+                </article>
+                <article class="td-stat">
+                    <p class="td-stat__label">Trạng thái</p>
+                    <div class="td-status-pill" data-global-status>Đang cập nhật…</div>
+                    <p class="td-stat__hint">Liên hệ để xếp lớp riêng.</p>
+                </article>
+            </div>
+        </div>
+        <div class="td-hero__bg" aria-hidden="true"></div>
+    </section>
+
+    <!-- BODY -->
+    <section class="td-body">
+        <div class="container td-body__grid">
+
+            <!-- aside trái -->
+            <aside class="td-pane" aria-label="Thông tin phụ trợ">
+                <h2 class="td-pane__title">Tổng quan</h2>
+                <ul class="td-pane__chips" data-strength-list>
+                    <!-- sẽ được JS đổ -->
+                </ul>
+
+                <div class="td-pane__box">
+                    <p class="td-pane__label">Cần tư vấn lớp riêng?</p>
+                    <p class="td-pane__text">Liên hệ lễ tân để xếp thời khóa biểu theo nhu cầu.</p>
+                    <a class="td-btn" href="pages/contact.html">
+                        <i class="ph-phone-call"></i>
+                        Liên hệ trung tâm
+                    </a>
+                </div>
+
+                <div class="td-pane__note">
+                    <p><i class="ph-info"></i> Các lớp dưới đây là lớp công khai. Lớp nội bộ sẽ không hiển thị.</p>
+                </div>
+            </aside>
+
+            <!-- content phải -->
+            <div class="td-content">
+                <header class="td-content__head">
+                    <div>
+                        <h2 class="td-section-title">Các lớp đang phụ trách</h2>
+                        <p class="td-section-desc">
+                            Lớp được đồng bộ trực tiếp từ hệ thống trung tâm. Bạn có thể lọc theo hình thức / trạng thái.
+                        </p>
+                    </div>
+                    <div class="td-filters" role="group" aria-label="Lọc lớp">
+                        <button class="td-filter is-active" data-filter="all">Tất cả</button>
+                        <button class="td-filter" data-filter="open">Đang mở</button>
+                        <button class="td-filter" data-filter="online">Online</button>
+                        <button class="td-filter" data-filter="offline">Offline</button>
+                        <!-- ĐÃ BỎ: <button class="td-filter" data-filter="month">Trong tháng</button> -->
+                    </div>
+                </header>
+
+                <!-- trạng thái -->
+                <div class="td-msg td-msg--info hidden" data-status-msg></div>
+                <div class="td-msg td-msg--error hidden" data-error-msg></div>
+
+                <!-- danh sách -->
+                <div class="td-class-grid" data-class-list aria-live="polite"></div>
+
+                <!-- rỗng -->
+                <div class="td-empty hidden" data-empty-state>
+                    Giáo viên hiện chưa có lớp công khai hoặc bộ lọc quá hẹp.
+                </div>
             </div>
         </div>
     </section>
-
 </main>
 
 <footer></footer>
 
-<!-- inject header/footer -->
 <script>
+    // inject header/footer
     window.addEventListener('load', () => {
       includePartials({
         header: 'partials/header.html',
@@ -98,14 +132,10 @@
     });
 </script>
 
-<!-- Config global (chứa CONFIG.BASE_URL) -->
-<script type="module" src="../assets/js/config.js"></script>
-
-<!-- Page logic riêng cho trang này -->
-<script type="module" src="../assets/js/pages/TeacherDetailClass.page.js"></script>
-
-<!-- Footer behavior -->
-<script type="module" src="../assets/js/pages/footer.page.js"></script>
+<!-- JS trang này -->
+<script type="module" src="assets/js/pages/TeacherDetailClass.page.js"></script>
+<!-- footer behavior -->
+<script type="module" src="assets/js/pages/footer.page.js"></script>
 
 </body>
 </html>
