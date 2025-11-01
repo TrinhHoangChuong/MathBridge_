@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Khóa học - MathBridge</title>
+    <base href="../">
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/Courses.css" />
+    <script src="assets/js/utils/includePartials.js" defer></script>
+    <script src="assets/js/pages/Courses.page.js" defer></script>
+</head>
+<body>
+<header></header>
+
+<main>
+    <!-- Breadcrumb -->
+    <div class="mb-breadcrumb">
+        <div class="mb-breadcrumb-wrap">
+            <a href="index.html" class="breadcrumb-link">Trang chủ</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="#" class="breadcrumb-link">Khóa học</a>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-current" id="current-course">Lớp 9</span>
+        </div>
+    </div>
+
+    <!-- Course Header -->
+    <section class="mb-course-header">
+        <div class="mb-course-header-wrap">
+            <button class="back-btn" onclick="history.back()">
+                <span>←</span>
+            </button>
+            <div class="course-title-section">
+                <h1 id="course-title">Lớp 9</h1>
+                <p id="course-subtitle">Chương trình toán học lớp 9 toàn diện</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Course Content -->
+    <section class="mb-course-content">
+        <div class="mb-course-content-wrap">
+            <div class="course-main">
+                <!-- Program Description -->
+                <div class="course-section">
+                    <h2 class="section-title">Mô tả chương trình</h2>
+                    <div class="section-content">
+                        <p id="course-description">
+                            Chương trình toán học lớp 9 được thiết kế xây dựng cố gắng và phát triển kiến trúc toán học của học sinh, 
+                            chuẩn bị tốt nhất cho kỳ thi vào lớp 10 và các kỳ thi học sinh giỏi.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Learning Content & Goals -->
+                <div class="course-details-grid">
+                    <div class="detail-card">
+                        <div class="card-header">
+                            <div class="card-icon">📚</div>
+                            <h3>Nội dung học tập</h3>
+                        </div>
+                        <div class="card-content">
+                            <ul id="learning-content">
+                                <li>Đại số: Phương trình, bất phương trình, hệ thống</li>
+                                <li>Hình học: Đường tròn, góc nội tiếp, tứ giác nội tiếp</li>
+                                <li>Hàm số và đồ thị</li>
+                                <li>Các bài toán thực tế và ứng dụng</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="detail-card goals-card">
+                        <div class="card-header">
+                            <div class="card-icon">🎯</div>
+                            <h3>Mục tiêu đạt được</h3>
+                        </div>
+                        <div class="card-content">
+                            <ul id="learning-goals">
+                                <li>Nắm vững kiến thức cơ bản và nâng cao</li>
+                                <li>Phát triển tư duy logic và sáng tạo</li>
+                                <li>Chuẩn bị tốt cho kỳ thi vào lớp 10</li>
+                                <li>Tự tin tham gia các kỳ thi học sinh giỏi</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Filter -->
+                <div class="course-filter-section">
+                    <h2 class="filter-title">
+                        <span class="filter-icon">🔍</span>
+                        Bộ lọc khóa học
+                    </h2>
+                    
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label>Ca học</label>
+                            <select id="session-filter" class="filter-select">
+                                <option value="all">Tất cả ca học</option>
+                                <option value="1">Ca 1: 7h-10h</option>
+                                <option value="2">Ca 2: 10h-12h</option>
+                                <option value="3">Ca 3: 13h-15h</option>
+                                <option value="4">Ca 4: 15h-17h</option>
+                                <option value="5">Ca 5: 17h-19h</option>
+                                <option value="6">Ca 6: 19h-22h</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Ngày học</label>
+                            <select id="day-filter" class="filter-select">
+                                <option value="all">Tất cả ngày học</option>
+                                <option value="2-4-6">2-4-6</option>
+                                <option value="3-5-7">3-5-7</option>
+                                <option value="4-6-CN">4-6-CN</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Hình thức học</label>
+                            <select id="method-filter" class="filter-select">
+                                <option value="all">Tất cả hình thức</option>
+                                <option value="online">Trực tuyến</option>
+                                <option value="center">Tại trung tâm</option>
+                                <option value="tutor">Gia sư 1-1</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course List -->
+                <div class="course-list-section">
+                    <div id="course-list" class="course-list">
+                        <!-- Sẽ được load bằng JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer></footer>
+
+<script>
+    window.addEventListener('load', () => {
+        includePartials({
+          header: 'partials/header.html',
+          footer: 'partials/footer.html'
+        });
+    });
+</script>
+</body>
+</html>

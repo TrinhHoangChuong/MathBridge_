@@ -1,0 +1,815 @@
+/* ============================================================
+   MathBridge – About.css (Modern Premium Redesign)
+   - Inter and Be Vietnam Pro font families
+   - Primary color: #e11d48 (Red)
+   - Secondary accent: #ff2290 (Pink accent)
+   - Smooth animations with IntersectionObserver
+   - Fully responsive
+   ============================================================ */
+
+/* Import Inter and Be Vietnam Pro fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap');
+
+/* ========== Design Tokens ========== */
+:root {
+  --mb-primary: #e11d48;
+  --mb-primary-dark: #be123c;
+  --mb-secondary: #ff2290;
+  --mb-accent: #e11d48;
+  --mb-navy: #0f172a;
+  --mb-ink: #111827;
+  --mb-ink-70: #475569;
+  --mb-ink-50: #65adcf;
+  --mb-bg: #ffffff;
+  --mb-bg-soft: #f8fafc;
+  --mb-bg-gradient: linear-gradient(135deg, rgba(225, 29, 72, 0.1), rgba(249, 115, 22, 0.1));
+
+  --mb-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --mb-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --mb-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  --mb-radius: 12px;
+  --mb-radius-lg: 16px;
+  --mb-radius-xl: 20px;
+
+  --mb-container: 1180px;
+
+  --mb-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Map legacy variables for compatibility */
+#main-content {
+  --mb-blue: var(--mb-primary, #e11d48);
+  --mb-accent: var(--mb-accent, #e11d48);
+  --mb-gray-1: var(--mb-ink-50, #64748b);
+  --mb-gray-2: var(--mb-ink, #111827);
+  --mb-card: var(--mb-bg, #ffffff);
+  --mb-bg-soft: var(--mb-bg-soft, #f8fafc);
+  --mb-red: var(--mb-primary, #e11d48);
+}
+
+/* ========== Base Styles ========== */
+.about-hero-section,
+.about-values-section,
+.about-methods-section,
+.about-mission-section,
+.about-stats-section,
+.about-reasons-section,
+.about-cta-section {
+  font-family: 'Inter', 'Be Vietnam Pro', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mb-container {
+  max-width: var(--mb-container);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ========== Section Headers ========== */
+.about-section-header {
+  text-align: center;
+  margin: 0 auto 48px;
+  max-width: 700px;
+}
+
+.about-section-title {
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--mb-navy);
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+}
+
+.about-section-subtitle {
+  font-size: clamp(16px, 1.8vw, 18px);
+  color: var(--mb-ink-50);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ========== Buttons ========== */
+.about-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: var(--mb-transition);
+  box-shadow: var(--mb-shadow-sm);
+}
+
+.about-btn-primary {
+  background: var(--mb-primary);
+  color: white;
+}
+
+.about-btn-primary:hover {
+  background: var(--mb-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--mb-shadow);
+}
+
+.about-btn-secondary {
+  background: white;
+  color: var(--mb-primary);
+  border-color: var(--mb-primary);
+}
+
+.about-btn-secondary:hover {
+  background: var(--mb-primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.about-btn-cta {
+  background: linear-gradient(135deg, var(--mb-primary), var(--mb-secondary));
+  color: white;
+  padding: 16px 36px;
+  font-size: 18px;
+  box-shadow: var(--mb-shadow);
+}
+
+.about-btn-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mb-shadow-lg);
+}
+
+/* ========== SECTION 1: HERO ========== */
+.about-hero-section {
+  position: relative;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  padding: 120px 0 80px;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.05) 0%, rgba(249, 115, 22, 0.05) 100%),
+              radial-gradient(ellipse at top right, rgba(225, 29, 72, 0.1), transparent 50%),
+              radial-gradient(ellipse at bottom left, rgba(249, 115, 22, 0.1), transparent 50%);
+  overflow: hidden;
+}
+
+.about-hero-background {
+  position: absolute;
+  inset: 0;
+  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23e11d48" fill-opacity="0.03"><circle cx="30" cy="30" r="2"/></g></svg>');
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.about-hero-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.about-hero-content {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.about-hero-eyebrow {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--mb-primary);
+  margin: 0 0 16px;
+}
+
+.about-hero-title {
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--mb-navy);
+  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+}
+
+.about-hero-description {
+  font-size: clamp(16px, 2vw, 20px);
+  line-height: 1.7;
+  color: var(--mb-ink-70);
+  margin: 0 0 32px;
+}
+
+.about-hero-cta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.about-hero-gallery-wrapper {
+  position: relative;
+}
+
+.about-hero-gallery {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: var(--mb-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--mb-shadow-lg);
+}
+
+.about-hero-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.05);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.about-hero-slide.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.about-hero-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  z-index: 2;
+}
+
+.about-hero-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: var(--mb-transition);
+  padding: 0;
+}
+
+.about-hero-dot.active {
+  background: white;
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ========== SECTION 2: VALUES ========== */
+.about-values-section {
+  padding: 100px 0;
+  background: var(--mb-bg);
+}
+
+.about-values-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.about-value-card {
+  background: white;
+  border: 1px solid rgba(225, 29, 72, 0.1);
+  border-radius: var(--mb-radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  transition: var(--mb-transition);
+  box-shadow: var(--mb-shadow-sm);
+}
+
+.about-value-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--mb-shadow-lg);
+  border-color: var(--mb-primary);
+}
+
+.about-value-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: var(--mb-shadow);
+}
+
+.about-value-icon-1 {
+  background: linear-gradient(135deg, var(--mb-primary), var(--mb-secondary));
+}
+
+.about-value-icon-2 {
+  background: linear-gradient(135deg, var(--mb-secondary), var(--mb-primary));
+}
+
+.about-value-icon-3 {
+  background: linear-gradient(135deg, #e9254c, #1f80e0);
+}
+
+.about-value-icon-4 {
+  background: linear-gradient(135deg, var(--mb-accent, #e11d48), #4b34fa);
+}
+
+.about-value-card h3 {
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--mb-navy);
+  margin: 0 0 12px;
+}
+
+.about-value-card p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--mb-ink-50);
+  margin: 0;
+}
+
+/* ========== SECTION 3: METHODS ========== */
+.about-methods-section {
+  padding: 100px 0;
+  background: var(--mb-bg-soft);
+}
+
+.about-methods-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.about-methods-intro {
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--mb-ink-70);
+  margin: 0 0 32px;
+}
+
+.about-methods-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.about-method-feature {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  border-radius: var(--mb-radius);
+  box-shadow: var(--mb-shadow-sm);
+  transition: var(--mb-transition);
+}
+
+.about-method-feature:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--mb-shadow);
+}
+
+.about-method-badge {
+  min-width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: white;
+  flex-shrink: 0;
+}
+
+.about-method-badge-1 {
+  background: linear-gradient(135deg, var(--mb-primary), var(--mb-secondary));
+}
+
+.about-method-badge-2 {
+  background: linear-gradient(135deg, var(--mb-secondary), var(--mb-primary));
+}
+
+.about-method-badge-3 {
+  background: linear-gradient(135deg, var(--mb-secondary), #0b78c6);
+}
+
+.about-method-badge-4 {
+  background: linear-gradient(135deg, #093ac2, #c61e45);
+}
+
+.about-method-feature strong {
+  display: block;
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--mb-navy);
+  margin: 0 0 8px;
+}
+
+.about-method-feature p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--mb-ink-50);
+  margin: 0;
+}
+
+.about-program-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.about-program-card {
+  padding: 24px;
+  border-radius: var(--mb-radius-lg);
+  box-shadow: var(--mb-shadow-sm);
+  transition: var(--mb-transition);
+  border: 1px solid rgba(225, 29, 72, 0.08);
+}
+
+.about-program-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--mb-shadow);
+}
+
+.about-program-card-1 {
+  background: linear-gradient(180deg, white, rgba(225, 29, 72, 0.05));
+}
+
+.about-program-card-2 {
+  background: linear-gradient(180deg, white, rgba(249, 115, 22, 0.05));
+}
+
+.about-program-card-3 {
+  background: linear-gradient(180deg, white, rgba(16, 185, 129, 0.05));
+}
+
+.about-program-card h4 {
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--mb-navy);
+  margin: 0 0 8px;
+}
+
+.about-program-card p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--mb-ink-50);
+  margin: 0;
+}
+
+/* ========== SECTION 4: MISSION ========== */
+.about-mission-section {
+  padding: 100px 0;
+  background: white;
+}
+
+.about-mission-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.about-mission-image {
+  border-radius: var(--mb-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--mb-shadow-lg);
+}
+
+.about-mission-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.about-mission-content h2 {
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: clamp(32px, 4vw, 42px);
+  font-weight: 900;
+  color: var(--mb-navy);
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
+}
+
+.about-mission-quote {
+  font-size: 20px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--mb-primary);
+  margin: 0 0 32px;
+  padding-left: 24px;
+  border-left: 4px solid var(--mb-primary);
+  line-height: 1.6;
+}
+
+.about-mission-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.about-mission-list li {
+  position: relative;
+  padding-left: 32px;
+  margin: 0 0 20px;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--mb-ink-70);
+}
+
+.about-mission-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--mb-primary);
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+}
+
+.about-highlight {
+  color: var(--mb-primary);
+  font-weight: 800;
+}
+
+/* ========== SECTION 5: STATS ========== */
+.about-stats-section {
+  padding: 100px 0;
+  background: linear-gradient(135deg, var(--mb-primary), #dc2626);
+  color: white;
+}
+
+.about-stats-section .about-section-title,
+.about-stats-section .about-section-subtitle {
+  color: white;
+}
+
+.about-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.about-stat-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--mb-radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.about-stat-number {
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 900;
+  color: white;
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+
+.about-stat-label {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
+
+/* ========== SECTION 6: REASONS ========== */
+.about-reasons-section {
+  padding: 100px 0;
+  background: var(--mb-bg-soft);
+}
+
+.about-reasons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.about-reason-card {
+  background: white;
+  border: 1px solid rgba(225, 29, 72, 0.1);
+  border-radius: var(--mb-radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  transition: var(--mb-transition);
+  box-shadow: var(--mb-shadow-sm);
+}
+
+.about-reason-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--mb-shadow-lg);
+  border-color: var(--mb-primary);
+}
+
+.about-reason-icon {
+  font-size: 48px;
+  margin: 0 0 20px;
+  line-height: 1;
+}
+
+.about-reason-card h3 {
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--mb-navy);
+  margin: 0 0 16px;
+}
+
+.about-reason-divider {
+  width: 48px;
+  height: 4px;
+  margin: 0 auto 16px;
+  background: linear-gradient(90deg, var(--mb-primary), var(--mb-secondary));
+  border-radius: 2px;
+}
+
+.about-reason-card p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--mb-ink-50);
+  margin: 0;
+}
+
+/* ========== SECTION 7: CTA ========== */
+.about-cta-section {
+  padding: 100px 0;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.05), rgba(249, 115, 22, 0.05));
+  text-align: center;
+}
+
+.about-cta-content {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.about-cta-title {
+  font-family: 'Inter', 'Be Vietnam Pro', sans-serif;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 900;
+  color: var(--mb-navy);
+  margin: 0 0 20px;
+  letter-spacing: -0.02em;
+}
+
+.about-cta-description {
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--mb-ink-50);
+  margin: 0 0 36px;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up,
+.fade-in-left,
+.fade-in-right {
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-in-up {
+  transform: translateY(40px);
+}
+
+.fade-in-left {
+  transform: translateX(-40px);
+}
+
+.fade-in-right {
+  transform: translateX(40px);
+}
+
+.fade-in-up.animated,
+.fade-in-left.animated,
+.fade-in-right.animated {
+  opacity: 1;
+  transform: translate(0);
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 1024px) {
+  .about-hero-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .about-hero-gallery {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .about-values-grid,
+  .about-reasons-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-methods-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-mission-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .about-mission-image {
+    order: -1;
+  }
+
+  .about-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero-section {
+    padding: 80px 0 60px;
+  }
+
+  .about-values-section,
+  .about-methods-section,
+  .about-mission-section,
+  .about-stats-section,
+  .about-reasons-section,
+  .about-cta-section {
+    padding: 60px 0;
+  }
+
+  .about-values-grid,
+  .about-reasons-grid,
+  .about-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-methods-features {
+    grid-template-columns: 1fr;
+  }
+
+  .about-hero-cta {
+    flex-direction: column;
+  }
+
+  .about-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .mb-container {
+    padding: 0 16px;
+  }
+
+  .about-section-header {
+    margin-bottom: 32px;
+  }
+
+  .about-hero-title {
+    font-size: 32px;
+  }
+
+  .about-hero-description {
+    font-size: 16px;
+  }
+
+  .about-value-card,
+  .about-reason-card {
+    padding: 24px 20px;
+  }
+
+  .about-mission-quote {
+    font-size: 18px;
+    padding-left: 16px;
+  }
+}

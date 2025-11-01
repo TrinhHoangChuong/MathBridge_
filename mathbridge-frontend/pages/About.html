@@ -3,33 +3,386 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>MathBridge</title>
-    <base href="../"> <!-- dòng này -->
-    <link rel="stylesheet" href="assets/css/header.css" /> <!-- dòng này -->
-    <link rel="stylesheet" href="assets/css/footer.css" /><!-- dòng này -->
-    <script src="assets/js/utils/includePartials.js" defer></script> <!-- dòng này -->
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giới thiệu | MathBridge</title>
+    <base href="../">
+    <link rel="stylesheet" href="assets/css/index.css" />
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/about.css" />
+    <script src="assets/js/utils/includePartials.js" defer></script>
 </head>
+
 <body>
-<header></header> <!-- dòng này -->
+<header></header>
 
+<div id="main-content">
+    <main>
+        <!-- ========== SECTION 1: HERO ========== -->
+        <section class="about-hero-section" aria-label="Hero Section">
+            <div class="about-hero-background"></div>
+            <div class="mb-container about-hero-container">
+                <div class="about-hero-content">
+                    <p class="about-hero-eyebrow">Về chúng tôi</p>
+                    <h1 class="about-hero-title">MathBridge – Cầu nối Toán học quốc tế</h1>
+                    <p class="about-hero-description">Chúng tôi đồng hành cùng học sinh Việt Nam chinh phục Toán học theo các chương trình Cambridge, IB, AP và Toán nâng cao Việt Nam với phương pháp cá nhân hóa và hệ thống đánh giá tiến độ toàn diện.</p>
+                    <div class="about-hero-cta">
+                        <a href="pages/Contact.html" class="about-btn about-btn-primary">Tư vấn miễn phí</a>
+                        <a href="pages/Courses.html" class="about-btn about-btn-secondary">Xem khóa học</a>
+                    </div>
+                </div>
+                <div class="about-hero-gallery-wrapper">
+                    <div class="about-hero-gallery" aria-label="Bộ sưu tập ảnh About">
+                        <img src="assets/img/hero1.jpg" alt="Lớp học MathBridge" class="about-hero-slide active" />
+                        <img src="assets/img/hero2.jpg" alt="Học sinh học tập" class="about-hero-slide" />
+                        <img src="assets/img/hero3.jpg" alt="Giảng viên MathBridge" class="about-hero-slide" />
+                        <div class="about-hero-dots" role="tablist" aria-label="Điều hướng ảnh"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
+        <!-- ========== SECTION 2: CORE VALUES ========== -->
+        <section class="about-values-section" aria-label="Giá trị cốt lõi">
+            <div class="mb-container">
+                <header class="about-section-header">
+                    <h2 class="about-section-title">Giá trị cốt lõi</h2>
+                    <p class="about-section-subtitle">Những nguyên tắc dẫn dắt mọi quyết định của MathBridge</p>
+                </header>
+                <div class="about-values-grid">
+                    <div class="about-value-card fade-in-up">
+                        <div class="about-value-icon about-value-icon-1">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Phát triển tư duy</h3>
+                        <p>Khuyến khích tư duy độc lập, logic và sáng tạo ở học sinh.</p>
+                    </div>
+                    <div class="about-value-card fade-in-up">
+                        <div class="about-value-icon about-value-icon-2">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Hướng mục tiêu</h3>
+                        <p>Thiết kế lộ trình rõ ràng phù hợp mục tiêu thi quốc tế và trong nước.</p>
+                    </div>
+                    <div class="about-value-card fade-in-up">
+                        <div class="about-value-icon about-value-icon-3">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Đồng hành</h3>
+                        <p>Theo sát tiến trình, báo cáo định kỳ và tư vấn cá nhân hóa.</p>
+                    </div>
+                    <div class="about-value-card fade-in-up">
+                        <div class="about-value-icon about-value-icon-4">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Kết quả bền vững</h3>
+                        <p>Tập trung vào nền tảng lâu dài thay vì chỉ điểm số ngắn hạn.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<main>
-    <h1>Giới thiệu về MathBridge</h1>
-</main>
+        <!-- ========== SECTION 3: PHƯƠNG PHÁP & CHƯƠNG TRÌNH ========== -->
+        <section class="about-methods-section" aria-label="Phương pháp & Chương trình">
+            <div class="mb-container">
+                <header class="about-section-header">
+                    <h2 class="about-section-title">Phương pháp & Chương trình</h2>
+                    <p class="about-section-subtitle">Cách tiếp cận của chúng tôi: hệ thống, có dữ liệu, tập trung vào kết quả và tư duy dài hạn</p>
+                </header>
+                <div class="about-methods-grid">
+                    <div class="about-methods-left fade-in-left">
+                        <p class="about-methods-intro">MathBridge áp dụng phương pháp học tập dựa trên năng lực kết hợp với mô phỏng đề thi thực tế. Mỗi học sinh được đánh giá đầu vào để tạo lộ trình cá nhân; tiến độ được đo bằng bài kiểm tra định kỳ và phân tích dữ liệu học tập.</p>
+                        <div class="about-methods-features">
+                            <div class="about-method-feature">
+                                <div class="about-method-badge about-method-badge-1">A</div>
+                                <div>
+                                    <strong>Đánh giá cá nhân</strong>
+                                    <p>Khảo sát năng lực ban đầu để thiết kế lộ trình phù hợp.</p>
+                                </div>
+                            </div>
+                            <div class="about-method-feature">
+                                <div class="about-method-badge about-method-badge-2">B</div>
+                                <div>
+                                    <strong>Phản hồi tức thì</strong>
+                                    <p>Bài tập & bài kiểm tra có phân tích, giúp học sinh điều chỉnh nhanh.</p>
+                                </div>
+                            </div>
+                            <div class="about-method-feature">
+                                <div class="about-method-badge about-method-badge-3">C</div>
+                                <div>
+                                    <strong>Luyện thi mô phỏng</strong>
+                                    <p>Mock test định kỳ, phân tích lỗi để tối ưu kỹ năng làm bài.</p>
+                                </div>
+                            </div>
+                            <div class="about-method-feature">
+                                <div class="about-method-badge about-method-badge-4">D</div>
+                                <div>
+                                    <strong>Hỗ trợ phụ huynh</strong>
+                                    <p>Báo cáo tiến độ rõ ràng và khuyến nghị phát triển cho phụ huynh.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-methods-right fade-in-right">
+                        <div class="about-program-cards">
+                            <div class="about-program-card about-program-card-1">
+                                <h4>Track Nền tảng (Lớp 9–12)</h4>
+                                <p>Nền tảng logic, số & hình, bài tập theo chuyên đề, đặt mục tiêu phát triển tư duy.</p>
+                            </div>
+                            <div class="about-program-card about-program-card-2">
+                                <h4>Track Chuẩn quốc tế (IGCSE / IB / AP)</h4>
+                                <p>Chương trình bám sát đề thi quốc tế, mock test và chiến lược thi.</p>
+                            </div>
+                            <div class="about-program-card about-program-card-3">
+                                <h4>Track Nâng cao & HS giỏi</h4>
+                                <p>Bài tập suy luận cao cấp, luyện thi tuyển chọn và thi học sinh giỏi.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
+        <!-- ========== SECTION 4: SỨ MỆNH & CAM KẾT ========== -->
+        <section class="about-mission-section" aria-label="Sứ mệnh & Cam kết">
+            <div class="mb-container">
+                <div class="about-mission-wrapper">
+                    <div class="about-mission-image fade-in-left">
+                        <img src="assets/img/hero8.jpg" alt="Sứ mệnh MathBridge" />
+                    </div>
+                    <div class="about-mission-content fade-in-right">
+                        <h2>Sứ mệnh & Cam kết</h2>
+                        <blockquote class="about-mission-quote">
+                            "Truyền cảm hứng học Toán – Phát triển tư duy & kết quả bền vững."
+                        </blockquote>
+                        <ul class="about-mission-list">
+                            <li><strong class="about-highlight">Truyền cảm hứng học Toán</strong> – Giúp học sinh yêu thích, chủ động và sáng tạo trong học tập.</li>
+                            <li><strong class="about-highlight">Phát triển toàn diện</strong> – Tư duy logic, phản biện, và kỹ năng giải quyết vấn đề.</li>
+                            <li><strong class="about-highlight">Cam kết chất lượng</strong> – Giảng dạy theo chuẩn quốc tế, theo sát tiến trình học của từng em.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
 
+        <!-- ========== SECTION 5: THỐNG KÊ NỔI BẬT ========== -->
+        <section class="about-stats-section" aria-label="Thống kê nổi bật">
+            <div class="mb-container">
+                <header class="about-section-header">
+                    <h2 class="about-section-title">Thống kê nổi bật</h2>
+                    <p class="about-section-subtitle">Kết quả đã được kiểm chứng qua dữ liệu nội bộ và phản hồi học sinh/phụ huynh</p>
+                </header>
+                <div class="about-stats-grid">
+                    <div class="about-stat-card fade-in-up">
+                        <div class="about-stat-number" data-target="98">0%</div>
+                        <div class="about-stat-label">Tiến bộ sau 3 tháng</div>
+                    </div>
+                    <div class="about-stat-card fade-in-up">
+                        <div class="about-stat-number" data-target="1200">0+</div>
+                        <div class="about-stat-label">Học sinh đang theo học</div>
+                    </div>
+                    <div class="about-stat-card fade-in-up">
+                        <div class="about-stat-number" data-target="85">0%</div>
+                        <div class="about-stat-label">Đạt mục tiêu thi quốc tế</div>
+                    </div>
+                    <div class="about-stat-card fade-in-up">
+                        <div class="about-stat-number" data-target="10">0+</div>
+                        <div class="about-stat-label">Năm kinh nghiệm chuyên sâu</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<footer></footer> <!-- dòng này -->
-<!-- cả đoạn script này -->
+        <!-- ========== SECTION 6: TẠI SAO CHỌN MATHBRIDGE ========== -->
+        <section class="about-reasons-section" aria-label="Tại sao chọn MathBridge">
+            <div class="mb-container">
+                <header class="about-section-header">
+                    <h2 class="about-section-title">Tại sao chọn MathBridge</h2>
+                    <p class="about-section-subtitle">Hệ thống học tập được thiết kế để tối ưu kết quả và phát triển tư duy</p>
+                </header>
+                <div class="about-reasons-grid">
+                    <div class="about-reason-card fade-in-up">
+                        <div class="about-reason-icon">📚</div>
+                        <h3>Lộ trình cá nhân hóa</h3>
+                        <div class="about-reason-divider"></div>
+                        <p>Đánh giá đầu vào, lộ trình theo mục tiêu và báo cáo tiến độ định kỳ.</p>
+                    </div>
+                    <div class="about-reason-card fade-in-up">
+                        <div class="about-reason-icon">👩‍🏫</div>
+                        <h3>Giáo viên chuyên sâu</h3>
+                        <div class="about-reason-divider"></div>
+                        <p>Đội ngũ có chứng chỉ quốc tế, kinh nghiệm luyện thi và giảng dạy nâng cao.</p>
+                    </div>
+                    <div class="about-reason-card fade-in-up">
+                        <div class="about-reason-icon">🧩</div>
+                        <h3>Phương pháp tương tác</h3>
+                        <div class="about-reason-divider"></div>
+                        <p>Bài tập theo cấp độ, phản hồi tức thì và mô phỏng đề thi chuẩn.</p>
+                    </div>
+                    <div class="about-reason-card fade-in-up">
+                        <div class="about-reason-icon">🔬</div>
+                        <h3>Kiểm tra & Đo lường</h3>
+                        <div class="about-reason-divider"></div>
+                        <p>Phân tích tiến trình học bằng báo cáo dữ liệu, tối ưu lộ trình học.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SECTION 7: FINAL CTA ========== -->
+        <section class="about-cta-section" aria-label="Call to Action">
+            <div class="mb-container">
+                <div class="about-cta-content">
+                    <h2 class="about-cta-title">Đồng hành cùng hành trình Toán học của bạn</h2>
+                    <p class="about-cta-description">Đặt lịch tư vấn miễn phí hoặc tham gia lớp thử để trải nghiệm phương pháp giảng dạy của MathBridge.</p>
+                    <a href="pages/Contact.html" class="about-btn about-btn-cta">Liên hệ ngay</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<footer></footer>
+
 <script>
     window.addEventListener('load', () => {
-        includePartials({
-          header: 'partials/header.html',
-          footer: 'partials/footer.html'
-        });
+      includePartials({
+        header: 'partials/header.html',
+        footer: 'partials/footer.html'
+      });
     });
+
+    // ========== HERO GALLERY SLIDESHOW ==========
+    (function initAboutHeroGallery(){
+      const gallery = document.querySelector('.about-hero-gallery');
+      if (!gallery) return;
+      const slides = Array.from(gallery.querySelectorAll('.about-hero-slide'));
+      const dotsWrap = gallery.querySelector('.about-hero-dots');
+      if (slides.length <= 1) return;
+
+      // Create dots
+      slides.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'about-hero-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', 'Ảnh ' + (i+1));
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsWrap.appendChild(dot);
+      });
+
+      let currentIndex = 0;
+      let timer;
+      const intervalMs = 4000;
+
+      function updateSlides(){
+        slides.forEach((slide, i) => {
+          slide.classList.toggle('active', i === currentIndex);
+        });
+        const dots = dotsWrap.querySelectorAll('.about-hero-dot');
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === currentIndex);
+        });
+      }
+
+      function goToSlide(index){
+        currentIndex = (index + slides.length) % slides.length;
+        updateSlides();
+        restartTimer();
+      }
+
+      function nextSlide(){
+        goToSlide(currentIndex + 1);
+      }
+
+      function startTimer(){
+        timer = setInterval(nextSlide, intervalMs);
+      }
+
+      function stopTimer(){
+        clearInterval(timer);
+      }
+
+      function restartTimer(){
+        stopTimer();
+        startTimer();
+      }
+
+      gallery.addEventListener('mouseenter', stopTimer);
+      gallery.addEventListener('mouseleave', startTimer);
+
+      startTimer();
+    })();
+
+    // ========== SCROLL ANIMATIONS (IntersectionObserver) ==========
+    (function initScrollAnimations(){
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animated');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Observe all fade-in elements
+      document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right').forEach(el => {
+        observer.observe(el);
+      });
+    })();
+
+    // ========== COUNT-UP ANIMATION FOR STATS ==========
+    (function initStatsCounter(){
+      const observerOptions = {
+        threshold: 0.5
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const statNumbers = entry.target.querySelectorAll('.about-stat-number');
+            statNumbers.forEach(stat => {
+              const target = parseInt(stat.getAttribute('data-target'));
+              const suffix = stat.textContent.replace(/\d/g, '');
+              const duration = 2000;
+              const steps = 60;
+              const increment = target / steps;
+              let current = 0;
+
+              const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                  stat.textContent = target + suffix;
+                  clearInterval(timer);
+                } else {
+                  stat.textContent = Math.floor(current) + suffix;
+                }
+              }, duration / steps);
+            });
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      const statsSection = document.querySelector('.about-stats-section');
+      if (statsSection) {
+        observer.observe(statsSection);
+      }
+    })();
 </script>
 </body>
 </html>
