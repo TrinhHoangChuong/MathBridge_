@@ -1,32 +1,44 @@
-// File: /assets/js/utils/includePartials.js
+// file: assets/js/utils/includePartials.js
+(function (global) {
+  async function loadPartial(selector, url) {
+    const host = document.querySelector(selector);
+    if (!host) return;
 
-// Hàm tải nội dung header & footer
-async function loadPart(selector, filePath) {
-  const element = document.querySelector(selector);
-  if (!element) return;
+    // thêm version để tránh cache
+    const withTs = url + (url.includes("?") ? "&" : "?") + "v=" + Date.now();
 
-  try {
-    const response = await fetch(`${filePath}?v=${Date.now()}`);
-    element.innerHTML = await response.text();
-  } catch (err) {
-    element.innerHTML = "<p style='color:red'>Không tải được phần này!</p>";
-    console.error("Lỗi khi tải partial:", err);
+    const res = await fetch(withTs, { cache: "no-cache" });
+    const html = await res.text();
+    host.innerHTML = html;
+
+    // chạy lại script trong partial
+    const scripts = host.querySelectorAll("script");
+    scripts.forEach((old) => {
+      const s = document.createElement("script");
+      if (old.src) {
+        s.src = old.src + (old.src.includes("?") ? "&" : "?") + "v=" + Date.now();
+      } else {
+        s.textContent = old.textContent;
+      }
+      if (old.type) s.type = old.type;
+      document.head.appendChild(s);
+      document.head.removeChild(s);
+    });
   }
-}
 
-// Hàm chính: tải header & footer + đánh dấu menu đang active
-async function includePartials(options) {
-  await loadPart("header", options.header); // nạp header.html
-  await loadPart("footer", options.footer); // nạp footer.html
+  async function includePartials(opts = {}) {
+    const tasks = [];
+    if (opts.header) tasks.push(loadPartial("header", opts.header));
+    if (opts.footer) tasks.push(loadPartial("footer", opts.footer));
+    await Promise.all(tasks);
 
-  // Xác định URL hiện tại để đánh dấu menu đang mở
-  const currentPage = location.pathname.split("/").pop().toLowerCase();
+    // gọi lại header
+    if (typeof window.mbRenderHeader === "function") {
+      window.mbRenderHeader();
+    }
 
-  document.querySelectorAll("header a").forEach(link => {
-    const href = (link.getAttribute("href") || "").toLowerCase();
-    if (href.endsWith(currentPage)) link.classList.add("active"); // thêm class active
-  });
-}
+    document.dispatchEvent(new CustomEvent("partials:loaded"));
+  }
 
-// Cho phép gọi hàm này trực tiếp trong file HTML
-window.includePartials = includePartials;
+  global.includePartials = includePartials;
+})(window);
