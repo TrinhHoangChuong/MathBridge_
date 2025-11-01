@@ -1,27 +1,1007 @@
-.mb-careers { padding: 48px 16px; }
-.mb-careers-wrap { max-width: 1120px; margin: 0 auto; }
-.mb-careers-head { text-align: center; margin-bottom: 24px; }
-.mb-careers-head h1 { margin: 0 0 8px; font-size: 32px; }
-.mb-careers-head p { margin: 0; color: #555; }
+:root {
+  /* Design system - trắng/xám nhạt/viền mỏng/accent đỏ pastel */
+  --header-h: 72px;
+  --brand-red: #f87171; /* đỏ pastel */
+  --brand-red-dark: #ef4444;
+  --brand-red-light: #fecaca;
+  --bg-page: #fafafa;
+  --bg-page-light: #ffffff;
+  --border-card: rgba(0, 0, 0, .04);
+  --border-soft: rgba(0, 0, 0, .08);
+  --text-main: #1f2937;
+  --text-dim: #6b7280;
+  --text-muted: #9ca3af;
+  --radius-card: 12px;
+  --radius-chip: 999px;
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, .05), 0 2px 4px -1px rgba(0, 0, 0, .03);
+  --shadow-card-soft: 0 2px 4px -1px rgba(0, 0, 0, .03);
+  --line-soft: rgba(0, 0, 0, .05);
+  --chip-bg: #ffffff;
+  --chip-border: rgba(0, 0, 0, .06);
+  --chip-active-bg: #fef2f2;
+  --chip-active-border: #fecaca;
+  --chip-active-text: #dc2626;
+  --bg-toolbar: rgba(255, 255, 255, .95);
+  --bg-card: #ffffff;
+  --bg-empty: #fafafa;
+  --bg-hero-grad1: radial-gradient(800px 480px at 10% -10%, rgba(248, 113, 113, .03), transparent 60%);
+  --bg-hero-grad2: radial-gradient(900px 520px at 110% -20%, rgba(254, 202, 202, .05), transparent 60%);
 
-.mb-jobs-list { display: grid; gap: 16px; }
-.job-card { background: #fff; border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
-.job-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 14px 16px; gap: 8px; }
-.job-title { font-size: 18px; font-weight: 700; margin: 0; }
-.job-meta { display: flex; flex-wrap: wrap; gap: 10px; color: #555; font-size: 14px; }
-.job-tag { padding: 4px 8px; background: #eef3ff; color: #2a55ff; border-radius: 999px; font-size: 12px; }
-.job-actions { margin-left: auto; }
-.job-btn { border: 0; background: #2a55ff; color: #fff; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
-.job-btn.secondary { background: #f3f4f6; color: #111; }
+  /* Legacy colors for compatibility */
+  --mb-blue: #6b7280;
+  --mb-blue-2: #6b7280;
+  --mb-blue-soft: #f3f4f6;
+  --mb-blue-light: #f9fafb;
+  --mb-ink: #1f2937;
+  --mb-gray: #1f2937;
+  --mb-card: #ffffff;
+  --mb-accent: #f87171;
+  --mb-success: #10b981;
+  --mb-warning: #f59e0b;
+  --mb-error: #ef4444;
 
-.job-details { display: none; padding: 0 16px 16px; border-top: 1px dashed #eee; }
-.job-details.open { display: block; }
-.job-details h4 { margin: 12px 0 8px; font-size: 16px; }
-.job-details ul { margin: 0; padding-left: 18px; }
-.job-details li { margin: 4px 0; }
+  /* Semantic colors */
+  --text-primary: var(--text-main);
+  --text-secondary: var(--text-dim);
+  --text-muted: var(--text-muted);
+  --border-color: var(--border-soft);
+  --error-color: var(--mb-error);
 
-@media (max-width: 600px) {
-  .job-top { align-items: flex-start; }
+  /* Animation durations */
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+  --transition-slow: 350ms;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  /* Layout */
+  --container-max: 1200px;
+  --header-height: 70px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* Basic container helper */
+.container {
+  width: min(1280px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* ===========================
+   HERO
+=========================== */
+.careers-hero {
+  background:
+    var(--bg-hero-grad1),
+    var(--bg-hero-grad2),
+    linear-gradient(180deg, #ffffff, #fafafa);
+  padding: 60px 0 40px;
+  text-align: center;
+}
+
+.careers-hero .hero-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.careers-hero .hero-title {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+
+.careers-hero .hero-title .accent {
+  background: linear-gradient(90deg, #e11d48 0%, #7c3aed 50%, #2563eb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  position: relative;
+}
+
+.careers-hero .hero-desc {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #6b7280;
+  margin: 0;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: 400;
+}
+
+/* ===========================
+   CONTENT
+=========================== */
+.careers-content {
+  background: var(--bg-page);
+  padding: 60px 0;
+}
+
+.careers-wrap {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+/* ===========================
+   SIDEBAR
+=========================== */
+.career-aside {
+  position: sticky;
+  top: calc(var(--header-h) + 24px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  padding: 32px;
+  box-shadow: var(--shadow-card-soft);
+}
+
+.aside-head {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  letter-spacing: -0.01em;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.job-item {
+  display: block;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  text-decoration: none;
+  transition: all var(--transition-normal) ease;
+}
+
+.job-item:hover {
+  background: var(--chip-active-bg);
+  border-color: var(--brand-red);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.job-item.active {
+  background: var(--chip-active-bg);
+  border-color: var(--brand-red);
+  color: var(--chip-active-text);
+}
+
+.job-item .title {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.job-item .meta {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ===========================
+   MAIN CONTENT
+=========================== */
+.career-main {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  padding: 40px;
+  box-shadow: var(--shadow-card-soft);
+}
+
+.job-header {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.job-title {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 16px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.job-short-desc {
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text-dim);
+  font-size: 1.125rem;
+  line-height: 1.6;
+  margin: 0 0 24px;
+  font-weight: 400;
+}
+
+.job-section {
+  margin-bottom: 40px;
+}
+
+.job-section:last-child {
+  margin-bottom: 0;
+}
+
+.job-section h3 {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+/* Hero Section */
+.mb-career-hero {
+  position: relative;
+  background: var(--mb-card);
+  padding: 60px 0;
+  overflow: hidden;
+}
+
+.mb-career-hero::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 200%;
+  background: linear-gradient(45deg, var(--mb-blue-soft) 0%, transparent 100%);
+  transform: rotate(-45deg);
+  z-index: 0;
+  opacity: 0.1;
+  animation: gradient-shift 8s ease infinite;
+}
+
+.mb-career-hero-wrap {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes gradient-shift {
+  0% {
+    transform: rotate(-45deg) translate(0, 0);
+  }
+
+  50% {
+    transform: rotate(-45deg) translate(5%, 5%);
+  }
+
+  100% {
+    transform: rotate(-45deg) translate(0, 0);
+  }
+}
+
+.hero-breadcrumbs {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 8px
+}
+
+.hero-breadcrumbs a {
+  color: #374151;
+  text-decoration: none
+}
+
+.hero-breadcrumbs span {
+  margin: 0 6px;
+  color: #9ca3af
+}
+
+.hero-title {
+  margin: 4px 0 6px;
+  color: var(--mb-blue);
+  font-weight: 900;
+  font-size: 36px;
+  letter-spacing: .2px
+}
+
+.hero-sub {
+  margin: 0;
+  color: #334155
 }
 
 
+/* LAYOUT */
+.mb-career {
+  background: linear-gradient(to bottom, #ffffff 0%, #f7f8fc 100%);
+  padding: 24px 0 80px;
+  position: relative;
+  z-index: 0
+}
+
+.mb-career-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 28px
+}
+
+/* Sidebar */
+.career-aside {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  background: var(--mb-card);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden
+}
+
+.career-aside .aside-head {
+  background: #eef2ff;
+  color: var(--mb-blue);
+  font-weight: 800;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb
+}
+
+.job-list {
+  padding: 6px 0
+}
+
+.job-item {
+  display: block;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: #0f172a;
+  border-left: 3px solid transparent
+}
+
+.job-item:hover {
+  background: #f8fafc
+}
+
+.job-item.active {
+  background: #eff6ff;
+  border-left-color: var(--mb-accent)
+}
+
+.job-item .title {
+  font-weight: 800;
+  margin: 0 0 4px;
+  color: var(--mb-blue)
+}
+
+.job-item .meta {
+  margin: 0;
+  color: #475569;
+  font-size: 14px
+}
+
+/* Main */
+.career-main {
+  background: var(--mb-card);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 18px 18px 10px;
+  position: relative;
+  z-index: 0
+}
+
+
+.job-header {
+  background: transparent;
+  border-radius: 12px;
+  border: 1px solid #717274;
+  padding: 15px 15px 14px;
+  margin: 5px 0 10px 0;
+  position: static;
+}
+
+
+.job-header h2 {
+  margin: 0 0 6px;
+  color: var(--mb-blue);
+  font-size: 24px;
+  font-weight: 900
+}
+
+.job-short-desc {
+  color: #475569;
+  font-size: 20px;
+  margin-bottom: 8px
+}
+
+.cta {
+  display: inline-block;
+  background: var(--mb-accent);
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 800;
+  box-shadow: 0 3px 0 #1d4ed8
+}
+
+.cta:hover {
+  filter: brightness(.97)
+}
+
+.cta:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 #1d4ed8
+}
+
+.job-section {
+  padding: 10px 4px 8px
+}
+
+.job-section h3 {
+  margin: 0 0 8px;
+  color: var(--mb-blue-2);
+  font-size: 18px;
+  font-weight: 900
+}
+
+.job-desc {
+  color: #374151;
+  line-height: 1.6
+}
+
+.job-reqs,
+.job-benefits {
+  margin: 0;
+  padding: 0 0 0 18px;
+  color: #374151
+}
+
+.job-reqs li,
+.job-benefits li {
+  margin: 6px 0
+}
+
+.job-apply {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 14px
+}
+
+/* Apply form */
+.apply-form {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  padding: 40px;
+  box-shadow: var(--shadow-card-soft);
+}
+
+.apply-form .grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.apply-form .field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.apply-form label {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.apply-form input[type="text"],
+.apply-form input[type="tel"],
+.apply-form input[type="email"],
+.apply-form input[type="url"],
+.apply-form textarea {
+  font-family: Inter, system-ui, sans-serif;
+  padding: 12px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  outline: none;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: all var(--transition-normal) ease;
+  background: var(--bg-page-light);
+}
+
+.apply-form textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.apply-form input:focus,
+.apply-form textarea:focus {
+  border-color: var(--brand-red);
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, .15);
+  outline: none;
+}
+
+.apply-form .hint {
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--mb-error);
+  font-size: 0.875rem;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Modern Upload Zone */
+.upload-row {
+  margin-top: 24px;
+}
+
+.upload-zone {
+  margin-top: 10px;
+  position: relative;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 30px 24px;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.upload-zone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.upload-zone:hover {
+  border-color: var(--brand-red);
+  background: linear-gradient(135deg, #fef2f2 0%, #f0f9ff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.upload-zone:hover::before {
+  opacity: 1;
+}
+
+.upload-zone.dragover {
+  border-color: var(--brand-red);
+  background: linear-gradient(135deg, #fef2f2 0%, #f0f9ff 100%);
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px -10px rgba(248, 113, 113, 0.3);
+}
+
+.upload-zone.dragover::before {
+  opacity: 1;
+}
+
+.upload-zone input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.upload-placeholder {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--brand-red);
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(248, 113, 113, 0.2));
+}
+
+.upload-zone:hover .upload-icon {
+  transform: scale(1.1) rotate(5deg);
+  color: var(--brand-red-dark);
+}
+
+.upload-placeholder span:first-of-type {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.note {
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 8px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* File Preview */
+.file-preview {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  backdrop-filter: blur(10px);
+  display: none;
+}
+
+.file-preview.show {
+  display: block;
+  animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.file-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--brand-red);
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.875rem;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size {
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.file-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.file-remove:hover {
+  color: var(--mb-error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Form Footer */
+.form-footer {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+/* Modern Submit Button */
+.apply-form .submit {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  background: linear-gradient(135deg, var(--brand-red) 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px 0 rgba(248, 113, 113, 0.4);
+  position: relative;
+  overflow: hidden;
+  text-transform: none;
+  letter-spacing: 0.025em;
+}
+
+.apply-form .submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.apply-form .submit:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px 0 rgba(248, 113, 113, 0.5);
+}
+
+.apply-form .submit:hover::before {
+  left: 100%;
+}
+
+.apply-form .submit:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px 0 rgba(248, 113, 113, 0.4);
+}
+
+.apply-form .submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.apply-form .submit:disabled:hover {
+  background: #9ca3af;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Button Loading State */
+.btn-loader {
+  display: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+.apply-form .submit.loading .btn-text {
+  opacity: 0.7;
+}
+
+.apply-form .submit.loading .btn-loader {
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width:720px) {
+  .apply-form .grid-2 {
+    grid-template-columns: 1fr
+  }
+}
+
+/* Job details section */
+.job-details {
+  background: var(--bg-page-light);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.job-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item strong {
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  color: var(--brand-red);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-item span {
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.status-badge {
+  display: inline-block;
+  background: var(--brand-red);
+  color: white;
+  padding: 6px 16px;
+  border-radius: var(--radius-chip);
+  font-family: "Be Vietnam Pro", Inter, system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Application Status Styles */
+.status-pending {
+  background: #f59e0b;
+  color: white;
+}
+
+.status-reviewing {
+  background: #3b82f6;
+  color: white;
+}
+
+.status-approved {
+  background: #10b981;
+  color: white;
+}
+
+.status-rejected {
+  background: #ef4444;
+  color: white;
+}
+
+.status-interview-scheduled {
+  background: #8b5cf6;
+  color: white;
+}
+
+.status-interviewed {
+  background: #06b6d4;
+  color: white;
+}
+
+.status-hired {
+  background: #059669;
+  color: white;
+}
+
+.status-not-selected {
+  background: #6b7280;
+  color: white;
+}
+
+.status-unknown {
+  background: #6b7280;
+  color: white;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 980px) {
+  .careers-wrap {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .career-aside {
+    position: relative;
+    top: auto;
+    order: 2;
+  }
+
+  .career-main {
+    order: 1;
+  }
+
+  .job-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .careers-hero {
+    padding: 40px 0 30px;
+  }
+
+  .careers-hero .hero-title {
+    font-size: clamp(2rem, 6vw, 2.5rem);
+    margin-bottom: 20px;
+  }
+
+  .careers-hero .hero-desc {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .careers-content {
+    padding: 24px 0;
+  }
+
+  .career-main {
+    padding: 20px;
+  }
+
+  .job-title {
+    font-size: 1.5rem;
+  }
+}
