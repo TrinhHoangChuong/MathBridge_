@@ -2,7 +2,7 @@ package com.mathbridge.dto;
 
 public class GiaoVienCardDTO {
 
-    private String idNv;        // <--- thêm
+    private String idNv;
     private String ho;
     private String tenDem;
     private String ten;
