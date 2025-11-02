@@ -1,7 +1,7 @@
 // file: assets/js/utils/auth.js
 const AUTH_KEY = "mb_auth";
 
-export function getAuth() {
+function getAuth() {
   const raw = localStorage.getItem(AUTH_KEY);
   if (!raw) return null;
   try {
@@ -12,10 +12,15 @@ export function getAuth() {
   }
 }
 
-export function setAuth(data) {
+function setAuth(data) {
   localStorage.setItem(AUTH_KEY, JSON.stringify(data));
 }
 
-export function clearAuth() {
+function clearAuth() {
   localStorage.removeItem(AUTH_KEY);
 }
+
+// Expose functions to global scope
+window.getAuth = getAuth;
+window.setAuth = setAuth;
+window.clearAuth = clearAuth;

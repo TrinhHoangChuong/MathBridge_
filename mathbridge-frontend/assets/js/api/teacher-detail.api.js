@@ -1,11 +1,10 @@
 // assets/js/api/teacher-detail.api.js
-
-import { CONFIG } from "../config.js";
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
 // ====== const endpoint ======
-const TEACHER_LIST_ENDPOINT = `${CONFIG.BASE_URL}/api/public/nhanvien/giaovien`;
+const TEACHER_LIST_ENDPOINT = `${window.CONFIG.BASE_URL}/api/public/nhanvien/giaovien`;
 const TEACHER_BY_ID_ENDPOINT = (id) =>
-  `${CONFIG.BASE_URL}/api/public/nhanvien/${encodeURIComponent(id)}`;
+  `${window.CONFIG.BASE_URL}/api/public/nhanvien/${encodeURIComponent(id)}`;
 
 // ====== helper fetch JSON có phân biệt 404 ======
 async function fetchJson(url) {
@@ -58,7 +57,7 @@ function findTeacherInList(list, id) {
 
 // LẤY 1 GIÁO VIÊN THEO ID
 // Ưu tiên gọi trực tiếp /{id}; nếu không có thì rớt về danh sách để tìm.
-export async function getTeacherById(id) {
+async function getTeacherById(id) {
   if (!id) return null;
 
   // 1. thử gọi endpoint trực tiếp (phòng trường hợp sau này BE làm xong)
@@ -90,12 +89,12 @@ export async function getTeacherById(id) {
 
 // LẤY DANH SÁCH LỚP CỦA GIÁO VIÊN
 // GET /api/public/nhanvien/{id}/lophoc
-export async function getClassesByTeacherId(id) {
+async function getClassesByTeacherId(id) {
   if (!id) return [];
 
   try {
     const res = await fetch(
-      `${CONFIG.BASE_URL}/api/public/nhanvien/${encodeURIComponent(id)}/lophoc`,
+      `${window.CONFIG.BASE_URL}/api/public/nhanvien/${encodeURIComponent(id)}/lophoc`,
       {
         method: "GET",
         headers: {
@@ -116,3 +115,7 @@ export async function getClassesByTeacherId(id) {
     return [];
   }
 }
+
+// Expose functions to global scope
+window.getTeacherById = getTeacherById;
+window.getClassesByTeacherId = getClassesByTeacherId;
