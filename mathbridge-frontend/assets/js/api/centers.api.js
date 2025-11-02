@@ -1,11 +1,10 @@
 // assets/js/api/centers.api.js
 // Lấy danh sách cơ sở (public, không cần token)
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
-import { CONFIG } from "../config.js";
-
-export async function getCentersFromApi() {
+async function getCentersFromApi() {
   try {
-    const res = await fetch(CONFIG.BASE_URL + "/api/public/centers");
+    const res = await fetch(window.CONFIG.BASE_URL + "/api/public/centers");
 
     if (!res.ok) {
       console.error("centers API lỗi, status =", res.status);
@@ -23,3 +22,6 @@ export async function getCentersFromApi() {
     return { centers: [] };
   }
 }
+
+// Expose function to global scope
+window.getCentersFromApi = getCentersFromApi;

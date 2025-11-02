@@ -1,9 +1,8 @@
 // Jobs API
-import { CONFIG } from "../config.js";
-
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
 async function http(path) {
-  const r = await fetch(CONFIG.BASE_URL + path);
+  const r = await fetch(window.CONFIG.BASE_URL + path);
   if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
   return r.json();
 }
@@ -14,7 +13,7 @@ async function httpPost(path, data, isFormData = false) {
     headers: isFormData ? undefined : { "Content-Type": "application/json" },
     body: isFormData ? data : JSON.stringify(data),
   };
-  const r = await fetch(CONFIG.BASE_URL + path, opts);
+  const r = await fetch(window.CONFIG.BASE_URL + path, opts);
   if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
   return r.json();
 }

@@ -7,8 +7,7 @@
 // - Đổ thống kê + danh sách lớp
 // - ⚠️ Lọc FE: "Tất cả" + các giá trị hinhThucHoc thực tế từ BE
 //   (không hard-code ONLINE/OFFLINE nữa)
-
-import { getTeacherById, getClassesByTeacherId } from "../api/teacher-detail.api.js";
+// getTeacherById và getClassesByTeacherId được load từ teacher-detail.api.js và expose qua window
 
 // ====== utils ======
 function getQueryParam(key) {
@@ -342,8 +341,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // gọi song song
   const [teacher, classes] = await Promise.all([
-    getTeacherById(teacherId),
-    getClassesByTeacherId(teacherId),
+    window.getTeacherById(teacherId),
+    window.getClassesByTeacherId(teacherId),
   ]);
 
   if (statusMsg) statusMsg.classList.add("hidden");

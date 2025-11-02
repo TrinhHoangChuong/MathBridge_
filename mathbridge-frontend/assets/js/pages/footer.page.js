@@ -1,7 +1,6 @@
 // assets/js/pages/footer.page.js
 // Render dữ liệu cơ sở vào footer
-
-import { getCentersFromApi } from "../api/centers.api.js";
+// getCentersFromApi được load từ centers.api.js và expose qua window.getCentersFromApi
 
 const MAX_TRY = 20;
 const WAIT_MS = 150;
@@ -16,7 +15,7 @@ async function fillFooter() {
   }
 
   try {
-    const { centers } = await getCentersFromApi();
+    const { centers } = await window.getCentersFromApi();
 
     // render danh sách cơ sở (cột 1)
     listEl.innerHTML = (centers || []).map((c, i) => {
