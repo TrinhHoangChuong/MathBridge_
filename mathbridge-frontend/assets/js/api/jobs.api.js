@@ -1,4 +1,7 @@
 // Jobs API
+import { CONFIG } from "../config.js";
+
+
 async function http(path) {
   const r = await fetch(CONFIG.BASE_URL + path);
   if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
