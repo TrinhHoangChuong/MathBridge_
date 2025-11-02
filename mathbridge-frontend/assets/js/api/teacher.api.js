@@ -3,8 +3,7 @@
 // backend: GET /api/public/nhanvien/giaovien
 // backend trả: [ { idNv, ho, tenDem, ten, chuyenMon, kinhNghiem }, ... ]
 // FE cần: { teachers: [ { idNv, hoTen, chuyenMon, kinhNghiem }, ... ] }
-
-import { CONFIG } from "../config.js";
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
 function buildFullName(ho, tenDem, ten) {
   const parts = [];
@@ -14,9 +13,9 @@ function buildFullName(ho, tenDem, ten) {
   return parts.join(" ").trim();
 }
 
-export async function getTeachersFromApi() {
+async function getTeachersFromApi() {
   try {
-    const res = await fetch(CONFIG.BASE_URL + "/api/public/nhanvien/giaovien", {
+    const res = await fetch(window.CONFIG.BASE_URL + "/api/public/nhanvien/giaovien", {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -47,3 +46,6 @@ export async function getTeachersFromApi() {
     return { teachers: [] };
   }
 }
+
+// Expose function to global scope
+window.getTeachersFromApi = getTeachersFromApi;

@@ -1,5 +1,5 @@
 // file: assets/js/pages/login.page.js
-import { loginStudentApi } from "../api/login.api.js";
+// loginStudentApi được load từ login.api.js và expose qua window.loginStudentApi
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("mb-login-form");
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return showError("Vui lòng nhập email và mật khẩu.");
     }
 
-    const result = await loginStudentApi(email, password);
+    const result = await window.loginStudentApi(email, password);
     console.log("login result:", result);
 
     if (!result.ok) {

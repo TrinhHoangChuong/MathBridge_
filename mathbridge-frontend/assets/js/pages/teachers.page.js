@@ -5,8 +5,7 @@
 // - render card
 // - filter + search
 //
-
-import { getTeachersFromApi } from "../api/teacher.api.js";
+// getTeachersFromApi được load từ teacher.api.js và expose qua window.getTeachersFromApi
 
 let allTeachers = [];
 let activeFilter = "all";
@@ -202,7 +201,7 @@ function initSearchBox() {
 export async function initTeachersPage() {
   showLoadingSkeleton();
 
-  const { teachers } = await getTeachersFromApi();
+  const { teachers } = await window.getTeachersFromApi();
 
   allTeachers = teachers || [];
   hideStatusMessage();
