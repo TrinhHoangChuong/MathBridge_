@@ -39,6 +39,9 @@ public class HocSinh {
     @Column(name = "DiaChi", length = 100, nullable = false)
     private String diaChi;
 
+    @Column(name = "NgaySinh")
+    private java.time.LocalDate ngaySinh;
+
     @Column(name = "ThoiGianTao")
     private LocalDateTime thoiGianTao;
 
@@ -144,6 +147,14 @@ public class HocSinh {
 
     public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
+    }
+
+    public java.time.LocalDate getNgaySinh() {
+        return ngaySinh;
+    }
+
+    public void setNgaySinh(java.time.LocalDate ngaySinh) {
+        this.ngaySinh = ngaySinh;
     }
 
     public LocalDateTime getThoiGianTao() {

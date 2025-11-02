@@ -19,6 +19,9 @@ public class DangKyLH {
     @JoinColumn(name = "ID_LH", nullable = false, referencedColumnName = "ID_LH")
     private LopHoc lopHoc;
 
+    @Column(name = "TrangThai")
+    private String trangThai; // open, pending, end, approved, rejected
+
     public DangKyLH() {
     }
 
@@ -48,5 +51,13 @@ public class DangKyLH {
 
     public void setLopHoc(LopHoc lopHoc) {
         this.lopHoc = lopHoc;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
     }
 }

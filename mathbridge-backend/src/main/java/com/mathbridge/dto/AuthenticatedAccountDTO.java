@@ -1,13 +1,8 @@
 // file: src/main/java/com/mathbridge/dto/AuthenticatedAccountDTO.java
 package com.mathbridge.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.List;
 
-@Getter
-@Setter
 public class AuthenticatedAccountDTO {
 
     private String idTk;
@@ -41,4 +36,52 @@ public class AuthenticatedAccountDTO {
         this.idNv = idNv;
     }
 
+    // Getters and Setters
+    public String getIdTk() {
+        return idTk;
+    }
+
+    public void setIdTk(String idTk) {
+        this.idTk = idTk;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getIdHs() {
+        return idHs;
+    }
+
+    public void setIdHs(String idHs) {
+        this.idHs = idHs;
+    }
+
+    public String getIdNv() {
+        return idNv;
+    }
+
+    public void setIdNv(String idNv) {
+        this.idNv = idNv;
+    }
 }
