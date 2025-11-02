@@ -5,6 +5,10 @@
 
 let allCourses = [];
 let filteredCourses = [];
+const ENROLL_ENDPOINT = '/api/public/enroll/pending';
+const AUTH_LOGIN_ENDPOINT = '/api/public/auth/login';
+let activeTab = 'register';
+let currentCoursePosition = null;
 
 // Dữ liệu khóa học mẫu theo lớp
 const courseData = {
@@ -17,110 +21,12 @@ const courseData = {
       'Hình học: Đường tròn, góc nội tiếp, tứ giác nội tiếp',
       'Hàm số và đồ thị',
       'Các bài toán thực tế và ứng dụng'
-    ],
+        ],
     goals: [
       'Nắm vững kiến thức cơ bản và nâng cao',
       'Phát triển tư duy logic và sáng tạo',
       'Chuẩn bị tốt cho kỳ thi vào lớp 10',
       'Tự tin tham gia các kỳ thi học sinh giỏi'
-    ],
-    courses: [
-      {
-        id: 1,
-        title: 'Toán 9 - Nâng cao số lượng',
-        teacher: 'Thầy Nguyễn Văn An',
-        schedule: '2-4-6',
-        session: 'Ca 1',
-        method: 'center',
-        methodText: 'Tại trung tâm',
-        duration: '3 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '36 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Khóa học tập trung vào các chủ đề đại số nâng cao cho học sinh lớp 9, bao gồm phương trình bậc hai, hệ phương trình, bất phương trình và các bài toán thực tế.',
-        price: 1200000,
-        priceText: '1.200.000đ/tháng'
-      },
-      {
-        id: 2,
-        title: 'Toán 9 - Hình học cơ bản',
-        teacher: 'Cô Trần Thị Bình',
-        schedule: '3-5-7',
-        session: 'Ca 2',
-        method: 'online',
-        methodText: 'Trực tuyến',
-        duration: '3 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '36 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Chương trình học hình học lớp 9 với các chủ đề về đường tròn, góc nội tiếp, tứ giác nội tiếp, các định lý về góc và cung.',
-        price: 900000,
-        priceText: '900.000đ/tháng'
-      },
-      {
-        id: 3,
-        title: 'Toán 9 - Ôn thi vào 10',
-        teacher: 'Thầy Lê Minh Cường',
-        schedule: '4-6-CN',
-        session: 'Ca 3',
-        method: 'tutor',
-        methodText: 'Gia sư 1-1',
-        duration: '3 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '36 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Khóa học chuyên sâu được chuẩn bị cho kỳ thi vào lớp 10, bao gồm ôn tập toàn bộ chương trình toán 9, luyện đề thi thử, phân tích và giải quyết các dạng bài khó.',
-        price: 2500000,
-        priceText: '2.500.000đ/tháng'
-      },
-      {
-        id: 4,
-        title: 'Toán 9 - Luyện thi HSG',
-        teacher: 'Thầy Phạm Đức Duy',
-        schedule: '2-4-6',
-        session: 'Ca 4',
-        method: 'center',
-        methodText: 'Tại trung tâm',
-        duration: '3 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '36 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Chương trình đào tạo học sinh giỏi toán lớp 9, tập trung vào các bài toán nâng cao, olympic toán, phát triển tư duy sáng tạo và kỹ năng giải quyết vấn đề.',
-        price: 1800000,
-        priceText: '1.800.000đ/tháng'
-      },
-      {
-        id: 5,
-        title: 'Toán 9 - Cơ sở nâng cao',
-        teacher: 'Cô Hoàng Thị Lan',
-        schedule: '3-5-7',
-        session: 'Ca 5',
-        method: 'online',
-        methodText: 'Trực tuyến',
-        duration: '3 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '36 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Khóa học toàn diện từ cơ bản đến nâng cao, phù hợp cho mọi trình độ học sinh. Bao gồm đầy đủ các chủ đề trong chương trình toán 9.',
-        price: 1000000,
-        priceText: '1.000.000đ/tháng'
-      },
-      {
-        id: 6,
-        title: 'Toán 9 - Buổi tối cuối tuần',
-        teacher: 'Thầy Vũ Thanh Tùng',
-        schedule: '4-6-CN',
-        session: 'Ca 6',
-        method: 'center',
-        methodText: 'Tại trung tâm',
-        duration: '3 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '36 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Lớp học tối dành cho học sinh bận rộn trên trường vào ban ngày. Chương trình học linh hoạt, tập trung vào các kiến thức cốt lõi.',
-        price: 1100000,
-        priceText: '1.100.000đ/tháng'
-      }
     ]
   },
   '10': {
@@ -138,40 +44,6 @@ const courseData = {
       'Phát triển tư duy toán học logic',
       'Chuẩn bị cho chương trình THPT',
       'Tự tin với các kỳ thi quan trọng'
-    ],
-    courses: [
-      {
-        id: 7,
-        title: 'Toán 10 - Cơ bản',
-        teacher: 'Thầy Nguyễn Văn Bình',
-        schedule: '2-4-6',
-        session: 'Ca 1',
-        method: 'center',
-        methodText: 'Tại trung tâm',
-        duration: '4 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '48 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Khóa học cơ bản cho học sinh lớp 10, tập trung vào các kiến thức nền tảng và kỹ năng giải bài tập.',
-        price: 1300000,
-        priceText: '1.300.000đ/tháng'
-      },
-      {
-        id: 8,
-        title: 'Toán 10 - Nâng cao',
-        teacher: 'Cô Lê Thị Hoa',
-        schedule: '3-5-7',
-        session: 'Ca 2',
-        method: 'online',
-        methodText: 'Trực tuyến',
-        duration: '4 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '48 buổi',
-        maxStudents: 'Tối đa 12 học sinh',
-        description: 'Khóa học nâng cao cho học sinh lớp 10, tập trung vào các bài toán khó và chuẩn bị cho kỳ thi học sinh giỏi.',
-        price: 1500000,
-        priceText: '1.500.000đ/tháng'
-      }
     ]
   },
   '11': {
@@ -189,24 +61,6 @@ const courseData = {
       'Phát triển tư duy phân tích',
       'Chuẩn bị cho kỳ thi THPT',
       'Tự tin với bài toán khó'
-    ],
-    courses: [
-      {
-        id: 9,
-        title: 'Toán 11 - Cơ bản',
-        teacher: 'Thầy Trần Văn Minh',
-        schedule: '2-4-6',
-        session: 'Ca 3',
-        method: 'center',
-        methodText: 'Tại trung tâm',
-        duration: '5 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '60 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Khóa học cơ bản cho học sinh lớp 11, tập trung vào các kiến thức nền tảng.',
-        price: 1400000,
-        priceText: '1.400.000đ/tháng'
-      }
     ]
   },
   '12': {
@@ -224,24 +78,6 @@ const courseData = {
       'Luyện thi THPT Quốc gia',
       'Đạt điểm cao trong kỳ thi',
       'Tự tin bước vào đại học'
-    ],
-    courses: [
-      {
-        id: 10,
-        title: 'Toán 12 - Luyện thi THPT',
-        teacher: 'Thầy Phạm Văn Đức',
-        schedule: '2-4-6',
-        session: 'Ca 4',
-        method: 'center',
-        methodText: 'Tại trung tâm',
-        duration: '6 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '72 buổi',
-        maxStudents: 'Tối đa 15 học sinh',
-        description: 'Khóa học luyện thi THPT Quốc gia cho học sinh lớp 12, tập trung vào các dạng bài thi.',
-        price: 2000000,
-        priceText: '2.000.000đ/tháng'
-      }
     ]
   },
   'international': {
@@ -259,40 +95,6 @@ const courseData = {
       'Chuẩn bị du học',
       'Phát triển tư duy toàn cầu',
       'Tự tin với môi trường quốc tế'
-    ],
-    courses: [
-      {
-        id: 11,
-        title: 'IGCSE Mathematics',
-        teacher: 'Thầy John Smith',
-        schedule: '3-5-7',
-        session: 'Ca 5',
-        method: 'online',
-        methodText: 'Trực tuyến',
-        duration: '8 tháng/khóa',
-        sessionLength: '3 tiếng/buổi',
-        sessions: '96 buổi',
-        maxStudents: 'Tối đa 10 học sinh',
-        description: 'Khóa học IGCSE Mathematics theo chuẩn Cambridge, chuẩn bị cho kỳ thi IGCSE.',
-        price: 3000000,
-        priceText: '3.000.000đ/tháng'
-      },
-      {
-        id: 12,
-        title: 'IB Mathematics HL',
-        teacher: 'Cô Sarah Johnson',
-        schedule: '2-4-6',
-        session: 'Ca 6',
-        method: 'tutor',
-        methodText: 'Gia sư 1-1',
-        duration: '12 tháng/khóa',
-        sessionLength: '2 tiếng/buổi',
-        sessions: '144 buổi',
-        maxStudents: 'Tối đa 1 học sinh',
-        description: 'Khóa học IB Mathematics Higher Level, chuẩn bị cho kỳ thi IB Diploma.',
-        price: 5000000,
-        priceText: '5.000.000đ/tháng'
-      }
     ]
   }
 };
@@ -311,7 +113,7 @@ function courseCardTemplate(course) {
     <div class="course-card" data-id="${course.id}">
       <div class="course-type-badge ${methodClass}">${course.methodText}</div>
       
-      <h3 class="course-title">${course.title}</h3>
+      <h3 class="course-title">${course.title.replace(/\s–\sĐợt/g, '<br/>Đợt')}</h3>
       
       <div class="course-meta">
         <div class="meta-item">
@@ -351,7 +153,7 @@ function courseCardTemplate(course) {
         <div>
           <div class="course-price">${course.priceText}</div>
         </div>
-        <button class="enroll-btn" onclick="enrollCourse(${course.id})">
+        <button class="enroll-btn" data-course-id="${course.id}">
           Đăng ký ngay
         </button>
       </div>
@@ -375,6 +177,8 @@ function renderCourses(courses = filteredCourses) {
   }
 
   list.innerHTML = courses.map(courseCardTemplate).join('');
+  console.log('[Enroll] renderCourses -> cards rendered:', courses.length);
+  bindEnrollButtons();
 }
 
 // Filter khóa học
@@ -397,40 +201,426 @@ function filterCourses() {
 // Đăng ký khóa học
 function enrollCourse(courseId) {
   const course = allCourses.find(c => c.id === courseId);
-  if (!course) return;
-  
-  // Hiển thị thông báo hoặc redirect đến trang đăng ký
-  alert(`Đăng ký khóa học: ${course.title}\nGiáo viên: ${course.teacher}\nGiá: ${course.priceText}\n\nChức năng đăng ký sẽ được triển khai sớm.`);
-}
-
-// Load dữ liệu khóa học theo lớp
-function loadCourseData() {
-  // Lấy lớp từ URL parameter hoặc mặc định là lớp 9
-  const urlParams = new URLSearchParams(window.location.search);
-  const grade = urlParams.get('grade') || '9';
-  
-  const courseInfo = courseData[grade];
-  if (!courseInfo) {
-    console.error('Không tìm thấy dữ liệu cho lớp', grade);
+  if (!course) {
+    console.warn('[Enroll] enrollCourse: course not found for id:', courseId, 'in', allCourses);
     return;
   }
 
-  // Cập nhật thông tin trang
+  const token = localStorage.getItem('mb_token');
+  
+  // Nếu chưa đăng nhập → mở form thu thập thông tin học sinh
+  if (!token) {
+    const modal = document.getElementById('enroll-modal');
+    const titleEl = document.getElementById('enroll-modal-course');
+    const idEl = document.getElementById('ef-courseId');
+    if (titleEl) titleEl.textContent = course.title;
+    if (idEl) idEl.value = String(courseId);
+
+    console.log('[Enroll] open modal (unauth) for courseId:', courseId);
+    openEnrollModal();
+    return;
+  }
+
+  // TODO: Logic khi đã đăng nhập (sau này): tạo đăng ký trực tiếp cho user hiện tại
+  const modal = document.getElementById('enroll-modal');
+  const titleEl = document.getElementById('enroll-modal-course');
+  const idEl = document.getElementById('ef-courseId');
+  if (titleEl) titleEl.textContent = course.title;
+  if (idEl) idEl.value = String(courseId);
+  console.log('[Enroll] open modal (logged-in) for courseId:', courseId);
+  openEnrollModal();
+}
+
+function openEnrollModal() {
+  const modal = document.getElementById('enroll-modal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('is-open');
+  // remove inline display to allow CSS .is-open { display:flex } to center
+  try { modal.style.removeProperty('display'); } catch (_) {}
+  console.log('[Enroll] modal opened');
+  try { document.body.style.overflow = 'hidden'; } catch (_) {}
+
+  // reset tab to register mỗi lần mở
+  setActiveTab('register');
+
+  // Không còn khóa mục tiêu/lớp; chuyển sang giới tính
+}
+
+function closeEnrollModal() {
+  const modal = document.getElementById('enroll-modal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  modal.classList.remove('is-open');
+  modal.style.display = 'none';
+  try { document.body.style.overflow = ''; } catch (_) {}
+}
+
+function showCredentialsModal(email, password) {
+  console.log('[Enroll] ===== showCredentialsModal called =====');
+  console.log('[Enroll] Email:', email, 'Password:', password ? '***' : 'null');
+  
+  const modal = document.getElementById('credentials-modal');
+  if (!modal) {
+    console.error('[Enroll] ❌ credentials-modal not found in DOM');
+    alert('Lỗi: Không tìm thấy modal credentials. Vui lòng kiểm tra HTML.');
+    return;
+  }
+  console.log('[Enroll] ✅ Modal element found');
+  
+  const emailInput = document.getElementById('cred-email');
+  const passwordInput = document.getElementById('cred-password');
+  
+  if (!emailInput || !passwordInput) {
+    console.error('[Enroll] ❌ Email or password input not found');
+    console.error('[Enroll] emailInput:', emailInput, 'passwordInput:', passwordInput);
+    alert('Lỗi: Không tìm thấy input fields. Vui lòng kiểm tra HTML.');
+    return;
+  }
+  console.log('[Enroll] ✅ Input fields found');
+  
+  emailInput.value = email || '';
+  passwordInput.value = password || '';
+  
+  console.log('[Enroll] Set emailInput.value:', emailInput.value);
+  console.log('[Enroll] Set passwordInput.value:', passwordInput.value ? '***' : 'empty');
+  
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('is-open');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  
+  console.log('[Enroll] Modal attributes set:');
+  console.log('[Enroll] - aria-hidden:', modal.getAttribute('aria-hidden'));
+  console.log('[Enroll] - has is-open class:', modal.classList.contains('is-open'));
+  console.log('[Enroll] - display style:', modal.style.display);
+  console.log('[Enroll] - computed display:', window.getComputedStyle(modal).display);
+  
+  setTimeout(() => {
+    setupCopyButtons();
+    console.log('[Enroll] ✅ Credentials modal should be visible now');
+  }, 100);
+}
+
+function closeCredentialsModal() {
+  const modal = document.getElementById('credentials-modal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  modal.classList.remove('is-open');
+  modal.style.display = 'none';
+  try { document.body.style.overflow = ''; } catch (_) {}
+}
+
+function setupCopyButtons() {
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const type = this.getAttribute('data-copy');
+      const input = document.getElementById(type === 'email' ? 'cred-email' : 'cred-password');
+      if (input && input.value) {
+        input.select();
+        input.setSelectionRange(0, 99999);
+        try {
+          document.execCommand('copy');
+          const originalText = this.textContent;
+          this.textContent = 'Đã copy!';
+          this.style.background = '#28a745';
+          setTimeout(() => {
+            this.textContent = originalText;
+            this.style.background = '#007bff';
+          }, 2000);
+        } catch (err) {
+          console.error('[Enroll] Copy failed:', err);
+        }
+      }
+    });
+  });
+}
+
+function bindEnrollButtons() {
+  const buttons = document.querySelectorAll('.enroll-btn[data-course-id]');
+  buttons.forEach(btn => {
+    try {
+      if (btn.hasAttribute('onclick')) {
+        btn.removeAttribute('onclick');
+      }
+    } catch (_) {}
+    btn.onclick = null;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = String(btn.getAttribute('data-course-id'));
+      const position = btn.getAttribute('data-course-position');
+      const coursePosition = position ? parseInt(position, 10) : null;
+      enrollCourse(id, coursePosition);
+    });
+  });
+}
+
+function installEnrollAutoBinder() {
+  const list = document.getElementById('course-list');
+  if (!list) return;
+  const obs = new MutationObserver(() => {
+    bindEnrollButtons();
+  });
+  obs.observe(list, { childList: true, subtree: true });
+}
+
+function attachEnrollModalEvents() {
+  const modal = document.getElementById('enroll-modal');
+  if (!modal) return;
+
+  // Close buttons / backdrop
+  modal.querySelectorAll('[data-close-modal]').forEach(el => {
+    el.addEventListener('click', closeEnrollModal);
+  });
+
+  // Submit form
+  const form = document.getElementById('enroll-form');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const messageEl = document.getElementById('enroll-form-message');
+      if (messageEl) messageEl.textContent = '';
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const disable = (v) => { if (submitBtn) { submitBtn.disabled = v; submitBtn.textContent = v ? 'Đang gửi…' : 'Gửi đăng ký'; }};
+
+      const hoTen = document.getElementById('ef-hoTen').value.trim();
+      const soDienThoai = document.getElementById('ef-sdt').value.trim();
+      const ngaySinh = document.getElementById('ef-ngaySinh').value || null;
+      const diaChi = document.getElementById('ef-diaChi').value.trim() || null;
+      const gioiTinhKey = (document.getElementById('ef-gender')?.value || 'male');
+      const gioiTinh = gioiTinhKey === 'female' ? 0 : 1;
+      const data = {
+        hoTen,
+        soDienThoai,
+        ngaySinh,
+        diaChi,
+        gioiTinh,
+        courseId: document.getElementById('ef-courseId').value,
+        coursePosition: currentCoursePosition,
+      };
+
+      const phoneOk = /^0\d{9}$/.test(soDienThoai);
+      if (!hoTen || !phoneOk || !diaChi) {
+        if (messageEl) messageEl.textContent = 'Vui lòng nhập đầy đủ Họ tên, SĐT hợp lệ và Địa chỉ.';
+        return;
+      }
+
+      try {
+        disable(true);
+        const res = await http(ENROLL_ENDPOINT, {
+          method: 'POST',
+          body: data,
+        });
+
+        if (res && res.success) {
+          console.log('[Enroll] Full Response:', JSON.stringify(res, null, 2));
+          console.log('[Enroll] Response data:', res.data);
+          console.log('[Enroll] Response data type:', typeof res.data);
+          console.log('[Enroll] Response data keys:', res.data ? Object.keys(res.data) : 'null');
+          
+          const email = res.data && res.data.email;
+          const password = res.data && res.data.password;
+          
+          console.log('[Enroll] Extracted Email:', email, 'Type:', typeof email, 'IsTruthy:', !!email);
+          console.log('[Enroll] Extracted Password:', password ? '***' : 'null', 'Type:', typeof password, 'IsTruthy:', !!password);
+          
+          if (messageEl) {
+            messageEl.style.display = 'none';
+            messageEl.textContent = '';
+          }
+          
+          closeEnrollModal();
+          
+          if (email && password) {
+            console.log('[Enroll] ✅ Both email and password exist, showing credentials modal');
+            showCredentialsModal(email, password);
+          } else {
+            console.error('[Enroll] ❌ Missing email or password!');
+            console.error('[Enroll] Email:', email, 'Password:', password);
+            console.error('[Enroll] Email truthy:', !!email, 'Password truthy:', !!password);
+            
+            const errorMsg = `Đăng ký thành công. Trạng thái: pending\n\n` +
+              `Email: ${email || 'N/A'}\n` +
+              `Password: ${password || 'N/A'}\n\n` +
+              `(Kiểm tra console để xem chi tiết response)`;
+            alert(errorMsg);
+          }
+        } else {
+          throw new Error(res && res.message ? res.message : 'Không thể đăng ký.');
+        }
+      } catch (err) {
+        if (messageEl) messageEl.textContent = 'Có lỗi xảy ra: ' + err.message;
+      }
+      finally { disable(false); }
+    });
+  }
+
+  // Tabs switching
+  const tabButtons = modal.querySelectorAll('.mb-tab-btn');
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      setActiveTab(tab);
+    });
+  });
+
+  const credentialsModal = document.getElementById('credentials-modal');
+  if (credentialsModal) {
+    credentialsModal.querySelectorAll('[data-close-credentials-modal]').forEach(el => {
+      el.addEventListener('click', closeCredentialsModal);
+    });
+    setTimeout(() => setupCopyButtons(), 100);
+  }
+  const loginForm = document.getElementById('login-form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('login-form-message');
+      if (msg) msg.textContent = '';
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      const disable = (v) => { if (submitBtn) { submitBtn.disabled = v; submitBtn.textContent = v ? 'Đang đăng nhập…' : 'Đăng nhập'; }};
+      const payload = {
+        username: document.getElementById('lf-username').value.trim(),
+        password: document.getElementById('lf-password').value,
+      };
+      if (!payload.username || !payload.password) {
+        if (msg) msg.textContent = 'Vui lòng nhập đầy đủ thông tin.';
+        return;
+      }
+      try {
+        disable(true);
+        const res = await http(AUTH_LOGIN_ENDPOINT, { method: 'POST', body: payload });
+        if (res && res.success && (res.data?.token || res.token)) {
+          const token = res.data?.token || res.token;
+          localStorage.setItem('mb_token', token);
+          if (msg) msg.textContent = 'Đăng nhập thành công.';
+          setTimeout(() => { msg && (msg.textContent = ''); }, 1200);
+        } else {
+          throw new Error(res && res.message ? res.message : 'Đăng nhập thất bại');
+        }
+      } catch (err) {
+        if (msg) msg.textContent = 'Lỗi đăng nhập: ' + err.message;
+      } finally { disable(false); }
+    });
+  }
+}
+
+function setActiveTab(tab) {
+  activeTab = tab === 'login' ? 'login' : 'register';
+  const modal = document.getElementById('enroll-modal');
+  if (!modal) return;
+  modal.querySelectorAll('.mb-tab-btn').forEach(b => {
+    const isActive = b.getAttribute('data-tab') === activeTab;
+    b.classList.toggle('is-active', isActive);
+  });
+  modal.querySelectorAll('.mb-tab-panel').forEach(panel => {
+    const isActive = panel.id === `tab-${activeTab}`;
+    panel.classList.toggle('is-active', isActive);
+  });
+}
+
+// Map grade param -> ID chương trình (ID_CT)
+function mapGradeToProgramId(grade) {
+  const map = {
+    '9': 'CT001',
+    '10': 'CT002',
+    '11': 'CT003',
+    '12': 'CT004',
+    'international': 'CT005',
+    'cert': 'CT005',
+  };
+  return map[grade] || 'CT001';
+}
+
+function formatCurrencyVnd(value) {
+  if (value == null) return '';
+  try {
+    const num = typeof value === 'number' ? value : Number(value);
+    return num.toLocaleString('vi-VN') + 'đ/tháng';
+  } catch (e) {
+    return value + 'đ/tháng';
+  }
+}
+
+function mapMethod(hinhThucHoc) {
+  const key = (hinhThucHoc || '').toUpperCase();
+  if (key.includes('ONLINE')) return { method: 'online', text: 'Trực tuyến' };
+  if (key.includes('GIA')) return { method: 'tutor', text: 'Gia sư 1-1' };
+  return { method: 'center', text: 'Tại trung tâm' };
+}
+
+function mapCourseResponseToView(c) {
+  const m = mapMethod(c.hinhThucHoc);
+  return {
+    id: c.idLH,
+    title: c.tenLop,
+    teacher: c.teacherName ? c.teacherName : (c.idNV ? `GV phụ trách: ${c.idNV}` : 'MathBridge'),
+    schedule: c.loaiNgay || '—',
+    session: '60 phút/buổi',
+    method: m.method,
+    methodText: m.text,
+    duration: 'Theo lịch trung tâm',
+    sessionLength: '60 phút/buổi',
+    sessions: c.soBuoi ? `${c.soBuoi} buổi` : '—',
+    maxStudents: 'Tối đa 15 học sinh',
+    description: c.moTa || '—',
+    price: c.mucGiaThang || 0,
+    priceText: formatCurrencyVnd(c.mucGiaThang || 0),
+  };
+}
+
+async function fetchCoursesByGrade(grade) {
+  const idCT = mapGradeToProgramId(grade);
+  const url = `${CONFIG.BASE_URL}/api/public/course/program/${idCT}`;
+  try {
+    const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    const json = await res.json();
+    if (!json || !json.success) return [];
+    return (json.data || []).map(mapCourseResponseToView);
+  } catch (err) {
+    console.error('[Courses] Không thể kết nối backend:', err.message);
+    console.warn('[Courses] Backend có thể chưa chạy. Vui lòng kiểm tra: http://localhost:8080');
+    return [];
+  }
+}
+
+// Load dữ liệu khóa học theo lớp (mix metadata FE + data từ BE)
+async function loadCourseData() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const grade = urlParams.get('grade') || '9';
+
+  const courseInfo = courseData[grade] || courseData['9'];
+
   document.getElementById('course-title').textContent = courseInfo.title;
   document.getElementById('course-subtitle').textContent = courseInfo.subtitle;
   document.getElementById('course-description').textContent = courseInfo.description;
   document.getElementById('current-course').textContent = courseInfo.title;
 
-  // Cập nhật nội dung học tập
   const learningContentList = document.getElementById('learning-content');
   learningContentList.innerHTML = courseInfo.learningContent.map(item => `<li>${item}</li>`).join('');
 
-  // Cập nhật mục tiêu
   const goalsList = document.getElementById('learning-goals');
   goalsList.innerHTML = courseInfo.goals.map(item => `<li>${item}</li>`).join('');
 
-  // Load danh sách khóa học
-  allCourses = courseInfo.courses;
+  try {
+    const beCourses = await fetchCoursesByGrade(grade);
+    allCourses = beCourses;
+    
+    if (beCourses.length === 0) {
+      console.warn('[Courses] Không có dữ liệu từ backend. Kiểm tra:');
+      console.warn('  1. Backend có đang chạy không? (http://localhost:8080)');
+      console.warn('  2. API endpoint có đúng không? (/api/public/course/program/CT001)');
+      console.warn('  3. CORS có được cấu hình không?');
+    }
+  } catch (e) {
+    console.error('Không load được khóa học từ BE', e);
+    allCourses = [];
+  }
+
   filteredCourses = [...allCourses];
   renderCourses();
 }
@@ -445,6 +635,12 @@ function initCoursesPage() {
   filterSelects.forEach(select => {
     select.addEventListener('change', filterCourses);
   });
+
+  // Modal events
+  attachEnrollModalEvents();
+
+  // Cài watcher để đảm bảo mọi nút đều được bind
+  installEnrollAutoBinder();
 }
 
 // Khởi tạo khi DOM loaded

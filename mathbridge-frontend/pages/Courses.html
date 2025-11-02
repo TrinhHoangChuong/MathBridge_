@@ -6,9 +6,11 @@
     <base href="../">
     <link rel="stylesheet" href="assets/css/header.css" />
     <link rel="stylesheet" href="assets/css/footer.css" />
-    <link rel="stylesheet" href="assets/css/Courses.css" />
-    <script src="assets/js/utils/includePartials.js" defer></script>
-    <script src="assets/js/pages/Courses.page.js" defer></script>
+    <link rel="stylesheet" href="assets/css/courses.css" />
+    <script src="assets/js/config.js?v=mb1"></script>
+    <script src="assets/js/utils/http.js?v=mb1"></script>
+    <script src="assets/js/utils/includePartials.js?v=mb1" defer></script>
+    <script src="assets/js/pages/courses.page.js?v=mb3" defer></script>
 </head>
 <body>
 <header></header>
@@ -138,6 +140,142 @@
             </div>
         </div>
     </section>
+
+    <!-- Enroll Modal -->
+    <div id="enroll-modal" class="mb-modal" aria-hidden="true" style="display:none">
+        <div class="mb-modal__backdrop" data-close-modal></div>
+        <div class="mb-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="enroll-modal-title">
+            <button class="mb-modal__close" type="button" title="Đóng" data-close-modal>×</button>
+            <h3 id="enroll-modal-title" class="mb-modal__title">Đăng ký khóa học</h3>
+            <p id="enroll-modal-course" class="mb-modal__subtitle"></p>
+
+            <div class="mb-tabs">
+                <button class="mb-tab-btn is-active" data-tab="register" type="button">Đăng ký</button>
+                <button class="mb-tab-btn" data-tab="login" type="button">Đăng nhập</button>
+            </div>
+
+            <div class="mb-tab-panels">
+                <!-- Panel: Đăng ký -->
+                <div id="tab-register" class="mb-tab-panel is-active">
+                    <form id="enroll-form" class="mb-form">
+                        <div class="mb-form__row">
+                            <label for="ef-hoTen">Họ và tên</label>
+                            <input id="ef-hoTen" name="hoTen" type="text" required placeholder="VD: Trịnh Hoàng Chương" />
+                        </div>
+                        <div class="mb-form__row">
+                            <label for="ef-sdt">Số điện thoại</label>
+                            <input id="ef-sdt" name="soDienThoai" type="tel" required placeholder="VD: 09xxxxxxxx" />
+                        </div>
+                        <div class="mb-form__row">
+                            <label for="ef-ngaySinh">Ngày sinh </label>
+                            <input id="ef-ngaySinh" name="ngaySinh" type="date" />
+                        </div>
+                        <div class="mb-form__row">
+                            <label for="ef-gender">Giới tính</label>
+                            <select id="ef-gender" name="gioiTinh" class="mb-select">
+                                <option value="male">Nam</option>
+                                <option value="female">Nữ</option>
+                            </select>
+                        </div>
+                        <div class="mb-form__row">
+                            <label for="ef-diaChi">Địa chỉ</label>
+                            <input id="ef-diaChi" name="diaChi" type="text" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" />
+                        </div>
+                        <input type="hidden" id="ef-courseId" name="courseId" />
+                        <div class="mb-form__actions">
+                            <button type="button" class="btn btn--ghost" data-close-modal>Hủy</button>
+                            <button type="submit" class="btn btn--primary">Gửi đăng ký</button>
+                        </div>
+                        <p id="enroll-form-message" class="mb-form__message" role="status" style="display:none;"></p>
+                    </form>
+                </div>
+
+                <!-- Panel: Đăng nhập -->
+                <div id="tab-login" class="mb-tab-panel">
+                    <form id="login-form" class="mb-form" autocomplete="on">
+                        <div class="mb-form__row">
+                            <label for="lf-username">Email hoặc SĐT</label>
+                            <input id="lf-username" name="username" type="text" required placeholder="VD: hoang.chuong@mathbridge.vn" />
+                        </div>
+                        <div class="mb-form__row">
+                            <label for="lf-password">Mật khẩu</label>
+                            <input id="lf-password" name="password" type="password" required placeholder="••••••••" />
+                        </div>
+                        <div class="mb-form__actions">
+                            <button type="submit" class="btn btn--primary">Đăng nhập</button>
+                        </div>
+                        <p id="login-form-message" class="mb-form__message" role="status"></p>
+                    </form>
+                    <a href="#" class="login-note">Quên mật khẩu?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal hiển thị Email + Password sau khi đăng ký thành công -->
+    <div id="credentials-modal" class="mb-modal" aria-hidden="true" style="display:none">
+        <div class="mb-modal__backdrop" data-close-credentials-modal></div>
+        <div class="mb-modal__dialog" role="dialog" aria-modal="true" style="max-width: 500px;">
+            <button class="mb-modal__close" type="button" title="Đóng" data-close-credentials-modal>×</button>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
+                <h3 class="mb-modal__title" style="color: #28a745; margin: 0 0 8px 0;">Chúc mừng bạn đã đăng ký thành công!</h3>
+                <p style="color: #666; font-size: 14px; margin: 0;">
+                    Vui lòng <strong style="color: #e11d48;">lưu lại</strong> thông tin đăng nhập bên dưới để tránh quên
+                </p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #0ea5e9;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                    <span style="font-size: 20px;">🔐</span>
+                    <p style="margin: 0; font-weight: 600; color: #0c4a6e; font-size: 15px;">Thông tin đăng nhập:</p>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #0c4a6e; font-size: 14px; font-weight: 600;">
+                        <span>📧</span> Email:
+                    </label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="cred-email" readonly 
+                               style="flex: 1; padding: 12px; border: 2px solid #0ea5e9; border-radius: 8px; background: white; font-family: monospace; font-size: 14px; font-weight: 600; color: #1e40af;" />
+                        <button type="button" class="copy-btn" data-copy="email" 
+                                style="padding: 12px 20px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                            📋 Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #0c4a6e; font-size: 14px; font-weight: 600;">
+                        <span>🔑</span> Mật khẩu:
+                    </label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="cred-password" readonly 
+                               style="flex: 1; padding: 12px; border: 2px solid #0ea5e9; border-radius: 8px; background: white; font-family: monospace; font-size: 14px; font-weight: 600; color: #1e40af;" />
+                        <button type="button" class="copy-btn" data-copy="password" 
+                                style="padding: 12px 20px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                            📋 Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; padding: 12px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0; font-size: 13px; color: #856404; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px;">⚠️</span>
+                        <span><strong>Lưu ý:</strong> Vui lòng lưu lại email và mật khẩu này để đăng nhập vào hệ thống. Bạn sẽ không thể xem lại mật khẩu sau khi đóng cửa sổ này.</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button type="button" class="btn btn--primary" data-close-credentials-modal 
+                        style="min-width: 180px; padding: 12px 24px; font-size: 16px; font-weight: 700; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);">
+                    ✅ Đã ghi nhớ
+                </button>
+            </div>
+        </div>
+    </div>
 </main>
 
 <footer></footer>
