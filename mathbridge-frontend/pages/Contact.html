@@ -1,4 +1,3 @@
-<!-- pages/Contact.html -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,18 +15,15 @@
     <!-- Page style -->
     <link rel="stylesheet" href="assets/css/contact.css" />
 
-    <!-- Icons (nếu bạn dùng icon Phosphor trong contact.page.js) -->
+    <!-- Icons (nếu dùng trong contact.page.js) -->
     <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
 
     <!-- JS chung -->
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="assets/js/utils/includePartials.js?v=20251101" defer></script>
 
-    <!-- JS trang liên hệ -->
-    <script src="assets/js/pages/contact.page.js" defer></script>
-
-    <!-- EmailJS SDK (nếu contact.page.js dùng) -->
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js" defer></script>
+    <!-- JS trang liên hệ: dùng module để import API -->
+    <script type="module" src="assets/js/pages/contact.page.js"></script>
 </head>
 
 <body class="page-contact">
@@ -41,7 +37,8 @@
                 <h1 id="contact-title" class="section-title">Liên hệ với MathBridge</h1>
                 <div class="section-strap" aria-hidden="true"></div>
                 <p class="section-sub">
-                    Chúng tôi luôn sẵn sàng hỗ trợ bạn trong hành trình học Toán. Gửi form – gọi hotline – hoặc ghé văn phòng.
+                    Chúng tôi luôn sẵn sàng hỗ trợ bạn trong hành trình học Toán.
+                    Gửi form – gọi hotline – hoặc ghé văn phòng.
                 </p>
             </header>
         </div>
@@ -98,6 +95,7 @@
                             Gửi tin nhắn
                         </button>
                     </div>
+
                     <p id="form-status" class="form-status" aria-live="polite"></p>
                 </form>
             </div>
@@ -109,6 +107,7 @@
                     <p class="contact-card__desc">Kết nối đa kênh – phản hồi trong giờ làm việc.</p>
 
                     <ul class="contact-social">
+                        <!-- Sẽ được thay bằng dữ liệu từ BE nếu có socialLinks -->
                         <li><a href="https://facebook.com/mathbridge" class="contact-link">Facebook</a></li>
                         <li><a href="https://instagram.com/mathbridge" class="contact-link">Instagram</a></li>
                         <li><a href="https://linkedin.com/company/mathbridge" class="contact-link">LinkedIn</a></li>
@@ -168,6 +167,7 @@
 
 <footer></footer>
 
+<!-- Footer script -->
 <script type="module" src="assets/js/pages/footer.page.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {

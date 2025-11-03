@@ -1,44 +1,53 @@
-// API functions for contact page
+// assets/js/api/contact.api.js
+import { CONFIG } from "../config.js";
 
-/**
- * Get contact information
- * @returns {Promise<Object>} Contact data
- */
-async function getContactInfo() {
+/** GET /api/public/contact -> ContactDTO */
+export async function getContactInfo() {
   try {
-    const response = await fetch('/api/public/contact');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch contact info:', error);
-    throw error;
+    const res = await fetch(CONFIG.BASE_URL + "/api/public/contact", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) throw new Error("GET /contact failed: " + res.status);
+    const dto = await res.json();
+
+    // Chuẩn hóa tối thiểu, có gì dùng nấy
+    return {
+      hotline: dto?.hotline || "",
+      address: dto?.address || "",
+      workingHours: dto?.workingHours || "",
+      workingDays: dto?.workingDays || "",
+      email: dto?.email || "",
+      socialLinks: dto?.socialLinks || null,       // Map<String,String>
+      mapEmbedUrl: dto?.mapEmbedUrl || "",
+      centers: Array.isArray(dto?.centers) ? dto.centers : [] // List<FooterCenterDTO>
+    };
+  } catch (err) {
+    console.error("getContactInfo error:", err);
+    return {
+      hotline: "", address: "", workingHours: "", workingDays: "",
+      email: "", socialLinks: null, mapEmbedUrl: "", centers: []
+    };
   }
 }
 
-/**
- * Submit contact form
- * @param {Object} contactData - Contact form data
- * @returns {Promise<string>} Success message
- */
-async function submitContactForm(contactData) {
+/** POST /api/public/contact -> lưu liên hệ vào CSDL (BE trả message dạng text) */
+export async function submitContact(payload) {
   try {
-    const response = await fetch('/api/public/contact', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(contactData)
+    const res = await fetch(CONFIG.BASE_URL + "/api/public/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=UTF-8" },
+      body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const text = await res.text(); // BE trả về chuỗi message
+    if (!res.ok) {
+      console.error("POST /contact ->", res.status, text);
+      return { success: false, message: text || "Gửi liên hệ thất bại." };
     }
-
-    return await response.text();
-  } catch (error) {
-    console.error('Failed to submit contact form:', error);
-    throw error;
+    return { success: true, message: text || "Gửi liên hệ thành công." };
+  } catch (err) {
+    console.error("submitContact error:", err);
+    return { success: false, message: "Không thể gửi liên hệ. Vui lòng thử lại." };
   }
 }
