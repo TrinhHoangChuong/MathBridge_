@@ -572,7 +572,7 @@ function mapCourseResponseToView(c) {
 
 async function fetchCoursesByGrade(grade) {
   const idCT = mapGradeToProgramId(grade);
-  const url = `${window.CONFIG.BASE_URL}/api/public/course/program/${idCT}`;
+  const url = `${CONFIG.BASE_URL}/api/public/course/program/${idCT}`;
   try {
     const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
     if (!res.ok) {

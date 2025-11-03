@@ -1,32 +1,43 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <!-- ========== META ========== -->
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MathBridge — Cầu nối Toán quốc tế</title>
-    <base href="./">
+    <base href="./" />
 
-    <!-- CSS core -->
-    <link rel="stylesheet" href="assets/css/header.css"/>
-    <link rel="stylesheet" href="assets/css/footer.css"/>
-    <link rel="stylesheet" href="assets/css/index.css"/>
+    <!-- ========== CSS CORE ========== -->
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/index.css" />
 
-    <!-- Swiper (Hero slider) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <!-- ========== VENDOR CSS ========== -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
-    <!-- Icon set (Phosphor) -->
+    <!-- ========== ICON SET ========== -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
+    <!-- ========== PAGE SCRIPTS (defer) ========== -->
+    <!-- NOTE: để trong <head> nhưng defer để không chặn render -->
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="assets/js/utils/includePartials.js?v=20251101" defer></script>
 </head>
 
 <body class="page-index">
+<!-- ========== HEADER (inject bằng includePartials) ========== -->
 <header></header>
 
+<!-- ========== MAIN ========== -->
 <main id="main-content" role="main">
-    <!-- ========== SECTION 1: HERO ========== -->
+    <!-- ======================================================
+         SECTION 1: HERO
+         - Slider Swiper
+         - Parallax
+         - CTA vào Courses / contact
+    ======================================================= -->
     <section class="hero hero--pro" aria-label="Giới thiệu MathBridge">
+        <!-- BG deco -->
         <div class="hero-bg" aria-hidden="true">
             <div class="bg-blob --red"></div>
             <div class="bg-blob --blue"></div>
@@ -34,15 +45,25 @@
         </div>
 
         <div class="hero__container">
-            <div class="swiper hero-swiper" role="region" aria-roledescription="carousel" aria-label="Slide giới thiệu" aria-live="polite">
+            <div
+                    class="swiper hero-swiper"
+                    role="region"
+                    aria-roledescription="carousel"
+                    aria-label="Slide giới thiệu"
+                    aria-live="polite"
+            >
                 <div class="swiper-wrapper">
                     <!-- Slide 1 -->
                     <article class="swiper-slide hero-slide">
                         <div class="hero__grid">
                             <div class="hero__content" data-swiper-parallax="-80">
                                 <p class="eyebrow">Trung tâm Toán học</p>
-                                <h1 class="title">Cầu nối <span class="accent">Toán quốc tế</span> cho học sinh THPT</h1>
-                                <p class="lead">Lộ trình cá nhân hoá • Giáo trình IGCSE / IB / AP / SAT • Theo dõi định kỳ cho phụ huynh.</p>
+                                <h1 class="title">
+                                    Cầu nối <span class="accent">Toán quốc tế</span> cho học sinh THPT
+                                </h1>
+                                <p class="lead">
+                                    Lộ trình cá nhân hoá • Giáo trình IGCSE / IB / AP / SAT • Theo dõi định kỳ cho phụ huynh.
+                                </p>
                                 <ul class="points">
                                     <li><i class="ph ph-check-circle"></i> Nền tảng vững – bứt phá điểm số</li>
                                     <li><i class="ph ph-target"></i> Đặt mục tiêu rõ ràng, đo lường minh bạch</li>
@@ -61,7 +82,9 @@
                     <article class="swiper-slide hero-slide">
                         <div class="hero__grid">
                             <div class="hero__content" data-swiper-parallax="-80">
-                                <h2 class="subtitle">Thấu hiểu phụ huynh, <span class="accent">đồng hành</span> cùng con</h2>
+                                <h2 class="subtitle">
+                                    Thấu hiểu phụ huynh, <span class="accent">đồng hành</span> cùng con
+                                </h2>
                                 <p class="lead">Theo dõi tiến độ, báo cáo định kỳ, rèn tự học hiệu quả.</p>
                                 <ul class="points">
                                     <li><i class="ph ph-shield-check"></i> Kỷ luật tích cực • Mentor tận tâm</li>
@@ -78,7 +101,9 @@
                     <article class="swiper-slide hero-slide">
                         <div class="hero__grid">
                             <div class="hero__content" data-swiper-parallax="-80">
-                                <h2 class="subtitle">Từ nền tảng vững vàng đến <span class="accent">bứt phá</span></h2>
+                                <h2 class="subtitle">
+                                    Từ nền tảng vững vàng đến <span class="accent">bứt phá</span>
+                                </h2>
                                 <p class="lead">Luyện đề mô phỏng thi thật, chiến lược làm bài thông minh.</p>
                                 <ul class="points">
                                     <li><i class="ph ph-compass-tool"></i> Lộ trình theo năng lực</li>
@@ -97,9 +122,13 @@
 
                 <!-- Controls -->
                 <div class="hero-controls">
-                    <button class="hero-nav hero-prev" aria-label="Slide trước"><i class="ph ph-caret-left"></i></button>
+                    <button class="hero-nav hero-prev" aria-label="Slide trước">
+                        <i class="ph ph-caret-left"></i>
+                    </button>
                     <div class="hero-pagination"></div>
-                    <button class="hero-nav hero-next" aria-label="Slide sau"><i class="ph ph-caret-right"></i></button>
+                    <button class="hero-nav hero-next" aria-label="Slide sau">
+                        <i class="ph ph-caret-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -107,7 +136,11 @@
         <div class="hero-wave" aria-hidden="true"></div>
     </section>
 
-    <!-- ========== SECTION 2: AUDIENCE ========== -->
+    <!-- ======================================================
+         SECTION 2: AUDIENCE
+         - Ảnh bên trái
+         - 3 card đối tượng
+    ======================================================= -->
     <section id="audience" class="audience section--soft" aria-labelledby="aud-title">
         <div class="bridge-bead" aria-hidden="true"></div>
         <div class="container">
@@ -133,7 +166,9 @@
                         <div class="aud-card__badge">01</div>
                         <div class="aud-card__text">
                             <h3 class="aud-card__title">Học sinh lớp 9–12</h3>
-                            <p class="aud-card__desc">Nền tảng → nâng cao, theo chuẩn IGCSE/IB/AP/SAT và Toán nâng cao VN.</p>
+                            <p class="aud-card__desc">
+                                Nền tảng → nâng cao, theo chuẩn IGCSE/IB/AP/SAT và Toán nâng cao VN.
+                            </p>
                         </div>
                     </article>
 
@@ -141,7 +176,9 @@
                         <div class="aud-card__badge">02</div>
                         <div class="aud-card__text">
                             <h3 class="aud-card__title">Mọi trình độ</h3>
-                            <p class="aud-card__desc">Từ mất gốc đến bứt phá top — lộ trình cá nhân hóa theo mục tiêu.</p>
+                            <p class="aud-card__desc">
+                                Từ mất gốc đến bứt phá top — lộ trình cá nhân hóa theo mục tiêu.
+                            </p>
                         </div>
                     </article>
 
@@ -149,7 +186,9 @@
                         <div class="aud-card__badge">03</div>
                         <div class="aud-card__text">
                             <h3 class="aud-card__title">Phụ huynh đồng hành</h3>
-                            <p class="aud-card__desc">Theo dõi định kỳ, báo cáo tiến độ minh bạch, cố vấn chọn kỳ thi phù hợp.</p>
+                            <p class="aud-card__desc">
+                                Theo dõi định kỳ, báo cáo tiến độ minh bạch, cố vấn chọn kỳ thi phù hợp.
+                            </p>
                         </div>
                     </article>
 
@@ -162,7 +201,10 @@
         <div class="section-wave" aria-hidden="true"></div>
     </section>
 
-    <!-- ========== SECTION 3: REASONS ========== -->
+    <!-- ======================================================
+         SECTION 3: REASONS
+         - 4 lí do
+    ======================================================= -->
     <section id="reasons" class="reasons" aria-labelledby="reasons-title">
         <div class="bridge-bead" aria-hidden="true"></div>
         <div class="container">
@@ -171,7 +213,9 @@
                     Tại sao <span class="accent">nên chọn MathBridge</span>
                 </h2>
                 <div class="section-strap" aria-hidden="true"></div>
-                <p class="section-sub">Khác biệt đến từ lộ trình chuẩn – phương pháp đúng – người thầy phù hợp</p>
+                <p class="section-sub">
+                    Khác biệt đến từ lộ trình chuẩn – phương pháp đúng – người thầy phù hợp
+                </p>
             </header>
 
             <div class="reason-grid">
@@ -179,21 +223,27 @@
                     <i class="ph ph-books reason-card__icon" aria-hidden="true"></i>
                     <h3 class="reason-card__title">Chương trình theo chuẩn quốc tế</h3>
                     <div class="reason-card__divider"></div>
-                    <p class="reason-card__desc">Giáo trình bám sát <b>IGCSE • IB • AP • SAT</b>, thiết kế theo từng cấp lớp.</p>
+                    <p class="reason-card__desc">
+                        Giáo trình bám sát <b>IGCSE • IB • AP • SAT</b>, thiết kế theo từng cấp lớp.
+                    </p>
                 </article>
 
                 <article class="reason-card">
                     <i class="ph ph-chalkboard-teacher reason-card__icon" aria-hidden="true"></i>
                     <h3 class="reason-card__title">Giáo viên giàu kinh nghiệm</h3>
                     <div class="reason-card__divider"></div>
-                    <p class="reason-card__desc">Sư phạm hiện đại, luyện thi nhiều năm, đạo đức nghề nghiệp vững vàng.</p>
+                    <p class="reason-card__desc">
+                        Sư phạm hiện đại, luyện thi nhiều năm, đạo đức nghề nghiệp vững vàng.
+                    </p>
                 </article>
 
                 <article class="reason-card">
                     <i class="ph ph-brain reason-card__icon" aria-hidden="true"></i>
                     <h3 class="reason-card__title">Phương pháp học tối ưu</h3>
                     <div class="reason-card__divider"></div>
-                    <p class="reason-card__desc">Học chủ động, <b>cá nhân hóa mục tiêu</b>, bài tập – đánh giá theo chuẩn.</p>
+                    <p class="reason-card__desc">
+                        Học chủ động, <b>cá nhân hóa mục tiêu</b>, bài tập – đánh giá theo chuẩn.
+                    </p>
                 </article>
 
                 <article class="reason-card">
@@ -207,14 +257,18 @@
         <div class="section-wave --red" aria-hidden="true"></div>
     </section>
 
-    <!-- ========== SECTION 4: STATS ========== -->
+    <!-- ======================================================
+         SECTION 4: STATS
+    ======================================================= -->
     <section id="stats" class="stats" aria-label="Thành tựu MathBridge">
         <div class="bridge-bead --light" aria-hidden="true"></div>
         <div class="container">
             <div class="stats__wrap">
                 <div class="stat">
                     <div class="stat__num">10+</div>
-                    <div class="stat__note">năm kinh nghiệm giảng dạy<br/>và tư vấn giáo dục</div>
+                    <div class="stat__note">
+                        năm kinh nghiệm giảng dạy<br />và tư vấn giáo dục
+                    </div>
                 </div>
                 <div class="stat">
                     <div class="stat__num">5.000+</div>
@@ -236,11 +290,14 @@
         </div>
     </section>
 
-    <!-- ========== SECTION 5: TRACK ========== -->
+    <!-- ======================================================
+         SECTION 5: TRACK (Accordion)
+    ======================================================= -->
     <section id="track" class="track section--soft" aria-labelledby="track-title">
         <div class="bridge-bead" aria-hidden="true"></div>
         <div class="container">
             <header class="section-head">
+                <!-- NOTE: bạn có thể điền text sau, hoặc để JS set -->
                 <h2 id="track-title" class="section-title"></h2>
                 <div class="section-strap" aria-hidden="true"></div>
             </header>
@@ -250,12 +307,22 @@
                 <article class="track-item">
                     <div class="track-row">
                         <span class="track-num">01</span>
-                        <button class="acc-toggle" aria-expanded="true" aria-controls="track-panel-1" id="track-control-1">
+                        <button
+                                class="acc-toggle"
+                                aria-expanded="true"
+                                aria-controls="track-panel-1"
+                                id="track-control-1"
+                        >
                             <span class="acc-title">Cam kết hiệu quả – Cá nhân hoá 100%</span>
                             <span class="acc-sign" aria-hidden="true"></span>
                         </button>
                     </div>
-                    <div id="track-panel-1" class="acc-panel" role="region" aria-labelledby="track-control-1">
+                    <div
+                            id="track-panel-1"
+                            class="acc-panel"
+                            role="region"
+                            aria-labelledby="track-control-1"
+                    >
                         <div class="acc-body">
                             <div class="acc-icon" aria-hidden="true">
                                 <i class="ph ph-seal-check"></i>
@@ -273,12 +340,23 @@
                 <article class="track-item">
                     <div class="track-row">
                         <span class="track-num">02</span>
-                        <button class="acc-toggle" aria-expanded="false" aria-controls="track-panel-2" id="track-control-2">
+                        <button
+                                class="acc-toggle"
+                                aria-expanded="false"
+                                aria-controls="track-panel-2"
+                                id="track-control-2"
+                        >
                             <span class="acc-title">Giáo viên chất lượng – Tự chọn theo nhu cầu</span>
                             <span class="acc-sign" aria-hidden="true"></span>
                         </button>
                     </div>
-                    <div id="track-panel-2" class="acc-panel" role="region" aria-labelledby="track-control-2" hidden>
+                    <div
+                            id="track-panel-2"
+                            class="acc-panel"
+                            role="region"
+                            aria-labelledby="track-control-2"
+                            hidden
+                    >
                         <div class="acc-body">
                             <div class="acc-icon" aria-hidden="true">
                                 <i class="ph ph-chalkboard-teacher"></i>
@@ -296,12 +374,23 @@
                 <article class="track-item">
                     <div class="track-row">
                         <span class="track-num">03</span>
-                        <button class="acc-toggle" aria-expanded="false" aria-controls="track-panel-3" id="track-control-3">
+                        <button
+                                class="acc-toggle"
+                                aria-expanded="false"
+                                aria-controls="track-panel-3"
+                                id="track-control-3"
+                        >
                             <span class="acc-title">Công nghệ hiện đại – Học thông minh hơn</span>
                             <span class="acc-sign" aria-hidden="true"></span>
                         </button>
                     </div>
-                    <div id="track-panel-3" class="acc-panel" role="region" aria-labelledby="track-control-3" hidden>
+                    <div
+                            id="track-panel-3"
+                            class="acc-panel"
+                            role="region"
+                            aria-labelledby="track-control-3"
+                            hidden
+                    >
                         <div class="acc-body">
                             <div class="acc-icon" aria-hidden="true">
                                 <i class="ph ph-cpu"></i>
@@ -319,12 +408,23 @@
                 <article class="track-item">
                     <div class="track-row">
                         <span class="track-num">04</span>
-                        <button class="acc-toggle" aria-expanded="false" aria-controls="track-panel-4" id="track-control-4">
+                        <button
+                                class="acc-toggle"
+                                aria-expanded="false"
+                                aria-controls="track-panel-4"
+                                id="track-control-4"
+                        >
                             <span class="acc-title">Chi phí hợp lý – Học linh hoạt</span>
                             <span class="acc-sign" aria-hidden="true"></span>
                         </button>
                     </div>
-                    <div id="track-panel-4" class="acc-panel" role="region" aria-labelledby="track-control-4" hidden>
+                    <div
+                            id="track-panel-4"
+                            class="acc-panel"
+                            role="region"
+                            aria-labelledby="track-control-4"
+                            hidden
+                    >
                         <div class="acc-body">
                             <div class="acc-icon" aria-hidden="true">
                                 <i class="ph ph-wallet"></i>
@@ -347,19 +447,29 @@
     </section>
 </main>
 
+<!-- ========== FOOTER (inject) ========== -->
 <footer></footer>
-<!-- JS: Swiper -->
+
+<!-- ========== JS VENDOR ========== -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- ========== JS PAGE ========== -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // inject header/footer
       includePartials({
         header: 'partials/header.html',
         footer: 'partials/footer.html'
       });
 
+      // swiper hero
       new Swiper('.hero-swiper', {
         loop: true,
-        autoplay: { delay: 5500, disableOnInteraction: false, pauseOnMouseEnter: true },
+        autoplay: {
+          delay: 5500,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true
+        },
         slidesPerView: 1,
         speed: 650,
         a11y: true,
@@ -388,16 +498,21 @@
         panel.hidden = false;
       }
 
-      toggles.forEach(btn => {
+      toggles.forEach((btn) => {
         btn.addEventListener('click', () => {
           const expanded = btn.getAttribute('aria-expanded') === 'true';
-          if (single) toggles.forEach(b => { if (b !== btn) close(b); });
+          if (single) {
+            toggles.forEach((b) => {
+              if (b !== btn) close(b);
+            });
+          }
           expanded ? close(btn) : open(btn);
         });
       });
     })();
 </script>
-<script type="module" src="assets/js/pages/footer.page.js"></script>
 
+<!-- footer scripts -->
+<script type="module" src="assets/js/pages/footer.page.js"></script>
 </body>
 </html>
