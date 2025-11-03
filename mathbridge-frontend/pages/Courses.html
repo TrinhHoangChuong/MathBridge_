@@ -1,162 +1,266 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Khóa học - MathBridge</title>
-    <base href="../">
+    <meta charset="UTF-8" />
+    <title>Khóa học | MathBridge</title>
+    <!-- Trang này nằm trong /pages/, nên base="../" để mọi link tính từ gốc -->
+    <base href="../" />
+
+    <!-- ========== VENDOR CSS ========== -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <!-- ========== ICON SET ========== -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- ========== CSS CORE ========== -->
     <link rel="stylesheet" href="assets/css/header.css" />
     <link rel="stylesheet" href="assets/css/footer.css" />
+    <link rel="stylesheet" href="assets/css/index.css" />
+
+    <!-- Page style -->
     <link rel="stylesheet" href="assets/css/courses.css" />
-    <script src="assets/js/config.js?v=mb1"></script>
-    <script src="assets/js/utils/http.js?v=mb1"></script>
-    <script src="assets/js/utils/includePartials.js?v=mb1" defer></script>
-    <script src="assets/js/pages/courses.page.js?v=mb3" defer></script>
+
+    <!-- ========== PAGE SCRIPTS (defer) ========== -->
+    <!-- NOTE: để trong <head> nhưng defer để không chặn render -->
+    <script src="assets/js/pages/header.pages.js" defer></script>
+    <script src="assets/js/utils/includePartials.js?v=20251101" defer></script>
 </head>
-<body>
+<body class="page-courses">
 <header></header>
 
-<main>
-    <!-- Breadcrumb -->
-    <div class="mb-breadcrumb">
-        <div class="mb-breadcrumb-wrap">
+<main id="main-content" class="courses-page" role="main">
+    <!-- ========== BREADCRUMB ========== -->
+    <nav class="mb-breadcrumb" aria-label="Breadcrumb">
+        <div class="container mb-breadcrumb-wrap">
             <a href="index.html" class="breadcrumb-link">Trang chủ</a>
             <span class="breadcrumb-separator">›</span>
-            <a href="#" class="breadcrumb-link">Khóa học</a>
+            <a href="pages/Courses.html" class="breadcrumb-link">Khóa học</a>
             <span class="breadcrumb-separator">›</span>
             <span class="breadcrumb-current" id="current-course">Lớp 9</span>
         </div>
-    </div>
+    </nav>
 
-    <!-- Course Header -->
-    <section class="mb-course-header">
-        <div class="mb-course-header-wrap">
-            <button class="back-btn" onclick="history.back()">
-                <span>←</span>
-            </button>
-            <div class="course-title-section">
-                <h1 id="course-title">Lớp 9</h1>
-                <p id="course-subtitle">Chương trình toán học lớp 9 toàn diện</p>
+    <!-- ========== HERO ========== -->
+    <section class="courses-hero" aria-labelledby="courses-title">
+        <div class="container courses-hero__inner">
+            <div class="courses-hero__content">
+                <p class="hero-strap">Chương trình Toán THCS – THPT & quốc tế</p>
+                <h1 id="courses-title" class="hero-title">Khóa học MathBridge</h1>
+                <p class="hero-sub" id="courses-hero-sub">
+                    Chọn lớp đúng khối, lọc theo ca – ngày – hình thức. Đăng ký online, tư vấn viên sẽ liên hệ xác nhận.
+                </p>
+                <div class="hero-meta">
+                    <div class="hero-pill">
+                        <i class="ph ph-check-circle"></i> Học trực tuyến & tại trung tâm
+                    </div>
+                    <div class="hero-pill">
+                        <i class="ph ph-check-circle"></i> Giáo viên chuyên Toán
+                    </div>
+                </div>
+            </div>
+            <div class="courses-hero__visual" aria-hidden="true">
+                <div class="hero-badge">
+                    <span class="badge-title">Cấp tốc 4–6 tuần</span>
+                    <p class="badge-sub">Tăng tốc nền tảng, ôn vào 10/ĐH</p>
+                </div>
+            </div>
+        </div>
+        <div class="section-wave" aria-hidden="true"></div>
+    </section>
+
+    <!-- ========== GRADE SWITCHER ========== -->
+    <section class="courses-grades" aria-label="Chọn khối">
+        <div class="container grades__wrap">
+            <p class="grades__label">Chọn khối:</p>
+            <div class="grades__list" id="grade-switcher">
+                <button type="button" class="grade-chip is-active" data-grade="9">Lớp 9</button>
+                <button type="button" class="grade-chip" data-grade="10">Lớp 10</button>
+                <button type="button" class="grade-chip" data-grade="11">Lớp 11</button>
+                <button type="button" class="grade-chip" data-grade="12">Lớp 12</button>
+                <button type="button" class="grade-chip" data-grade="adv">Nâng cao / chứng chỉ</button>
             </div>
         </div>
     </section>
 
-    <!-- Course Content -->
-    <section class="mb-course-content">
-        <div class="mb-course-content-wrap">
-            <div class="course-main">
-                <!-- Program Description -->
-                <div class="course-section">
-                    <h2 class="section-title">Mô tả chương trình</h2>
-                    <div class="section-content">
-                        <p id="course-description">
-                            Chương trình toán học lớp 9 được thiết kế xây dựng cố gắng và phát triển kiến trúc toán học của học sinh, 
-                            chuẩn bị tốt nhất cho kỳ thi vào lớp 10 và các kỳ thi học sinh giỏi.
+    <!-- ========== TOPBAR INFO ========== -->
+    <section class="course-topbar" aria-label="Thông tin khối hiện tại">
+        <div class="container course-topbar__wrap">
+            <div class="course-title-block">
+                <h2 id="course-title" class="course-title">Lớp 9</h2>
+                <p id="course-subtitle" class="course-subtitle">Chương trình toán học lớp 9 toàn diện</p>
+            </div>
+            <div class="course-topbar__stat">
+                <span class="stat-label">Số lớp khả dụng</span>
+                <span class="stat-value" id="course-count">0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <section class="courses-body section--soft">
+        <div class="container">
+            <div class="courses-layout">
+                <!-- LEFT: content -->
+                <div class="courses-main">
+                    <!-- MÔ TẢ -->
+                    <article class="course-section" aria-labelledby="desc-title">
+                        <header class="section-head">
+                            <h2 id="desc-title" class="section-title">Mô tả chương trình</h2>
+                            <p class="section-sub" id="course-description">
+                                Chương trình toán học lớp 9 được thiết kế để củng cố nền tảng, hệ thống hóa kiến thức trọng tâm,
+                                chuẩn bị tốt nhất cho kỳ thi vào lớp 10 và các kỳ thi học sinh giỏi.
+                            </p>
+                        </header>
+
+                        <div class="course-details-grid" aria-label="Nội dung & mục tiêu">
+                            <article class="detail-card">
+                                <header class="card-header">
+                                    <div class="card-icon" aria-hidden="true">
+                                        <i class="ph ph-books"></i>
+                                    </div>
+                                    <h3 class="card-title">Nội dung học</h3>
+                                </header>
+                                <ul class="card-list" id="learning-content">
+                                    <li>Đại số: phương trình, hệ phương trình</li>
+                                    <li>Hình học: đường tròn, góc & tứ giác nội tiếp</li>
+                                    <li>Hàm số & đồ thị</li>
+                                    <li>Bài toán thực tế & tư duy</li>
+                                </ul>
+                            </article>
+
+                            <article class="detail-card goals-card">
+                                <header class="card-header">
+                                    <div class="card-icon" aria-hidden="true">
+                                        <i class="ph ph-target"></i>
+                                    </div>
+                                    <h3 class="card-title">Mục tiêu</h3>
+                                </header>
+                                <ul class="card-list" id="learning-goals">
+                                    <li>Nắm chắc kiến thức trọng tâm</li>
+                                    <li>Phát triển tư duy toán học</li>
+                                    <li>Tự tin thi vào 10 / THPT</li>
+                                    <li>Đủ năng lực học nâng cao</li>
+                                </ul>
+                            </article>
+                        </div>
+                    </article>
+
+                    <!-- BỘ LỌC -->
+                    <section class="course-filter-section" aria-label="Bộ lọc khóa học">
+                        <div class="filter-heading">
+                            <h2 class="filter-title">
+                                <i class="ph ph-funnel-simple" aria-hidden="true"></i>
+                                Bộ lọc lớp học
+                            </h2>
+                            <p class="filter-sub">Chọn đúng ca & hình thức để xem lớp phù hợp</p>
+                        </div>
+
+                        <div class="filter-controls">
+                            <div class="filter-group">
+                                <label for="session-filter">Ca học</label>
+                                <select id="session-filter" class="filter-select">
+                                    <option value="all">Tất cả ca học</option>
+                                    <option value="1">Ca 1: 7h-10h</option>
+                                    <option value="2">Ca 2: 10h-12h</option>
+                                    <option value="3">Ca 3: 13h-15h</option>
+                                    <option value="4">Ca 4: 15h-17h</option>
+                                    <option value="5">Ca 5: 17h-19h</option>
+                                    <option value="6">Ca 6: 19h-22h</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="day-filter">Ngày học</label>
+                                <select id="day-filter" class="filter-select">
+                                    <option value="all">Tất cả ngày học</option>
+                                    <option value="2-4-6">2-4-6</option>
+                                    <option value="3-5-7">3-5-7</option>
+                                    <option value="4-6-CN">4-6-CN</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="method-filter">Hình thức</label>
+                                <select id="method-filter" class="filter-select">
+                                    <option value="all">Tất cả hình thức</option>
+                                    <option value="online">Trực tuyến</option>
+                                    <option value="center">Tại trung tâm</option>
+                                    <option value="tutor">Gia sư 1-1</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- DANH SÁCH KHÓA HỌC -->
+                    <section class="course-list-section" aria-label="Danh sách lớp học khả dụng">
+                        <div class="course-list" data-course-list>
+                            <!-- JS sẽ render -->
+                        </div>
+                        <p class="course-empty hidden" data-course-empty>Không tìm thấy lớp phù hợp bộ lọc.</p>
+                    </section>
+                </div>
+
+                <!-- RIGHT: thêm thông tin -->
+                <aside class="courses-aside" aria-label="Thông tin thêm về khóa học">
+                    <div class="courses-aside__card">
+                        <h3 class="aside-title">Lưu ý đăng ký</h3>
+                        <p class="aside-text">
+                            Đăng ký trực tuyến sẽ được tư vấn viên liên hệ để xác nhận ca học & hình thức học.
                         </p>
-                    </div>
-                </div>
-
-                <!-- Learning Content & Goals -->
-                <div class="course-details-grid">
-                    <div class="detail-card">
-                        <div class="card-header">
-                            <div class="card-icon">📚</div>
-                            <h3>Nội dung học tập</h3>
-                        </div>
-                        <div class="card-content">
-                            <ul id="learning-content">
-                                <li>Đại số: Phương trình, bất phương trình, hệ thống</li>
-                                <li>Hình học: Đường tròn, góc nội tiếp, tứ giác nội tiếp</li>
-                                <li>Hàm số và đồ thị</li>
-                                <li>Các bài toán thực tế và ứng dụng</li>
-                            </ul>
-                        </div>
+                        <p class="aside-text">Vui lòng để lại đúng SĐT để nhận tài khoản học thử.</p>
                     </div>
 
-                    <div class="detail-card goals-card">
-                        <div class="card-header">
-                            <div class="card-icon">🎯</div>
-                            <h3>Mục tiêu đạt được</h3>
-                        </div>
-                        <div class="card-content">
-                            <ul id="learning-goals">
-                                <li>Nắm vững kiến thức cơ bản và nâng cao</li>
-                                <li>Phát triển tư duy logic và sáng tạo</li>
-                                <li>Chuẩn bị tốt cho kỳ thi vào lớp 10</li>
-                                <li>Tự tin tham gia các kỳ thi học sinh giỏi</li>
-                            </ul>
-                        </div>
+                    <div class="courses-aside__card">
+                        <h3 class="aside-title">Bạn cần tư vấn nhanh?</h3>
+                        <p class="aside-text">Gọi ngay: <strong>HOTLINE: Phần mô tả </strong> (giờ hành chính)</p>
+                        <p class="aside-text">Hoặc đến trực tiếp trung tâm MathBridge gần nhất.</p>
                     </div>
-                </div>
 
-                <!-- Course Filter -->
-                <div class="course-filter-section">
-                    <h2 class="filter-title">
-                        <span class="filter-icon">🔍</span>
-                        Bộ lọc khóa học
-                    </h2>
-                    
-                    <div class="filter-controls">
-                        <div class="filter-group">
-                            <label>Ca học</label>
-                            <select id="session-filter" class="filter-select">
-                                <option value="all">Tất cả ca học</option>
-                                <option value="1">Ca 1: 7h-10h</option>
-                                <option value="2">Ca 2: 10h-12h</option>
-                                <option value="3">Ca 3: 13h-15h</option>
-                                <option value="4">Ca 4: 15h-17h</option>
-                                <option value="5">Ca 5: 17h-19h</option>
-                                <option value="6">Ca 6: 19h-22h</option>
-                            </select>
-                        </div>
-
-                        <div class="filter-group">
-                            <label>Ngày học</label>
-                            <select id="day-filter" class="filter-select">
-                                <option value="all">Tất cả ngày học</option>
-                                <option value="2-4-6">2-4-6</option>
-                                <option value="3-5-7">3-5-7</option>
-                                <option value="4-6-CN">4-6-CN</option>
-                            </select>
-                        </div>
-
-                        <div class="filter-group">
-                            <label>Hình thức học</label>
-                            <select id="method-filter" class="filter-select">
-                                <option value="all">Tất cả hình thức</option>
-                                <option value="online">Trực tuyến</option>
-                                <option value="center">Tại trung tâm</option>
-                                <option value="tutor">Gia sư 1-1</option>
-                            </select>
-                        </div>
+                    <div class="courses-aside__card aside-faq">
+                        <h3 class="aside-title">Câu hỏi thường gặp</h3>
+                        <ul class="aside-faq__list">
+                            <li>Học phí sẽ thông báo sau khi xếp lớp</li>
+                            <li>Có lớp test đầu vào</li>
+                            <li>Có thể chuyển ca nếu trùng lịch</li>
+                        </ul>
                     </div>
-                </div>
-
-                <!-- Course List -->
-                <div class="course-list-section">
-                    <div id="course-list" class="course-list">
-                        <!-- Sẽ được load bằng JavaScript -->
-                    </div>
-                </div>
+                </aside>
             </div>
         </div>
     </section>
 
-    <!-- Enroll Modal -->
-    <div id="enroll-modal" class="mb-modal" aria-hidden="true" style="display:none">
+    <!-- ========== ENROLL MODAL ========== -->
+    <div id="enroll-modal" class="mb-modal" aria-hidden="true">
         <div class="mb-modal__backdrop" data-close-modal></div>
         <div class="mb-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="enroll-modal-title">
             <button class="mb-modal__close" type="button" title="Đóng" data-close-modal>×</button>
             <h3 id="enroll-modal-title" class="mb-modal__title">Đăng ký khóa học</h3>
             <p id="enroll-modal-course" class="mb-modal__subtitle"></p>
 
-            <div class="mb-tabs">
-                <button class="mb-tab-btn is-active" data-tab="register" type="button">Đăng ký</button>
-                <button class="mb-tab-btn" data-tab="login" type="button">Đăng nhập</button>
+            <div class="mb-tabs" role="tablist" aria-label="Chọn hình thức">
+                <button
+                        class="mb-tab-btn is-active"
+                        data-tab="register"
+                        type="button"
+                        role="tab"
+                        aria-selected="true"
+                        aria-controls="tab-register"
+                >
+                    Đăng ký
+                </button>
+                <button
+                        class="mb-tab-btn"
+                        data-tab="login"
+                        type="button"
+                        role="tab"
+                        aria-selected="false"
+                        aria-controls="tab-login"
+                >
+                    Đăng nhập
+                </button>
             </div>
 
             <div class="mb-tab-panels">
                 <!-- Panel: Đăng ký -->
-                <div id="tab-register" class="mb-tab-panel is-active">
+                <div id="tab-register" class="mb-tab-panel is-active" role="tabpanel" aria-labelledby="tab-register">
                     <form id="enroll-form" class="mb-form">
                         <div class="mb-form__row">
                             <label for="ef-hoTen">Họ và tên</label>
@@ -167,7 +271,7 @@
                             <input id="ef-sdt" name="soDienThoai" type="tel" required placeholder="VD: 09xxxxxxxx" />
                         </div>
                         <div class="mb-form__row">
-                            <label for="ef-ngaySinh">Ngày sinh </label>
+                            <label for="ef-ngaySinh">Ngày sinh</label>
                             <input id="ef-ngaySinh" name="ngaySinh" type="date" />
                         </div>
                         <div class="mb-form__row">
@@ -179,23 +283,34 @@
                         </div>
                         <div class="mb-form__row">
                             <label for="ef-diaChi">Địa chỉ</label>
-                            <input id="ef-diaChi" name="diaChi" type="text" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" />
+                            <input
+                                    id="ef-diaChi"
+                                    name="diaChi"
+                                    type="text"
+                                    placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+                            />
                         </div>
                         <input type="hidden" id="ef-courseId" name="courseId" />
                         <div class="mb-form__actions">
                             <button type="button" class="btn btn--ghost" data-close-modal>Hủy</button>
                             <button type="submit" class="btn btn--primary">Gửi đăng ký</button>
                         </div>
-                        <p id="enroll-form-message" class="mb-form__message" role="status" style="display:none;"></p>
+                        <p id="enroll-form-message" class="mb-form__message" role="status" style="display: none;"></p>
                     </form>
                 </div>
 
                 <!-- Panel: Đăng nhập -->
-                <div id="tab-login" class="mb-tab-panel">
+                <div id="tab-login" class="mb-tab-panel" role="tabpanel" aria-labelledby="tab-login">
                     <form id="login-form" class="mb-form" autocomplete="on">
                         <div class="mb-form__row">
                             <label for="lf-username">Email hoặc SĐT</label>
-                            <input id="lf-username" name="username" type="text" required placeholder="VD: hoang.chuong@mathbridge.vn" />
+                            <input
+                                    id="lf-username"
+                                    name="username"
+                                    type="text"
+                                    required
+                                    placeholder="VD: hoang.chuong@mathbridge.vn"
+                            />
                         </div>
                         <div class="mb-form__row">
                             <label for="lf-password">Mật khẩu</label>
@@ -206,71 +321,43 @@
                         </div>
                         <p id="login-form-message" class="mb-form__message" role="status"></p>
                     </form>
-                    <a href="#" class="login-note">Quên mật khẩu?</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal hiển thị Email + Password sau khi đăng ký thành công -->
-    <div id="credentials-modal" class="mb-modal" aria-hidden="true" style="display:none">
+    <!-- ========== CREDENTIALS MODAL ========== -->
+    <div id="credentials-modal" class="mb-modal" aria-hidden="true">
         <div class="mb-modal__backdrop" data-close-credentials-modal></div>
-        <div class="mb-modal__dialog" role="dialog" aria-modal="true" style="max-width: 500px;">
+        <div class="mb-modal__dialog cred-dialog" role="dialog" aria-modal="true" aria-labelledby="cred-title">
             <button class="mb-modal__close" type="button" title="Đóng" data-close-credentials-modal>×</button>
-            
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
-                <h3 class="mb-modal__title" style="color: #28a745; margin: 0 0 8px 0;">Chúc mừng bạn đã đăng ký thành công!</h3>
-                <p style="color: #666; font-size: 14px; margin: 0;">
-                    Vui lòng <strong style="color: #e11d48;">lưu lại</strong> thông tin đăng nhập bên dưới để tránh quên
-                </p>
+            <div class="cred-header">
+                <div class="cred-emoji" aria-hidden="true">🎉</div>
+                <h3 id="cred-title" class="cred-title">Chúc mừng bạn đã đăng ký thành công!</h3>
+                <p class="cred-sub">Vui lòng <strong>lưu lại</strong> thông tin đăng nhập bên dưới để tránh quên.</p>
             </div>
-            
-            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #0ea5e9;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
-                    <span style="font-size: 20px;">🔐</span>
-                    <p style="margin: 0; font-weight: 600; color: #0c4a6e; font-size: 15px;">Thông tin đăng nhập:</p>
+            <div class="cred-box">
+                <div class="cred-box__head">
+                    <span class="cred-box__icon" aria-hidden="true">🔐</span>
+                    <p class="cred-box__label">Thông tin đăng nhập</p>
                 </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #0c4a6e; font-size: 14px; font-weight: 600;">
-                        <span>📧</span> Email:
-                    </label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="text" id="cred-email" readonly 
-                               style="flex: 1; padding: 12px; border: 2px solid #0ea5e9; border-radius: 8px; background: white; font-family: monospace; font-size: 14px; font-weight: 600; color: #1e40af;" />
-                        <button type="button" class="copy-btn" data-copy="email" 
-                                style="padding: 12px 20px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
-                            📋 Copy
-                        </button>
+                <div class="cred-field">
+                    <label for="cred-email">📧 Email</label>
+                    <div class="cred-field__row">
+                        <input id="cred-email" type="text" readonly />
+                        <button type="button" class="cred-copy-btn" data-copy="email">Copy</button>
                     </div>
                 </div>
-                
-                <div>
-                    <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #0c4a6e; font-size: 14px; font-weight: 600;">
-                        <span>🔑</span> Mật khẩu:
-                    </label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="text" id="cred-password" readonly 
-                               style="flex: 1; padding: 12px; border: 2px solid #0ea5e9; border-radius: 8px; background: white; font-family: monospace; font-size: 14px; font-weight: 600; color: #1e40af;" />
-                        <button type="button" class="copy-btn" data-copy="password" 
-                                style="padding: 12px 20px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
-                            📋 Copy
-                        </button>
+                <div class="cred-field">
+                    <label for="cred-password">🔑 Mật khẩu</label>
+                    <div class="cred-field__row">
+                        <input id="cred-password" type="text" readonly />
+                        <button type="button" class="cred-copy-btn" data-copy="password">Copy</button>
                     </div>
                 </div>
-                
-                <div style="margin-top: 15px; padding: 12px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-                    <p style="margin: 0; font-size: 13px; color: #856404; display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 18px;">⚠️</span>
-                        <span><strong>Lưu ý:</strong> Vui lòng lưu lại email và mật khẩu này để đăng nhập vào hệ thống. Bạn sẽ không thể xem lại mật khẩu sau khi đóng cửa sổ này.</span>
-                    </p>
-                </div>
             </div>
-            
-            <div style="text-align: center;">
-                <button type="button" class="btn btn--primary" data-close-credentials-modal 
-                        style="min-width: 180px; padding: 12px 24px; font-size: 16px; font-weight: 700; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);">
+            <div class="cred-actions">
+                <button type="button" class="btn btn--primary cred-close" data-close-credentials-modal>
                     ✅ Đã ghi nhớ
                 </button>
             </div>
@@ -281,12 +368,16 @@
 <footer></footer>
 
 <script>
-    window.addEventListener('load', () => {
-        includePartials({
-          header: 'partials/header.html',
-          footer: 'partials/footer.html'
-        });
+    window.addEventListener("load", () => {
+      includePartials({
+        header: "partials/header.html",
+        footer: "partials/footer.html",
+      });
     });
 </script>
+
+<!-- JS trang -->
+<script type="module" src="assets/js/pages/courses.page.js"></script>
+<script type="module" src="assets/js/pages/footer.page.js"></script>
 </body>
 </html>
