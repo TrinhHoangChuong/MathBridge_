@@ -27,15 +27,16 @@ document.addEventListener("DOMContentLoaded", () => {
       return showError("Email hoặc mật khẩu không đúng.");
     }
 
-    const payload = result.data || {};
-    const user = payload.user || payload.account || {};
-    const roles = user.roles || [];
+    const payload = result.data || result || {};
+    const user = payload.user || payload.account || payload || {};
+    const roles = user.roles || payload.roles || [];
 
     const isStudent =
       roles.includes("R001") ||
       roles.some((r) => /hoc\s*sinh/i.test(r));
 
-    if (!isStudent) {
+    // Nếu BE không trả roles, đừng chặn: để user vào và để BE kiểm tra tiếp ở các trang yêu cầu quyền
+    if (roles.length && !isStudent) {
       return showError("Trang này chỉ dành cho học sinh.");
     }
 

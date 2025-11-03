@@ -7,6 +7,8 @@ let allCourses = [];
 let filteredCourses = [];
 const ENROLL_ENDPOINT = '/api/public/enroll/pending';
 const AUTH_LOGIN_ENDPOINT = '/api/public/auth/login';
+// Fallback guard to avoid 'CONFIG is not defined' when this file loads as module
+const __CFG__ = (typeof window !== 'undefined' && window.CONFIG) ? window.CONFIG : { BASE_URL: 'http://localhost:8080' };
 let activeTab = 'register';
 let currentCoursePosition = null;
 
@@ -112,29 +114,17 @@ function courseCardTemplate(course) {
   return `
     <div class="course-card" data-id="${course.id}">
       <div class="course-type-badge ${methodClass}">${course.methodText}</div>
-      
-      <h3 class="course-title">${course.title.replace(/\s–\sĐợt/g, '<br/>Đợt')}</h3>
-      
-      <div class="course-meta">
-        <div class="meta-item">
-          <span class="meta-icon">👨‍🏫</span>
-          <span>${course.teacher}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-icon">📅</span>
-          <span>Ngày học: ${course.schedule}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-icon">🕐</span>
-          <span>${course.session}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-icon">🏢</span>
-          <span>${course.methodText}</span>
-        </div>
-      </div>
-      
-      <div class="course-details">
+
+      <h3 class="course-card__title">${course.title.replace(/\s–\sĐợt/g, '<br/>Đợt')}</h3>
+
+      <ul class="course-card__meta">
+        <li>👨‍🏫 ${course.teacher}</li>
+        <li>📅 Ngày học: ${course.schedule}</li>
+        <li>🕐 ${course.session}</li>
+        <li>🏢 ${course.methodText}</li>
+      </ul>
+
+      <div class="course-card__desc">
         <div class="details-title">Mẫu đơn học tập</div>
         <ul class="details-list">
           <li>Thời gian: ${course.duration}</li>
@@ -143,42 +133,42 @@ function courseCardTemplate(course) {
           <li>Sĩ số: ${course.maxStudents}</li>
         </ul>
       </div>
-      
+
       <div class="course-description">
         <p>${course.description}</p>
         <a href="#" class="see-more">Xem thêm</a>
       </div>
-      
-      <div class="course-footer">
-        <div>
-          <div class="course-price">${course.priceText}</div>
-        </div>
-        <button class="enroll-btn" data-course-id="${course.id}">
-          Đăng ký ngay
-        </button>
+
+      <div class="course-card__actions">
+        <button class="btn btn--primary enroll-btn" data-course-id="${course.id}">Đăng ký ngay</button>
       </div>
+      <div class="course-price">${course.priceText}</div>
     </div>
   `;
 }
 
 // Render danh sách khóa học
 function renderCourses(courses = filteredCourses) {
-  const list = document.getElementById('course-list');
+  const list = document.querySelector('[data-course-list]') || document.getElementById('course-list');
+  const emptyMsg = document.querySelector('[data-course-empty]');
+  const countEl = document.getElementById('course-count');
   if (!list) return;
 
+  if (typeof countEl !== 'undefined' && countEl) {
+    countEl.textContent = String(courses.length);
+  }
+
   if (courses.length === 0) {
-    list.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--mb-gray-1);">
-        <h3>Không tìm thấy khóa học</h3>
-        <p>Hãy thử thay đổi bộ lọc để tìm khóa học phù hợp</p>
-      </div>
-    `;
+    list.innerHTML = '';
+    if (emptyMsg) emptyMsg.classList.remove('hidden');
     return;
   }
 
+  if (emptyMsg) emptyMsg.classList.add('hidden');
   list.innerHTML = courses.map(courseCardTemplate).join('');
   console.log('[Enroll] renderCourses -> cards rendered:', courses.length);
   bindEnrollButtons();
+  bindSeeMoreToggles();
 }
 
 // Filter khóa học
@@ -236,8 +226,8 @@ function openEnrollModal() {
   if (!modal) return;
   modal.setAttribute('aria-hidden', 'false');
   modal.classList.add('is-open');
-  // remove inline display to allow CSS .is-open { display:flex } to center
-  try { modal.style.removeProperty('display'); } catch (_) {}
+  // Bảo đảm hiển thị ngay cả khi CSS chưa kịp áp dụng
+  try { modal.style.display = 'flex'; } catch (_) {}
   console.log('[Enroll] modal opened');
   try { document.body.style.overflow = 'hidden'; } catch (_) {}
 
@@ -356,12 +346,49 @@ function bindEnrollButtons() {
 }
 
 function installEnrollAutoBinder() {
-  const list = document.getElementById('course-list');
+  const list = document.querySelector('[data-course-list]') || document.getElementById('course-list');
   if (!list) return;
   const obs = new MutationObserver(() => {
     bindEnrollButtons();
   });
   obs.observe(list, { childList: true, subtree: true });
+}
+
+function bindSeeMoreToggles() {
+  document.querySelectorAll('.course-card .see-more').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const p = a.closest('.course-card')?.querySelector('.course-description p');
+      if (!p) return;
+      const expanded = a.getAttribute('data-expanded') === 'true';
+      a.setAttribute('data-expanded', String(!expanded));
+      if (expanded) {
+        p.style.maxHeight = '72px';
+        p.style.overflow = 'hidden';
+        a.textContent = 'Xem thêm';
+      } else {
+        p.style.maxHeight = 'none';
+        p.style.overflow = '';
+        a.textContent = 'Thu gọn';
+      }
+    });
+  });
+}
+
+function initGradeSwitcher() {
+  const params = new URLSearchParams(window.location.search);
+  const current = (params.get('grade') || '9').toLowerCase();
+  const chips = document.querySelectorAll('#grade-switcher .grade-chip');
+  chips.forEach((chip) => {
+    const g = (chip.getAttribute('data-grade') || '').toLowerCase();
+    chip.classList.toggle('is-active', g === current);
+    chip.addEventListener('click', () => {
+      if (!g) return;
+      const url = new URL(window.location.href);
+      url.searchParams.set('grade', g);
+      window.location.href = url.toString();
+    });
+  });
 }
 
 function attachEnrollModalEvents() {
@@ -408,10 +435,12 @@ function attachEnrollModalEvents() {
 
       try {
         disable(true);
-        const res = await http(ENROLL_ENDPOINT, {
+        const resFetch = await fetch((window.CONFIG && window.CONFIG.BASE_URL ? window.CONFIG.BASE_URL : '') + ENROLL_ENDPOINT, {
           method: 'POST',
-          body: data,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
         });
+        const res = await resFetch.json().catch(()=>({ success:false }));
 
         if (res && res.success) {
           console.log('[Enroll] Full Response:', JSON.stringify(res, null, 2));
@@ -490,7 +519,12 @@ function attachEnrollModalEvents() {
       }
       try {
         disable(true);
-        const res = await http(AUTH_LOGIN_ENDPOINT, { method: 'POST', body: payload });
+        const resFetch = await fetch((window.CONFIG?.BASE_URL||'') + AUTH_LOGIN_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const res = await resFetch.json().catch(()=>({ success:false }));
         if (res && res.success && (res.data?.token || res.token)) {
           const token = res.data?.token || res.token;
           localStorage.setItem('mb_token', token);
@@ -572,15 +606,18 @@ function mapCourseResponseToView(c) {
 
 async function fetchCoursesByGrade(grade) {
   const idCT = mapGradeToProgramId(grade);
-  const url = `${CONFIG.BASE_URL}/api/public/course/program/${idCT}`;
+  const url = `${__CFG__.BASE_URL}/api/public/course/program/${idCT}`;
   try {
     const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     }
     const json = await res.json();
-    if (!json || !json.success) return [];
-    return (json.data || []).map(mapCourseResponseToView);
+    // Chấp nhận cả 2 dạng: ApiResponse{success,data} hoặc trả thẳng mảng
+    const rawList = Array.isArray(json) ? json : (json && json.data) ? json.data : [];
+    const mapped = rawList.map(mapCourseResponseToView);
+    console.log('[Courses] fetched', rawList.length, 'items from BE; mapped:', mapped.length);
+    return mapped;
   } catch (err) {
     console.error('[Courses] Không thể kết nối backend:', err.message);
     console.warn('[Courses] Backend có thể chưa chạy. Vui lòng kiểm tra: http://localhost:8080');
@@ -635,6 +672,9 @@ function initCoursesPage() {
   filterSelects.forEach(select => {
     select.addEventListener('change', filterCourses);
   });
+
+  // Grade switcher
+  initGradeSwitcher();
 
   // Modal events
   attachEnrollModalEvents();

@@ -24,6 +24,9 @@
     <!-- NOTE: để trong <head> nhưng defer để không chặn render -->
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="assets/js/utils/includePartials.js?v=20251101" defer></script>
+    <!-- Global config and centers api (classic scripts) must load before module scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api/centers.api.js"></script>
 </head>
 <body class="page-courses">
 <header></header>
