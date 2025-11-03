@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="g4" x1="0" x2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <style>
+      .bg{fill:#fff}
+      .rect{fill:url(#g4);opacity:.12}
+      .label{font-family:Inter,system-ui,Arial,sans-serif;font-weight:800;fill:#0f172a;font-size:36px}
+      .sub{font-family:Inter,system-ui,Arial,sans-serif;fill:#475569;font-size:18px}
+    </style>
+  </defs>
+  <rect class="bg" width="800" height="600" rx="20"/>
+  <rect class="rect" x="40" y="40" width="720" height="520" rx="16"/>
+  <g transform="translate(80,140)">
+    <circle cx="40" cy="0" r="32" fill="url(#g4)" />
+    <text class="label" x="120" y="10">Kết quả bền vững</text>
+    <text class="sub" x="120" y="48">Tập trung nền tảng</text>
+  </g>
+</svg>

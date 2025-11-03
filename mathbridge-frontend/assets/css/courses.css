@@ -1,0 +1,816 @@
+/* =========================================================
+   1. TOKENS CHUNG (dùng toàn site, giữ nguyên, KHÔNG scope)
+   ========================================================= */
+:root {
+  --mb-brand: #e11d48;
+  --mb-brand-soft: rgba(225, 29, 72, 0.08);
+  --mb-dark: #0f172a;
+  --mb-muted: #64748b;
+  --mb-border: #e2e8f0;
+  --mb-surface: #ffffff;
+  --mb-radius-lg: 1.25rem;
+  --mb-radius-md: 1rem;
+  --mb-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+  --mb-bg: #f8fafc;
+}
+
+/* =========================================================
+   2. PAGE SHELL / BODY
+   ========================================================= */
+.page-courses {
+  background: #fff;
+  min-height: 100vh;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* =========================================================
+   3. BREADCRUMB
+   ========================================================= */
+.page-courses .mb-breadcrumb {
+  background: #fff;
+  padding: 1.2rem 0 0.4rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.page-courses .mb-breadcrumb-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--mb-muted);
+}
+
+.page-courses .breadcrumb-link {
+  color: var(--mb-muted);
+  text-decoration: none;
+}
+
+.page-courses .breadcrumb-link:hover {
+  color: var(--mb-dark);
+}
+
+.page-courses .breadcrumb-current {
+  color: var(--mb-dark);
+  font-weight: 600;
+}
+
+/* =========================================================
+   4. HERO TRANG KHÓA HỌC
+   ========================================================= */
+.page-courses .courses-hero {
+  position: relative;
+  background: radial-gradient(circle at top, rgba(225, 29, 72, 0.12), rgba(15, 23, 42, 0));
+  padding: 3.5rem 0 3rem;
+  overflow: hidden;
+}
+
+.page-courses .courses-hero__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+}
+
+.page-courses .courses-hero__content {
+  max-width: 620px;
+}
+
+.page-courses .hero-strap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--mb-dark);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.page-courses .hero-title {
+  font-family: "Be Vietnam Pro", system-ui, sans-serif;
+  font-size: clamp(2.25rem, 4vw, 2.9rem);
+  font-weight: 800;
+  color: var(--mb-dark);
+  margin-top: 1rem;
+  line-height: 1.05;
+}
+
+.page-courses .hero-sub {
+  margin-top: 1rem;
+  color: var(--mb-muted);
+  font-size: 0.95rem;
+  max-width: 540px;
+}
+
+.page-courses .hero-meta {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.page-courses .hero-pill {
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--mb-dark);
+}
+
+.page-courses .courses-hero__visual {
+  position: relative;
+  width: min(330px, 100%);
+  height: 190px;
+}
+
+.page-courses .hero-badge {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(140deg, rgba(225, 29, 72, 1), rgba(225, 29, 72, 0));
+  border-radius: 1.5rem;
+  padding: 1.3rem 1.4rem;
+  box-shadow: 0 18px 45px rgba(225, 29, 72, 0.35);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.page-courses .badge-title {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.page-courses .badge-sub {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  margin-top: 0.5rem;
+}
+
+/* Wave */
+.page-courses .section-wave {
+  position: absolute;
+  inset: auto 0 -1px 0;
+  width: 100%;
+  height: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg width='1440' height='36' viewBox='0 0 1440 36' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 35.9999L48 32.3999C96 28.7999 192 21.5999 288 20.3999C384 18.9999 480 23.9999 576 25.1999C672 26.3999 768 23.9999 864 20.3999C960 16.7999 1056 12.3999 1152 12.5999C1248 12.7999 1344 16.7999 1392 18.7999L1440 21.1999V35.9999H1392C1344 35.9999 1248 35.9999 1152 35.9999C1056 35.9999 960 35.9999 864 35.9999C768 35.9999 672 35.9999 576 35.9999C480 35.9999 384 35.9999 288 35.9999C192 35.9999 96 35.9999 48 35.9999H0Z' fill='%23f8fafc'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: cover;
+}
+
+/* =========================================================
+   5. THANH CHỌN KHỐI (grade switcher)
+   ========================================================= */
+.page-courses .courses-grades {
+  background: #f8fafc;
+  padding: 1rem 0 1.15rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.page-courses .grades__wrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-courses .grades__label {
+  font-weight: 600;
+  color: var(--mb-dark);
+}
+
+.page-courses .grades__list {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.page-courses .grade-chip {
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  background: #fff;
+  color: var(--mb-dark);
+  border-radius: 999px;
+  padding: 0.35rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.page-courses .grade-chip:hover {
+  background: rgba(225, 29, 72, 0.05);
+}
+
+.page-courses .grade-chip.is-active {
+  background: var(--mb-brand);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 6px 23px rgba(225, 29, 72, 0.35);
+}
+
+/* =========================================================
+   6. THANH THÔNG TIN LỚP (topbar)
+   ========================================================= */
+.page-courses .course-topbar {
+  background: #fff;
+  padding: 1.3rem 0 0.8rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.page-courses .course-topbar__wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.page-courses .course-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--mb-dark);
+}
+
+.page-courses .course-subtitle {
+  color: var(--mb-muted);
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.page-courses .course-topbar__stat {
+  background: rgba(225, 29, 72, 0.05);
+  border: 1px solid rgba(225, 29, 72, 0.08);
+  border-radius: 1rem;
+  padding: 0.4rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: flex-end;
+}
+
+.page-courses .stat-label {
+  font-size: 0.65rem;
+  color: var(--mb-muted);
+}
+
+.page-courses .stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--mb-brand);
+}
+
+/* =========================================================
+   7. THÂN TRANG / LAYOUT
+   ========================================================= */
+.page-courses .courses-body {
+  background: #f8fafc;
+  padding: 2.5rem 0 3.5rem;
+}
+
+.page-courses .courses-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 2.3rem;
+}
+
+.page-courses .courses-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.9rem;
+}
+
+.page-courses .course-section .section-head {
+  margin-bottom: 1.2rem;
+}
+
+.page-courses .section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--mb-dark);
+}
+
+.page-courses .section-sub {
+  margin-top: 0.35rem;
+  color: var(--mb-muted);
+}
+
+/* =========================================================
+   8. KHỐI NỘI DUNG & MỤC TIÊU
+   ========================================================= */
+.page-courses .course-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.4rem;
+}
+
+.page-courses .detail-card {
+  background: #fff;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 1.2rem 1.1rem 1.1rem;
+  box-shadow: 0 5px 20px rgba(15, 23, 42, 0.03);
+}
+
+.page-courses .card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.page-courses .card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: rgba(225, 29, 72, 0.06);
+  display: grid;
+  place-items: center;
+  color: var(--mb-brand);
+  font-size: 1.35rem;
+}
+
+.page-courses .card-title {
+  font-weight: 600;
+  color: var(--mb-dark);
+}
+
+.page-courses .card-list {
+  margin-top: 0.7rem;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+  color: var(--mb-muted);
+  font-size: 0.85rem;
+}
+
+.page-courses .goals-card {
+  background: linear-gradient(170deg, rgba(225, 29, 72, 0.03), rgba(255, 255, 255, 1));
+}
+
+/* =========================================================
+   9. BỘ LỌC KHÓA HỌC
+   ========================================================= */
+.page-courses .course-filter-section {
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1.25rem;
+  padding: 1.1rem 1.2rem 1.25rem;
+}
+
+.page-courses .filter-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.page-courses .filter-title {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-weight: 600;
+  color: var(--mb-dark);
+}
+
+.page-courses .filter-title i {
+  background: rgba(225, 29, 72, 0.12);
+  color: var(--mb-brand);
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+}
+
+.page-courses .filter-sub {
+  font-size: 0.75rem;
+  color: var(--mb-muted);
+}
+
+.page-courses .filter-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-courses .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 160px;
+  flex: 1 1 0;
+}
+
+.page-courses .filter-group label {
+  font-size: 0.75rem;
+  color: var(--mb-muted);
+  font-weight: 500;
+}
+
+.page-courses .filter-select {
+  border: 1px solid rgba(226, 232, 240, 1);
+  background: #fff;
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.6rem;
+  font-size: 0.875rem;
+  outline: none;
+  color: var(--mb-dark);
+}
+
+.page-courses .filter-select:focus {
+  border-color: rgba(225, 29, 72, 0.5);
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+}
+
+/* =========================================================
+   10. DANH SÁCH KHÓA HỌC
+   ========================================================= */
+.page-courses .course-list-section {
+  background: #fff;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 1.25rem 1.1rem;
+  box-shadow: 0 10px 35px rgba(15, 23, 42, 0.03);
+}
+
+.page-courses .course-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.page-courses .course-card {
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 1.05rem;
+  padding: 0.9rem 0.85rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 160px;
+  transition: 0.15s ease;
+}
+
+.page-courses .course-card:hover {
+  border-color: rgba(225, 29, 72, 0.45);
+  box-shadow: 0 8px 20px rgba(225, 29, 72, 0.05);
+}
+
+.page-courses .course-card__title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--mb-dark);
+}
+
+.page-courses .course-card__desc {
+  color: var(--mb-muted);
+  font-size: 0.78rem;
+}
+
+.page-courses .course-card__meta {
+  list-style: none;
+  padding: 0;
+  margin: 0.35rem 0 0.4rem;
+  display: grid;
+  gap: 0.25rem;
+  color: var(--mb-muted);
+  font-size: 0.74rem;
+}
+
+.page-courses .course-card__meta li {
+  display: flex;
+  gap: 0.35rem;
+  align-items: flex-start;
+}
+
+.page-courses .course-card__actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* =========================================================
+   11. BUTTONS (scope để không phá header)
+   ========================================================= */
+.page-courses .btn {
+  border: none;
+  outline: none;
+  border-radius: 0.7rem;
+  padding: 0.5rem 0.95rem;
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.page-courses .btn--primary {
+  background: var(--mb-brand);
+  color: #fff;
+}
+
+.page-courses .btn--ghost {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--mb-dark);
+}
+
+/* =========================================================
+   12. EMPTY STATE
+   ========================================================= */
+.page-courses .course-empty {
+  margin-top: 1.25rem;
+  background: rgba(255, 0, 0, 0.02);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.12);
+  border-radius: 1rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.page-courses .hidden {
+  display: none !important;
+}
+
+/* =========================================================
+   13. ASIDE (thông tin phụ)
+   ========================================================= */
+.page-courses .courses-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.page-courses .courses-aside__card {
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1.1rem;
+  padding: 1rem 1rem 1.1rem;
+  box-shadow: 0 6px 25px rgba(15, 23, 42, 0.025);
+}
+
+.page-courses .aside-title {
+  font-weight: 600;
+  color: var(--mb-dark);
+  margin-bottom: 0.55rem;
+}
+
+.page-courses .aside-text {
+  font-size: 0.8rem;
+  color: var(--mb-muted);
+  margin-bottom: 0.35rem;
+}
+
+.page-courses .aside-faq__list {
+  list-style: disc;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--mb-muted);
+}
+
+/* =========================================================
+   14. MODALS (enroll + credentials)
+   ========================================================= */
+.page-courses .mb-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+}
+
+.page-courses .mb-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.25);
+  backdrop-filter: blur(2px);
+}
+
+.page-courses .mb-modal__dialog {
+  position: relative;
+  background: #fff;
+  border-radius: 1.1rem;
+  width: min(460px, calc(100% - 2.5rem));
+  margin: 4rem auto;
+  padding: 1.3rem 1.25rem 1.25rem;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.12);
+}
+
+.page-courses .mb-modal__title {
+  font-weight: 700;
+  color: var(--mb-dark);
+  font-size: 1.1rem;
+}
+
+.page-courses .mb-modal__subtitle {
+  font-size: 0.8rem;
+  color: var(--mb-muted);
+  margin-bottom: 1rem;
+}
+
+.page-courses .mb-modal__close {
+  position: absolute;
+  inset: 0.55rem 0.55rem auto auto;
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  border-radius: 999px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.page-courses .mb-tabs {
+  display: flex;
+  gap: 0.35rem;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 999px;
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.page-courses .mb-tab-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--mb-muted);
+}
+
+.page-courses .mb-tab-btn.is-active {
+  background: #fff;
+  color: var(--mb-dark);
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.05);
+}
+
+.page-courses .mb-tab-panel {
+  display: none;
+}
+
+.page-courses .mb-tab-panel.is-active {
+  display: block;
+}
+
+.page-courses .mb-form__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.page-courses .mb-form__row label {
+  font-size: 0.75rem;
+  color: var(--mb-dark);
+}
+
+.page-courses .mb-form__row input,
+.page-courses .mb-form__row select {
+  border: 1px solid rgba(226, 232, 240, 1);
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  outline: none;
+  font-size: 0.85rem;
+}
+
+.page-courses .mb-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.page-courses .mb-form__message {
+  margin-top: 0.7rem;
+  font-size: 0.75rem;
+  color: var(--mb-muted);
+}
+
+/* Credentials modal */
+.page-courses .cred-dialog {
+  width: min(480px, calc(100% - 2.5rem));
+}
+
+.page-courses .cred-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.page-courses .cred-emoji {
+  font-size: 2.3rem;
+  margin-bottom: 0.35rem;
+}
+
+.page-courses .cred-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.page-courses .cred-sub {
+  font-size: 0.78rem;
+  color: var(--mb-muted);
+}
+
+.page-courses .cred-box {
+  background: rgba(248, 250, 252, 0.6);
+  border-radius: 1.1rem;
+  padding: 0.8rem 0.9rem 0.95rem;
+  margin-bottom: 0.8rem;
+}
+
+.page-courses .cred-box__head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-courses .cred-box__icon {
+  font-size: 1.2rem;
+}
+
+.page-courses .cred-field {
+  margin-bottom: 0.5rem;
+}
+
+.page-courses .cred-field label {
+  font-size: 0.75rem;
+  color: var(--mb-dark);
+}
+
+.page-courses .cred-field__row {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.page-courses .cred-field__row input {
+  flex: 1;
+}
+
+.page-courses .cred-copy-btn {
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.page-courses .cred-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* =========================================================
+   15. RESPONSIVE
+   ========================================================= */
+@media (max-width: 1080px) {
+  .page-courses .courses-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .page-courses .courses-aside {
+    order: 2;
+  }
+
+  .page-courses .courses-main {
+    order: 1;
+  }
+
+  .page-courses .courses-hero__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-courses .course-topbar__wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-courses .filter-controls {
+    flex-direction: column;
+  }
+
+  .page-courses .course-list {
+    grid-template-columns: 1fr;
+  }
+
+  .page-courses .mb-modal__dialog {
+    margin-top: 3rem;
+  }
+}

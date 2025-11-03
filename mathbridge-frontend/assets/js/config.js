@@ -1,11 +1,12 @@
 // assets/js/config.js
-// FILE NÀY LƯU ĐỊA CHỈ SERVER BE NHA AE
+// Chọn server BE để gọi
+
 const ENV = {
   dev: {
-    BASE_URL: "http://localhost:8080", // URL của BE (Spring Boot)
+    BASE_URL: "http://localhost:8080",
   },
   prod: {
     BASE_URL: "https://api.mathbridge.vn",
   },
 };
-const CONFIG = ENV.dev;
+export const CONFIG = ENV.dev;

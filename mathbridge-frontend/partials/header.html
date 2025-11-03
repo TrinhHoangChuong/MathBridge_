@@ -1,36 +1,62 @@
-<!-- partials/header.html -->
-<div class="mb-nav">
-    <!-- Logo -->
-    <div class="mb-left">
-        <a class="mb-logo" href="index.html">MATHBRIDGE</a>
-    </div>
-
-
-    <input id="mb-toggle" type="checkbox" class="mb-toggle" aria-label="Mở menu">
-
-    <!-- Menu chính -->
-    <nav class="mb-links">
-        <a href="pages/About.html">VỀ CHÚNG TÔI</a>
-
-        <div class="mb-dd">
-            <button class="mb-dd-btn" type="button">KHÓA HỌC</button>
-            <div class="mb-dd-menu">
-                <a href="#">LỚP 9</a>
-                <a href="#">LỚP 10</a>
-                <a href="#">LỚP 11</a>
-                <a href="#">LỚP 12</a>
-                <a href="#">THEO MỤC TIÊU THI (IGCSE/IB/AP/SAT/Toán nâng cao VN)</a>
-            </div>
+<!-- file: partials/header.html -->
+<header class="mb-header" role="banner">
+    <div class="mb-nav" data-glass>
+        <div class="mb-left">
+            <a class="mb-logo" href="index.html" aria-label="Trang chủ MathBridge">
+                <span class="logo-mark" aria-hidden="true"></span>
+                <span class="logo-text">MathBridge</span>
+            </a>
         </div>
 
-        <a href="#">ĐỘI NGŨ GIÁO VIÊN</a>
-        <a href="#">TUYỂN DỤNG</a>
-        <a href="#">LIÊN HỆ</a>
-    </nav>
+        <input id="mb-toggle" type="checkbox" class="mb-toggle" aria-label="Mở/đóng menu">
 
-    <!-- Đăng nhập -->
-    <div class="mb-right">
-        <a class="mb-login" href="#">ĐĂNG NHẬP</a>
-        <label for="mb-toggle" class="mb-burger" aria-label="Mở menu">☰</label>
+        <nav class="mb-links" aria-label="Điều hướng chính">
+            <a href="pages/About.html">Về chúng tôi</a>
+            <div class="mb-dd">
+                <button class="mb-dd-btn" type="button">
+                    Khóa học <i class="ph ph-caret-down" aria-hidden="true"></i>
+                </button>
+                <div class="mb-dd-menu">
+                    <a href="pages/Courses.html?grade=9">Lớp 9</a>
+                    <a href="pages/Courses.html?grade=10">Lớp 10</a>
+                    <a href="pages/Courses.html?grade=11">Lớp 11</a>
+                    <a href="pages/Courses.html?grade=12">Lớp 12</a>
+                    <a href="pages/Courses.html?grade=international">Theo mục tiêu thi</a>
+                </div>
+            </div>
+            <a href="pages/Teachers.html">Đội ngũ giáo viên</a>
+            <a href="pages/Careers.html">Tuyển dụng</a>
+            <a href="pages/Contact.html">Liên hệ</a>
+        </nav>
+
+        <div class="mb-right">
+            <!-- KHÁCH -->
+            <a class="mb-login btn btn--navy" href="pages/login.html" id="mb-login-btn">
+                <i class="ph ph-sign-in"></i><span>Đăng nhập</span>
+            </a>
+
+            <!-- ĐÃ ĐĂNG NHẬP -->
+            <div class="mb-user" id="mb-user-box" hidden>
+                <button class="mb-user-btn" id="mb-user-toggle" type="button">
+                    <span class="mb-user-avatar" id="mb-user-avatar">S</span>
+                    <span class="mb-user-name" id="mb-user-name">Student</span>
+                    <i class="ph ph-caret-down"></i>
+                </button>
+                <div class="mb-user-menu" id="mb-user-menu">
+                    <button type="button" class="mb-user-item" data-action="portal">
+                        <i class="ph ph-graduation-cap"></i>
+                        <span>Vào portal</span>
+                    </button>
+                    <button type="button" class="mb-user-item" data-action="logout">
+                        <i class="ph ph-sign-out"></i>
+                        <span>Đăng xuất</span>
+                    </button>
+                </div>
+            </div>
+
+            <label for="mb-toggle" class="mb-burger" aria-label="Mở menu">
+                <i class="ph ph-list" aria-hidden="true"></i>
+            </label>
+        </div>
     </div>
-</div>
+</header>

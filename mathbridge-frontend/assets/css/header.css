@@ -1,99 +1,207 @@
-/* ====== Màu & font hiện đại (xanh- trắng) ====== */
+/* file: assets/css/header.css */
+/* ================== MathBridge - Header (Glass + Sticky, Optimized) ================== */
 :root{
-  --primary:#2563eb;           /* xanh chủ đạo (blue-600) */
-  --text:#0f172a;              /* slate-900 */
-  --bg:#ffffff;
-  --hover:#f3f6ff;
-  --shadow:0 1px 12px rgba(0,0,0,.06);
-}
-html,body{margin:0}
-body{
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
-  background:#f5f5f5; color:var(--text);
-}
-header{position:sticky;top:0;background:var(--bg);box-shadow:var(--shadow);z-index:100}
+  --mb-red: #e11d48;
+  --mb-red-600:#dc1a45;
+  --mb-red-50:#fff1f3;
+  --mb-navy:#0f172a;
+  --mb-muted:#64748b;
 
-/* ====== Thanh menu 3 cột: trái–giữa–phải ====== */
-.mb-nav{
-  position:relative;
-  display:grid;
-  grid-template-columns: 1fr auto 1fr;  /* trái | giữa (auto) | phải */
-  align-items:center;
-  gap:16px;
-  padding:10px 16px;
-  max-width:1200px; margin:0 auto;      /* gọn, tránh “trống vắng” */
+  --mb-border: rgba(15,23,42,.08);
+  --mb-border-strong: rgba(15,23,42,.12);
+
+  --mb-radius: 16px;
+  --mb-radius-lg: 20px;
+
+  --mb-shadow: 0 8px 24px rgba(2,6,23,.08);
+  --mb-shadow-strong: 0 20px 40px rgba(2,6,23,.12);
+  --mb-shadow-ambient: 0 12px 28px rgba(2,6,23,.12);
+  --mb-shadow-key: 0 20px 40px rgba(2,6,23,.10);
+  --mb-shadow-ring: 0 0 0 1px rgba(15,23,42,.06), inset 0 1px 0 rgba(255,255,255,.9);
+
+  --mb-h: 64px;
 }
-.mb-left{justify-self:start}
-.mb-right{justify-self:end; display:flex; align-items:center; gap:8px}
+
+.mb-header{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1100;
+  padding: 12px 16px;
+  background: transparent;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Be Vietnam Pro", sans-serif;
+  box-shadow: 0 1px 0 rgba(2,6,23,.06);
+}
+.mb-header::after{
+  content:""; position:absolute; left:0; right:0; bottom:-16px; height:32px; pointer-events:none;
+  background: radial-gradient(120% 80% at 50% -10%, rgba(225,29,72,.12), rgba(15,23,42,0) 60%);
+  filter: blur(12px); opacity:.35;
+}
+
+.mb-header .mb-nav{
+  max-width: 1180px; margin: 0 auto; height: var(--mb-h);
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+  padding: 8px 12px; border-radius: var(--mb-radius-lg);
+  border: 1px solid var(--mb-border-strong);
+  background: rgba(255,255,255,.95);
+  box-shadow:
+    var(--mb-shadow-ring),
+    0 10px 24px rgba(2,6,23,.12),
+    0 30px 60px -30px rgba(225,29,72,.18);
+  transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease, transform .2s ease;
+}
+.mb-header .mb-nav[data-glass]{ backdrop-filter: saturate(160%) blur(8px); }
+.mb-header .mb-nav:hover{
+  box-shadow: var(--mb-shadow-ring), var(--mb-shadow-ambient), var(--mb-shadow-key);
+}
+
 .mb-logo{
-  color:var(--primary); text-decoration:none;
-  font-weight:800; letter-spacing:.3px; font-size:18px;
+  display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+  color:var(--mb-navy); font-weight:700; letter-spacing:.2px;
 }
+.mb-logo .logo-mark{
+  width:28px; height:28px; border-radius:12px;
+  background: conic-gradient(from 220deg at 50% 50%, #fff 0deg, #fee2e2 120deg, var(--mb-red) 240deg, #fda4af 360deg);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.04), 0 6px 16px rgba(225,29,72,.18);
+}
+.mb-logo .logo-text{ font-family:"Be Vietnam Pro","Inter",system-ui,sans-serif; font-size:18px; }
 
-/* ====== Menu giữa (căn giữa thật) ====== */
+.mb-left{ display:flex; align-items:center; }
+.mb-right{ display:flex; align-items:center; gap:10px; justify-content:end; }
+
+.btn{
+  --_pad-y: 10px; --_pad-x: 14px;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:var(--_pad-y) var(--_pad-x);
+  min-height:40px; border-radius:999px; border:1px solid transparent;
+  font-weight:600; font-size:14px; text-decoration:none;
+  transition: transform .15s ease, box-shadow .15s ease, background-color .2s ease, border-color .2s ease;
+  will-change: transform;
+}
+.btn:active{ transform: translateY(1px); }
+
+.btn--navy{
+  color:#fff;
+  background: linear-gradient(180deg, #182235, #0f172a);
+  border-color: rgba(255,255,255,.10);
+  box-shadow: 0 8px 18px rgba(15,23,42,.22);
+}
+.btn--navy:hover{
+  background: linear-gradient(180deg, #1c2a42, #111a2e);
+  box-shadow: 0 10px 24px rgba(15,23,42,.28);
+}
+.btn i{ font-size:18px; line-height:1; }
+.btn i + span{ margin-left:8px }
+
 .mb-links{
-  justify-self:center;
-  display:flex; align-items:center; gap:8px;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
 }
-.mb-links>a, .mb-dd-btn{
-  appearance:none; border:0; background:transparent; cursor:pointer;
-  padding:9px 12px; border-radius:10px; color:var(--text);
-  font:600 15px/1.2 inherit; letter-spacing:.1px;
-  text-decoration:none; transition:background .15s ease, transform .05s ease;
+.mb-links > a, .mb-dd-btn{
+  appearance:none; background:transparent; border:1px solid transparent;
+  color:var(--mb-navy); font-weight:600; font-size:14px; letter-spacing:.2px;
+  text-decoration:none; padding:10px 12px; border-radius:12px; line-height:1;
+  display:inline-flex; align-items:center; gap:8px; min-height:40px;
+  transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
-.mb-links>a:hover, .mb-dd-btn:hover{background:var(--hover)}
-.mb-links a:active, .mb-dd-btn:active{transform:translateY(1px)}
+.mb-links > a:hover, .mb-dd-btn:hover{
+  background:var(--mb-red-50); border-color:rgba(225,29,72,.15); box-shadow:0 4px 12px rgba(225,29,72,.10);
+}
+.mb-links > a[aria-current="page"]{ background:var(--mb-red-50); border-color:rgba(225,29,72,.25); }
 
-/* Active (thêm .active bằng JS) */
-.mb-links a.active{font-weight:800; text-decoration:underline}
+.mb-dd{ position:relative; }
+.mb-dd-btn{ cursor:pointer; }
+.mb-dd-btn .ph{ transition: transform .15s ease; }
 
-/* ====== Dropdown ====== */
-.mb-dd{position:relative}
 .mb-dd-menu{
-  position:absolute; top:100%; left:0; min-width:240px;
-  background:var(--bg); box-shadow:var(--shadow); border-radius:12px;
-  padding:8px; display:none; z-index:10;
+  position:absolute; top:calc(100% + 6px); left:0; min-width:260px; padding:8px;
+  border-radius:14px; border:1px solid var(--mb-border); background:#fff;
+  box-shadow: var(--mb-shadow-strong);
+  opacity:0; transform:translateY(-4px); pointer-events:none; visibility:hidden; z-index:1100;
+  transition: opacity .25s ease, transform .25s ease, visibility 0s linear .25s;
 }
-.mb-dd:hover .mb-dd-menu{display:block}
+.mb-dd:hover .mb-dd-menu, .mb-dd:focus-within .mb-dd-menu{
+  opacity:1; transform:translateY(0); pointer-events:auto; visibility:visible;
+  transition: opacity .25s ease, transform .25s ease, visibility 0s linear 0s;
+}
+.mb-dd:where(:hover, :focus-within) .mb-dd-btn .ph{ transform: rotate(180deg); }
+.mb-dd::after{
+  content:""; position:absolute; left:0; right:0; top:100%; height:10px; background:transparent;
+}
 .mb-dd-menu a{
-  display:block; padding:9px 10px; border-radius:8px; color:var(--text); text-decoration:none;
-  font-weight:500;
+  display:flex; align-items:center; padding:10px 12px; border-radius:10px;
+  color:var(--mb-navy); text-decoration:none; font-weight:500; font-size:14px;
 }
-.mb-dd-menu a:hover{background:var(--hover)}
+.mb-dd-menu a:hover{ background:var(--mb-red-50); }
 
-/* ====== Nút đăng nhập ====== */
-.mb-login{
-  background:var(--primary); color:#fff; text-decoration:none;
-  padding:9px 14px; border-radius:12px; font-weight:800;
-  letter-spacing:.2px;
-}
-.mb-login:hover{filter:brightness(.96)}
-
-/* ====== Burger & toggle (mobile, không cần JS) ====== */
-.mb-toggle{display:none}
 .mb-burger{
-  display:none; cursor:pointer; user-select:none;
-  font-size:20px; line-height:1;
-  padding:6px 10px; border-radius:10px;
+  display:none; width:40px; height:40px; border-radius:12px;
+  align-items:center; justify-content:center; cursor:pointer; user-select:none;
+  transition: background-color .2s ease, box-shadow .2s ease;
 }
-.mb-burger:hover{background:var(--hover)}
+.mb-burger:hover{ background:var(--mb-red-50); box-shadow:0 4px 12px rgba(225,29,72,.10); }
+.mb-toggle{ position:absolute; left:-9999px; }
 
-/* ====== Responsive ====== */
-@media (max-width: 900px){
-  /* Ẩn menu desktop, dùng burger mở menu */
-  .mb-burger{display:block}
+@media (max-width:1024px){
+  :root{ --mb-h: 56px; }
+
+  .mb-header .mb-nav{ grid-template-columns:auto auto auto; gap:8px; padding:6px 10px; }
+
   .mb-links{
-    display:none;
-    position:absolute; left:0; right:0; top:100%;   /* sát dưới thanh header */
-    background:var(--bg); box-shadow:var(--shadow);
-    padding:8px; flex-direction:column; gap:4px;
+    position:fixed; left:12px; right:12px; top:calc(var(--mb-h) + 16px);
+    display:grid; gap:4px; padding:8px; max-height:min(70vh,520px); overflow:auto;
+    background:#fff; border:1px solid var(--mb-border-strong); border-radius:16px;
+    box-shadow: var(--mb-shadow-ring), var(--mb-shadow-strong);
+    opacity:0; transform:translateY(-8px); pointer-events:none; visibility:hidden; z-index:1200;
   }
-  /* Khi checkbox được check -> mở menu */
-  #mb-toggle:checked ~ .mb-links{display:flex}
+  .mb-toggle:checked ~ .mb-links{ opacity:1; transform:none; pointer-events:auto; visibility:visible; }
 
-  /* Dropdown trong mobile hiển thị kiểu danh sách lồng */
-  .mb-dd-menu{position:static; box-shadow:none; padding:0 0 0 6px}
+  .mb-links > a, .mb-dd-btn{ justify-content:space-between; font-size:15px; padding:12px 14px; }
 
-  /* Có thể ẩn nút login để gọn (tùy), vẫn giữ ở góc phải */
-  .mb-login{display:none}
+  .mb-dd-menu{
+    position:static; border:1px dashed rgba(2,6,23,.08); box-shadow:none; margin:4px 0 6px;
+    opacity:1; transform:none; pointer-events:auto; visibility:visible; transition:none;
+  }
+
+  .mb-burger{ display:inline-flex; }
 }
+
+@supports selector(body:has(.mb-header)){
+  body:has(.mb-header){
+    padding-top: calc(var(--mb-h) + 24px);
+  }
+}
+
+/* ===== user menu (đã đăng nhập) ===== */
+.mb-user { position: relative; }
+.mb-user-btn {
+  display: flex; align-items: center; gap: .35rem;
+  background: transparent; border: none; cursor: pointer;
+  font-weight: 500; color: #0f172a;
+}
+.mb-user-avatar {
+  width: 32px; height: 32px;
+  border-radius: 999px;
+  background: #e11d48;
+  color: #fff;
+  display: grid; place-items: center;
+  font-weight: 600;
+}
+.mb-user-menu {
+  position: absolute; right: 0; top: calc(100% + .5rem);
+  background: #fff;
+  border: 1px solid rgba(15,23,42,.05);
+  border-radius: .75rem;
+  box-shadow: 0 18px 35px rgba(15,23,42,.08);
+  min-width: 180px;
+  padding: .35rem;
+  display: none;
+  z-index: 50;
+}
+.mb-user-menu.show { display: block; }
+.mb-user-item {
+  background: none; border: none; width: 100%;
+  display: flex; gap: .4rem; align-items: center;
+  padding: .4rem .5rem; border-radius: .6rem;
+  cursor: pointer;
+  font-size: .8rem;
+}
+.mb-user-item:hover { background: rgba(225,29,72,.05); }
