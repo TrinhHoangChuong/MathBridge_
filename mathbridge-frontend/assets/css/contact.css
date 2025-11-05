@@ -1,6 +1,7 @@
 /* =========================================================
    MathBridge — Contact Page
-   Bám design của index.css, scope trong #main-content
+   Tập trung nội dung, nhịp dọc rõ ràng, tuân theo index.css
+   Scope trong #main-content để tránh rò style
 ========================================================= */
 
 #main-content {
@@ -8,40 +9,55 @@
   --contact-surface: #ffffff;
   --contact-line: rgba(15, 23, 42, 0.06);
   --contact-radius: 16px;
+  --contact-shadow-xs: 0 4px 12px rgba(2, 6, 23, .05);
   --contact-shadow-sm: 0 8px 20px rgba(2, 6, 23, .06);
-  --contact-shadow:    0 14px 40px rgba(2, 6, 23, .10);
+  --contact-shadow:    0 16px 44px rgba(2, 6, 23, .10);
+  --brand: #e11d48;
+  --brand-ink: #0f172a;
+  --muted: #64748b;
+  --muted-ink: #475569;
 }
 
 /* container chuẩn */
 #main-content .container {
-  width: min(100% - 32px, 1180px);
+  width: min(100% - 32px, 1120px);
   margin-inline: auto;
 }
 
 /* ========== HERO ========== */
 #main-content .contact-hero {
   background:
-    radial-gradient(950px 520px at 10% -10%, rgba(37,99,235,.03), transparent 60%),
-    radial-gradient(950px 520px at 110% -10%, rgba(225,29,72,.05), transparent 60%),
+    radial-gradient(900px 500px at 8% -10%, rgba(37,99,235,.04), transparent 60%),
+    radial-gradient(900px 500px at 108% -10%, rgba(225,29,72,.06), transparent 60%),
     linear-gradient(180deg, #fff, #f7f9ff);
-  padding: 86px 0 30px;
+  padding: 88px 0 34px;
   position: relative;
 }
 #main-content .contact-hero .section-head {
   max-width: 720px;
   margin-inline: auto;
 }
+#main-content .contact-hero .section-title {
+  letter-spacing: -0.015em;
+}
+#main-content .section-strap {
+  height: 2px;
+  width: 68px;
+  margin: 10px auto 0;
+  background: linear-gradient(90deg, rgba(225,29,72,.8), rgba(225,29,72,0));
+  border-radius: 999px;
+}
 
 /* ========== BODY ========== */
 #main-content .contact-body {
   background: var(--contact-bg);
-  padding: 38px 0 54px;
+  padding: 40px 0 60px;
 }
 #main-content .contact-layout {
   display: grid;
-  grid-template-columns: 1.08fr 0.6fr;
-  gap: 26px;
-  align-items: flex-start;
+  grid-template-columns: 1.05fr 0.6fr;
+  gap: 28px;
+  align-items: start;
 }
 
 /* ========== FORM ========== */
@@ -49,13 +65,13 @@
   background: var(--contact-surface);
   border: 1px solid rgba(148, 163, 184, .12);
   border-radius: var(--contact-radius);
-  padding: 18px 16px 20px;
+  padding: 20px 18px 22px;
   box-shadow: var(--contact-shadow-sm);
 }
 #main-content .contact-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 #main-content .form-grid-2 {
   display: grid;
@@ -69,63 +85,86 @@
 }
 #main-content .label-text {
   font-weight: 600;
-  font-size: .72rem;
-  color: #0f172a;
+  font-size: .75rem;
+  color: var(--brand-ink);
 }
 #main-content .contact-form input,
 #main-content .contact-form select,
 #main-content .contact-form textarea {
-  border: 1px solid rgba(148, 163, 184, .25);
+  border: 1px solid rgba(148, 163, 184, .28);
   border-radius: 12px;
-  padding: 9px 12px;
-  font-size: .75rem;
+  padding: 11px 12px;
+  font-size: .84rem;
   font-family: Inter, system-ui, sans-serif;
   background: #fff;
-  transition: .12s ease;
+  transition: border-color .14s ease, box-shadow .14s ease, background-color .2s ease;
+}
+#main-content .contact-form input::placeholder,
+#main-content .contact-form textarea::placeholder {
+  color: #94a3b8;
 }
 #main-content .contact-form input:focus,
 #main-content .contact-form select:focus,
 #main-content .contact-form textarea:focus {
   outline: none;
-  border-color: rgba(225, 29, 72, .55);
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, .12);
+  border-color: rgba(225, 29, 72, .6);
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, .14);
 }
 #main-content .contact-form textarea {
-  min-height: 120px;
+  min-height: 132px;
   resize: vertical;
 }
+
+/* trạng thái required/invalid rõ nét */
+#main-content .contact-form input:invalid[required],
+#main-content .contact-form select:invalid[required] {
+  background-color: #fff7f8;
+}
+
+/* nút hành động */
 #main-content .form-actions {
   margin-top: 6px;
 }
-#main-content .form-status {
-  margin-top: 6px;
-  font-size: .68rem;
-  color: #475569;
+#main-content .btn.btn--primary {
+  /* .btn từ index.css sẽ nhận màu brand; chỉ tinh chỉnh padding, radius */
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
 }
-#main-content .form-status.success { color: #15803d; }
-#main-content .form-status.error { color: #b91c1c; }
+
+/* thông báo kết quả */
+#main-content .form-status {
+  margin-top: 8px;
+  font-size: .8rem;
+  color: var(--muted-ink);
+}
+#main-content .form-status.success,
+#main-content .form-status.is-success { color: #15803d; }
+#main-content .form-status.error,
+#main-content .form-status.is-error { color: #b91c1c; }
 
 /* ========== ASIDE ========== */
 #main-content .contact-aside {
   position: sticky;
-  top: 72px;
+  top: 76px;
 }
 #main-content .contact-card {
   background: #fff;
   border: 1px solid rgba(148, 163, 184, .12);
   border-radius: 16px;
-  padding: 16px 16px 20px;
-  box-shadow: 0 10px 26px rgba(2,6,23,.03);
+  padding: 16px 16px 18px;
+  box-shadow: var(--contact-shadow-xs);
 }
 #main-content .contact-card__title {
   font-weight: 800;
   margin: 0 0 6px;
-  color: #0f172a;
+  color: var(--brand-ink);
+  letter-spacing: -0.01em;
 }
 #main-content .contact-card__desc {
-  margin: 0 0 10px;
-  color: #64748b;
-  font-size: .7rem;
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: .8rem;
 }
 #main-content .contact-social {
   list-style: none;
@@ -133,33 +172,36 @@
   margin: 0 0 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 #main-content .contact-link {
-  background: rgba(225, 29, 72, .05);
-  border: 1px solid rgba(225,29,72,.15);
+  background: rgba(225, 29, 72, .06);
+  border: 1px solid rgba(225,29,72,.18);
   border-radius: 999px;
-  padding: 4px 12px 6px;
-  font-size: .62rem;
-  color: #e11d48;
+  padding: 6px 12px 7px;
+  font-size: .72rem;
+  color: var(--brand);
   text-decoration: none;
-  transition: .12s ease;
+  transition: background-color .14s ease, color .14s ease, border-color .14s ease, transform .08s ease;
 }
 #main-content .contact-link:hover {
-  background: #e11d48;
+  background: var(--brand);
+  border-color: var(--brand);
   color: #fff;
+  transform: translateY(-1px);
 }
+
 #main-content .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 #main-content .contact-info__row {
   display: flex;
   gap: 10px;
   align-items: flex-start;
   border-bottom: 1px solid rgba(148, 163, 184, .12);
-  padding: 6px 0 10px;
+  padding: 8px 0 12px;
 }
 #main-content .contact-info__row:last-child {
   border-bottom: none;
@@ -170,70 +212,89 @@
 }
 #main-content .contact-info strong {
   display: block;
-  font-size: .7rem;
-  color: #0f172a;
+  font-size: .82rem;
+  color: var(--brand-ink);
 }
 #main-content .contact-info span {
   display: block;
-  font-size: .66rem;
-  color: #64748b;
+  font-size: .78rem;
+  color: var(--muted);
 }
 
 /* centers */
 #main-content .centers-block {
-  margin-top: 12px;
-  padding-top: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
   border-top: 1px solid rgba(148, 163, 184, .12);
 }
 #main-content .centers-title {
-  margin: 0 0 6px;
-  font-size: .7rem;
-  color: #0f172a;
+  margin: 0 0 8px;
+  font-size: .82rem;
+  color: var(--brand-ink);
   font-weight: 700;
 }
 #main-content .centers-list .center-item {
-  background: rgba(248, 250, 252, .6);
-  border-left: 4px solid #e11d48;
+  background: rgba(248, 250, 252, .7);
+  border-left: 4px solid var(--brand);
   border-radius: 10px;
-  padding: 8px 10px 8px;
-  margin-bottom: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 0 rgba(15,23,42,.03);
 }
-#main-content .centers-list .center-item h4 {
+#main-content .centers-list .center-item .center-item__name {
   margin: 0 0 4px;
-  font-size: .66rem;
-  color: #0f172a;
+  font-weight: 700;
+  color: var(--brand-ink);
+  font-size: .84rem;
 }
-#main-content .centers-list .center-item p {
+#main-content .centers-list .center-item__addr,
+#main-content .centers-list .center-item__phone,
+#main-content .centers-list .center-item__hours {
   margin: 0;
-  font-size: .63rem;
-  color: #64748b;
+  font-size: .78rem;
+  color: var(--muted);
 }
 
 /* ========== MAP ========== */
 #main-content .contact-map {
-  padding: 0 0 50px;
+  padding: 0 0 54px;
 }
 #main-content .contact-map .section-title {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 #main-content .map-shell iframe {
-  box-shadow: 0 12px 26px rgba(2,6,23,.08);
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, .16);
+  box-shadow: 0 14px 30px rgba(2,6,23,.08);
+}
+
+/* ========== ACCESSIBILITY ========== */
+#main-content .contact-form input:focus-visible,
+#main-content .contact-form select:focus-visible,
+#main-content .contact-form textarea:focus-visible,
+#main-content .contact-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, .22);
+}
+#main-content .contact-card a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(37,99,235,.25);
 }
 
 /* ========== RESPONSIVE ========== */
-@media (max-width: 950px) {
+@media (max-width: 1000px) {
   #main-content .contact-layout {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
-  #main-content .contact-aside {
-    position: static;
-  }
+  #main-content .contact-aside { position: static; }
 }
-@media (max-width: 580px) {
+@media (max-width: 600px) {
   #main-content .form-grid-2 {
     grid-template-columns: 1fr;
   }
   #main-content .contact-form-wrap {
     padding: 14px 12px 16px;
   }
+  #main-content .contact-hero { padding: 72px 0 28px; }
 }

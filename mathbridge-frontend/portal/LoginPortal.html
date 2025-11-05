@@ -1,0 +1,196 @@
+<!-- file: portal/LoginPortal.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập giáo viên / cố vấn — MathBridge</title>
+    <base href="../">
+
+    <!-- CSS chung -->
+    <link rel="stylesheet" href="assets/css/header.css"/>
+    <link rel="stylesheet" href="assets/css/footer.css"/>
+    <script src="assets/js/pages/header.pages.js" defer></script>
+    <script src="assets/js/utils/includePartials.js" defer></script>
+
+    <style>
+        :root{
+          --brand:#e11d48;
+          --brand-100:rgba(225,29,72,.10);
+          --navy:#0f172a;
+          --text:#0f172a;
+          --muted:#64748b;
+          --border:rgba(15,23,42,.08);
+          --radius:20px;
+          --shadow:0 18px 35px rgba(15,23,42,.06);
+          --error:#b91c1c;
+          --error-bg:#fee2e2;
+        }
+
+        /* Shell */
+        .auth-shell{
+          min-height:calc(100vh - 140px);
+          display:grid;
+          place-items:center;
+          background: radial-gradient(circle at top, rgba(225,29,72,.04), #fff);
+          padding:32px 14px 48px;
+        }
+
+        /* Card */
+        .auth-card{
+          width:min(980px,100%);
+          background:#fff;
+          border:1px solid var(--border);
+          border-radius:var(--radius);
+          box-shadow:var(--shadow);
+          padding:22px 20px 20px;
+        }
+
+        /* Header */
+        .auth-head{
+          display:flex;gap:.75rem;align-items:center;margin-bottom:1rem
+        }
+        .logo-mark{
+          width:34px;height:34px;border-radius:14px;
+          background:conic-gradient(from 220deg,#fff 0deg,#fee2e2 120deg,var(--brand) 240deg,#fda4af 360deg);
+          box-shadow:0 8px 24px rgba(225,29,72,.18);
+        }
+        .auth-title{font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:4px;}
+        .auth-sub{font-size:.86rem;color:var(--muted);}
+
+        /* Panels */
+        .panel{display:none;animation:fade .2s ease;}
+        .panel.active{display:block;}
+        @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Layout inside panel */
+        .panel-grid{
+          display:grid;gap:16px;
+          grid-template-columns:1fr 1fr;
+        }
+        .panel-grid--single{grid-template-columns:1fr;}
+        @media (max-width: 880px){
+          .panel-grid{grid-template-columns:1fr;}
+        }
+
+        /* Fields */
+        .mb-field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+        .mb-field label{font-weight:600;font-size:.83rem;color:var(--text);}
+        .mb-field input,
+        .mb-field select,
+        .mb-field textarea{
+          border:1px solid rgba(15,23,42,.1);
+          border-radius:14px;
+          padding:10px 12px;
+          outline:none;
+          font-size:.9rem;
+          background:#fff;
+        }
+        .mb-field textarea{min-height:74px;resize:vertical}
+        .mb-field input:focus,
+        .mb-field select:focus,
+        .mb-field textarea:focus{
+          border-color:rgba(225,29,72,.5);
+          box-shadow:0 0 0 3px var(--brand-100);
+        }
+        .auth-hint{font-size:.72rem;color:#94a3b8;margin-top:4px;}
+
+        /* Error */
+        .auth-error{
+          background:var(--error-bg);
+          color:var(--error);
+          padding:8px 10px;
+          border-radius:10px;
+          font-size:.8rem;
+          margin:8px 0 12px;
+          display:none;
+        }
+
+        /* Buttons */
+        .btn{
+          display:inline-flex;align-items:center;justify-content:center;
+          gap:.5rem;
+          border-radius:14px;
+          padding:10px 14px;
+          font-weight:700;
+          font-size:.95rem;
+          border:1px solid transparent;
+          cursor:pointer;
+          transition:.18s ease;
+        }
+        .btn:disabled{opacity:.6;cursor:not-allowed}
+        .btn--navy{background:var(--navy);color:#fff;}
+        .btn--navy:hover{filter:brightness(1.05)}
+        .btn--ghost{
+          background:#fff;border-color:var(--border);color:var(--text);
+        }
+        .btn--ghost:hover{background:#fafafa}
+
+        .actions{display:flex;gap:10px;align-items:center}
+        .actions .btn{flex:1}
+
+        main{padding-top:24px;}
+    </style>
+</head>
+<body class="page-auth">
+<header></header>
+
+<main>
+    <div class="auth-shell">
+        <div class="auth-card" id="auth-card">
+            <!-- Head -->
+            <div class="auth-head">
+                <span class="logo-mark" aria-hidden="true"></span>
+                <div>
+                    <h1 class="auth-title">Không gian giáo viên & cố vấn — MathBridge</h1>
+                    <p class="auth-sub">Đăng nhập vào hệ thống quản lý.</p>
+                </div>
+            </div>
+
+            <!-- LOGIN PANEL -->
+            <section id="panel-login" class="panel active" role="tabpanel">
+                <p id="auth-error" class="auth-error" aria-live="polite"></p>
+
+                <form id="mb-login-portal-form" novalidate>
+                    <div class="panel-grid panel-grid--single">
+                        <div class="mb-field">
+                            <label for="email">Email</label>
+                            <input id="email" name="email" type="email" required autocomplete="email"
+                                   placeholder="vd: gv001@mathbridge.vn">
+                        </div>
+
+                        <div class="mb-field">
+                            <label for="password">Mật khẩu</label>
+                            <input id="password" name="password" type="password" required autocomplete="current-password"
+                                   placeholder="••••••••">
+                            <p class="auth-hint">Nếu quên mật khẩu, liên hệ quản lý trung tâm.</p>
+                        </div>
+
+                        <div class="actions">
+                            <button type="submit" class="btn btn--navy" style="width:100%">
+                                <span>Đăng nhập</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer></footer>
+
+<script>
+    // Include header/footer partials
+    document.addEventListener("DOMContentLoaded", function () {
+      includePartials({ header: "partials/header.html", footer: "partials/footer.html" });
+    });
+</script>
+
+<!-- trang footer đang cần -->
+<script type="module" src="assets/js/pages/footer.page.js"></script>
+<!-- Logic submit -->
+<script type="module" src="portal/assets/js/pages/loginPortal.js"></script>
+</body>
+</html>
+

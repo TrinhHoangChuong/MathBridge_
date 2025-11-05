@@ -1,162 +1,185 @@
 <!-- pages/Careers.html -->
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Khám phá cơ hội nghề nghiệp tại MathBridge - Nền tảng kết nối gia sư toán hàng đầu" />
-    <meta name="keywords" content="tuyển dụng, việc làm, gia sư toán, education tech, mathbridge" />
-    <title>Tuyển dụng | MathBridge</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Khám phá cơ hội nghề nghiệp tại MathBridge - Nền tảng kết nối gia sư toán hàng đầu">
+    <meta name="keywords" content="tuyển dụng, việc làm, gia sư toán, education tech, mathbridge">
+    <title>Tuyển dụng - MathBridge | Cơ Hội Nghề Nghiệp</title>
 
     <!-- base để các link tính từ root -->
-    <base href="../" />
+    <base href="../">
 
-    <!-- Core site styles (giống index) -->
+    <!-- Core site styles -->
     <link rel="stylesheet" href="assets/css/header.css" />
     <link rel="stylesheet" href="assets/css/footer.css" />
     <link rel="stylesheet" href="assets/css/index.css" />
-    <!-- Page styles -->
     <link rel="stylesheet" href="assets/css/careers.css" />
 
-    <!-- Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
+    <!-- Fonts + Icons -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- JS chung -->
+    <!-- JS -->
     <script src="assets/js/config.js" defer></script>
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="assets/js/utils/includePartials.js?v=20251101" defer></script>
 
-    <!-- API + page -->
+    <!-- API + Pages -->
     <script src="assets/js/api/jobs.api.js" defer></script>
+    <script type="module" src="assets/js/api/jobs.api.js"></script>
     <script src="assets/js/api/applications.api.js" defer></script>
     <script src="assets/js/pages/careers.page.js" defer></script>
 </head>
-<body class="page-careers">
-<header></header>
 
-<main id="main-content" role="main">
-    <!-- ========== HERO ========== -->
-    <section class="careers-hero" aria-labelledby="careers-hero-title">
-        <div class="container">
-            <header class="section-head section-head--center">
-                <h1 id="careers-hero-title" class="section-title">
-                    Cơ hội <span class="accent">nghề nghiệp</span> tại MathBridge
-                </h1>
-                <div class="section-strap" aria-hidden="true"></div>
-                <p class="section-sub">
-                    Tham gia đội ngũ MathBridge để cùng xây dựng nền tảng giáo dục Toán học hàng đầu Việt Nam.
-                    Chúng tôi tìm kiếm những tài năng đam mê giáo dục và muốn tạo tác động tích cực tới học sinh.
-                </p>
-            </header>
-        </div>
-        <div class="section-wave" aria-hidden="true"></div>
-    </section>
+<body>
+    <header></header>
 
-    <!-- ========== CONTENT ========== -->
-    <section class="careers-body" aria-label="Danh sách vị trí tuyển dụng">
-        <div class="container careers-layout">
-            <!-- Sidebar -->
-            <aside class="careers-aside" aria-label="Vị trí đang tuyển">
-                <h2 class="aside-title">Vị trí đang tuyển</h2>
-                <div id="job-list" class="job-list" aria-live="polite">
-                    <!-- JS đổ danh sách -->
+    <main>
+        <!-- ========== HERO TUYỂN DỤNG ========== -->
+        <section class="careers-hero" aria-labelledby="careers-hero-title">
+            <div class="container">
+                <div class="hero-inner">
+                    <h1 id="careers-hero-title" class="hero-title">
+                        Cơ hội <span class="accent">nghề nghiệp</span> tại MathBridge
+                    </h1>
+                    <p class="hero-desc">
+                        Tham gia đội ngũ MathBridge để cùng xây dựng nền tảng giáo dục Toán học hàng đầu Việt Nam.
+                        Chúng tôi tìm kiếm những tài năng đam mê giáo dục, có kinh nghiệm giảng dạy và mong muốn
+                        tạo ra tác động tích cực đến hàng nghìn học sinh.
+                    </p>
                 </div>
-            </aside>
+            </div>
+        </section>
 
-            <!-- Main job detail -->
-            <article class="careers-main" aria-label="Chi tiết vị trí">
-                <header class="job-head">
-                    <p class="job-status-badge" id="job-status" hidden>Đang tuyển</p>
-                    <h2 id="job-title" class="job-title">Đang tải...</h2>
-                    <p id="job-short-desc" class="job-short-desc"></p>
-                </header>
+        <!-- ========== CONTENT ========== -->
+        <section class="careers-content">
+            <div class="container">
+                <div class="careers-wrap">
+                    <!-- Sidebar: danh sách vị trí -->
+                    <aside class="career-aside">
+                        <div class="aside-head">Vị trí đang tuyển</div>
+                        <div id="job-list" class="job-list"></div>
+                    </aside>
 
-                <section class="job-section">
-                    <h3 class="job-section-title">Thông tin chi tiết</h3>
-                    <div id="job-details" class="job-details"></div>
-                </section>
+                    <!-- Main: chi tiết vị trí -->
+                    <article class="career-main">
+                        <header class="job-header">
+                            <h2 id="job-title">Đang tải...</h2>
+                            <div id="job-short-desc" class="job-short-desc"></div>
+                        </header>
 
-                <section class="job-section">
-                    <h3 class="job-section-title">Mô tả công việc</h3>
-                    <div id="job-desc" class="job-desc"></div>
-                </section>
+                        <section class="job-section">
+                            <h3>Thông tin chi tiết</h3>
+                            <div id="job-details" class="job-details"></div>
+                        </section>
 
-                <section class="job-section">
-                    <h3 class="job-section-title">Yêu cầu</h3>
-                    <ul id="job-reqs" class="job-reqs"></ul>
-                </section>
+                        <section class="job-section">
+                            <h3>Mô tả công việc</h3>
+                            <div id="job-desc" class="job-desc"></div>
+                        </section>
 
-                <section id="apply" class="job-section job-apply" aria-label="Form ứng tuyển">
-                    <h3 class="job-section-title">Ứng tuyển ngay</h3>
+                        <section class="job-section">
+                            <h3>Yêu cầu</h3>
+                            <ul id="job-reqs" class="job-reqs"></ul>
+                        </section>
 
-                    <form id="apply-form" class="apply-form" novalidate>
-                        <div class="grid-2">
-                            <div class="field" data-field="name">
-                                <label for="ap-name">Họ và tên <span class="required">*</span></label>
-                                <input id="ap-name" type="text" placeholder="VD: Nguyễn Văn A" required aria-describedby="name-hint" />
-                                <p id="name-hint" class="hint">Nhập họ tên đầy đủ của bạn</p>
-                            </div>
-                            <div class="field" data-field="phone">
-                                <label for="ap-phone">Số điện thoại <span class="required">*</span></label>
-                                <input id="ap-phone" type="tel" placeholder="VD: 0912345678" required aria-describedby="phone-hint" />
-                                <p id="phone-hint" class="hint">Nhập số điện thoại hợp lệ</p>
-                            </div>
-                        </div>
-
-                        <div class="grid-2">
-                            <div class="field" data-field="email">
-                                <label for="ap-email">Email <span class="required">*</span></label>
-                                <input id="ap-email" type="email" placeholder="example@domain.com" required aria-describedby="email-hint" />
-                                <p id="email-hint" class="hint">Nhập địa chỉ email hợp lệ</p>
-                            </div>
-                            <div class="field" data-field="position">
-                                <label for="ap-position">Vị trí ứng tuyển <span class="required">*</span></label>
-                                <input id="ap-position" type="text" readonly />
-                            </div>
-                        </div>
-
-                        <div class="field" data-field="linkProfile">
-                            <label for="ap-link-profile">Link Profile / Portfolio (tùy chọn)</label>
-                            <input id="ap-link-profile" type="url" placeholder="https://linkedin.com/in/..." />
-                            <p class="hint">Đính kèm Linkedin, GitHub hoặc Portfolio để ưu tiên</p>
-                        </div>
-
-                        <div class="upload-row">
-                            <label for="ap-file">Hồ sơ CV / Bằng cấp <span class="required">*</span></label>
-                            <div class="upload-zone" id="upload-zone">
-                                <input id="ap-file" type="file" accept=".jpg,.jpeg,.png,.pdf" required />
-                                <div class="upload-placeholder">
-                                    <i class="ph ph-cloud-arrow-up upload-icon" aria-hidden="true"></i>
-                                    <p>Kéo thả file hoặc click để chọn</p>
-                                    <p class="note">Hỗ trợ: JPG, PNG, PDF (tối đa 2MB)</p>
+                        <section id="apply" class="job-section job-apply">
+                            <h3>Ứng Tuyển Ngay</h3>
+                            <form id="apply-form" class="apply-form" novalidate>
+                                <div class="grid-2">
+                                    <div class="field" data-field="name">
+                                        <label for="ap-name">Họ và tên <span class="required">*</span></label>
+                                        <input id="ap-name" type="text" placeholder="VD: Nguyễn Văn A" required
+                                            pattern="^[a-zA-ZÀ-ỹ ]{2,}$" aria-describedby="name-hint">
+                                        <div id="name-hint" class="hint" aria-live="polite">Nhập họ tên đầy đủ của bạn
+                                        </div>
+                                    </div>
+                                    <div class="field" data-field="phone">
+                                        <label for="ap-phone">Số điện thoại <span class="required">*</span></label>
+                                        <input id="ap-phone" type="tel" placeholder="VD: 0912345678" required
+                                            pattern="^(0|84|\+84)[0-9]{9}$" aria-describedby="phone-hint">
+                                        <div id="phone-hint" class="hint" aria-live="polite">Nhập số điện thoại hợp lệ
+                                        </div>
+                                    </div>
                                 </div>
-                                <div id="file-preview" class="file-preview" aria-live="polite"></div>
-                            </div>
-                        </div>
 
-                        <div class="form-footer">
-                            <button type="submit" class="btn btn--primary submit">
-                                <span class="btn-text">Gửi hồ sơ ứng tuyển</span>
-                                <span class="btn-loader" aria-hidden="true"></span>
-                            </button>
-                        </div>
-                    </form>
-                </section>
-            </article>
-        </div>
-    </section>
-</main>
+                                <div class="grid-2">
+                                    <div class="field" data-field="email">
+                                        <label for="ap-email">Email <span class="required">*</span></label>
+                                        <input id="ap-email" type="email" placeholder="example@domain.com" required
+                                            aria-describedby="email-hint">
+                                        <div id="email-hint" class="hint" aria-live="polite">Nhập địa chỉ email hợp lệ
+                                        </div>
+                                    </div>
+                                    <div class="field" data-field="position">
+                                        <label for="ap-position">Vị trí ứng tuyển <span
+                                                class="required">*</span></label>
+                                        <input id="ap-position" type="text" readonly>
+                                    </div>
+                                </div>
 
-<footer></footer>
+                                <div class="field" data-field="linkProfile">
+                                    <label for="ap-link-profile">Link Profile / Portfolio (tùy chọn)</label>
+                                    <input id="ap-link-profile" type="url"
+                                        placeholder="https://linkedin.com/in/yourprofile hoặc https://github.com/yourusername"
+                                        aria-describedby="link-profile-hint">
+                                    <div id="link-profile-hint" class="hint" aria-live="polite">Chia sẻ LinkedIn, GitHub
+                                        hoặc portfolio của bạn</div>
+                                </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-      includePartials({
-        header: 'partials/header.html',
-        footer: 'partials/footer.html'
-      });
-    });
-</script>
-<script type="module" src="assets/js/pages/footer.page.js"></script>
+                                <div class="upload-row">
+                                    <label for="ap-file">Hồ sơ CV / Bằng cấp <span class="required">*</span></label>
+                                    <div class="upload-zone" id="upload-zone">
+                                        <input id="ap-file" type="file" accept=".jpg,.jpeg,.png,.pdf" required
+                                            aria-describedby="file-hint">
+                                        <div class="upload-placeholder">
+                                            <svg class="upload-icon" viewBox="0 0 24 24" width="48" height="48"
+                                                fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                <polyline points="7,10 12,15 17,10" />
+                                                <line x1="12" y1="15" x2="12" y2="3" />
+                                            </svg>
+                                            <span>Kéo thả file hoặc click để chọn</span>
+                                            <span id="file-hint" class="note">Hỗ trợ: JPEG, PNG, PDF (Tối đa 2MB)</span>
+                                        </div>
+                                        <div id="file-preview" class="file-preview"></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-footer">
+                                    <div class="actions">
+                                        <button type="submit" class="cta submit">
+                                            <span class="btn-text">Gửi hồ sơ ứng tuyển</span>
+                                            <div class="btn-loader"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </section>
+                    </article>
+                </div>
+        </section>
+    </main>
+
+    <footer></footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            includePartials({
+                header: 'partials/header.html',
+                footer: 'partials/footer.html'
+            });
+        });
+    </script>
+    <script type="module" src="assets/js/pages/footer.page.js"></script>
 </body>
+
 </html>

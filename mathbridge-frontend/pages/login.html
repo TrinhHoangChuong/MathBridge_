@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng nhập học sinh — MathBridge</title>
+    <title>Đăng nhập / Đăng ký học sinh — MathBridge</title>
     <base href="../">
 
     <!-- CSS chung -->
@@ -14,56 +14,146 @@
     <script src="./assets/js/utils/includePartials.js" defer></script>
 
     <style>
-        .auth-shell {
-          min-height: calc(100vh - 140px);
-          display: grid;
-          place-items: center;
+        :root{
+          --brand:#e11d48;
+          --brand-100:rgba(225,29,72,.10);
+          --navy:#0f172a;
+          --text:#0f172a;
+          --muted:#64748b;
+          --border:rgba(15,23,42,.08);
+          --radius:20px;
+          --shadow:0 18px 35px rgba(15,23,42,.06);
+          --error:#b91c1c;
+          --error-bg:#fee2e2;
+        }
+
+        /* Shell */
+        .auth-shell{
+          min-height:calc(100vh - 140px);
+          display:grid;
+          place-items:center;
           background: radial-gradient(circle at top, rgba(225,29,72,.04), #fff);
-          padding: 32px 14px 48px;
+          padding:32px 14px 48px;
         }
-        .auth-card {
-          width: min(420px, 100%);
-          background: #fff;
-          border: 1px solid rgba(15,23,42,.04);
-          border-radius: 20px;
-          box-shadow: 0 18px 35px rgba(15,23,42,.06);
-          padding: 22px 20px 20px;
+
+        /* Card */
+        .auth-card{
+          width:min(980px,100%);
+          background:#fff;
+          border:1px solid var(--border);
+          border-radius:var(--radius);
+          box-shadow:var(--shadow);
+          padding:22px 20px 20px;
         }
-        .auth-title {
-          font-size: 1.2rem;
-          font-weight: 700;
-          color: #0f172a;
-          margin-bottom: 4px;
+
+        /* Header */
+        .auth-head{
+          display:flex;gap:.75rem;align-items:center;margin-bottom:1rem
         }
-        .auth-sub {
-          font-size: .86rem;
-          color: #64748b;
-          margin-bottom: 18px;
+        .logo-mark{
+          width:34px;height:34px;border-radius:14px;
+          background:conic-gradient(from 220deg,#fff 0deg,#fee2e2 120deg,var(--brand) 240deg,#fda4af 360deg);
+          box-shadow:0 8px 24px rgba(225,29,72,.18);
         }
-        .mb-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-        .mb-field label { font-weight: 500; font-size: .83rem; color: #0f172a; }
-        .mb-field input {
-          border: 1px solid rgba(15,23,42,.1);
-          border-radius: 14px;
-          padding: 9px 10px;
-          outline: none;
-          font-size: .9rem;
+        .auth-title{font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:4px;}
+        .auth-sub{font-size:.86rem;color:var(--muted);}
+
+        /* Tabs */
+        .auth-tabs{display:flex;gap:8px;margin:14px 0 16px;}
+        .tab-btn{
+          flex:1;
+          display:flex;align-items:center;justify-content:center;
+          gap:.5rem;
+          padding:10px 12px;
+          border-radius:14px;
+          border:1px solid var(--border);
+          background:#fff;
+          color:var(--text);
+          font-weight:600;
+          font-size:.92rem;
+          cursor:pointer;
+          transition:.18s ease;
         }
-        .mb-field input:focus {
-          border-color: rgba(225,29,72,.5);
-          box-shadow: 0 0 0 3px rgba(225,29,72,.1);
+        .tab-btn:hover{background:#fafafa}
+        .tab-btn[aria-selected="true"]{
+          border-color:var(--brand);
+          box-shadow:0 0 0 3px var(--brand-100);
+          background:linear-gradient(180deg,#fff, #fff);
+          color:var(--navy);
         }
-        .auth-error {
-          background: #fee2e2;
-          color: #b91c1c;
-          padding: 5px 8px;
-          border-radius: 8px;
-          font-size: .78rem;
-          margin-bottom: 10px;
-          display: none;
+
+        /* Panels */
+        .panel{display:none;animation:fade .2s ease;}
+        .panel.active{display:block;}
+        @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Layout inside panel */
+        .panel-grid{
+          display:grid;gap:16px;
+          grid-template-columns:1fr 1fr;
         }
-        .auth-hint { font-size: .72rem; color: #94a3b8; margin-top: 4px; }
-        main { padding-top: 24px; }
+        .panel-grid--single{grid-template-columns:1fr;}
+        @media (max-width: 880px){
+          .panel-grid{grid-template-columns:1fr;}
+        }
+
+        /* Fields */
+        .mb-field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+        .mb-field label{font-weight:600;font-size:.83rem;color:var(--text);}
+        .mb-field input,
+        .mb-field select,
+        .mb-field textarea{
+          border:1px solid rgba(15,23,42,.1);
+          border-radius:14px;
+          padding:10px 12px;
+          outline:none;
+          font-size:.9rem;
+          background:#fff;
+        }
+        .mb-field textarea{min-height:74px;resize:vertical}
+        .mb-field input:focus,
+        .mb-field select:focus,
+        .mb-field textarea:focus{
+          border-color:rgba(225,29,72,.5);
+          box-shadow:0 0 0 3px var(--brand-100);
+        }
+        .auth-hint{font-size:.72rem;color:#94a3b8;margin-top:4px;}
+
+        /* Error */
+        .auth-error{
+          background:var(--error-bg);
+          color:var(--error);
+          padding:8px 10px;
+          border-radius:10px;
+          font-size:.8rem;
+          margin:8px 0 12px;
+          display:none;
+        }
+
+        /* Buttons */
+        .btn{
+          display:inline-flex;align-items:center;justify-content:center;
+          gap:.5rem;
+          border-radius:14px;
+          padding:10px 14px;
+          font-weight:700;
+          font-size:.95rem;
+          border:1px solid transparent;
+          cursor:pointer;
+          transition:.18s ease;
+        }
+        .btn:disabled{opacity:.6;cursor:not-allowed}
+        .btn--navy{background:var(--navy);color:#fff;}
+        .btn--navy:hover{filter:brightness(1.05)}
+        .btn--ghost{
+          background:#fff;border-color:var(--border);color:var(--text);
+        }
+        .btn--ghost:hover{background:#fafafa}
+
+        .actions{display:flex;gap:10px;align-items:center}
+        .actions .btn{flex:1}
+
+        main{padding-top:24px;}
     </style>
 </head>
 <body class="page-auth">
@@ -71,35 +161,125 @@
 
 <main>
     <div class="auth-shell">
-        <div class="auth-card">
-            <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:1rem">
-        <span class="logo-mark" aria-hidden="true"
-              style="width:34px;height:34px;border-radius:14px;background:conic-gradient(from 220deg,#fff 0deg,#fee2e2 120deg,#e11d48 240deg,#fda4af 360deg);box-shadow:0 8px 24px rgba(225,29,72,.18);"></span>
+        <div class="auth-card" id="auth-card">
+            <!-- Head -->
+            <div class="auth-head">
+                <span class="logo-mark" aria-hidden="true"></span>
                 <div>
-                    <h1 class="auth-title">Đăng nhập học sinh</h1>
-                    <p class="auth-sub">Chỉ dành cho tài khoản học sinh đã được cấp.</p>
+                    <h1 class="auth-title">Không gian học sinh — MathBridge</h1>
+                    <p class="auth-sub">Đăng nhập hoặc tạo tài khoản học sinh mới.</p>
                 </div>
             </div>
 
-            <p id="auth-error" class="auth-error"></p>
-
-            <form id="mb-login-form" novalidate>
-                <div class="mb-field">
-                    <label for="email">Email học sinh</label>
-                    <input id="email" name="email" type="email" required autocomplete="email"
-                           placeholder="vd: hs001@mathbridge.vn">
-                </div>
-                <div class="mb-field">
-                    <label for="password">Mật khẩu</label>
-                    <input id="password" name="password" type="password" required autocomplete="current-password"
-                           placeholder="••••••••">
-                    <p class="auth-hint">Nếu quên mật khẩu, liên hệ quản lý trung tâm.</p>
-                </div>
-
-                <button type="submit" class="btn btn--navy" style="width:100%">
-                    <span>Đăng nhập</span>
+            <!-- Tabs -->
+            <div class="auth-tabs" role="tablist" aria-label="Chọn chức năng">
+                <button id="tab-login" class="tab-btn" role="tab" aria-selected="true" aria-controls="panel-login" data-tab="login">
+                    Đăng nhập
                 </button>
-            </form>
+                <button id="tab-register" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-register" data-tab="register">
+                    Đăng ký
+                </button>
+            </div>
+
+            <!-- LOGIN PANEL -->
+            <section id="panel-login" class="panel active" role="tabpanel" aria-labelledby="tab-login">
+                <p id="auth-error" class="auth-error" aria-live="polite"></p>
+
+                <form id="mb-login-form" novalidate>
+                    <div class="panel-grid panel-grid--single">
+                        <div class="mb-field">
+                            <label for="email">Email học sinh</label>
+                            <input id="email" name="email" type="email" required autocomplete="email"
+                                   placeholder="vd: hs001@mathbridge.vn">
+                        </div>
+
+                        <div class="mb-field">
+                            <label for="password">Mật khẩu</label>
+                            <input id="password" name="password" type="password" required autocomplete="current-password"
+                                   placeholder="••••••••">
+                            <p class="auth-hint">Nếu quên mật khẩu, liên hệ quản lý trung tâm.</p>
+                        </div>
+
+                        <div class="actions">
+                            <button type="submit" class="btn btn--navy" style="width:100%">
+                                <span>Đăng nhập</span>
+                            </button>
+                            <button type="button" class="btn btn--ghost" data-switch="register" aria-label="Chuyển sang Đăng ký">
+                                Tạo tài khoản
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- REGISTER PANEL -->
+            <section id="panel-register" class="panel" role="tabpanel" aria-labelledby="tab-register" hidden>
+                <p id="register-error" class="auth-error" aria-live="polite"></p>
+
+                <form id="mb-register-form" novalidate>
+                    <div class="panel-grid">
+                        <!-- Cột trái -->
+                        <div>
+                            <div class="mb-field">
+                                <label for="reg-email">Email</label>
+                                <input id="reg-email" type="email" autocomplete="email" placeholder="vd: hs.moi@mathbridge.vn" required>
+                            </div>
+
+                            <div class="mb-field">
+                                <label for="reg-password">Mật khẩu</label>
+                                <input id="reg-password" type="password" placeholder="Tối thiểu 6 ký tự" required autocomplete="new-password">
+                                <p class="auth-hint">Mẹo: Dùng mật khẩu mạnh & dễ nhớ đối với bạn.</p>
+                            </div>
+
+                            <div class="mb-field">
+                                <label for="reg-sdt">Số điện thoại</label>
+                                <input id="reg-sdt" type="tel" placeholder="vd: 0912345678" required inputmode="numeric">
+                            </div>
+
+                            <div class="mb-field">
+                                <label for="reg-gioitinh">Giới tính</label>
+                                <select id="reg-gioitinh" required>
+                                    <option value="" selected>— Chọn —</option>
+                                    <option value="false">Nam</option>
+                                    <option value="true">Nữ</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Cột phải -->
+                        <div>
+                            <div class="mb-field">
+                                <label for="reg-ho">Họ</label>
+                                <input id="reg-ho" type="text" placeholder="vd: Nguyễn" required>
+                            </div>
+
+                            <div class="mb-field">
+                                <label for="reg-tendem">Tên đệm (tuỳ chọn)</label>
+                                <input id="reg-tendem" type="text" placeholder="vd: Bảo">
+                            </div>
+
+                            <div class="mb-field">
+                                <label for="reg-ten">Tên</label>
+                                <input id="reg-ten" type="text" placeholder="vd: An" required>
+                            </div>
+
+                            <div class="mb-field">
+                                <label for="reg-diachi">Địa chỉ</label>
+                                <textarea id="reg-diachi" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="actions" style="margin-top:4px">
+                        <button type="submit" class="btn btn--navy">
+                            Hoàn tất đăng ký
+                        </button>
+                        <button type="button" class="btn btn--ghost" data-switch="login" aria-label="Chuyển sang Đăng nhập">
+                            Tôi đã có tài khoản
+                        </button>
+                    </div>
+                </form>
+            </section>
         </div>
     </div>
 </main>
@@ -107,17 +287,63 @@
 <footer></footer>
 
 <script>
+    // Include header/footer partials
     document.addEventListener("DOMContentLoaded", function () {
-      includePartials({
-        header: "partials/header.html",
-        footer: "partials/footer.html"
+      includePartials({ header: "partials/header.html", footer: "partials/footer.html" });
+
+      const tabLogin = document.getElementById("tab-login");
+      const tabRegister = document.getElementById("tab-register");
+      const panelLogin = document.getElementById("panel-login");
+      const panelRegister = document.getElementById("panel-register");
+
+      function setTab(name){
+        const isLogin = name !== "register";
+
+        tabLogin.setAttribute("aria-selected", String(isLogin));
+        tabRegister.setAttribute("aria-selected", String(!isLogin));
+
+        panelLogin.classList.toggle("active", isLogin);
+        panelRegister.classList.toggle("active", !isLogin);
+
+        panelLogin.hidden = !isLogin;
+        panelRegister.hidden = isLogin;
+
+        // reset error boxes when switching
+        const authErr = document.getElementById("auth-error");
+        const regErr = document.getElementById("register-error");
+        if (authErr){ authErr.textContent=""; authErr.style.display="none"; }
+        if (regErr){ regErr.textContent=""; regErr.style.display="none"; }
+
+        // focus first input in visible panel
+        setTimeout(()=>{
+          const first = (isLogin ? panelLogin : panelRegister).querySelector("input,select,textarea,button");
+          first && first.focus && first.focus();
+        }, 80);
+      }
+
+      // Tab button clicks
+      tabLogin.addEventListener("click", ()=>setTab("login"));
+      tabRegister.addEventListener("click", ()=>setTab("register"));
+
+      // Secondary switches (ghost buttons)
+      document.querySelectorAll("[data-switch]").forEach(btn=>{
+        btn.addEventListener("click", ()=> setTab(btn.dataset.switch));
       });
+
+      // Support deep link ?tab=register
+      const url = new URL(window.location.href);
+      if ((url.searchParams.get("tab")||"").toLowerCase()==="register"){
+        setTab("register");
+      } else {
+        setTab("login");
+      }
     });
 </script>
 
 <!-- trang footer đang cần -->
 <script type="module" src="assets/js/pages/footer.page.js"></script>
-<!-- QUAN TRỌNG: thêm login.page.js -->
+<!-- Logic submit -->
 <script type="module" src="assets/js/pages/login.page.js"></script>
+<script type="module" src="assets/js/pages/register.page.js"></script>
 </body>
 </html>

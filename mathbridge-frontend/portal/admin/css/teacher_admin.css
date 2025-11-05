@@ -1,0 +1,93 @@
+/* ================= Module: Teacher Admin ================= */
+/* Kế thừa tokens từ admin.css: --brand, --border, --radius, --shadow, ... */
+
+/* ---------- Section: Input search (match header search) ---------- */
+.input-search{
+  display:flex;align-items:center;gap:8px;
+  background:#f1f5f9;border:1px solid #e2e8f0;
+  padding:8px 12px;border-radius:10px;min-height:40px
+}
+.input-search input{border:0;background:transparent;outline:none;width:100%;color:var(--text)}
+.input-search i{width:18px;height:18px;color:#64748b}
+
+/* ---------- Section: Table ---------- */
+.table-wrap{width:100%;overflow:auto}
+.table{
+  width:100%;border-collapse:separate;border-spacing:0;min-width:980px;
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
+  background:var(--surface);overflow:hidden
+}
+.table thead th{
+  text-align:left;padding:12px;border-bottom:1px solid var(--border);
+  font-weight:600;font-size:14px;background:#fafafa
+}
+.table tbody td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.table tbody tr.trow:hover{background:#f8fafc}
+.text-right{text-align:right}
+
+/* User cell */
+.usercell{display:flex;align-items:center;gap:10px}
+.avatar.sm{width:32px;height:32px;border-radius:999px}
+
+/* Tags & badges */
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{
+  display:inline-block;padding:4px 8px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;font-size:12px
+}
+.tag.brand{background:var(--brand-100);border-color:var(--brand);color:var(--brand)}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid;font-size:12px;font-weight:600
+}
+.badge.active{background:#dcfce7;border-color:#86efac;color:#166534}
+.badge.inactive{background:#f1f5f9;border-color:#cbd5e1;color:#334155}
+
+/* ---------- Section: Expandable rows ---------- */
+.expand-row{display:none;background:#fff}
+.expand-row.open{display:table-row}
+.table tr.open td{border-bottom-color:transparent}
+
+.expand-panel{
+  display:flex;gap:16px;align-items:flex-start;
+  background:#fff;border:1px solid var(--border);border-radius:12px;
+  padding:12px;box-shadow:var(--shadow)
+}
+.expand-left{flex:1;min-width:0}
+.expand-left h4{margin:2px 0 10px 0;font-size:16px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
+.field{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field .label{color:var(--muted);min-width:140px}
+
+.expand-actions{display:flex;flex-direction:column;gap:8px;min-width:220px}
+.expand-btn{border:1px solid var(--border);background:var(--surface)}
+.expand-btn:hover{background:#f8fafc}
+
+/* ---------- Section: Mobile card list ---------- */
+/* LƯU Ý: Không set display ở desktop để không lộ phần mobile */
+.card-list{gap:12px}
+.tcard{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:12px
+}
+.tcard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.tcard-body{display:grid;gap:6px}
+.tcard-body .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tcard-actions{display:flex;gap:8px;margin-top:10px}
+.tcard-more summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;
+  padding:8px 12px;border:1px solid var(--border);border-radius:10px;color:var(--text)
+}
+.tcard-more summary::-webkit-details-marker{display:none}
+.tcard-more[open] summary i{transform:rotate(180deg);transition:.2s}
+.tcard-more .more-body{display:grid;gap:6px;padding-top:6px;border-top:1px dashed var(--border)}
+
+/* ---------- Section: Responsive ---------- */
+@media (max-width:1024px){
+  .grid-2{grid-template-columns:1fr}
+  .expand-actions{min-width:180px}
+}
+@media (max-width:768px){
+  /* dùng đúng convention: show-sm hiển thị block ở mobile */
+  .show-sm{display:block}
+  .table-wrap.hide-sm{display:none}   /* Ẩn bảng ở mobile */
+  .card-list{display:grid}           /* Hiển thị card-list ở mobile */
+}

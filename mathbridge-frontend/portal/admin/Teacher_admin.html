@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Giảng Viên – MathBridge Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Base & Module styles -->
+    <link rel="stylesheet" href="css/admin.css"/>
+    <link rel="stylesheet" href="css/teacher_admin.css"/>
+</head>
+<body>
+<div class="app">
+    <!-- ================= Header ================= -->
+    <header class="app-header" role="banner">
+        <div class="left">
+            <button class="icon-btn" id="sidebarToggle" aria-label="Thu gọn/Mở rộng sidebar" title="Thu gọn/Mở rộng sidebar">
+                <i data-lucide="panel-left-close" aria-hidden="true"></i>
+            </button>
+            <a class="brand" href="index_admin.html" aria-label="MathBridge Admin">
+                <i data-lucide="bridge" class="brand-icon" aria-hidden="true"></i>
+                <span class="brand-text">MathBridge Admin</span>
+            </a>
+        </div>
+
+        <div class="center">
+            <form class="search" role="search" aria-label="Tìm kiếm nhanh">
+                <i data-lucide="search" aria-hidden="true"></i>
+                <input type="search" placeholder="Tìm nhanh…" aria-label="Ô tìm kiếm" autocomplete="off"/>
+            </form>
+        </div>
+
+        <div class="right">
+            <div class="profile">
+                <button class="profile-btn" id="profileBtn" aria-haspopup="true" aria-expanded="false">
+                    <img class="avatar" src="https://i.pravatar.cc/40?img=13" alt="Avatar người dùng"/>
+                    <span class="hide-sm">Admin</span>
+                    <i data-lucide="chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="menu" id="profileMenu" role="menu" aria-label="Menu hồ sơ">
+                    <a href="#" role="menuitem"><i data-lucide="user"></i>Hồ sơ</a>
+                    <a href="#" role="menuitem"><i data-lucide="settings"></i>Cài đặt</a>
+                    <hr/>
+                    <a href="#" role="menuitem"><i data-lucide="log-out"></i>Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="shell">
+        <!-- ================= Sidebar ================= -->
+        <aside class="sidebar" id="sidebar" aria-label="Điều hướng chính">
+            <nav class="nav">
+                <a class="nav-item" href="index.html" data-key="dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+                <a class="nav-item active" href="Teacher_admin.html" data-key="lecturers"><i data-lucide="graduation-cap"></i><span>Giảng Viên</span></a>
+                <a class="nav-item" href="#"><i data-lucide="layers"></i><span>Lớp Học</span></a>
+                <a class="nav-item" href="#"><i data-lucide="file-text"></i><span>Hợp đồng</span></a>
+                <a class="nav-item" href="#"><i data-lucide="badge-dollar-sign"></i><span>Doanh thu</span></a>
+                <a class="nav-item" href="#"><i data-lucide="book-open-text"></i><span>Chương Trình Học</span></a>
+                <div class="nav-sep" aria-hidden="true"></div>
+                <a class="nav-item" href="#"><i data-lucide="users"></i><span>Học viên</span></a>
+                <a class="nav-item" href="#"><i data-lucide="contact"></i><span>Phụ huynh</span></a>
+                <a class="nav-item" href="#"><i data-lucide="building-2"></i><span>Cơ sở &amp; Phòng học</span></a>
+                <a class="nav-item" href="#"><i data-lucide="shield-check"></i><span>Quyền &amp; Tài khoản</span></a>
+                <a class="nav-item" href="#"><i data-lucide="sliders-horizontal"></i><span>Cài đặt</span></a>
+                <a class="nav-item" href="#"><i data-lucide="clock-9"></i><span>Lịch sử / Audit Logs</span></a>
+            </nav>
+        </aside>
+
+        <!-- ================= Main ================= -->
+        <main class="main" id="main" role="main">
+            <section class="dash-card" aria-label="Quản lý Giảng Viên">
+                <!-- ========== Section: KPI ========== -->
+                <section class="kpi-grid kpi-4" aria-label="Tổng quan giảng viên">
+                    <article class="card kpi">
+                        <div class="kpi-head"><div class="kpi-icon"><i data-lucide="square-user"></i></div><span class="kpi-label">Tổng Giảng Viên</span></div>
+                        <div class="kpi-main"><div class="kpi-value">42</div></div>
+                    </article>
+                    <article class="card kpi">
+                        <div class="kpi-head"><div class="kpi-icon"><i data-lucide="play-circle"></i></div><span class="kpi-label">Đang hoạt động</span></div>
+                        <div class="kpi-main"><div class="kpi-value">38</div></div>
+                    </article>
+                    <article class="card kpi">
+                        <div class="kpi-head"><div class="kpi-icon"><i data-lucide="pause-circle"></i></div><span class="kpi-label">Ngưng</span></div>
+                        <div class="kpi-main"><div class="kpi-value">4</div></div>
+                    </article>
+                    <article class="card kpi">
+                        <div class="kpi-head"><div class="kpi-icon"><i data-lucide="school"></i></div><span class="kpi-label">Kinh nghiệm TB</span></div>
+                        <div class="kpi-main"><div class="kpi-value">3.5 năm</div></div>
+                    </article>
+                </section>
+
+                <!-- ========== Section: Filters ========== -->
+                <div class="filters filters-inline" aria-label="Bộ lọc giảng viên">
+                    <div class="filters-row">
+                        <div class="form-field" style="min-width:260px">
+                            <label>Tìm kiếm</label>
+                            <div class="input-search">
+                                <i data-lucide="search"></i>
+                                <input type="search" placeholder="Tên, email, số điện thoại…" autocomplete="off"/>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Cơ sở</label>
+                            <select>
+                                <option>Tất cả</option>
+                                <option>CS1</option>
+                                <option>CS2</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Chuyên môn</label>
+                            <select>
+                                <option>Tất cả</option>
+                                <option>Algebra</option>
+                                <option>Calculus</option>
+                                <option>Geometry</option>
+                                <option>Statistics</option>
+                                <option>SAT Math</option>
+                                <option>IB HL</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Giới tính</label>
+                            <select>
+                                <option>Tất cả</option>
+                                <option>Nam</option>
+                                <option>Nữ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label>Trạng thái</label>
+                            <select>
+                                <option>Tất cả</option>
+                                <option>Hoạt động</option>
+                                <option>Ngưng</option>
+                            </select>
+                        </div>
+
+                        <div class="filters-actions">
+                            <button class="btn ghost"><i data-lucide="x-circle"></i><span>Xoá lọc</span></button>
+                            <button class="btn brand"><i data-lucide="user-plus"></i><span>Thêm giảng viên</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== Section: Teacher List ========== -->
+                <article class="card content-panel">
+                    <div class="card-head"><h3>Danh sách giảng viên</h3></div>
+                    <div class="card-body content-body">
+                        <!-- Table (desktop) -->
+                        <div class="table-wrap hide-sm" role="region" aria-label="Bảng giảng viên">
+                            <table class="table table-teacher">
+                                <thead>
+                                <tr>
+                                    <th>Tên</th>
+                                    <th>Giới tính</th>
+                                    <th>Email</th>
+                                    <th>SĐT</th>
+                                    <th>Cơ sở</th>
+                                    <th>Chuyên môn</th>
+                                    <th>Kinh nghiệm</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-right">Mở rộng</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <!-- ===== Row 1 ===== -->
+                                <tr class="trow" data-row="1">
+                                    <td>
+                                        <div class="usercell">
+                                            <img class="avatar sm" src="https://i.pravatar.cc/40?img=11" alt=""/>
+                                            <div>
+                                                <div class="name">Nguyễn Văn An</div>
+                                                <div class="muted">ID_NV: NV001</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>Nam</td>
+                                    <td>an.nguyen@mathbridge.edu.vn</td>
+                                    <td>0901 234 567</td>
+                                    <td>CS1</td>
+                                    <td><div class="tags"><span class="tag brand">Algebra</span><span class="tag">Geometry</span></div></td>
+                                    <td>4 năm</td>
+                                    <td><span class="badge active">Hoạt động</span></td>
+                                    <td class="text-right">
+                                        <button class="expand-btn icon-btn" aria-expanded="false" aria-controls="ex1" title="Mở rộng">
+                                            <i data-lucide="chevron-down"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="expand-row" id="ex1" role="row">
+                                    <td colspan="9">
+                                        <div class="expand-panel">
+                                            <div class="expand-left">
+                                                <h4>Thông tin chi tiết</h4>
+                                                <div class="grid-2">
+                                                    <div class="field"><span class="label">Họ &amp; tên:</span><span>Nguyễn Văn An</span></div>
+                                                    <div class="field"><span class="label">Giới tính:</span><span>Nam</span></div>
+                                                    <div class="field"><span class="label">Email:</span><span>an.nguyen@mathbridge.edu.vn</span></div>
+                                                    <div class="field"><span class="label">SĐT:</span><span>0901 234 567</span></div>
+                                                    <div class="field"><span class="label">Cơ sở:</span><span>CS1</span></div>
+                                                    <div class="field"><span class="label">Chuyên môn:</span><span>Algebra, Geometry</span></div>
+                                                    <div class="field"><span class="label">Kinh nghiệm:</span><span>4 năm</span></div>
+                                                    <div class="field"><span class="label">Trạng thái:</span><span>Hoạt động</span></div>
+                                                </div>
+                                                <div class="grid-2">
+                                                    <div class="field"><span class="label">Thời gian tạo:</span><span>2024-10-12 09:20</span></div>
+                                                    <div class="field"><span class="label">Cập nhật:</span><span>2025-01-03 16:05</span></div>
+                                                    <div class="field"><span class="label">Thời điểm xoá:</span><span>—</span></div>
+                                                    <div class="field"><span class="label">ID_TK:</span><span>TK1023</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="expand-actions">
+                                                <button class="btn ghost"><i data-lucide="eye"></i><span>Xem hồ sơ</span></button>
+                                                <button class="btn ghost"><i data-lucide="pencil"></i><span>Sửa</span></button>
+                                                <button class="btn ghost"><i data-lucide="pause"></i><span>Tạm ngưng</span></button>
+                                                <button class="btn brand"><i data-lucide="save"></i><span>Lưu thay đổi</span></button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- ===== Row 2 ===== -->
+                                <tr class="trow" data-row="2">
+                                    <td>
+                                        <div class="usercell">
+                                            <img class="avatar sm" src="https://i.pravatar.cc/40?img=18" alt=""/>
+                                            <div>
+                                                <div class="name">Trần Thị Bình</div>
+                                                <div class="muted">ID_NV: NV002</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>Nữ</td>
+                                    <td>binh.tran@mathbridge.edu.vn</td>
+                                    <td>0902 555 888</td>
+                                    <td>CS2</td>
+                                    <td><div class="tags"><span class="tag">Calculus</span><span class="tag brand">IB HL</span></div></td>
+                                    <td>2 năm</td>
+                                    <td><span class="badge inactive">Ngưng</span></td>
+                                    <td class="text-right">
+                                        <button class="expand-btn icon-btn" aria-expanded="false" aria-controls="ex2" title="Mở rộng">
+                                            <i data-lucide="chevron-down"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="expand-row" id="ex2" role="row">
+                                    <td colspan="9">
+                                        <div class="expand-panel">
+                                            <div class="expand-left">
+                                                <h4>Thông tin chi tiết</h4>
+                                                <div class="grid-2">
+                                                    <div class="field"><span class="label">Họ &amp; tên:</span><span>Trần Thị Bình</span></div>
+                                                    <div class="field"><span class="label">Giới tính:</span><span>Nữ</span></div>
+                                                    <div class="field"><span class="label">Email:</span><span>binh.tran@mathbridge.edu.vn</span></div>
+                                                    <div class="field"><span class="label">SĐT:</span><span>0902 555 888</span></div>
+                                                    <div class="field"><span class="label">Cơ sở:</span><span>CS2</span></div>
+                                                    <div class="field"><span class="label">Chuyên môn:</span><span>Calculus, IB HL</span></div>
+                                                    <div class="field"><span class="label">Kinh nghiệm:</span><span>2 năm</span></div>
+                                                    <div class="field"><span class="label">Trạng thái:</span><span>Ngưng</span></div>
+                                                </div>
+                                                <div class="grid-2">
+                                                    <div class="field"><span class="label">Thời gian tạo:</span><span>2024-08-30 11:10</span></div>
+                                                    <div class="field"><span class="label">Cập nhật:</span><span>2024-12-22 09:40</span></div>
+                                                    <div class="field"><span class="label">Thời điểm xoá:</span><span>—</span></div>
+                                                    <div class="field"><span class="label">ID_TK:</span><span>TK1041</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="expand-actions">
+                                                <button class="btn ghost"><i data-lucide="eye"></i><span>Xem hồ sơ</span></button>
+                                                <button class="btn ghost"><i data-lucide="pencil"></i><span>Sửa</span></button>
+                                                <button class="btn ghost"><i data-lucide="play"></i><span>Kích hoạt</span></button>
+                                                <button class="btn brand"><i data-lucide="save"></i><span>Lưu thay đổi</span></button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- ===== Row 3 ===== -->
+                                <tr class="trow" data-row="3">
+                                    <td>
+                                        <div class="usercell">
+                                            <img class="avatar sm" src="https://i.pravatar.cc/40?img=25" alt=""/>
+                                            <div>
+                                                <div class="name">Lê Minh Đức</div>
+                                                <div class="muted">ID_NV: NV003</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>Nam</td>
+                                    <td>duc.le@mathbridge.edu.vn</td>
+                                    <td>0904 678 901</td>
+                                    <td>CS2</td>
+                                    <td><div class="tags"><span class="tag brand">SAT Math</span><span class="tag">Algebra</span></div></td>
+                                    <td>5 năm</td>
+                                    <td><span class="badge active">Hoạt động</span></td>
+                                    <td class="text-right">
+                                        <button class="expand-btn icon-btn" aria-expanded="false" aria-controls="ex3" title="Mở rộng">
+                                            <i data-lucide="chevron-down"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="expand-row" id="ex3" role="row">
+                                    <td colspan="9">
+                                        <div class="expand-panel">
+                                            <div class="expand-left">
+                                                <h4>Thông tin chi tiết</h4>
+                                                <div class="grid-2">
+                                                    <div class="field"><span class="label">Họ &amp; tên:</span><span>Lê Minh Đức</span></div>
+                                                    <div class="field"><span class="label">Giới tính:</span><span>Nam</span></div>
+                                                    <div class="field"><span class="label">Email:</span><span>duc.le@mathbridge.edu.vn</span></div>
+                                                    <div class="field"><span class="label">SĐT:</span><span>0904 678 901</span></div>
+                                                    <div class="field"><span class="label">Cơ sở:</span><span>CS2</span></div>
+                                                    <div class="field"><span class="label">Chuyên môn:</span><span>SAT Math, Algebra</span></div>
+                                                    <div class="field"><span class="label">Kinh nghiệm:</span><span>5 năm</span></div>
+                                                    <div class="field"><span class="label">Trạng thái:</span><span>Hoạt động</span></div>
+                                                </div>
+                                                <div class="grid-2">
+                                                    <div class="field"><span class="label">Thời gian tạo:</span><span>2023-12-05 08:00</span></div>
+                                                    <div class="field"><span class="label">Cập nhật:</span><span>2025-02-20 14:15</span></div>
+                                                    <div class="field"><span class="label">Thời điểm xoá:</span><span>—</span></div>
+                                                    <div class="field"><span class="label">ID_TK:</span><span>TK1200</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="expand-actions">
+                                                <button class="btn ghost"><i data-lucide="eye"></i><span>Xem hồ sơ</span></button>
+                                                <button class="btn ghost"><i data-lucide="pencil"></i><span>Sửa</span></button>
+                                                <button class="btn ghost"><i data-lucide="pause"></i><span>Tạm ngưng</span></button>
+                                                <button class="btn brand"><i data-lucide="save"></i><span>Lưu thay đổi</span></button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Card-list (mobile only) -->
+                        <div class="card-list show-sm" aria-label="Danh sách giảng viên (mobile)">
+                            <article class="tcard">
+                                <header class="tcard-head">
+                                    <div class="usercell">
+                                        <img class="avatar sm" src="https://i.pravatar.cc/40?img=11" alt=""/>
+                                        <div><div class="name">Nguyễn Văn An</div><div class="muted">NV001 · CS1</div></div>
+                                    </div>
+                                    <span class="badge active">Hoạt động</span>
+                                </header>
+                                <div class="tcard-body">
+                                    <div class="row"><span class="muted">Email:</span><span>an.nguyen@mathbridge.edu.vn</span></div>
+                                    <div class="row"><span class="muted">SĐT:</span><span>0901 234 567</span></div>
+                                    <div class="row"><span class="muted">Chuyên môn:</span><div class="tags"><span class="tag brand">Algebra</span><span class="tag">Geometry</span></div></div>
+                                </div>
+                                <details class="tcard-more">
+                                    <summary><i data-lucide="chevron-down"></i> Mở rộng</summary>
+                                    <div class="more-body">
+                                        <div class="row"><span class="muted">Kinh nghiệm:</span><span>4 năm</span></div>
+                                        <div class="row"><span class="muted">Tạo:</span><span>2024-10-12 09:20</span></div>
+                                        <div class="row"><span class="muted">Cập nhật:</span><span>2025-01-03 16:05</span></div>
+                                        <div class="row"><span class="muted">ID_TK:</span><span>TK1023</span></div>
+                                    </div>
+                                </details>
+                                <footer class="tcard-actions">
+                                    <button class="btn ghost"><i data-lucide="eye"></i><span>Xem</span></button>
+                                    <button class="btn ghost"><i data-lucide="pencil"></i><span>Sửa</span></button>
+                                </footer>
+                            </article>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- ================= JS: toggle + icons ================= -->
+<script>
+    const $ = (s,c=document)=>c.querySelector(s);
+    const $$ = (s,c=document)=>Array.from(c.querySelectorAll(s));
+
+    // Sidebar toggle
+    $('#sidebarToggle')?.addEventListener('click', ()=> document.body.classList.toggle('sidebar-collapsed'));
+
+    // Profile menu
+    $('#profileBtn')?.addEventListener('click', ()=> $('#profileMenu').classList.toggle('open'));
+    document.addEventListener('click', (e)=>{ if(!e.target.closest('.profile')) $('#profileMenu')?.classList.remove('open'); });
+
+    // Expand rows (desktop) — allow only one open at a time
+    function closeAllExcept(id){
+      $$('.expand-row.open').forEach(row=>{
+        if(row.id!==id){
+          row.classList.remove('open');
+          const b = document.querySelector('.expand-btn[aria-controls="'+row.id+'"]');
+          if(b){ b.setAttribute('aria-expanded','false'); b.innerHTML='<i data-lucide="chevron-down"></i>'; }
+        }
+      });
+    }
+
+    $$('.expand-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('aria-controls');
+        const panel = document.getElementById(id);
+        const willOpen = !panel.classList.contains('open');
+        closeAllExcept(id);
+        panel.classList.toggle('open');
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        btn.innerHTML = willOpen ? '<i data-lucide="chevron-up"></i>' : '<i data-lucide="chevron-down"></i>';
+        lucide.createIcons();
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', ()=> lucide.createIcons());
+</script>
+</body>
+</html>
