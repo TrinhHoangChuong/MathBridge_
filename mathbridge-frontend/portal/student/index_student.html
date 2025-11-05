@@ -520,6 +520,33 @@
         </div>
     </div>
 
+    <!-- Authentication Check Script -->
+    <script>
+        // Check authentication before loading dashboard
+        (function() {
+            const authCheck = window.isAuthenticated ? window.isAuthenticated() : { authenticated: false };
+
+            if (!authCheck.authenticated) {
+                alert('Bạn cần đăng nhập để truy cập trang này!');
+                window.location.href = '../../pages/login.html';
+                return;
+            }
+
+            // Check if user is a student
+            const studentCheck = window.isStudent ? window.isStudent() : { authenticated: false };
+
+            if (!studentCheck.authenticated) {
+                alert('Chỉ học sinh mới có thể truy cập trang này!');
+                window.location.href = '../../index.html';
+                return;
+            }
+
+            // Authentication successful, proceed with dashboard loading
+            console.log('Authentication validated, loading student dashboard...');
+
+        })();
+    </script>
+
     <!-- Scripts -->
     <script src="../assets/js/config.js"></script>
     <script src="../assets/js/utils/http.js"></script>

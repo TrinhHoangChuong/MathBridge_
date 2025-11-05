@@ -91,7 +91,23 @@
         btn.addEventListener("click", function () {
           const action = btn.dataset.action;
           if (action === "portal") {
-            window.location.href = "portal/";
+            // Check authentication before redirecting to portal
+            const authCheck = isAuthenticated();
+            if (!authCheck.authenticated) {
+              alert("Bạn cần đăng nhập để truy cập portal!");
+              window.location.href = "pages/login.html";
+              return;
+            }
+
+            // Check if user is a student
+            const studentCheck = isStudent();
+            if (!studentCheck.authenticated) {
+              alert("Chỉ học sinh mới có thể truy cập portal!");
+              return;
+            }
+
+            // Redirect to student portal
+            window.location.href = "portal/student/index_student.html";
           }
           if (action === "logout") {
             // xoá chuẩn
