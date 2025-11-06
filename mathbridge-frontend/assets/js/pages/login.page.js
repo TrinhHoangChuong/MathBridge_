@@ -31,16 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const user = payload.user || payload.account || payload || {};
     const roles = user.roles || payload.roles || [];
 
-    const isStudent =
-      roles.includes("R001") ||
-      roles.some((r) => /hoc\s*sinh/i.test(r));
-
-    // Nếu BE không trả roles, đừng chặn: để user vào và để BE kiểm tra tiếp ở các trang yêu cầu quyền
-    if (roles.length && !isStudent) {
-      return showError("Trang này chỉ dành cho học sinh.");
-    }
-
-    // LƯU kiểu mới
+    // LƯU kiểu mới - đảm bảo có đầy đủ thông tin
     localStorage.setItem("mb_auth", JSON.stringify(payload));
 
     // LƯU thêm kiểu cũ cho mấy trang cũ
@@ -59,12 +50,71 @@ document.addEventListener("DOMContentLoaded", () => {
     if (roles.length) {
       localStorage.setItem("mb_user_roles", JSON.stringify(roles));
     }
+    
+    // Lấy tên - ưu tiên fullName từ backend (đã build từ ho, tenDem, ten)
     const name =
-      user.hoTen || user.ten || user.fullName || user.email || "Học sinh";
+      user.fullName ||        // Ưu tiên fullName từ AuthenticatedAccountDTO
+      user.hoTen ||            // Fallback: hoTen nếu có
+      (user.ho && user.ten ? `${user.ho} ${user.tenDem || ""} ${user.ten}`.trim() : null) || // Build từ ho, tenDem, ten
+      user.ten ||              // Chỉ có tên
+      user.email ||            // Fallback: email
+      "Người dùng";
+    
     localStorage.setItem("mb_user_name", name);
+    
+    console.log("User info saved:", {
+      fullName: user.fullName,
+      hoTen: user.hoTen,
+      name: name,
+      roles: roles
+    });
 
-    // về trang chủ
-    window.location.href = "index.html";
+    // Redirect theo role
+    // Mapping: R001 = Học sinh (HS), R002 = Giáo viên (GV), R003 = Cố vấn, R004+ = Admin (nếu có)
+    // Thứ tự ưu tiên: Admin > Giáo viên > Học sinh
+    let redirectUrl = "index.html"; // default
+    
+    // Kiểm tra role có quyền cao nhất
+    const hasAdmin = roles.some(r => {
+      // Kiểm tra R003 (Cố vấn - có thể là admin) hoặc R004+
+      if (r === "R003" || r === "R004") return true;
+      // Kiểm tra pattern R00[4-9], R0[1-9][0-9], R[1-9][0-9]{2}
+      if (/^R00[4-9]$/.test(r) || /^R0[1-9][0-9]$/.test(r) || /^R[1-9][0-9]{2}$/.test(r)) return true;
+      // Kiểm tra tên role có chứa admin
+      if (/admin|quan.*tri|ADMIN/i.test(r)) return true;
+      return false;
+    });
+    
+    const hasTeacher = roles.includes("R002") || roles.some(r => /giao.*vien|teacher|GV/i.test(r));
+    const hasStudent = roles.includes("R001") || roles.some(r => /hoc.*sinh|student|HS/i.test(r));
+    
+    if (hasAdmin) {
+      // Admin -> trang admin (toàn quyền)
+      redirectUrl = "portal/admin/index_admin.html";
+    } else if (hasTeacher) {
+      // Giáo viên -> trang giáo viên
+      redirectUrl = "portal/teacher/index_teacher.html";
+    } else if (hasStudent) {
+      // Học sinh -> trang học sinh
+      redirectUrl = "portal/student/index_student.html";
+    } else if (roles.length === 0) {
+      // Không có role -> về trang chủ
+      redirectUrl = "index.html";
+    } else {
+      // Có role nhưng không match -> về trang chủ
+      console.warn("Unknown roles:", roles, "- redirecting to home");
+      redirectUrl = "index.html";
+    }
+
+    console.log("Login successful. Roles:", roles, "-> Redirecting to:", redirectUrl);
+
+    // Gọi hàm render header nếu có (để cập nhật UI ngay lập tức)
+    if (window.mbRenderHeader) {
+      window.mbRenderHeader();
+    }
+
+    // Redirect đến trang tương ứng
+    window.location.href = redirectUrl;
   });
 
   function showError(msg) {

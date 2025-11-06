@@ -136,7 +136,6 @@ function courseCardTemplate(course) {
 
       <div class="course-description">
         <p>${course.description}</p>
-        <a href="#" class="see-more">Xem thêm</a>
       </div>
 
       <div class="course-card__actions">
@@ -168,7 +167,6 @@ function renderCourses(courses = filteredCourses) {
   list.innerHTML = courses.map(courseCardTemplate).join('');
   console.log('[Enroll] renderCourses -> cards rendered:', courses.length);
   bindEnrollButtons();
-  bindSeeMoreToggles();
 }
 
 // Filter khóa học
@@ -211,14 +209,9 @@ function enrollCourse(courseId) {
     return;
   }
 
-  // TODO: Logic khi đã đăng nhập (sau này): tạo đăng ký trực tiếp cho user hiện tại
-  const modal = document.getElementById('enroll-modal');
-  const titleEl = document.getElementById('enroll-modal-course');
-  const idEl = document.getElementById('ef-courseId');
-  if (titleEl) titleEl.textContent = course.title;
-  if (idEl) idEl.value = String(courseId);
-  console.log('[Enroll] open modal (logged-in) for courseId:', courseId);
-  openEnrollModal();
+  // Đã đăng nhập → hiện màn hình tóm tắt và xác nhận
+  console.log('[Enroll] open summary (logged-in) for courseId:', courseId);
+  openEnrollSummaryModal(course);
 }
 
 function openEnrollModal() {
@@ -244,6 +237,89 @@ function closeEnrollModal() {
   modal.classList.remove('is-open');
   modal.style.display = 'none';
   try { document.body.style.overflow = ''; } catch (_) {}
+}
+
+// ========== SUMMARY + PAYMENT (for logged-in) ==========
+function openEnrollSummaryModal(course) {
+  const modal = document.getElementById('enroll-summary-modal');
+  if (!modal) return;
+
+  try { document.body.style.overflow = 'hidden'; } catch(_) {}
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('is-open');
+  try { modal.style.display = 'flex'; } catch(_) {}
+
+  const studentName = localStorage.getItem('mb_user_name') || '';
+  const studentEmail = localStorage.getItem('mb_user_email') || '';
+
+  const courseTitleEl = document.getElementById('summary-course-title');
+  const studentEl = document.getElementById('summary-student');
+  const infoEl = document.getElementById('summary-course-info');
+  const contentEl = document.getElementById('summary-content');
+  const priceEl = document.getElementById('summary-price');
+
+  if (courseTitleEl) courseTitleEl.textContent = course.title || 'Khóa học';
+  if (studentEl) studentEl.textContent = `${studentName}${studentEmail ? ' — ' + studentEmail : ''}`;
+
+  const infoLines = [];
+  if (course.grade) infoLines.push(`Khối: ${course.grade}`);
+  if (course.method) infoLines.push(`Hình thức: ${course.method === 'online' ? 'Trực tuyến' : (course.method === 'center' ? 'Tại trung tâm' : course.method)}`);
+  if (course.schedule) infoLines.push(`Lịch học: ${course.schedule}`);
+  if (course.session) infoLines.push(`Ca học: ${course.session}`);
+  if (course.teacherName) infoLines.push(`Giáo viên: ${course.teacherName}`);
+  if (infoEl) infoEl.textContent = infoLines.join(' | ');
+  if (contentEl) contentEl.textContent = (course.content && Array.isArray(course.content) ? course.content.join(', ') : (course.description || ''));
+
+  const priceText = course.priceText || (course.price ? `${course.price.toLocaleString('vi-VN')}đ` : 'Liên hệ');
+  if (priceEl) priceEl.textContent = priceText;
+
+  const confirmBtn = document.getElementById('summary-confirm-btn');
+  if (confirmBtn) {
+    confirmBtn.onclick = () => {
+      closeEnrollSummaryModal();
+      openPaymentModal(course);
+    };
+  }
+
+  // close handlers
+  modal.querySelectorAll('[data-close-summary]')
+    .forEach(el => el.addEventListener('click', closeEnrollSummaryModal, { once: true }));
+}
+
+function closeEnrollSummaryModal() {
+  const modal = document.getElementById('enroll-summary-modal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  modal.classList.remove('is-open');
+  modal.style.display = 'none';
+  try { document.body.style.overflow = ''; } catch(_) {}
+}
+
+function openPaymentModal(course) {
+  const modal = document.getElementById('payment-modal');
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'false');
+  modal.classList.add('is-open');
+  try { modal.style.display = 'flex'; } catch(_) {}
+
+  const close = () => {
+    modal.setAttribute('aria-hidden', 'true');
+    modal.classList.remove('is-open');
+    modal.style.display = 'none';
+    try { document.body.style.overflow = ''; } catch(_) {}
+  };
+
+  modal.querySelectorAll('[data-close-payment]').forEach(el => {
+    el.addEventListener('click', close);
+  });
+
+  modal.querySelectorAll('[data-pay-method]')
+    .forEach(btn => btn.addEventListener('click', (e) => {
+      const method = e.currentTarget.getAttribute('data-pay-method');
+      // Tạm thời chỉ hiện thông báo; tích hợp cổng thanh toán sau
+      alert(`Bạn đã chọn phương thức: ${method}.\nNhân viên sẽ liên hệ để hướng dẫn thanh toán.`);
+      close();
+    }));
 }
 
 function showCredentialsModal(email, password) {
@@ -355,24 +431,7 @@ function installEnrollAutoBinder() {
 }
 
 function bindSeeMoreToggles() {
-  document.querySelectorAll('.course-card .see-more').forEach((a) => {
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      const p = a.closest('.course-card')?.querySelector('.course-description p');
-      if (!p) return;
-      const expanded = a.getAttribute('data-expanded') === 'true';
-      a.setAttribute('data-expanded', String(!expanded));
-      if (expanded) {
-        p.style.maxHeight = '72px';
-        p.style.overflow = 'hidden';
-        a.textContent = 'Xem thêm';
-      } else {
-        p.style.maxHeight = 'none';
-        p.style.overflow = '';
-        a.textContent = 'Thu gọn';
-      }
-    });
-  });
+  // No-op: nút "Xem thêm" đã được loại bỏ
 }
 
 function initGradeSwitcher() {
@@ -509,33 +568,112 @@ function attachEnrollModalEvents() {
       if (msg) msg.textContent = '';
       const submitBtn = loginForm.querySelector('button[type="submit"]');
       const disable = (v) => { if (submitBtn) { submitBtn.disabled = v; submitBtn.textContent = v ? 'Đang đăng nhập…' : 'Đăng nhập'; }};
-      const payload = {
-        username: document.getElementById('lf-username').value.trim(),
-        password: document.getElementById('lf-password').value,
-      };
-      if (!payload.username || !payload.password) {
+      
+      const username = document.getElementById('lf-username').value.trim();
+      const password = document.getElementById('lf-password').value;
+      
+      if (!username || !password) {
         if (msg) msg.textContent = 'Vui lòng nhập đầy đủ thông tin.';
         return;
       }
+
       try {
         disable(true);
+        
+        // Sử dụng API giống login.page.js - có thể dùng email hoặc username
+        const requestPayload = {
+          email: username, // Backend có thể chấp nhận email hoặc username
+          password: password
+        };
+        
         const resFetch = await fetch((window.CONFIG?.BASE_URL||'') + AUTH_LOGIN_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(requestPayload)
         });
+        
         const res = await resFetch.json().catch(()=>({ success:false }));
-        if (res && res.success && (res.data?.token || res.token)) {
-          const token = res.data?.token || res.token;
-          localStorage.setItem('mb_token', token);
+        
+        if (res && res.success) {
+          // Lấy payload từ response (giống login.page.js)
+          const responsePayload = res.data || res || {};
+          const user = responsePayload.user || responsePayload.account || responsePayload || {};
+          const roles = user.roles || responsePayload.roles || [];
+          
+          // LƯU kiểu mới - đảm bảo có đầy đủ thông tin (đồng bộ với login.page.js)
+          localStorage.setItem('mb_auth', JSON.stringify(responsePayload));
+          
+          // LƯU thêm kiểu cũ cho mấy trang cũ
+          if (responsePayload.token) {
+            localStorage.setItem('mb_token', responsePayload.token);
+          }
+          if (responsePayload.tokenType) {
+            localStorage.setItem('mb_token_type', responsePayload.tokenType);
+          }
+          if (user.idTk || user.id) {
+            localStorage.setItem('mb_user_id', user.idTk || user.id);
+          }
+          if (user.email) {
+            localStorage.setItem('mb_user_email', user.email);
+          }
+          if (roles.length) {
+            localStorage.setItem('mb_user_roles', JSON.stringify(roles));
+          }
+          
+          // Lấy tên - ưu tiên fullName từ backend
+          const name =
+            user.fullName ||        
+            user.hoTen ||            
+            (user.ho && user.ten ? `${user.ho} ${user.tenDem || ""} ${user.ten}`.trim() : null) ||
+            user.ten ||              
+            user.email ||            
+            "Người dùng";
+          
+          localStorage.setItem('mb_user_name', name);
+          
+          console.log('[Courses] Login successful. User info saved:', {
+            fullName: user.fullName,
+            hoTen: user.hoTen,
+            name: name,
+            roles: roles
+          });
+          
+          // Gọi hàm render header để cập nhật UI ngay lập tức
+          if (window.mbRenderHeader) {
+            window.mbRenderHeader();
+          }
+          
           if (msg) msg.textContent = 'Đăng nhập thành công.';
-          setTimeout(() => { msg && (msg.textContent = ''); }, 1200);
+          
+          setTimeout(() => {
+            msg && (msg.textContent = '');
+            closeEnrollModal();
+            // Reload trang để cập nhật UI (hiển thị user box thay vì login button)
+            window.location.reload();
+          }, 1200);
         } else {
           throw new Error(res && res.message ? res.message : 'Đăng nhập thất bại');
         }
       } catch (err) {
         if (msg) msg.textContent = 'Lỗi đăng nhập: ' + err.message;
-      } finally { disable(false); }
+        console.error('[Courses] Login error:', err);
+      } finally { 
+        disable(false); 
+      }
+    });
+  }
+
+  // Password toggle functionality for Courses modal
+  const lfPasswordInput = document.getElementById('lf-password');
+  const lfPasswordToggle = document.getElementById('lf-password-toggle');
+  const lfPasswordEyeIcon = document.getElementById('lf-password-eye-icon');
+  
+  if (lfPasswordInput && lfPasswordToggle && lfPasswordEyeIcon) {
+    lfPasswordToggle.addEventListener('click', function() {
+      const isPassword = lfPasswordInput.type === 'password';
+      lfPasswordInput.type = isPassword ? 'text' : 'password';
+      lfPasswordEyeIcon.className = isPassword ? 'ph ph-eye-slash' : 'ph ph-eye';
+      lfPasswordToggle.setAttribute('aria-label', isPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu');
     });
   }
 }

@@ -51,6 +51,13 @@ public class CareersController {
             resp.put("message", "Ứng tuyển đã được gửi. Hồ sơ của bạn đang chờ duyệt. Cảm ơn!");
             return ResponseEntity.ok(resp);
         } catch (Exception ex) {
+            // Log full exception for debugging
+            ex.printStackTrace();
+            System.err.println("Error saving application: " + ex.getClass().getSimpleName() + " - " + ex.getMessage());
+            if (ex.getCause() != null) {
+                System.err.println("Cause: " + ex.getCause().getMessage());
+            }
+            
             Map<String, Object> resp = new HashMap<>();
             resp.put("success", false);
             resp.put("message", "Lỗi khi gửi hồ sơ: " + ex.getMessage());

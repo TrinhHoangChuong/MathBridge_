@@ -27,14 +27,13 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <!-- JS -->
-    <script src="assets/js/config.js" defer></script>
+    <script src="assets/js/config.js"></script>
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="assets/js/utils/includePartials.js?v=20251101" defer></script>
 
-    <!-- API + Pages -->
-    <script src="assets/js/api/jobs.api.js" defer></script>
-    <script type="module" src="assets/js/api/jobs.api.js"></script>
-    <script src="assets/js/api/applications.api.js" defer></script>
+    <!-- API + Pages - Load APIs first (without defer) to ensure they're available -->
+    <script src="assets/js/api/jobs.api.js"></script>
+    <script src="assets/js/api/centers.api.js"></script>
     <script src="assets/js/pages/careers.page.js" defer></script>
 </head>
 

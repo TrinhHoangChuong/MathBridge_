@@ -21,7 +21,7 @@ public class UngVien {
     @Column(name = "SDT", length = 100, nullable = false)
     private String sdt;
 
-    @Column(name = "CV_URL", length = 255, nullable = false)
+    @Column(name = "CV_URL", length = 255, nullable = true)
     private String cvUrl;
 
     @Column(name = "TrangThaiHoSo", length = 100)
@@ -34,6 +34,7 @@ public class UngVien {
     private String ghiChu;
 
     // Liên kết tin tuyển dụng qua Association_25
+    // Lazy load để tránh load relationship khi save mới
     @OneToMany(mappedBy = "ungVien", fetch = FetchType.LAZY)
     private List<Association25> tinTuyenDungLinks = new ArrayList<>();
 

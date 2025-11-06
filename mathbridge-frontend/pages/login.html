@@ -7,6 +7,9 @@
     <title>Đăng nhập / Đăng ký học sinh — MathBridge</title>
     <base href="../">
 
+    <!-- Icon Set -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <!-- CSS chung -->
     <link rel="stylesheet" href="assets/css/header.css"/>
     <link rel="stylesheet" href="assets/css/footer.css"/>
@@ -174,6 +177,54 @@
         .cred-copy-btn{background:#fff;border:1px solid rgba(148,163,184,.35);border-radius:10px;padding:6px 10px;cursor:pointer}
         .cred-actions{display:flex;justify-content:flex-end;padding-top:6px}
         .btn--primary{background:var(--brand);color:#fff}
+
+        /* Password toggle */
+        .mb-field .password-wrapper{
+          position:relative;
+          display:flex;
+          align-items:center;
+          width:100%;
+        }
+        .mb-field .password-wrapper input{
+          width:100%;
+          padding-right:42px;
+          box-sizing:border-box;
+        }
+        .mb-field .password-toggle{
+          position:absolute;
+          right:12px;
+          top:50%;
+          transform:translateY(-50%);
+          background:none;
+          border:none;
+          cursor:pointer;
+          padding:4px 8px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          color:var(--muted);
+          transition:color .15s ease;
+          z-index:10;
+          width:auto;
+          height:auto;
+          min-width:24px;
+          min-height:24px;
+        }
+        .mb-field .password-toggle:hover{
+          color:var(--text);
+        }
+        .mb-field .password-toggle:focus{
+          outline:2px solid var(--brand-100);
+          outline-offset:2px;
+          border-radius:4px;
+        }
+        .mb-field .password-toggle i{
+          font-size:18px;
+          display:inline-block;
+          line-height:1;
+          width:18px;
+          height:18px;
+        }
     </style>
 </head>
 <body class="page-auth">
@@ -215,8 +266,13 @@
 
                         <div class="mb-field">
                             <label for="password">Mật khẩu</label>
-                            <input id="password" name="password" type="password" required autocomplete="current-password"
-                                   placeholder="••••••••">
+                            <div class="password-wrapper">
+                                <input id="password" name="password" type="password" required autocomplete="current-password"
+                                       placeholder="••••••••">
+                                <button type="button" class="password-toggle" id="password-toggle" aria-label="Hiển thị mật khẩu">
+                                    <i class="ph ph-eye" id="password-eye-icon"></i>
+                                </button>
+                            </div>
                             <p class="auth-hint">Nếu quên mật khẩu, liên hệ quản lý trung tâm.</p>
                         </div>
 
@@ -372,6 +428,22 @@
         setTab("register");
       } else {
         setTab("login");
+      }
+
+      // Password toggle functionality (giống Courses page)
+      const passwordInput = document.getElementById("password");
+      const passwordToggle = document.getElementById("password-toggle");
+      const passwordEyeIcon = document.getElementById("password-eye-icon");
+      
+      if (passwordInput && passwordToggle && passwordEyeIcon) {
+        passwordToggle.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const isPassword = passwordInput.type === "password";
+          passwordInput.type = isPassword ? "text" : "password";
+          passwordEyeIcon.className = isPassword ? "ph ph-eye-slash" : "ph ph-eye";
+          passwordToggle.setAttribute("aria-label", isPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu");
+        });
       }
     });
 </script>
