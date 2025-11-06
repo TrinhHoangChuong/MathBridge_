@@ -1,5 +1,19 @@
 // assets/js/pages/contact.page.js
-import { getContactInfo, submitContact } from "../api/contact.api.js";
+// getContactInfo and submitContact are loaded from contact.api.js and exposed via window
+
+// Get API functions (with fallback)
+function getContactInfoFn() {
+  return window.getContactInfo || (() => Promise.resolve({
+    hotline: "", address: "", workingHours: "", workingDays: "",
+    email: "", socialLinks: null, mapEmbedUrl: "", centers: []
+  }));
+}
+
+function getSubmitContactFn() {
+  return window.submitContact || (() => Promise.resolve({
+    success: false, message: "API không khả dụng"
+  }));
+}
 
 /* helpers ------------------------------------------------ */
 function $(sel) { return document.querySelector(sel); }
@@ -72,6 +86,7 @@ function setStatus(msg, ok = true) {
 
 /* init info ---------------------------------------------- */
 async function initContactInfo() {
+  const getContactInfo = getContactInfoFn();
   const info = await getContactInfo();
 
   const hotlineEl = $("#contact-hotline");
@@ -144,6 +159,7 @@ function initForm() {
     lockForm(form, true);
     setStatus("Đang gửi liên hệ...", true);
 
+    const submitContact = getSubmitContactFn();
     const { success, message } = await submitContact(payload);
 
     if (success) {

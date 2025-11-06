@@ -59,24 +59,31 @@ async function fillFooter() {
       hoursEl.textContent = "Giờ làm việc: Đang cập nhật";
     }
   } catch (err) {
-    console.error("[footer.page] lỗi:", err);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("[footer.page] lỗi:", err);
+    }
 
     // fallback nếu API hỏng
-    listEl.innerHTML = `
-      <li class="mb-f-branch-name">
-        <strong>MathBridge:</strong>
-        <span class="mb-f-branch-address">Đang cập nhật địa chỉ</span>
-      </li>
-      <li class="mb-f-branch-hotline">
-        <strong>Hotline:</strong>
-        <a href="#">Đang cập nhật</a>
-      </li>
-      <li class="mb-f-branch-hours">
-        <strong>Giờ làm việc:</strong>
-        <span>Đang cập nhật</span>
-      </li>
-    `;
-    hoursEl.textContent = "Giờ làm việc: Đang cập nhật";
+    if (listEl) {
+      listEl.innerHTML = `
+        <li class="mb-f-branch-name">
+          <strong>MathBridge:</strong>
+          <span class="mb-f-branch-address">Đang cập nhật địa chỉ</span>
+        </li>
+        <li class="mb-f-branch-hotline">
+          <strong>Hotline:</strong>
+          <a href="#">Đang cập nhật</a>
+        </li>
+        <li class="mb-f-branch-hours">
+          <strong>Giờ làm việc:</strong>
+          <span>Đang cập nhật</span>
+        </li>
+      `;
+    }
+    if (hoursEl) {
+      hoursEl.textContent = "Giờ làm việc: Đang cập nhật";
+    }
   }
 
   // đã fill xong

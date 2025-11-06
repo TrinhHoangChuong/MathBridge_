@@ -4,10 +4,22 @@
 
 async function getCentersFromApi() {
   try {
+<<<<<<< HEAD
+=======
+    // Check if CONFIG is available
+    if (!window.CONFIG || !window.CONFIG.BASE_URL) {
+      console.warn("CONFIG not available, backend may not be configured");
+      return { centers: [] };
+    }
+
+>>>>>>> main
     const res = await fetch(window.CONFIG.BASE_URL + "/api/public/centers");
 
     if (!res.ok) {
-      console.error("centers API lỗi, status =", res.status);
+      // Only log if not a connection error (which is expected when backend is down)
+      if (res.status !== 0) {
+        console.warn("centers API lỗi, status =", res.status);
+      }
       return { centers: [] };
     }
 
@@ -18,7 +30,10 @@ async function getCentersFromApi() {
       return { centers: [] };
     }
   } catch (err) {
-    console.error("centers API exception:", err);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("centers API exception:", err);
+    }
     return { centers: [] };
   }
 }

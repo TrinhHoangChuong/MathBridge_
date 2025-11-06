@@ -24,8 +24,51 @@
     <!-- NOTE: để trong <head> nhưng defer để không chặn render -->
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="assets/js/utils/includePartials.js?v=20251101" defer></script>
+    <!-- Global config and centers api (classic scripts) must load before module scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api/centers.api.js"></script>
 </head>
 <body class="page-courses">
+<style>
+  /* Thiet ke logo cac payment */
+  .pay-btn { display:flex; align-items:center; justify-content:flex-start; gap:12px; font-size:18px; padding:16px 28px; }
+  .pay-btn img { width:56px; height:56px; object-fit:contain; background:#fff; border-radius:8px; padding:6px; }
+  .pay-btn span { text-align:left; }
+  #payment-title { font-size:22px; }
+  #summary-title { font-size:22px; }
+  #enroll-summary-modal .mb-static-field, #payment-modal .mb-form__row { font-size:16px; }
+  
+  /* Password toggle for Courses modal */
+  .mb-form__row .password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .mb-form__row .password-wrapper input {
+    padding-right: 42px;
+    width: 100%;
+  }
+  .mb-form__row .password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: color 0.15s ease;
+    z-index: 1;
+  }
+  .mb-form__row .password-toggle:hover {
+    color: #0f172a;
+  }
+  .mb-form__row .password-toggle i {
+    font-size: 18px;
+  }
+</style>
 <header></header>
 
 <main id="main-content" class="courses-page" role="main">
@@ -217,7 +260,7 @@
                     <div class="courses-aside__card aside-faq">
                         <h3 class="aside-title">Câu hỏi thường gặp</h3>
                         <ul class="aside-faq__list">
-                            <li>Học phí sẽ thông báo sau khi xếp lớp</li>
+                            <li>Học phí sẽ cố định theo các khóa</li>
                             <li>Có lớp test đầu vào</li>
                             <li>Có thể chuyển ca nếu trùng lịch</li>
                         </ul>
@@ -314,7 +357,12 @@
                         </div>
                         <div class="mb-form__row">
                             <label for="lf-password">Mật khẩu</label>
-                            <input id="lf-password" name="password" type="password" required placeholder="••••••••" />
+                            <div class="password-wrapper">
+                                <input id="lf-password" name="password" type="password" required placeholder="••••••••" />
+                                <button type="button" class="password-toggle" id="lf-password-toggle" aria-label="Hiển thị mật khẩu">
+                                    <i class="ph ph-eye" id="lf-password-eye-icon"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="mb-form__actions">
                             <button type="submit" class="btn btn--primary">Đăng nhập</button>
@@ -360,6 +408,69 @@
                 <button type="button" class="btn btn--primary cred-close" data-close-credentials-modal>
                     ✅ Đã ghi nhớ
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== ENROLL SUMMARY (for logged-in students) ========== -->
+    <div id="enroll-summary-modal" class="mb-modal" aria-hidden="true">
+        <div class="mb-modal__backdrop" data-close-summary></div>
+        <div class="mb-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="summary-title">
+            <button class="mb-modal__close" type="button" title="Đóng" data-close-summary>×</button>
+            <h3 id="summary-title" class="mb-modal__title">Xác nhận đăng ký</h3>
+            <p id="summary-course-title" class="mb-modal__subtitle"></p>
+
+            <div class="mb-form">
+                <div class="mb-form__row">
+                    <label>Học sinh</label>
+                    <div id="summary-student" class="mb-static-field"></div>
+                </div>
+                <div class="mb-form__row">
+                    <label>Thông tin khóa</label>
+                    <div id="summary-course-info" class="mb-static-field"></div>
+                </div>
+                <div class="mb-form__row">
+                    <label>Nội dung</label>
+                    <div id="summary-content" class="mb-static-field"></div>
+                </div>
+                <div class="mb-form__row">
+                    <label>Học phí</label>
+                    <div id="summary-price" class="mb-static-field" style="font-weight:600"></div>
+                </div>
+
+                <div class="mb-form__actions">
+                    <button type="button" class="btn btn--ghost" data-close-summary>Hủy</button>
+                    <button type="button" class="btn btn--primary" id="summary-confirm-btn">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PAYMENT METHODS ========== -->
+    <div id="payment-modal" class="mb-modal" aria-hidden="true">
+        <div class="mb-modal__backdrop" data-close-payment></div>
+        <div class="mb-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+            <button class="mb-modal__close" type="button" title="Đóng" data-close-payment>×</button>
+            <h3 id="payment-title" class="mb-modal__title">Chọn phương thức thanh toán</h3>
+            <div class="mb-form">
+                <div class="mb-form__row">
+                    <button type="button" class="btn btn--primary pay-btn" data-pay-method="bank">
+                        <img src="assets/img/nganhang.png" alt="Bank" />
+                        <span>Chuyển khoản ngân hàng</span>
+                    </button>
+                </div>
+                <div class="mb-form__row">
+                    <button type="button" class="btn btn--primary pay-btn" data-pay-method="momo">
+                        <img src="assets/img/momo.png" alt="MoMo" />
+                        <span>Ví MoMo</span>
+                    </button>
+                </div>
+                <div class="mb-form__row">
+                    <button type="button" class="btn btn--primary pay-btn" data-pay-method="cash">
+                        <img src="assets/img/tuvan.png" alt="Tư vấn/Trực tiếp" />
+                        <span>Thanh toán tại trung tâm</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

@@ -15,6 +15,15 @@ function buildFullName(ho, tenDem, ten) {
 
 async function getTeachersFromApi() {
   try {
+<<<<<<< HEAD
+=======
+    // Check if CONFIG is available
+    if (!window.CONFIG || !window.CONFIG.BASE_URL) {
+      console.warn("CONFIG not available, backend may not be configured");
+      return { teachers: [] };
+    }
+
+>>>>>>> main
     const res = await fetch(window.CONFIG.BASE_URL + "/api/public/nhanvien/giaovien", {
       method: "GET",
       headers: {
@@ -23,7 +32,10 @@ async function getTeachersFromApi() {
     });
 
     if (!res.ok) {
-      console.error("teachers API lỗi, status =", res.status);
+      // Only log if not a connection error (which is expected when backend is down)
+      if (res.status !== 0) {
+        console.warn("teachers API lỗi, status =", res.status);
+      }
       return { teachers: [] };
     }
 
@@ -42,7 +54,10 @@ async function getTeachersFromApi() {
     return { teachers: [] };
 
   } catch (err) {
-    console.error("teachers API exception:", err);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("teachers API exception:", err);
+    }
     return { teachers: [] };
   }
 }

@@ -20,6 +20,7 @@ function clearAuth() {
   localStorage.removeItem(AUTH_KEY);
 }
 
+<<<<<<< HEAD
 // Validate JWT token
 function validateToken(token) {
   if (!token || typeof token !== 'string') {
@@ -79,10 +80,15 @@ function isStudent() {
   return isAuthenticated('R001|STUDENT|hoc.*sinh');
 }
 
+=======
+>>>>>>> main
 // Expose functions to global scope
 window.getAuth = getAuth;
 window.setAuth = setAuth;
 window.clearAuth = clearAuth;
+<<<<<<< HEAD
 window.validateToken = validateToken;
 window.isAuthenticated = isAuthenticated;
 window.isStudent = isStudent;
+=======
+>>>>>>> main

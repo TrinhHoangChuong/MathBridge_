@@ -7,11 +7,17 @@
     <title>Đăng nhập / Đăng ký học sinh — MathBridge</title>
     <base href="../">
 
+    <!-- Icon Set -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <!-- CSS chung -->
     <link rel="stylesheet" href="assets/css/header.css"/>
     <link rel="stylesheet" href="assets/css/footer.css"/>
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="./assets/js/utils/includePartials.js" defer></script>
+    <script src="assets/js/config.js"></script>
+    <!-- ensure centers api available for footer.page.js -->
+    <script src="assets/js/api/centers.api.js"></script>
 
     <style>
         :root{
@@ -154,6 +160,71 @@
         .actions .btn{flex:1}
 
         main{padding-top:24px;}
+
+        /* Credentials modal (scoped for this page) */
+        .mb-modal{position:fixed;inset:0;display:none;z-index:2000}
+        .mb-modal.is-open{display:flex;align-items:flex-start;justify-content:center}
+        .mb-modal__backdrop{position:fixed;inset:0;background:rgba(15,23,42,.25);backdrop-filter:blur(2px)}
+        .mb-modal__dialog{position:relative;background:#fff;border-radius:16px;margin:5.5rem 14px 2rem;max-width:520px;width:100%;box-shadow:0 25px 60px rgba(15,23,42,.12);padding:16px}
+        .mb-modal__close{position:absolute;right:12px;top:12px;border:1px solid rgba(15,23,42,.08);background:#f8fafc;border-radius:999px;width:28px;height:28px;display:grid;place-items:center;cursor:pointer}
+        .cred-header{text-align:center;padding:4px 6px 6px}
+        .cred-title{font-weight:700;color:#0f172a;font-size:18px}
+        .cred-sub{font-size:13px;color:#64748b}
+        .cred-box{background:rgba(248,250,252,.6);border-radius:14px;margin:10px 0;padding:12px}
+        .cred-field{margin:8px 0}
+        .cred-field__row{display:flex;gap:8px;margin-top:6px}
+        .cred-field__row input{flex:1;border:1px solid #e2e8f0;border-radius:10px;padding:8px}
+        .cred-copy-btn{background:#fff;border:1px solid rgba(148,163,184,.35);border-radius:10px;padding:6px 10px;cursor:pointer}
+        .cred-actions{display:flex;justify-content:flex-end;padding-top:6px}
+        .btn--primary{background:var(--brand);color:#fff}
+
+        /* Password toggle */
+        .mb-field .password-wrapper{
+          position:relative;
+          display:flex;
+          align-items:center;
+          width:100%;
+        }
+        .mb-field .password-wrapper input{
+          width:100%;
+          padding-right:42px;
+          box-sizing:border-box;
+        }
+        .mb-field .password-toggle{
+          position:absolute;
+          right:12px;
+          top:50%;
+          transform:translateY(-50%);
+          background:none;
+          border:none;
+          cursor:pointer;
+          padding:4px 8px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          color:var(--muted);
+          transition:color .15s ease;
+          z-index:10;
+          width:auto;
+          height:auto;
+          min-width:24px;
+          min-height:24px;
+        }
+        .mb-field .password-toggle:hover{
+          color:var(--text);
+        }
+        .mb-field .password-toggle:focus{
+          outline:2px solid var(--brand-100);
+          outline-offset:2px;
+          border-radius:4px;
+        }
+        .mb-field .password-toggle i{
+          font-size:18px;
+          display:inline-block;
+          line-height:1;
+          width:18px;
+          height:18px;
+        }
     </style>
 </head>
 <body class="page-auth">
@@ -195,8 +266,13 @@
 
                         <div class="mb-field">
                             <label for="password">Mật khẩu</label>
-                            <input id="password" name="password" type="password" required autocomplete="current-password"
-                                   placeholder="••••••••">
+                            <div class="password-wrapper">
+                                <input id="password" name="password" type="password" required autocomplete="current-password"
+                                       placeholder="••••••••">
+                                <button type="button" class="password-toggle" id="password-toggle" aria-label="Hiển thị mật khẩu">
+                                    <i class="ph ph-eye" id="password-eye-icon"></i>
+                                </button>
+                            </div>
                             <p class="auth-hint">Nếu quên mật khẩu, liên hệ quản lý trung tâm.</p>
                         </div>
 
@@ -212,7 +288,7 @@
                 </form>
             </section>
 
-            <!-- REGISTER PANEL -->
+            <!-- REGISTER PANEL (giống logic ở trang Course) -->
             <section id="panel-register" class="panel" role="tabpanel" aria-labelledby="tab-register" hidden>
                 <p id="register-error" class="auth-error" aria-live="polite"></p>
 
@@ -221,14 +297,8 @@
                         <!-- Cột trái -->
                         <div>
                             <div class="mb-field">
-                                <label for="reg-email">Email</label>
-                                <input id="reg-email" type="email" autocomplete="email" placeholder="vd: hs.moi@mathbridge.vn" required>
-                            </div>
-
-                            <div class="mb-field">
-                                <label for="reg-password">Mật khẩu</label>
-                                <input id="reg-password" type="password" placeholder="Tối thiểu 6 ký tự" required autocomplete="new-password">
-                                <p class="auth-hint">Mẹo: Dùng mật khẩu mạnh & dễ nhớ đối với bạn.</p>
+                                <label for="reg-fullname">Họ và tên</label>
+                                <input id="reg-fullname" type="text" placeholder="vd: Trần Minh An" required>
                             </div>
 
                             <div class="mb-field">
@@ -237,30 +307,20 @@
                             </div>
 
                             <div class="mb-field">
-                                <label for="reg-gioitinh">Giới tính</label>
-                                <select id="reg-gioitinh" required>
-                                    <option value="" selected>— Chọn —</option>
-                                    <option value="false">Nam</option>
-                                    <option value="true">Nữ</option>
-                                </select>
+                                <label for="reg-ngaysinh">Ngày sinh</label>
+                                <input id="reg-ngaysinh" type="date" placeholder="dd/mm/yyyy">
                             </div>
                         </div>
 
                         <!-- Cột phải -->
                         <div>
                             <div class="mb-field">
-                                <label for="reg-ho">Họ</label>
-                                <input id="reg-ho" type="text" placeholder="vd: Nguyễn" required>
-                            </div>
-
-                            <div class="mb-field">
-                                <label for="reg-tendem">Tên đệm (tuỳ chọn)</label>
-                                <input id="reg-tendem" type="text" placeholder="vd: Bảo">
-                            </div>
-
-                            <div class="mb-field">
-                                <label for="reg-ten">Tên</label>
-                                <input id="reg-ten" type="text" placeholder="vd: An" required>
+                                <label for="reg-gioitinh">Giới tính</label>
+                                <select id="reg-gioitinh" required>
+                                    <option value="" selected>— Chọn —</option>
+                                    <option value="1">Nam</option>
+                                    <option value="0">Nữ</option>
+                                </select>
                             </div>
 
                             <div class="mb-field">
@@ -285,6 +345,38 @@
 </main>
 
 <footer></footer>
+
+<!-- Credentials Modal -->
+<div id="credentials-modal" class="mb-modal" aria-hidden="true">
+  <div class="mb-modal__backdrop" data-close-credentials-modal></div>
+  <div class="mb-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="cred-title">
+    <button class="mb-modal__close" type="button" title="Đóng" data-close-credentials-modal>×</button>
+    <div class="cred-header">
+      <div class="cred-emoji" aria-hidden="true">🎉</div>
+      <h3 id="cred-title" class="cred-title">Chúc mừng bạn đã đăng ký thành công!</h3>
+      <p class="cred-sub">Vui lòng <strong>lưu lại</strong> thông tin đăng nhập bên dưới để tránh quên.</p>
+    </div>
+    <div class="cred-box">
+      <div class="cred-field">
+        <label for="cred-email">📧 Email</label>
+        <div class="cred-field__row">
+          <input id="cred-email" type="text" readonly />
+          <button type="button" class="cred-copy-btn" data-copy="email">Copy</button>
+        </div>
+      </div>
+      <div class="cred-field">
+        <label for="cred-password">🔑 Mật khẩu</label>
+        <div class="cred-field__row">
+          <input id="cred-password" type="text" readonly />
+          <button type="button" class="cred-copy-btn" data-copy="password">Copy</button>
+        </div>
+      </div>
+    </div>
+    <div class="cred-actions">
+      <button type="button" class="btn btn--primary" data-close-credentials-modal>✅ Đã ghi nhớ</button>
+    </div>
+  </div>
+  </div>
 
 <script>
     // Include header/footer partials
@@ -337,13 +429,160 @@
       } else {
         setTab("login");
       }
+
+      // Password toggle functionality (giống Courses page)
+      const passwordInput = document.getElementById("password");
+      const passwordToggle = document.getElementById("password-toggle");
+      const passwordEyeIcon = document.getElementById("password-eye-icon");
+      
+      if (passwordInput && passwordToggle && passwordEyeIcon) {
+        passwordToggle.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const isPassword = passwordInput.type === "password";
+          passwordInput.type = isPassword ? "text" : "password";
+          passwordEyeIcon.className = isPassword ? "ph ph-eye-slash" : "ph ph-eye";
+          passwordToggle.setAttribute("aria-label", isPassword ? "Ẩn mật khẩu" : "Hiển thị mật khẩu");
+        });
+      }
     });
 </script>
 
 <!-- trang footer đang cần -->
-<script type="module" src="assets/js/pages/footer.page.js"></script>
-<!-- Logic submit -->
-<script type="module" src="assets/js/pages/login.page.js"></script>
-<script type="module" src="assets/js/pages/register.page.js"></script>
+<script src="assets/js/pages/footer.page.js"></script>
+<!-- API login (expose window.loginStudentApi) -->
+<script src="assets/js/api/login.api.js"></script>
+<!-- Logic submit (đăng nhập) -->
+<script src="assets/js/pages/login.page.js"></script>
+<!-- Gom logic đăng ký vào trang login -->
+<script>
+  (function(){
+    document.addEventListener('DOMContentLoaded', function(){
+      const form = document.getElementById('mb-register-form');
+      const errBox = document.getElementById('register-error');
+      if (!form) return;
+
+      function showErr(msg){
+        if (!errBox) return;
+        errBox.textContent = msg || 'Đăng ký không thành công. Vui lòng thử lại.';
+        errBox.style.display = 'block';
+      }
+      function hideErr(){
+        if (!errBox) return;
+        errBox.textContent = '';
+        errBox.style.display = 'none';
+      }
+
+      function showCredentialsModal(email, password){
+        const modal = document.getElementById('credentials-modal');
+        if (!modal) return;
+        const emailInput = document.getElementById('cred-email');
+        const passwordInput = document.getElementById('cred-password');
+        if (emailInput) emailInput.value = email || '';
+        if (passwordInput) passwordInput.value = password || '';
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden','false');
+        const goLogin = ()=>{
+          modal.classList.remove('is-open');
+          modal.setAttribute('aria-hidden','true');
+          const loginTab = document.getElementById('tab-login');
+          if (loginTab) loginTab.click();
+          setTimeout(()=>{ document.getElementById('email')?.focus(); }, 80);
+        };
+        document.querySelectorAll('[data-close-credentials-modal]').forEach(el=>{
+          el.addEventListener('click', goLogin);
+        });
+        // copy buttons
+        document.querySelectorAll('.cred-copy-btn').forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            const type = btn.getAttribute('data-copy');
+            const input = document.getElementById(type==='email'?'cred-email':'cred-password');
+            if (input && input.value){ input.select(); document.execCommand('copy'); }
+          });
+        });
+      }
+
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        hideErr();
+
+        // Map form -> payload theo logic course.modal (DangKyLHRequest)
+        const fullName = document.getElementById('reg-fullname')?.value?.trim();
+        const sdt = document.getElementById('reg-sdt')?.value?.trim();
+        const ngaySinh = document.getElementById('reg-ngaysinh')?.value ? new Date(document.getElementById('reg-ngaysinh').value) : null;
+        const gioiTinhRaw = document.getElementById('reg-gioitinh')?.value;
+        const diaChi = document.getElementById('reg-diachi')?.value?.trim();
+
+        // Validate tối thiểu
+        if (!fullName || !sdt || !gioiTinhRaw || !diaChi) {
+          return showErr('Vui lòng điền đầy đủ thông tin bắt buộc.');
+        }
+
+        // Chọn API giống Course: enroll/pending. Nếu không có courseId trên URL,
+        // tự lấy id lớp đầu tiên từ /api/public/course để tạo tài khoản giống flow Course.
+        const params = new URLSearchParams(window.location.search);
+        let courseId = params.get('courseId');
+
+        async function ensureCourseId() {
+          if (courseId) return courseId;
+          try {
+            const res = await fetch((window.CONFIG?.BASE_URL||'') + '/api/public/course');
+            const json = await res.json();
+            const list = (json && json.data) || [];
+            if (list.length > 0) return list[0].idLH;
+          } catch(_) {}
+          return null;
+        }
+        try {
+          const pickedCourseId = await ensureCourseId();
+          const url = (window.CONFIG?.BASE_URL||'') + (pickedCourseId ? '/api/public/enroll/pending' : '/api/public/auth/register');
+          const body = pickedCourseId ? {
+            hoTen: fullName,
+            soDienThoai: sdt,
+            ngaySinh: ngaySinh ? ngaySinh.toISOString() : null,
+            gioiTinh: Number(gioiTinhRaw),
+            diaChi: diaChi,
+            courseId: pickedCourseId
+          } : {
+            email: null,
+            password: null,
+            sdt: sdt,
+            gioiTinh: gioiTinhRaw === '1',
+            ho: fullName.split(' ').slice(0,1).join(' '),
+            tenDem: fullName.split(' ').slice(1,-1).join(' '),
+            ten: fullName.split(' ').slice(-1).join(' '),
+            diaChi: diaChi
+          };
+
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          const data = await res.json().catch(()=>({}));
+          if (!res.ok || (data && data.success === false)) {
+            return showErr((data && data.message) || 'Đăng ký thất bại.');
+          }
+
+          // Nếu là enroll/pending -> BE trả email/password => hiện modal credentials
+          if (pickedCourseId && data && data.data) {
+            const d = data.data;
+            showCredentialsModal(d.email || '', d.password || '');
+            return;
+          }
+
+          // Fallback: lưu thông tin đăng nhập nếu backend trả như login
+          if (data) {
+            try { localStorage.setItem('mb_auth', JSON.stringify(data)); } catch(_){ }
+          }
+          showCredentialsModal(data?.email || '', data?.password || '');
+        } catch (err) {
+          showErr('Không kết nối được máy chủ. Vui lòng thử lại sau.');
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

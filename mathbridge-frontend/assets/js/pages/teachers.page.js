@@ -198,10 +198,29 @@ function initSearchBox() {
 }
 
 /* init --------------------------------------------------- */
+async function waitForApi() {
+  // Wait for API function to be available (max 3 seconds)
+  let attempts = 0;
+  while (!window.getTeachersFromApi && attempts < 30) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    attempts++;
+  }
+  if (!window.getTeachersFromApi) {
+    console.warn("getTeachersFromApi not available after waiting - API script may not be loaded");
+    return () => ({ teachers: [] });
+  }
+  return window.getTeachersFromApi;
+}
+
 export async function initTeachersPage() {
   showLoadingSkeleton();
 
+<<<<<<< HEAD
   const { teachers } = await window.getTeachersFromApi();
+=======
+  const apiFunc = await waitForApi();
+  const { teachers } = await apiFunc();
+>>>>>>> main
 
   allTeachers = teachers || [];
   hideStatusMessage();
