@@ -18,6 +18,7 @@
             <span>MathBridge</span>
         </div>
         <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
         </button>
     </div>
 
@@ -59,18 +60,6 @@
                     <span>Tin nhắn</span>
                 </a>
             </li>
-            <li class="nav-item" data-section="history">
-                <a href="#history">
-                    <i class="fas fa-history"></i>
-                    <span>Lịch sử</span>
-                </a>
-            </li>
-            <li class="nav-item" data-section="support">
-                <a href="#support">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Hỗ trợ</span>
-                </a>
-            </li>
         </ul>
     </nav>
 
@@ -81,8 +70,6 @@
             </div>
             <div class="user-details">
                 <span class="user-name" id="sidebarUserName">Loading...</span>
-                <span class="user-name" id="userName" style="display: none;">Loading...</span>
-                <span class="user-email" id="userEmail" style="display: none;">Loading...</span>
                 <span class="user-role">Học sinh</span>
             </div>
         </div>
@@ -102,6 +89,8 @@
             </button>
             <h1 class="page-title" id="pageTitle">Dashboard</h1>
             <div class="current-time">
+                <span id="currentDate"></span>
+                <span id="currentTime"></span>
             </div>
         </div>
         <div class="header-right">
@@ -501,487 +490,6 @@
                 <!-- Messages will be loaded here -->
             </div>
         </section>
-
-        <!-- History Section - MathBridge Professional Design -->
-        <section class="content-section" id="history">
-            <!-- Professional Header with MathBridge Branding -->
-            <div class="section-header">
-                <div class="section-title-wrapper">
-                    <div class="section-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <div class="section-title-content">
-                        <h2>📚 Lịch sử học tập MathBridge</h2>
-                        <p class="section-subtitle">Theo dõi hành trình học tập của bạn với các chương trình toán quốc tế</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <div class="current-time">
-                        <span id="currentDate"></span>
-                        <span id="currentTime"></span>
-                    </div>
-                    <div class="user-avatar-small">
-                        <i class="fas fa-user"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MathBridge Programs Overview -->
-            <div class="mathbridge-programs-overview">
-                <div class="programs-grid">
-                    <div class="program-card igcse">
-                        <div class="program-icon">🎓</div>
-                        <div class="program-info">
-                            <h4>Cambridge IGCSE</h4>
-                            <p>Chương trình toán quốc tế cơ bản</p>
-                        </div>
-                    </div>
-                    <div class="program-card alevel">
-                        <div class="program-icon">📈</div>
-                        <div class="program-info">
-                            <h4>A-Level Mathematics</h4>
-                            <p>Toán nâng cao cho đại học</p>
-                        </div>
-                    </div>
-                    <div class="program-card ib">
-                        <div class="program-icon">🌍</div>
-                        <div class="program-info">
-                            <h4>IB Math</h4>
-                            <p>Toán học song ngữ quốc tế</p>
-                        </div>
-                    </div>
-                    <div class="program-card ap">
-                        <div class="program-icon">📊</div>
-                        <div class="program-info">
-                            <h4>AP Calculus</h4>
-                            <p>Tính toán nâng cao</p>
-                        </div>
-                    </div>
-                    <div class="program-card vietnamese">
-                        <div class="program-icon">🇻🇳</div>
-                        <div class="program-info">
-                            <h4>Toán nâng cao VN</h4>
-                            <p>Ôn thi đại học Việt Nam</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- History Layout Container -->
-            <div class="history-layout">
-                <!-- Left Column: Course Timeline -->
-                <div class="history-timeline-column">
-                    <div class="timeline-container">
-                        <div class="timeline-header">
-                            <h3><i class="fas fa-route"></i> Hành trình học tập</h3>
-                            <div class="timeline-filters">
-                                <select class="form-select timeline-filter" id="timelineDisplayFilter" onchange="filterTimeline()">
-                                    <option value="all">Tất cả khóa học</option>
-                                    <option value="active">Đang học</option>
-                                    <option value="completed">Hoàn thành</option>
-                                    <option value="pending">Chờ duyệt</option>
-                                </select>
-                                <select class="form-select program-filter" id="programFilter" onchange="filterByProgram()">
-                                    <option value="all">Tất cả chương trình</option>
-                                    <option value="igcse">IGCSE</option>
-                                    <option value="alevel">A-Level</option>
-                                    <option value="ib">IB Math</option>
-                                    <option value="ap">AP Calculus</option>
-                                    <option value="vietnamese">Toán VN</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Timeline -->
-                        <div class="timeline" id="courseTimeline">
-                            <!-- Timeline items will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Filters & Actions -->
-                <div class="history-actions-column">
-                    <!-- Academic Progress Card -->
-                    <div class="progress-card">
-                        <h4><i class="fas fa-trophy"></i> Tiến độ học tập</h4>
-                        <div class="progress-stats">
-                            <div class="progress-item">
-                                <div class="progress-label">IGCSE Complete</div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 85%"></div>
-                                </div>
-                                <div class="progress-value">85%</div>
-                            </div>
-                            <div class="progress-item">
-                                <div class="progress-label">A-Level Progress</div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 60%"></div>
-                                </div>
-                                <div class="progress-value">60%</div>
-                            </div>
-                            <div class="progress-item">
-                                <div class="progress-label">IB Math AA</div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 40%"></div>
-                                </div>
-                                <div class="progress-value">40%</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Filters & Actions Card -->
-                    <div class="actions-card">
-                        <h4><i class="fas fa-sliders-h"></i> Bộ lọc & Hành động</h4>
-
-                        <div class="filter-group">
-                            <label for="historyTypeFilter">Loại hiển thị:</label>
-                            <select class="form-select" id="historyTypeFilter" onchange="filterHistoryType()">
-                                <option value="timeline">Dạng timeline</option>
-                                <option value="list">Dạng danh sách</option>
-                                <option value="calendar">Dạng lịch</option>
-                            </select>
-                        </div>
-
-                        <div class="filter-group">
-                            <label for="dateRangeFilter">Khoảng thời gian:</label>
-                            <select class="form-select" id="dateRangeFilter" onchange="filterDateRange()">
-                                <option value="all">Tất cả thời gian</option>
-                                <option value="thisMonth">Tháng này</option>
-                                <option value="lastMonth">Tháng trước</option>
-                                <option value="thisYear">Năm nay</option>
-                            </select>
-                        </div>
-
-                        <div class="action-buttons">
-                            <button class="btn btn-success btn-block" onclick="dashboard.exportHistory()">
-                                <i class="fas fa-download"></i>
-                                Xuất báo cáo
-                            </button>
-                            <button class="btn btn-info btn-block" onclick="dashboard.printHistory()">
-                                <i class="fas fa-print"></i>
-                                In lịch sử
-                            </button>
-                            <button class="btn btn-secondary btn-block" onclick="dashboard.shareHistory()">
-                                <i class="fas fa-share"></i>
-                                Chia sẻ
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Quick Stats -->
-                    <div class="stats-card">
-                        <h4><i class="fas fa-chart-bar"></i> Thống kê học tập</h4>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <span class="stat-number" id="totalCourses">0</span>
-                                <span class="stat-label">Tổng khóa học</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number" id="completedCourses">0</span>
-                                <span class="stat-label">Đã hoàn thành</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number" id="totalSessions">0</span>
-                                <span class="stat-label">Tổng buổi học</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-number" id="attendedSessions">0</span>
-                                <span class="stat-label">Đã tham gia</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Upcoming Milestones -->
-                    <div class="milestones-card">
-                        <h4><i class="fas fa-flag"></i> Mốc quan trọng sắp tới</h4>
-                        <div class="milestones-list">
-                            <div class="milestone-item">
-                                <div class="milestone-icon">📝</div>
-                                <div class="milestone-content">
-                                    <h5>IGCSE Mock Exam</h5>
-                                    <p>15/12/2024 - Phòng 101</p>
-                                </div>
-                            </div>
-                            <div class="milestone-item">
-                                <div class="milestone-icon">🎯</div>
-                                <div class="milestone-content">
-                                    <h5>A-Level Paper 1</h5>
-                                    <p>20/01/2025 - Online</p>
-                                </div>
-                            </div>
-                            <div class="milestone-item">
-                                <div class="milestone-icon">🏆</div>
-                                <div class="milestone-content">
-                                    <h5>Math Competition</h5>
-                                    <p>10/02/2025 - Đại học Quốc gia</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Support Section - MathBridge Professional Design -->
-        <section class="content-section" id="support">
-            <!-- Professional Header with MathBridge Support Branding -->
-            <div class="section-header">
-                <div class="section-title-wrapper">
-                    <div class="section-icon">
-                        <i class="fas fa-headset"></i>
-                    </div>
-                    <div class="section-title-content">
-                        <h2>🛠️ Hỗ trợ MathBridge</h2>
-                        <p class="section-subtitle">Đội ngũ chuyên gia luôn sẵn sàng hỗ trợ bạn trên hành trình chinh phục toán học quốc tế</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="createSupportRequest()">
-                        <i class="fas fa-plus"></i>
-                        Tạo yêu cầu hỗ trợ
-                    </button>
-                </div>
-            </div>
-
-            <!-- Support Overview Cards -->
-            <div class="support-overview">
-                <div class="overview-grid">
-                    <div class="overview-card academic">
-                        <div class="overview-icon">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <div class="overview-content">
-                            <h4>Hỗ trợ học tập</h4>
-                            <p>Giải đáp thắc mắc về Cambridge IGCSE, A-Level, IB Math, AP Calculus</p>
-                            <div class="response-time">Trả lời trong 2 giờ</div>
-                        </div>
-                    </div>
-                    <div class="overview-card technical">
-                        <div class="overview-icon">
-                            <i class="fas fa-cogs"></i>
-                        </div>
-                        <div class="overview-content">
-                            <h4>Hỗ trợ kỹ thuật</h4>
-                            <p>Vấn đề về nền tảng, tài liệu, và công cụ học tập</p>
-                            <div class="response-time">Trả lời trong 4 giờ</div>
-                        </div>
-                    </div>
-                    <div class="overview-card career">
-                        <div class="overview-icon">
-                            <i class="fas fa-compass"></i>
-                        </div>
-                        <div class="overview-content">
-                            <h4>Tư vấn hướng nghiệp</h4>
-                            <p>Khuyên về lựa chọn trường, ngành học, và lộ trình phát triển</p>
-                            <div class="response-time">Trả lời trong 24 giờ</div>
-                        </div>
-                    </div>
-                    <div class="overview-card emergency">
-                        <div class="overview-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="overview-content">
-                            <h4>Hỗ trợ khẩn cấp</h4>
-                            <p>Vấn đề quan trọng cần giải quyết ngay lập tức</p>
-                            <div class="response-time">Trả lời trong 30 phút</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Help Resources -->
-            <div class="quick-help-section">
-                <h3><i class="fas fa-lightbulb"></i> Tài nguyên hỗ trợ nhanh</h3>
-                <div class="help-resources-grid">
-                    <div class="help-resource-card">
-                        <div class="resource-icon">📚</div>
-                        <div class="resource-content">
-                            <h5>Hướng dẫn sử dụng</h5>
-                            <p>Hướng dẫn chi tiết cách sử dụng nền tảng MathBridge</p>
-                            <a href="#" class="resource-link">Xem hướng dẫn →</a>
-                        </div>
-                    </div>
-                    <div class="help-resource-card">
-                        <div class="resource-icon">❓</div>
-                        <div class="resource-content">
-                            <h5>Câu hỏi thường gặp</h5>
-                            <p>Giải đáp các câu hỏi phổ biến về chương trình học</p>
-                            <a href="#" class="resource-link">Xem FAQ →</a>
-                        </div>
-                    </div>
-                    <div class="help-resource-card">
-                        <div class="resource-icon">🎥</div>
-                        <div class="resource-content">
-                            <h5>Video hướng dẫn</h5>
-                            <p>Thư viện video giải thích chi tiết các khái niệm toán</p>
-                            <a href="#" class="resource-link">Xem video →</a>
-                        </div>
-                    </div>
-                    <div class="help-resource-card">
-                        <div class="resource-icon">📞</div>
-                        <div class="resource-content">
-                            <h5>Liên hệ trực tiếp</h5>
-                            <p>Gọi hotline hoặc nhắn tin trực tiếp với giáo viên</p>
-                            <a href="#" class="resource-link">Liên hệ ngay →</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Support Request Form -->
-            <div class="support-form-container" id="supportFormContainer" style="display: none;">
-                <div class="support-form-card">
-                    <div class="form-header">
-                        <h3><i class="fas fa-plus-circle"></i> Tạo yêu cầu hỗ trợ mới</h3>
-                        <p>Điền thông tin chi tiết để chúng tôi hỗ trợ bạn tốt nhất</p>
-                    </div>
-                    <form id="supportRequestForm" onsubmit="submitSupportRequest(event)">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="supportType">Loại yêu cầu hỗ trợ *</label>
-                                <select id="supportType" name="supportType" required>
-                                    <option value="">Chọn loại yêu cầu</option>
-                                    <option value="academic">📚 Hỗ trợ học tập</option>
-                                    <option value="technical">🔧 Vấn đề kỹ thuật</option>
-                                    <option value="billing">💳 Thanh toán & hóa đơn</option>
-                                    <option value="career">🎯 Tư vấn hướng nghiệp</option>
-                                    <option value="emergency">🚨 Hỗ trợ khẩn cấp</option>
-                                    <option value="other">❓ Khác</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="relatedProgram">Liên quan đến chương trình</label>
-                                <select id="relatedProgram" name="relatedProgram">
-                                    <option value="">Chọn chương trình</option>
-                                    <option value="igcse">Cambridge IGCSE</option>
-                                    <option value="alevel">A-Level Mathematics</option>
-                                    <option value="ib">IB Math</option>
-                                    <option value="ap">AP Calculus</option>
-                                    <option value="vietnamese">Toán nâng cao VN</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="relatedClass">Liên quan đến lớp học</label>
-                                <select id="relatedClass" name="relatedClass">
-                                    <option value="">Chọn lớp học (nếu có)</option>
-                                    <!-- Classes will be populated by JS -->
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="priority">Mức độ ưu tiên</label>
-                                <select id="priority" name="priority">
-                                    <option value="normal">Bình thường</option>
-                                    <option value="high">Cao</option>
-                                    <option value="urgent">Khẩn cấp</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="supportTitle">Tiêu đề yêu cầu *</label>
-                            <input type="text" id="supportTitle" name="supportTitle" placeholder="Ví dụ: Cần hỗ trợ bài tập về phương trình bậc hai" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="supportDescription">Mô tả chi tiết vấn đề *</label>
-                            <textarea id="supportDescription" name="supportDescription" rows="6" placeholder="Hãy mô tả chi tiết vấn đề bạn gặp phải, kèm theo thông tin cụ thể như:&#10;&#10;- Chương trình đang học&#10;- Bài học/bài tập cụ thể&#10;- Vấn đề gặp phải&#10;- Những gì bạn đã thử&#10;&#10;Điều này giúp chúng tôi hỗ trợ bạn nhanh chóng và chính xác hơn." required></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="supportFile">Đính kèm file (tùy chọn)</label>
-                            <div class="file-upload-area">
-                                <input type="file" id="supportFile" name="supportFile" accept="image/*,.pdf,.doc,.docx,.txt" multiple>
-                                <div class="file-upload-content">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <div class="upload-text">
-                                        <strong>Kéo thả file vào đây</strong> hoặc click để chọn
-                                        <br><small>Chấp nhận: hình ảnh, PDF, Word, TXT. Tối đa 5 file, mỗi file 10MB</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="filePreview" class="file-preview"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="contactPermission" name="contactPermission" checked>
-                                <span class="checkmark"></span>
-                                Tôi đồng ý cho MathBridge liên hệ qua email/SMS để cập nhật tiến độ hỗ trợ
-                            </label>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="cancelSupportRequest()">
-                                <i class="fas fa-times"></i> Hủy
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i> Gửi yêu cầu hỗ trợ
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Support Requests Management -->
-            <div class="support-requests-container">
-                <div class="requests-header">
-                    <h3><i class="fas fa-list"></i> Yêu cầu hỗ trợ của bạn</h3>
-                    <div class="requests-stats">
-                        <div class="stat-badge">
-                            <span class="stat-number" id="activeRequests">0</span>
-                            <span class="stat-label">Đang xử lý</span>
-                        </div>
-                        <div class="stat-badge resolved">
-                            <span class="stat-number" id="resolvedRequests">0</span>
-                            <span class="stat-label">Đã giải quyết</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="support-filters">
-                    <div class="filter-row">
-                        <select class="form-select" id="supportStatusFilter" onchange="filterSupportRequests()">
-                            <option value="all">Tất cả trạng thái</option>
-                            <option value="pending">Chờ xử lý</option>
-                            <option value="processing">Đang xử lý</option>
-                            <option value="resolved">Đã giải quyết</option>
-                            <option value="closed">Đã đóng</option>
-                        </select>
-                        <select class="form-select" id="supportTypeFilter" onchange="filterSupportRequests()">
-                            <option value="all">Tất cả loại</option>
-                            <option value="academic">Học tập</option>
-                            <option value="technical">Kỹ thuật</option>
-                            <option value="billing">Thanh toán</option>
-                            <option value="career">Tư vấn</option>
-                            <option value="other">Khác</option>
-                        </select>
-                    </div>
-                    <div class="search-box">
-                        <input type="text" id="supportSearch" placeholder="Tìm kiếm yêu cầu hỗ trợ..." onkeyup="searchSupportRequests()">
-                        <i class="fas fa-search"></i>
-                    </div>
-                </div>
-
-                <div class="support-requests-list" id="supportRequestsList">
-                    <!-- Support requests will be loaded here -->
-                </div>
-
-                <!-- Empty State -->
-                <div class="support-empty-state" id="supportEmptyState" style="display: none;">
-                    <div class="empty-state-content">
-                        <div class="empty-icon">🛠️</div>
-                        <h4>Chưa có yêu cầu hỗ trợ nào</h4>
-                        <p>Nếu bạn gặp vấn đề gì trong quá trình học tập, đừng ngần ngại tạo yêu cầu hỗ trợ. Đội ngũ MathBridge luôn sẵn sàng giúp đỡ!</p>
-                        <button class="btn btn-primary" onclick="createSupportRequest()">
-                            <i class="fas fa-plus"></i> Tạo yêu cầu hỗ trợ đầu tiên
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 </div>
 
@@ -1013,7 +521,31 @@
 </div>
 
 <!-- Authentication Check Script -->
+<script>
+    // Check authentication before loading dashboard
+    (function() {
+        const authCheck = window.isAuthenticated ? window.isAuthenticated() : { authenticated: false };
 
+        if (!authCheck.authenticated) {
+            alert('Bạn cần đăng nhập để truy cập trang này!');
+            window.location.href = '../../pages/login.html';
+            return;
+        }
+
+        // Check if user is a student
+        const studentCheck = window.isStudent ? window.isStudent() : { authenticated: false };
+
+        if (!studentCheck.authenticated) {
+            alert('Chỉ học sinh mới có thể truy cập trang này!');
+            window.location.href = '../../index.html';
+            return;
+        }
+
+        // Authentication successful, proceed with dashboard loading
+        console.log('Authentication validated, loading student dashboard...');
+
+    })();
+</script>
 
 <!-- Scripts -->
 <script src="../assets/js/config.js"></script>
