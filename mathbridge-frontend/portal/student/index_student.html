@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - MathBridge</title>
+    <link rel="stylesheet" href="../assets/css/student-dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body data-static-mode>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>MathBridge</span>
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <ul>
+            <li class="nav-item active" data-section="dashboard">
+                <a href="#dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item" data-section="classes">
+                <a href="#classes">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Lớp học</span>
+                </a>
+            </li>
+            <li class="nav-item" data-section="assignments">
+                <a href="#assignments">
+                    <i class="fas fa-tasks"></i>
+                    <span>Bài tập</span>
+                </a>
+            </li>
+            <li class="nav-item" data-section="grades">
+                <a href="#grades">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Điểm số</span>
+                </a>
+            </li>
+            <li class="nav-item" data-section="schedule">
+                <a href="#schedule">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Lịch học</span>
+                </a>
+            </li>
+            <li class="nav-item" data-section="messages">
+                <a href="#messages">
+                    <i class="fas fa-envelope"></i>
+                    <span>Tin nhắn</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="user-details">
+                <span class="user-name" id="sidebarUserName">Loading...</span>
+                <span class="user-role">Học sinh</span>
+            </div>
+        </div>
+        <button class="logout-btn" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            <div class="current-time">
+                <span id="currentDate"></span>
+                <span id="currentTime"></span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="notifications">
+                <button class="notification-btn" id="notificationBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                </button>
+            </div>
+            <div class="user-menu">
+                <button class="user-menu-btn" id="userMenuBtn">
+                    <div class="user-avatar-small">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span id="headerUserName">Loading...</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="dashboard.openProfile(); dashboard.closeUserDropdown();">
+                            <i class="fas fa-user"></i>
+                            <span>Hồ sơ</span>
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="dashboard.openSettings(); dashboard.closeUserDropdown();">
+                            <i class="fas fa-cog"></i>
+                            <span>Cài đặt</span>
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="dashboard.openActivityLog(); dashboard.closeUserDropdown();">
+                            <i class="fas fa-history"></i>
+                            <span>Nhật ký hoạt động</span>
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="dashboard.openNotifications(); dashboard.closeUserDropdown();">
+                            <i class="fas fa-bell"></i>
+                            <span>Thông báo</span>
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="dashboard.openHelp(); dashboard.closeUserDropdown();">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Trợ giúp</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item logout-item" onclick="dashboard.logout(); dashboard.closeUserDropdown();">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Sections -->
+    <main class="content">
+        <!-- Dashboard Section -->
+        <section class="content-section active" id="dashboard">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h2 id="welcomeMessage">Chào mừng bạn trở lại!</h2>
+                    <p id="heroSubtitle">Hôm nay bạn có <span id="todayClassesCount">0</span> lớp học và <span id="pendingAssignmentsCount">0</span> bài tập cần làm.</p>
+                </div>
+                <div class="hero-actions">
+                    <button class="btn btn-primary" onclick="dashboard.quickAction('joinClass')">
+                        <i class="fas fa-plus"></i> Tham gia lớp mới
+                    </button>
+                    <button class="btn btn-secondary" onclick="dashboard.quickAction('viewSchedule')">
+                        <i class="fas fa-calendar"></i> Xem lịch học
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-overview">
+                <div class="stat-card primary" data-metric="totalClasses">
+                    <div class="stat-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalClasses">0</h3>
+                        <p>Tổng số lớp</p>
+                        <div class="stat-trend" id="classesTrend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0 so với tháng trước</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card success" data-metric="completedAssignments">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="completedAssignments">0</h3>
+                        <p>Bài tập hoàn thành</p>
+                        <div class="stat-trend" id="assignmentsTrend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0 so với tuần trước</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card warning" data-metric="averageGrade">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="averageGrade">0.0</h3>
+                        <p>Điểm trung bình</p>
+                        <div class="stat-trend" id="gradeTrend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0.0 so với kỳ trước</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card info" data-metric="attendanceRate">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="attendanceRate">0%</h3>
+                        <p>Tỷ lệ tham gia</p>
+                        <div class="stat-trend" id="attendanceTrend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+0% so với tháng trước</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Điểm số theo thời gian</h3>
+                        <select id="gradeChartPeriod" onchange="updateGradeChart()">
+                            <option value="month">Tháng này</option>
+                            <option value="semester">Học kỳ</option>
+                            <option value="year">Năm học</option>
+                        </select>
+                    </div>
+                    <canvas id="gradeChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Trạng thái bài tập</h3>
+                    </div>
+                    <canvas id="assignmentChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="recent-activity">
+                <div class="activity-header">
+                    <h3>Hoạt động gần đây</h3>
+                    <button class="btn btn-link" onclick="viewAllActivity()">Xem tất cả</button>
+                </div>
+                <div class="activity-list" id="recentActivityList">
+                    <!-- Activity items will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Classes Section -->
+        <section class="content-section" id="classes">
+            <div class="section-header">
+                <h2>Lớp học của tôi</h2>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" id="classSearch" placeholder="Tìm kiếm lớp học..." onkeyup="filterClasses()">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <select class="form-select" id="classFilter" onchange="filterClasses()">
+                        <option value="all">Tất cả lớp</option>
+                        <option value="active">Đang học</option>
+                        <option value="completed">Đã hoàn thành</option>
+                    </select>
+                    <button class="btn btn-success" onclick="joinNewClass()">
+                        <i class="fas fa-plus"></i>
+                        Tham gia lớp mới
+                    </button>
+                </div>
+            </div>
+
+            <div class="classes-grid" id="classesGrid">
+                <!-- Classes will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Assignments Section -->
+        <section class="content-section" id="assignments">
+            <div class="section-header">
+                <h2>Bài tập của tôi</h2>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" id="assignmentSearch" placeholder="Tìm kiếm bài tập..." onkeyup="filterAssignments()">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <select class="form-select" id="assignmentStatusFilter" onchange="filterAssignments()">
+                        <option value="all">Tất cả</option>
+                        <option value="pending">Chưa làm</option>
+                        <option value="submitted">Đã nộp</option>
+                        <option value="graded">Đã chấm</option>
+                        <option value="overdue">Quá hạn</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="assignments-grid" id="assignmentsGrid">
+                <!-- Assignments will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Grades Section -->
+        <section class="content-section" id="grades">
+            <div class="section-header">
+                <h2>Điểm số của tôi</h2>
+                <div class="header-actions">
+                    <select class="form-select" id="gradeSubjectFilter" onchange="filterGrades()">
+                        <option value="all">Tất cả môn</option>
+                        <option value="math">Toán học</option>
+                        <option value="physics">Vật lý</option>
+                        <option value="chemistry">Hóa học</option>
+                    </select>
+                    <select class="form-select" id="gradePeriodFilter" onchange="filterGrades()">
+                        <option value="all">Tất cả thời gian</option>
+                        <option value="current">Học kỳ hiện tại</option>
+                        <option value="previous">Học kỳ trước</option>
+                    </select>
+                    <button class="btn btn-success" onclick="exportGrades()">
+                        <i class="fas fa-download"></i>
+                        Xuất điểm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grade Statistics -->
+            <div class="grade-stats-overview">
+                <div class="grade-stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="overallAverage">0.0</h3>
+                        <p>Điểm trung bình tổng thể</p>
+                    </div>
+                </div>
+                <div class="grade-stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="gradeRanking">N/A</h3>
+                        <p>Xếp loại</p>
+                    </div>
+                </div>
+                <div class="grade-stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalGradesCount">0</h3>
+                        <p>Tổng số điểm</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grade Chart -->
+            <div class="grade-chart-container">
+                <canvas id="detailedGradeChart" width="800" height="300"></canvas>
+            </div>
+
+            <!-- Grade Table -->
+            <div class="grades-table-container">
+                <h3>Chi tiết điểm số</h3>
+                <div class="table-wrapper">
+                    <table class="grades-table" id="gradesTable">
+                        <thead>
+                        <tr>
+                            <th>Môn học</th>
+                            <th>Lớp</th>
+                            <th>Loại điểm</th>
+                            <th>Điểm số</th>
+                            <th>Ngày chấm</th>
+                            <th>Giáo viên</th>
+                            <th>Nhận xét</th>
+                            <th>Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="gradesTableBody">
+                        <!-- Grades will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Schedule Section -->
+        <section class="content-section" id="schedule">
+            <div class="section-header">
+                <h2>Lịch học của tôi</h2>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportSchedule()">
+                        <i class="fas fa-download"></i>
+                        Xuất lịch
+                    </button>
+                    <button class="btn btn-info" onclick="viewWeeklySchedule()">
+                        <i class="fas fa-calendar-week"></i>
+                        Xem tuần
+                    </button>
+                </div>
+            </div>
+
+            <div class="schedule-calendar">
+                <div class="calendar-header">
+                    <button class="btn-icon" id="prevMonth" onclick="changeMonth(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 id="currentMonth">Tháng 12, 2024</h3>
+                    <button class="btn-icon" id="nextMonth" onclick="changeMonth(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendar will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div class="today-schedule">
+                <h3><i class="fas fa-calendar-day"></i> Lịch học hôm nay (<span id="todayDate"></span>)</h3>
+                <div class="schedule-list" id="todayScheduleList">
+                    <!-- Today's schedule will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Messages Section -->
+        <section class="content-section" id="messages">
+            <div class="section-header">
+                <h2>Tin nhắn</h2>
+                <div class="header-actions">
+                    <div class="connection-status">
+                        <span class="status-indicator" id="connectionStatus"></span>
+                        <span id="connectionText">Đang kết nối...</span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double"></i>
+                        Đánh dấu đã đọc
+                    </button>
+                    <button class="btn btn-primary" onclick="sendMessage()">
+                        <i class="fas fa-plus"></i>
+                        Soạn tin mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Message Filters -->
+            <div class="message-filters">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterMessages('all')">
+                        <i class="fas fa-inbox"></i> Tất cả
+                    </button>
+                    <button class="filter-tab" onclick="filterMessages('teachers')">
+                        <i class="fas fa-user-tie"></i> Giáo viên
+                    </button>
+                    <button class="filter-tab" onclick="filterMessages('classmates')">
+                        <i class="fas fa-users"></i> Bạn học
+                    </button>
+                    <button class="filter-tab" onclick="filterMessages('admin')">
+                        <i class="fas fa-cog"></i> Admin
+                    </button>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="messageSearch" placeholder="Tìm kiếm tin nhắn..." onkeyup="searchMessages()">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <!-- Message Statistics -->
+            <div class="message-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalMessages">0</span>
+                    <span class="stat-label">Tổng tin nhắn</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="unreadMessages">0</span>
+                    <span class="stat-label">Chưa đọc</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="todayMessages">0</span>
+                    <span class="stat-label">Hôm nay</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="urgentMessages">0</span>
+                    <span class="stat-label">Khẩn cấp</span>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <!-- Messages will be loaded here -->
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Đang tải...</p>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal" id="errorModal">
+    <div class="modal-content small-modal">
+        <div class="modal-header">
+            <h3>Lỗi</h3>
+            <button class="modal-close" onclick="closeErrorModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="error-message" id="errorMessage"></div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="retryLastAction()">Thử lại</button>
+                <button class="btn btn-secondary" onclick="closeErrorModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Authentication Check Script -->
+<script>
+    // Check authentication before loading dashboard
+    (function() {
+        const authCheck = window.isAuthenticated ? window.isAuthenticated() : { authenticated: false };
+
+        if (!authCheck.authenticated) {
+            alert('Bạn cần đăng nhập để truy cập trang này!');
+            window.location.href = '../../pages/login.html';
+            return;
+        }
+
+        // Check if user is a student
+        const studentCheck = window.isStudent ? window.isStudent() : { authenticated: false };
+
+        if (!studentCheck.authenticated) {
+            alert('Chỉ học sinh mới có thể truy cập trang này!');
+            window.location.href = '../../index.html';
+            return;
+        }
+
+        // Authentication successful, proceed with dashboard loading
+        console.log('Authentication validated, loading student dashboard...');
+
+    })();
+</script>
+
+<!-- Scripts -->
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/utils/http.js"></script>
+<script src="../assets/js/utils/auth.js"></script>
+<script src="js/student-dashboard.js"></script>
+
+<!-- Modal Containers for Dynamic Content -->
+<div id="profileModalContainer"></div>
+<div id="settingsModalContainer"></div>
+<div id="activityLogModalContainer"></div>
+<div id="helpModalContainer"></div>
+<div id="notificationsModalContainer"></div>
+</body>
+</html>
