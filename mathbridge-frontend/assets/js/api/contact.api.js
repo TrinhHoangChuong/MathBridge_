@@ -1,14 +1,34 @@
 // assets/js/api/contact.api.js
-import { CONFIG } from "../config.js";
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
 /** GET /api/public/contact -> ContactDTO */
-export async function getContactInfo() {
+async function getContactInfo() {
   try {
-    const res = await fetch(CONFIG.BASE_URL + "/api/public/contact", {
+    // Check if CONFIG is available
+    if (!window.CONFIG || !window.CONFIG.BASE_URL) {
+      console.warn("CONFIG not available, backend may not be configured");
+      return {
+        hotline: "", address: "", workingHours: "", workingDays: "",
+        email: "", socialLinks: null, mapEmbedUrl: "", centers: []
+      };
+    }
+
+    const res = await fetch(window.CONFIG.BASE_URL + "/api/public/contact", {
       method: "GET",
       headers: { "Content-Type": "application/json" }
     });
-    if (!res.ok) throw new Error("GET /contact failed: " + res.status);
+    
+    if (!res.ok) {
+      // Only log if not a connection error (which is expected when backend is down)
+      if (res.status !== 0) {
+        console.warn("GET /contact failed: " + res.status);
+      }
+      return {
+        hotline: "", address: "", workingHours: "", workingDays: "",
+        email: "", socialLinks: null, mapEmbedUrl: "", centers: []
+      };
+    }
+    
     const dto = await res.json();
 
     // Chuẩn hóa tối thiểu, có gì dùng nấy
@@ -23,7 +43,10 @@ export async function getContactInfo() {
       centers: Array.isArray(dto?.centers) ? dto.centers : [] // List<FooterCenterDTO>
     };
   } catch (err) {
-    console.error("getContactInfo error:", err);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("getContactInfo error:", err);
+    }
     return {
       hotline: "", address: "", workingHours: "", workingDays: "",
       email: "", socialLinks: null, mapEmbedUrl: "", centers: []
@@ -32,9 +55,14 @@ export async function getContactInfo() {
 }
 
 /** POST /api/public/contact -> lưu liên hệ vào CSDL (BE trả message dạng text) */
-export async function submitContact(payload) {
+async function submitContact(payload) {
   try {
-    const res = await fetch(CONFIG.BASE_URL + "/api/public/contact", {
+    // Check if CONFIG is available
+    if (!window.CONFIG || !window.CONFIG.BASE_URL) {
+      return { success: false, message: "Backend chưa được cấu hình. Vui lòng thử lại sau." };
+    }
+
+    const res = await fetch(window.CONFIG.BASE_URL + "/api/public/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json; charset=UTF-8" },
       body: JSON.stringify(payload)
@@ -42,12 +70,22 @@ export async function submitContact(payload) {
 
     const text = await res.text(); // BE trả về chuỗi message
     if (!res.ok) {
-      console.error("POST /contact ->", res.status, text);
+      // Only log if not a connection error
+      if (res.status !== 0) {
+        console.warn("POST /contact ->", res.status, text);
+      }
       return { success: false, message: text || "Gửi liên hệ thất bại." };
     }
     return { success: true, message: text || "Gửi liên hệ thành công." };
   } catch (err) {
-    console.error("submitContact error:", err);
+    // Only log if it's not a network/connection error
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("submitContact error:", err);
+    }
     return { success: false, message: "Không thể gửi liên hệ. Vui lòng thử lại." };
   }
 }
+
+// Expose functions to global scope
+window.getContactInfo = getContactInfo;
+window.submitContact = submitContact;
