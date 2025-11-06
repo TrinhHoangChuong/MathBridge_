@@ -1,11 +1,11 @@
 // file: assets/js/api/login.api.js
-import { CONFIG } from "../config.js";
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
 const LOGIN_ENDPOINT = "/api/public/auth/login";
 
-export async function loginStudentApi(email, password) {
+async function loginStudentApi(email, password) {
   try {
-    const res = await fetch(CONFIG.BASE_URL + LOGIN_ENDPOINT, {
+    const res = await fetch(window.CONFIG.BASE_URL + LOGIN_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -39,3 +39,6 @@ export async function loginStudentApi(email, password) {
     };
   }
 }
+
+// Expose function to global scope
+window.loginStudentApi = loginStudentApi;

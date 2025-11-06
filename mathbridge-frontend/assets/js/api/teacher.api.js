@@ -3,8 +3,7 @@
 // backend: GET /api/public/nhanvien/giaovien
 // backend trả: [ { idNv, ho, tenDem, ten, chuyenMon, kinhNghiem }, ... ]
 // FE cần: { teachers: [ { idNv, hoTen, chuyenMon, kinhNghiem }, ... ] }
-
-import { CONFIG } from "../config.js";
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
 function buildFullName(ho, tenDem, ten) {
   const parts = [];
@@ -14,9 +13,15 @@ function buildFullName(ho, tenDem, ten) {
   return parts.join(" ").trim();
 }
 
-export async function getTeachersFromApi() {
+async function getTeachersFromApi() {
   try {
-    const res = await fetch(CONFIG.BASE_URL + "/api/public/nhanvien/giaovien", {
+    // Check if CONFIG is available
+    if (!window.CONFIG || !window.CONFIG.BASE_URL) {
+      console.warn("CONFIG not available, backend may not be configured");
+      return { teachers: [] };
+    }
+
+    const res = await fetch(window.CONFIG.BASE_URL + "/api/public/nhanvien/giaovien", {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -24,7 +29,10 @@ export async function getTeachersFromApi() {
     });
 
     if (!res.ok) {
-      console.error("teachers API lỗi, status =", res.status);
+      // Only log if not a connection error (which is expected when backend is down)
+      if (res.status !== 0) {
+        console.warn("teachers API lỗi, status =", res.status);
+      }
       return { teachers: [] };
     }
 
@@ -43,7 +51,13 @@ export async function getTeachersFromApi() {
     return { teachers: [] };
 
   } catch (err) {
-    console.error("teachers API exception:", err);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("teachers API exception:", err);
+    }
     return { teachers: [] };
   }
 }
+
+// Expose function to global scope
+window.getTeachersFromApi = getTeachersFromApi;

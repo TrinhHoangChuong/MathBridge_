@@ -24,6 +24,11 @@
     <!-- Inject header/footer -->
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="assets/js/utils/includePartials.js" defer></script>
+
+    <!-- JS chung - Load APIs first (without defer) to ensure they're available -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api/teacher-detail.api.js"></script>
+    <script src="assets/js/api/centers.api.js"></script>
 </head>
 <body class="teacher-detail-page">
 <header></header>

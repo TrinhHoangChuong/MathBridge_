@@ -1,14 +1,22 @@
 // assets/js/api/centers.api.js
 // Lấy danh sách cơ sở (public, không cần token)
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
-import { CONFIG } from "../config.js";
-
-export async function getCentersFromApi() {
+async function getCentersFromApi() {
   try {
-    const res = await fetch(CONFIG.BASE_URL + "/api/public/centers");
+    // Check if CONFIG is available
+    if (!window.CONFIG || !window.CONFIG.BASE_URL) {
+      console.warn("CONFIG not available, backend may not be configured");
+      return { centers: [] };
+    }
+
+    const res = await fetch(window.CONFIG.BASE_URL + "/api/public/centers");
 
     if (!res.ok) {
-      console.error("centers API lỗi, status =", res.status);
+      // Only log if not a connection error (which is expected when backend is down)
+      if (res.status !== 0) {
+        console.warn("centers API lỗi, status =", res.status);
+      }
       return { centers: [] };
     }
 
@@ -19,7 +27,13 @@ export async function getCentersFromApi() {
       return { centers: [] };
     }
   } catch (err) {
-    console.error("centers API exception:", err);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("centers API exception:", err);
+    }
     return { centers: [] };
   }
 }
+
+// Expose function to global scope
+window.getCentersFromApi = getCentersFromApi;

@@ -16,7 +16,10 @@
     <!-- Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
 
-    <!-- JS chung -->
+    <!-- JS chung - Load APIs first (without defer) to ensure they're available -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api/teacher.api.js"></script>
+    <script src="assets/js/api/centers.api.js"></script>
     <script src="assets/js/pages/header.pages.js" defer></script>
     <script src="assets/js/utils/includePartials.js?v=20251101" defer></script>
 </head>

@@ -9,4 +9,9 @@ const ENV = {
     BASE_URL: "https://api.mathbridge.vn",
   },
 };
-export const CONFIG = ENV.dev;
+
+// Không dùng export để tương thích với script tag thông thường
+const CONFIG = ENV.dev;
+
+// Expose CONFIG to global scope
+window.CONFIG = CONFIG;

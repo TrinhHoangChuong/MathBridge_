@@ -1,22 +1,48 @@
 // Jobs API
-import { CONFIG } from "../config.js";
-
+// CONFIG được load từ config.js và expose qua window.CONFIG
 
 async function http(path) {
-  const r = await fetch(CONFIG.BASE_URL + path);
-  if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
-  return r.json();
+  // Check if CONFIG is available
+  if (!window.CONFIG || !window.CONFIG.BASE_URL) {
+    throw new Error("CONFIG not available");
+  }
+
+  try {
+    const r = await fetch(window.CONFIG.BASE_URL + path);
+    if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
+    return r.json();
+  } catch (err) {
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("HTTP request failed:", err);
+    }
+    throw err;
+  }
 }
 
 async function httpPost(path, data, isFormData = false) {
+  // Check if CONFIG is available
+  if (!window.CONFIG || !window.CONFIG.BASE_URL) {
+    throw new Error("CONFIG not available");
+  }
+
   const opts = {
     method: "POST",
     headers: isFormData ? undefined : { "Content-Type": "application/json" },
     body: isFormData ? data : JSON.stringify(data),
   };
-  const r = await fetch(CONFIG.BASE_URL + path, opts);
-  if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
-  return r.json();
+  
+  try {
+    const r = await fetch(window.CONFIG.BASE_URL + path, opts);
+    if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
+    return r.json();
+  } catch (err) {
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("HTTP POST request failed:", err);
+    }
+    throw err;
+  }
 }
 
 // Fallback sample jobs shown when backend is not running or DB empty
@@ -106,7 +132,10 @@ async function fetchJobs() {
     // empty from backend -> return sample so UI isn't blank during dev
     return SAMPLE_JOBS;
   } catch (err) {
-    console.warn("fetchJobs failed, using SAMPLE_JOBS", err);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("fetchJobs failed, using SAMPLE_JOBS", err);
+    }
     return SAMPLE_JOBS;
   }
 }
@@ -123,7 +152,10 @@ async function fetchJobBySlug(slug) {
     // fallback to sample
     return SAMPLE_JOBS.find((j) => j.slug === slug) || null;
   } catch (e) {
-    console.warn("Job not found:", slug);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (e.name !== 'TypeError' || !e.message.includes('fetch')) {
+      console.warn("Job not found:", slug);
+    }
     return SAMPLE_JOBS.find((j) => j.slug === slug) || null;
   }
 }
@@ -137,10 +169,22 @@ async function submitApplication(formData) {
   try {
     return await httpPost("/api/public/jobs/apply", formData, true);
   } catch (err) {
-    console.warn("submitApplication failed", err);
+    // Only log if it's not a network/connection error (expected when backend is down)
+    if (err.name !== 'TypeError' || !err.message.includes('fetch')) {
+      console.warn("submitApplication failed", err);
+    }
+    
+    // Return error response with more details
+    let errorMessage = "Không thể kết nối tới backend. Thử lại sau.";
+    if (err.message && err.message.includes("500")) {
+      errorMessage = "Lỗi server khi xử lý hồ sơ. Vui lòng thử lại sau.";
+    } else if (err.message && err.message.includes("404")) {
+      errorMessage = "Endpoint không tồn tại. Vui lòng kiểm tra lại.";
+    }
+    
     return {
       success: false,
-      message: "Không thể kết nối tới backend. Thử lại sau.",
+      message: errorMessage,
     };
   }
 }

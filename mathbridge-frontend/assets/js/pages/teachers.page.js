@@ -5,8 +5,7 @@
 // - render card
 // - filter + search
 //
-
-import { getTeachersFromApi } from "../api/teacher.api.js";
+// getTeachersFromApi được load từ teacher.api.js và expose qua window.getTeachersFromApi
 
 let allTeachers = [];
 let activeFilter = "all";
@@ -199,10 +198,25 @@ function initSearchBox() {
 }
 
 /* init --------------------------------------------------- */
+async function waitForApi() {
+  // Wait for API function to be available (max 3 seconds)
+  let attempts = 0;
+  while (!window.getTeachersFromApi && attempts < 30) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    attempts++;
+  }
+  if (!window.getTeachersFromApi) {
+    console.warn("getTeachersFromApi not available after waiting - API script may not be loaded");
+    return () => ({ teachers: [] });
+  }
+  return window.getTeachersFromApi;
+}
+
 export async function initTeachersPage() {
   showLoadingSkeleton();
 
-  const { teachers } = await getTeachersFromApi();
+  const apiFunc = await waitForApi();
+  const { teachers } = await apiFunc();
 
   allTeachers = teachers || [];
   hideStatusMessage();
