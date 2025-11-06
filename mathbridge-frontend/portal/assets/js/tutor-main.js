@@ -2,15 +2,135 @@
 class TutorDashboard {
     constructor() {
         this.currentSection = 'dashboard';
+        this.tutorInfo = null;
         this.init();
     }
 
     init() {
+        // Kiểm tra đăng nhập trước
+        if (!this.checkAuthentication()) {
+            return;
+        }
+        
+        this.loadTutorInfo();
         this.setupEventListeners();
         this.updateDateTime();
         this.loadDashboardData();
         this.setupSidebar();
         this.setupModals();
+        this.updateTutorAvatar();
+    }
+
+    checkAuthentication() {
+        // Kiểm tra xem có thông tin đăng nhập không
+        const authData = localStorage.getItem('mb_auth');
+        const token = localStorage.getItem('mb_token');
+        
+        if (!authData && !token) {
+            // Chưa đăng nhập, redirect về trang login
+            window.location.href = '../LoginPortal.html';
+            return false;
+        }
+        
+        // Kiểm tra role
+        if (authData) {
+            try {
+                const data = JSON.parse(authData);
+                const user = data.user || data.account || {};
+                const roles = user.roles || [];
+                
+                if (!roles.includes('R003')) {
+                    // Không phải cố vấn, redirect về login
+                    alert('Bạn không có quyền truy cập trang này.');
+                    window.location.href = '../LoginPortal.html';
+                    return false;
+                }
+            } catch (e) {
+                console.error('Error parsing auth data:', e);
+            }
+        }
+        
+        return true;
+    }
+
+    loadTutorInfo() {
+        // Đọc thông tin từ localStorage
+        const authData = localStorage.getItem('mb_auth');
+        let user = null;
+        
+        if (authData) {
+            try {
+                const data = JSON.parse(authData);
+                user = data.user || data.account || {};
+            } catch (e) {
+                console.error('Error parsing auth data:', e);
+            }
+        }
+        
+        // Fallback về các keys cũ
+        const name = user?.hoTen || user?.ten || user?.fullName || 
+                    localStorage.getItem('mb_user_name') || 
+                    user?.email || 'Cố vấn';
+        const email = user?.email || localStorage.getItem('mb_user_email') || '';
+        const roles = user?.roles || [];
+        
+        this.tutorInfo = {
+            name: name,
+            email: email,
+            roles: roles,
+            id: user?.idTk || user?.id || localStorage.getItem('mb_user_id') || '',
+            avatar: user?.avatar || null
+        };
+    }
+
+    updateTutorAvatar() {
+        if (!this.tutorInfo) return;
+        
+        const { name, email } = this.tutorInfo;
+        
+        // Cập nhật sidebar avatar
+        const sidebarUserName = document.querySelector('.sidebar-footer .user-name');
+        const sidebarUserRole = document.querySelector('.sidebar-footer .user-role');
+        const sidebarAvatar = document.querySelector('.sidebar-footer .user-avatar');
+        
+        if (sidebarUserName) {
+            sidebarUserName.textContent = name;
+        }
+        if (sidebarUserRole) {
+            sidebarUserRole.textContent = 'Cố vấn học tập';
+        }
+        if (sidebarAvatar) {
+            // Tạo avatar initials từ tên
+            const initials = this.getInitials(name);
+            sidebarAvatar.innerHTML = `<span class="avatar-initials">${initials}</span>`;
+        }
+        
+        // Cập nhật header avatar
+        const headerUserName = document.querySelector('.header .user-menu-btn span');
+        const headerAvatar = document.querySelector('.header .user-avatar-small');
+        
+        if (headerUserName) {
+            headerUserName.textContent = name;
+        }
+        if (headerAvatar) {
+            const initials = this.getInitials(name);
+            headerAvatar.innerHTML = `<span class="avatar-initials">${initials}</span>`;
+        }
+    }
+
+    getInitials(name) {
+        if (!name) return 'CV';
+        
+        // Tách tên thành các từ
+        const words = name.trim().split(/\s+/);
+        
+        if (words.length === 1) {
+            // Chỉ có 1 từ, lấy 2 ký tự đầu
+            return words[0].substring(0, 2).toUpperCase();
+        } else {
+            // Lấy chữ cái đầu của từ đầu và từ cuối
+            return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+        }
     }
 
     setupEventListeners() {
@@ -606,10 +726,25 @@ class TutorDashboard {
 
     logout() {
         if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-            // Implement logout functionality
-            console.log('Logging out...');
+            // Xóa thông tin đăng nhập
+            localStorage.removeItem('mb_auth');
+            localStorage.removeItem('mb_token');
+            localStorage.removeItem('mb_token_type');
+            localStorage.removeItem('mb_user_id');
+            localStorage.removeItem('mb_user_email');
+            localStorage.removeItem('mb_user_name');
+            localStorage.removeItem('mb_user_roles');
+            localStorage.removeItem('authToken');
+            
+            // Gọi API logout nếu có
+            if (window.tutorAPI) {
+                window.tutorAPI.logout().catch(err => {
+                    console.error('Logout API error:', err);
+                });
+            }
+            
             // Redirect to login page
-            window.location.href = '/login';
+            window.location.href = '../LoginPortal.html';
         }
     }
 

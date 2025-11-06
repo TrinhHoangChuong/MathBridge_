@@ -176,6 +176,14 @@ body {
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
+.user-avatar .avatar-initials {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .user-details {
     display: flex;
     flex-direction: column;
@@ -355,6 +363,14 @@ body {
     justify-content: center;
     color: white;
     font-size: 0.875rem;
+}
+
+.user-avatar-small .avatar-initials {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Content */

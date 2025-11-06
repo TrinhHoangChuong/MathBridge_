@@ -2,12 +2,34 @@
 class TutorAPI {
     constructor() {
         this.baseURL = 'http://localhost:8080/api/tutor';
-        this.token = localStorage.getItem('authToken');
+        this.loadToken();
+    }
+
+    // Load token from localStorage (support both old and new format)
+    loadToken() {
+        // Ưu tiên lấy từ mb_token (format mới từ loginPortal)
+        this.token = localStorage.getItem('mb_token') || 
+                     localStorage.getItem('authToken');
+        
+        // Nếu không có token trực tiếp, thử lấy từ mb_auth
+        if (!this.token) {
+            const authData = localStorage.getItem('mb_auth');
+            if (authData) {
+                try {
+                    const data = JSON.parse(authData);
+                    this.token = data.token || data.accessToken;
+                } catch (e) {
+                    console.error('Error parsing auth data:', e);
+                }
+            }
+        }
     }
 
     // Set authentication token
     setToken(token) {
         this.token = token;
+        // Lưu vào cả 2 format để tương thích
+        localStorage.setItem('mb_token', token);
         localStorage.setItem('authToken', token);
     }
 
@@ -16,6 +38,11 @@ class TutorAPI {
         const headers = {
             'Content-Type': 'application/json',
         };
+        
+        // Đảm bảo token được load mới nhất
+        if (!this.token) {
+            this.loadToken();
+        }
         
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
@@ -440,7 +467,10 @@ class TutorAPI {
             console.error('Logout error:', error);
         } finally {
             this.token = null;
+            // Xóa tất cả các token liên quan
             localStorage.removeItem('authToken');
+            localStorage.removeItem('mb_token');
+            localStorage.removeItem('mb_token_type');
         }
     }
 

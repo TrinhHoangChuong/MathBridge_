@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isTeacher) {
       window.location.href = "teacher/index_teacher.html";
     } else if (isTutor) {
-      window.location.href = "tutor/index_tutor.html";
+      window.location.href = "portal/tutor/index_tutor.html";
     } else {
       // Fallback về trang chủ portal nếu có
       window.location.href = "index.html";
