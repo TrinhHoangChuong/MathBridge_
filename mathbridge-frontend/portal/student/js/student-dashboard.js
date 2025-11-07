@@ -1896,8 +1896,8 @@ class StudentDashboard {
                 status: 'active'
             },
             {
-                classId: 'MATH102',
-                className: 'Giải tích 11',
+                classId: 'PHYS102',
+                className: 'Vật lý cơ bản 10',
                 teacherName: 'Cô Trần Thị Lan',
                 schedule: 'Thứ 3, 5 (10:30-12:30)',
                 room: 'Phòng 203',
@@ -1907,8 +1907,8 @@ class StudentDashboard {
                 status: 'active'
             },
             {
-                classId: 'MATH103',
-                className: 'Đại số tuyến tính 12',
+                classId: 'CHEM103',
+                className: 'Hóa học nâng cao 11',
                 teacherName: 'Thầy Lê Văn Hùng',
                 schedule: 'Thứ 4, 7 (14:00-16:00)',
                 room: 'Phòng 305',
@@ -1944,9 +1944,9 @@ class StudentDashboard {
             },
             {
                 assignmentId: 'ASS002',
-                title: 'Bài tập về giải tích - Đạo hàm',
-                description: 'Tính đạo hàm của các hàm số sau: f(x) = x³ + 2x² - 3x + 1, g(x) = sin(x)cos(x), h(x) = e^x/x',
-                className: 'Giải tích 11',
+                title: 'Đồ án vật lý về dao động điều hòa',
+                description: 'Nghiên cứu và trình bày về dao động điều hòa, bao gồm lý thuyết và bài tập thực hành',
+                className: 'Vật lý cơ bản 10',
                 dueDate: nextWeek.toISOString(),
                 status: 'submitted',
                 grade: 8.5,
@@ -1956,9 +1956,9 @@ class StudentDashboard {
             },
             {
                 assignmentId: 'ASS003',
-                title: 'Bài tập về ma trận và định thức',
-                description: 'Giải các bài toán về ma trận và định thức: tính định thức, nghịch đảo ma trận, hệ phương trình tuyến tính',
-                className: 'Đại số tuyến tính 12',
+                title: 'Thí nghiệm hóa học - Phản ứng oxi hóa khử',
+                description: 'Thực hiện thí nghiệm và viết báo cáo về phản ứng oxi hóa khử trong dung dịch',
+                className: 'Hóa học nâng cao 11',
                 dueDate: yesterday.toISOString(),
                 status: 'overdue',
                 grade: null,
@@ -2003,23 +2003,23 @@ class StudentDashboard {
             },
             {
                 gradeId: 'G002',
-                subject: 'Giải tích',
-                className: 'Giải tích 11',
-                gradeType: 'Bài tập đạo hàm',
+                subject: 'Vật lý',
+                className: 'Vật lý cơ bản 10',
+                gradeType: 'Bài tập thực hành',
                 score: 9.0,
                 gradedAt: twoWeeksAgo.toISOString(),
                 teacherName: 'Cô Trần Thị Lan',
-                feedback: 'Giải thích rõ ràng, áp dụng tốt các quy tắc đạo hàm'
+                feedback: 'Thí nghiệm thực hiện chính xác, báo cáo chi tiết'
             },
             {
                 gradeId: 'G003',
-                subject: 'Đại số tuyến tính',
-                className: 'Đại số tuyến tính 12',
+                subject: 'Hóa học',
+                className: 'Hóa học nâng cao 11',
                 gradeType: 'Bài kiểm tra cuối kỳ',
                 score: 7.5,
                 gradedAt: lastMonth.toISOString(),
                 teacherName: 'Thầy Lê Văn Hùng',
-                feedback: 'Cần ôn tập thêm về ma trận nghịch đảo và định thức'
+                feedback: 'Cần ôn tập thêm về phản ứng oxi hóa khử'
             },
             {
                 gradeId: 'G004',
@@ -2033,13 +2033,13 @@ class StudentDashboard {
             },
             {
                 gradeId: 'G005',
-                subject: 'Giải tích',
-                className: 'Giải tích 11',
-                gradeType: 'Bài tập tích phân',
+                subject: 'Vật lý',
+                className: 'Vật lý cơ bản 10',
+                gradeType: 'Bài kiểm tra 15 phút',
                 score: 6.5,
                 gradedAt: twoWeeksAgo.toISOString(),
                 teacherName: 'Cô Trần Thị Lan',
-                feedback: 'Cần ôn tập thêm các phương pháp tích phân'
+                feedback: 'Cần ôn tập thêm công thức và định luật'
             }
         ];
     }
@@ -3758,19 +3758,19 @@ class StudentDashboard {
             },
             {
                 id: 'DK002',
-                className: 'Giải tích 11',
+                className: 'Vật lý cơ bản 10',
                 teacherName: 'Cô Trần Thị Lan',
                 registrationDate: '2024-09-05T10:30:00',
                 status: 'approved',
-                description: 'Kiến thức cơ bản về giải tích và đạo hàm'
+                description: 'Kiến thức cơ bản về vật lý học'
             },
             {
                 id: 'DK003',
-                className: 'Đại số tuyến tính 12',
+                className: 'Hóa học nâng cao 11',
                 teacherName: 'Thầy Lê Văn Hùng',
                 registrationDate: '2024-08-20T14:00:00',
                 status: 'completed',
-                description: 'Lớp học chuyên sâu về ma trận và định thức'
+                description: 'Lớp học chuyên sâu về hóa hữu cơ'
             }
         ];
     }
@@ -3799,23 +3799,23 @@ class StudentDashboard {
             },
             {
                 id: 'BH003',
-                className: 'Giải tích 11',
+                className: 'Vật lý cơ bản 10',
                 sessionNumber: 1,
                 sessionDate: '2024-09-14T10:30:00',
                 startTime: '10:30',
                 endTime: '12:30',
                 room: 'Phòng 203',
-                content: 'Khái niệm đạo hàm và quy tắc tính đạo hàm'
+                content: 'Định luật Newton và ứng dụng'
             },
             {
                 id: 'BH004',
-                className: 'Đại số tuyến tính 12',
+                className: 'Hóa học nâng cao 11',
                 sessionNumber: 5,
                 sessionDate: '2024-08-30T14:00:00',
                 startTime: '14:00',
                 endTime: '16:00',
                 room: 'Phòng 305',
-                content: 'Ma trận nghịch đảo và ứng dụng trong hệ phương trình'
+                content: 'Phản ứng oxi hóa khử trong dung dịch'
             }
         ];
     }
@@ -3844,21 +3844,11 @@ class StudentDashboard {
             },
             {
                 id: 'YC003',
-                type: 'academic',
-                title: 'Hỗ trợ về đạo hàm và quy tắc tính đạo hàm',
-                description: 'Tôi gặp khó khăn trong việc áp dụng quy tắc tính đạo hàm cho các hàm số phức tạp. Có thể hướng dẫn chi tiết hơn không?',
-                className: 'Giải tích 11',
+                type: 'billing',
+                title: 'Thanh toán học phí tháng 9',
+                description: 'Tôi đã thanh toán học phí tháng 9 nhưng chưa thấy cập nhật trong hệ thống.',
                 status: 'pending',
                 createdAt: '2024-09-20T16:45:00'
-            },
-            {
-                id: 'YC004',
-                type: 'academic',
-                title: 'Ma trận nghịch đảo và định thức',
-                description: 'Tôi không hiểu cách tính định thức của ma trận 3x3 và ứng dụng trong việc tìm ma trận nghịch đảo.',
-                className: 'Đại số tuyến tính 12',
-                status: 'pending',
-                createdAt: '2024-09-22T10:15:00'
             }
         ];
     }
