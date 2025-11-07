@@ -30,13 +30,16 @@
   }
 })();
 
-// ===== Simple module loader (HTML + CSS + JS) =====
+// ===== Simple module loader (HTML + CSS + optional callback) =====
 const __moduleLoaded = new Set();
 
 function ensureCssLoaded(href) {
   if (!href) return;
-  const exists = Array.from(document.styleSheets).some((s) => s.href && s.href.includes(href));
+  const exists = Array.from(document.styleSheets).some(
+    (s) => s.href && s.href.includes(href)
+  );
   if (exists) return;
+
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = href;
@@ -44,30 +47,29 @@ function ensureCssLoaded(href) {
   document.head.appendChild(link);
 }
 
-function ensureJsLoaded(src) {
-  if (!src) return Promise.resolve();
-  const exists = Array.from(document.scripts).some((s) => s.src && s.src.includes(src));
-  if (exists) return Promise.resolve();
-  return new Promise((res, rej) => {
-    const sc = document.createElement("script");
-    sc.src = src;
-    sc.async = false;
-    sc.setAttribute("data-module-js", src);
-    sc.onload = () => res();
-    sc.onerror = () => rej(new Error("Failed to load " + src));
-    document.body.appendChild(sc);
-  });
-}
-
-async function loadSectionModule(sectionId, htmlPath, cssPath, jsPath) {
+/**
+ * Load 1 section:
+ * - inject HTML
+ * - inject CSS
+ * - gọi afterLoad() (nếu có) sau khi HTML đã sẵn sàng trong DOM
+ */
+async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
   const host = document.getElementById(sectionId);
   if (!host) return;
+
   if (!__moduleLoaded.has(sectionId)) {
-    ensureCssLoaded(cssPath);
-    const resp = await fetch(htmlPath, { cache: "no-store" });
-    const html = await resp.text();
-    host.innerHTML = html;
-    await ensureJsLoaded(jsPath);
+    if (cssPath) ensureCssLoaded(cssPath);
+
+    if (htmlPath) {
+      const resp = await fetch(htmlPath, { cache: "no-store" });
+      const html = await resp.text();
+      host.innerHTML = html;
+    }
+
+    if (typeof afterLoad === "function") {
+      await afterLoad();
+    }
+
     __moduleLoaded.add(sectionId);
   }
 }
@@ -104,20 +106,100 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, jsPath) {
     });
   }
 
+  // Load Dashboard ngay khi vào (HTML + CSS + JS KPI)
+  loadSectionModule(
+    "section-dashboard",
+    "sections/dashboard.html",
+    "css/dashboard.css",
+    async () => {
+      const module = await import("./pages/dashboard.pages.js");
+      if (module && typeof module.initDashboardPage === "function") {
+        await module.initDashboardPage();
+      }
+    }
+  );
+  setActive("dashboard", "Dashboard");
+
   navItems.forEach((btn) => {
     btn.addEventListener("click", async () => {
       const target = btn.getAttribute("data-section-target");
-      const text = btn.querySelector(".nav-label")
-        ? btn.querySelector(".nav-label").textContent.trim()
-        : "Dashboard";
+      const labelEl = btn.querySelector(".nav-label");
+      const text = labelEl ? labelEl.textContent.trim() : "Dashboard";
 
-      // lazy load module cho Tuyển sinh & Lead
-      if (target === "tuyensinh") {
+      if (target === "dashboard") {
+        await loadSectionModule(
+          "section-dashboard",
+          "sections/dashboard.html",
+          "css/dashboard.css",
+          async () => {
+            const module = await import("./pages/dashboard.pages.js");
+            if (module && typeof module.initDashboardPage === "function") {
+              await module.initDashboardPage();
+            }
+          }
+        );
+      } else if (target === "tuyensinh") {
         await loadSectionModule(
           "section-tuyensinh",
-          "TuyenSinh_Lead.html",
-          "css/tslead.css",
-          "js/tslead.js"
+          "sections/tuyensinh.html",
+          null,
+          null
+        );
+      } else if (target === "chuongtrinh") {
+        await loadSectionModule(
+          "section-chuongtrinh",
+          "sections/chuongtrinh.html",
+          null,
+          null
+        );
+      } else if (target === "hocsinh") {
+        await loadSectionModule(
+          "section-hocsinh",
+          "sections/hocsinh.html",
+          null,
+          null
+        );
+      } else if (target === "nhansu") {
+        await loadSectionModule(
+          "section-nhansu",
+          "sections/nhansu.html",
+          null,
+          null
+        );
+      } else if (target === "tuyendung") {
+        await loadSectionModule(
+          "section-tuyendung",
+          "sections/tuyendung.html",
+          null,
+          null
+        );
+      } else if (target === "taichinh") {
+        await loadSectionModule(
+          "section-taichinh",
+          "sections/taichinh.html",
+          null,
+          null
+        );
+      } else if (target === "hotro") {
+        await loadSectionModule(
+          "section-hotro",
+          "sections/hotro.html",
+          null,
+          null
+        );
+      } else if (target === "taikhoan") {
+        await loadSectionModule(
+          "section-taikhoan",
+          "sections/taikhoan.html",
+          null,
+          null
+        );
+      } else if (target === "cauhinh") {
+        await loadSectionModule(
+          "section-cauhinh",
+          "sections/cauhinh.html",
+          null,
+          null
         );
       }
 
