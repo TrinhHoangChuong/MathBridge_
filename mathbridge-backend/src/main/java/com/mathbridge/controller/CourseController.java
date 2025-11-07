@@ -4,7 +4,7 @@ import com.mathbridge.dto.ApiResponse;
 import com.mathbridge.dto.CourseResponse;
 import com.mathbridge.entity.LopHoc;
 import com.mathbridge.service.CourseService;
-import com.mathbridge.repository.NhanVienRepository;
+import com.mathbridge.repository.Admin.NhanVienRepository;
 import com.mathbridge.entity.NhanVien;
 import com.mathbridge.repository.ChuongTrinhRepository;
 import com.mathbridge.entity.ChuongTrinh;

@@ -1,8 +1,7 @@
 package com.mathbridge.service;
 
 import com.mathbridge.dto.GiaoVienCardDTO;
-import com.mathbridge.entity.NhanVien;
-import com.mathbridge.repository.NhanVienRepository;
+import com.mathbridge.repository.Admin.NhanVienRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
