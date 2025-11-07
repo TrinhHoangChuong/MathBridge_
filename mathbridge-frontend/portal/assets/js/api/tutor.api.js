@@ -1,7 +1,7 @@
 // Tutor API Service
 class TutorAPI {
     constructor() {
-        this.baseURL = 'http://localhost:8080/api/tutor';
+        this.baseURL = 'http://localhost:8080/api/portal/tutor';
         this.loadToken();
     }
 
@@ -63,7 +63,24 @@ class TutorAPI {
             const response = await fetch(url, config);
             
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                // Try to get error message from response
+                let errorMessage = `HTTP error! status: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    if (errorData.message) {
+                        errorMessage = errorData.message;
+                    } else if (errorData.error) {
+                        errorMessage = errorData.error;
+                    }
+                } catch (e) {
+                    // If response is not JSON, use status text
+                    errorMessage = response.statusText || errorMessage;
+                }
+                
+                const error = new Error(errorMessage);
+                error.status = response.status;
+                error.response = response;
+                throw error;
             }
             
             return await response.json();
@@ -549,6 +566,33 @@ class TutorAPI {
     }
 
     // Enhanced Payment API Methods for Tutor
+    async getUnpaidInvoices() {
+        return await this.request('/payments/unpaid');
+    }
+
+    async getPaymentDetails(idHoaDon) {
+        return await this.request(`/payments/details/${idHoaDon}`);
+    }
+
+    async getPaymentMethods() {
+        return await this.request('/payments/methods');
+    }
+
+    async processPayment(paymentData) {
+        return await this.request('/payments/process', {
+            method: 'POST',
+            body: JSON.stringify(paymentData)
+        });
+    }
+
+    async getInvoiceDetails(idHoaDon) {
+        return await this.request(`/payments/invoice/${idHoaDon}`);
+    }
+
+    async getAllInvoices() {
+        return await this.request('/payments/all');
+    }
+
     async createPayment(formData) {
         return await this.request('/payments', {
             method: 'POST',
@@ -580,16 +624,6 @@ class TutorAPI {
 
     async generateReceipt(paymentId) {
         return await this.request(`/payments/${paymentId}/receipt`);
-    }
-
-    async syncWithFinanceSystem() {
-        return await this.request('/payments/sync-finance', {
-            method: 'POST'
-        });
-    }
-
-    async generatePaymentReport() {
-        return await this.request('/payments/report');
     }
 
     // Enhanced Consultation Schedule API Methods

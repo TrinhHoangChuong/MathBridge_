@@ -570,8 +570,820 @@ class TutorDashboard {
     }
 
     loadPaymentsData() {
-        // Simulate loading payments data
-        console.log('Loading payments data...');
+        // Load unpaid invoices and payment methods
+        this.loadUnpaidInvoices();
+        this.loadPaymentMethods();
+        this.loadAllInvoices();
+        
+        // Set current date as payment date
+        this.setPaymentDate();
+        
+        // Setup payment form handler
+        this.setupPaymentForm();
+    }
+
+    setPaymentDate() {
+        const today = new Date();
+        const paymentDateInput = document.getElementById('paymentDate');
+        if (paymentDateInput) {
+            paymentDateInput.value = today.toLocaleDateString('vi-VN');
+        }
+    }
+
+    async loadAllInvoices() {
+        try {
+            const invoices = await window.tutorAPI.getAllInvoices();
+            this.allInvoices = invoices; // Store for filtering and sorting
+            this.currentSortField = null;
+            this.currentSortDirection = 'asc';
+            this.filterAndDisplayInvoicesList('');
+        } catch (error) {
+            console.error('Error loading invoices:', error);
+            window.tutorAPI.handleError(error);
+        }
+    }
+
+    filterAndDisplayInvoicesList(searchTerm = '') {
+        const tableBody = document.getElementById('invoicesTableBody');
+        if (!tableBody) return;
+
+        if (!this.allInvoices) return;
+
+        // Filter invoices by student name
+        let filteredInvoices = this.allInvoices.filter(invoice => {
+            if (!searchTerm) return true;
+            const studentName = invoice.studentName || '';
+            return studentName.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+
+        // Apply sorting if exists
+        if (this.currentSortField) {
+            filteredInvoices = this.sortInvoices(filteredInvoices, this.currentSortField, this.currentSortDirection);
+        }
+
+        if (filteredInvoices.length === 0) {
+            tableBody.innerHTML = '<div class="table-row"><div colspan="8" style="text-align: center; padding: 2rem; grid-column: 1 / -1;">Không có hóa đơn nào</div></div>';
+            return;
+        }
+
+        tableBody.innerHTML = filteredInvoices.map(invoice => {
+            const ngayDangKy = invoice.ngayDangKy ? 
+                new Date(invoice.ngayDangKy).toLocaleDateString('vi-VN') : '-';
+            const ngayThanhToan = invoice.ngayThanhToan ? 
+                new Date(invoice.ngayThanhToan).toLocaleDateString('vi-VN') : '-';
+            const amount = invoice.tongTien ? 
+                invoice.tongTien.toLocaleString('vi-VN') + ' VNĐ' : '-';
+            const statusClass = invoice.trangThai === 'Da Thanh Toan' ? 'success' : 'pending';
+            const statusText = invoice.trangThai === 'Da Thanh Toan' ? 'Đã thanh toán' : 'Chưa thanh toán';
+
+            return `
+                <div class="table-row invoice-row" data-invoice-id="${invoice.idHoaDon}">
+                    <div>${invoice.idHoaDon || '-'}</div>
+                    <div class="col-name">
+                        <div class="student-avatar">${this.getInitials(invoice.studentName)}</div>
+                        <div class="student-info">
+                            <div class="student-name">${invoice.studentName || '-'}</div>
+                        </div>
+                    </div>
+                    <div>${invoice.tenLop || '-'}</div>
+                    <div class="amount-info">
+                        <span class="amount-value">${amount}</span>
+                    </div>
+                    <div>${ngayDangKy}</div>
+                    <div>${ngayThanhToan}</div>
+                    <div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-primary" onclick="window.tutorDashboard.viewInvoiceDetails('${invoice.idHoaDon}')">
+                            <i class="fas fa-eye"></i> Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async viewInvoiceDetails(idHoaDon) {
+        try {
+            const invoice = await window.tutorAPI.getInvoiceDetails(idHoaDon);
+            this.displayInvoiceDetails(invoice);
+            
+            // Open modal
+            this.openInvoiceModal();
+        } catch (error) {
+            console.error('Error loading invoice details:', error);
+            window.tutorAPI.handleError(error);
+        }
+    }
+
+    openInvoiceModal() {
+        const modal = document.getElementById('invoiceDetailsModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+    }
+
+    closeInvoiceModal() {
+        const modal = document.getElementById('invoiceDetailsModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+    }
+
+    async loadUnpaidInvoices() {
+        try {
+            const invoices = await window.tutorAPI.getUnpaidInvoices();
+            this.allUnpaidInvoices = invoices; // Store for filtering
+            this.filterAndDisplayUnpaidInvoices('');
+        } catch (error) {
+            console.error('Error loading unpaid invoices:', error);
+            window.tutorAPI.handleError(error);
+        }
+    }
+
+    filterAndDisplayUnpaidInvoices(searchTerm = '') {
+        const invoiceSelectList = document.getElementById('invoiceSelectList');
+        if (!invoiceSelectList) return;
+
+        if (!this.allUnpaidInvoices) {
+            invoiceSelectList.innerHTML = '<div class="custom-select-option disabled">Đang tải...</div>';
+            return;
+        }
+
+        // Filter invoices by student name or class
+        const filteredInvoices = this.allUnpaidInvoices.filter(invoice => {
+            if (!searchTerm) return true;
+            const studentName = (invoice.studentName || '').toLowerCase();
+            const tenLop = (invoice.tenLop || '').toLowerCase();
+            const searchLower = searchTerm.toLowerCase();
+            return studentName.includes(searchLower) || tenLop.includes(searchLower);
+        });
+
+        if (filteredInvoices.length === 0) {
+            invoiceSelectList.innerHTML = '<div class="custom-select-option disabled">Không tìm thấy hóa đơn nào</div>';
+            return;
+        }
+
+        // Clear and add filtered unpaid invoices - show student name and class
+        invoiceSelectList.innerHTML = '';
+        filteredInvoices.forEach(invoice => {
+            const option = document.createElement('div');
+            option.className = 'custom-select-option';
+            option.dataset.value = invoice.idHoaDon;
+            option.setAttribute('tabindex', '0');
+            
+            // Display format: "Tên học sinh - Lớp học"
+            const displayText = invoice.tenLop 
+                ? `${invoice.studentName || '-'} - ${invoice.tenLop}`
+                : invoice.studentName || '-';
+            option.textContent = displayText;
+            
+            option.addEventListener('click', () => {
+                this.selectInvoice(invoice.idHoaDon, invoice.studentName, invoice.tenLop);
+            });
+            option.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.selectInvoice(invoice.idHoaDon, invoice.studentName, invoice.tenLop);
+                }
+            });
+            invoiceSelectList.appendChild(option);
+        });
+    }
+
+    selectInvoice(idHoaDon, studentName, tenLop = null) {
+        const hiddenInput = document.getElementById('invoiceSelect');
+        const triggerText = document.getElementById('invoiceSelectText');
+        const wrapper = document.getElementById('invoiceSelectWrapper');
+
+        if (hiddenInput) {
+            hiddenInput.value = idHoaDon;
+        }
+        if (triggerText) {
+            // Display format: "Tên học sinh - Lớp học"
+            const displayText = tenLop 
+                ? `${studentName || '-'} - ${tenLop}`
+                : studentName || 'Chọn hóa đơn...';
+            triggerText.textContent = displayText;
+        }
+        if (wrapper) {
+            wrapper.classList.remove('open');
+        }
+
+        // Load payment details
+        if (idHoaDon) {
+            this.loadPaymentDetails(idHoaDon);
+        } else {
+            this.hideStudentInfo();
+        }
+    }
+
+    async loadPaymentMethods() {
+        try {
+            const methods = await window.tutorAPI.getPaymentMethods();
+            const paymentMethodSelect = document.getElementById('paymentMethod');
+            if (paymentMethodSelect) {
+                // Clear existing options except the first one
+                paymentMethodSelect.innerHTML = '<option value="">Chọn phương thức thanh toán...</option>';
+                
+                // Add payment methods
+                methods.forEach(method => {
+                    const option = document.createElement('option');
+                    option.value = method.idPt;
+                    option.textContent = `${method.tenPt} (${method.hinhThucTt})`;
+                    paymentMethodSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading payment methods:', error);
+            window.tutorAPI.handleError(error);
+        }
+    }
+
+    setupPaymentForm() {
+        const invoiceSelect = document.getElementById('invoiceSelect');
+        const paymentForm = document.getElementById('paymentForm');
+        const resetBtn = document.getElementById('resetPaymentForm');
+
+        console.log('Setting up payment form...', {
+            paymentForm: !!paymentForm,
+            invoiceSelect: !!invoiceSelect,
+            resetBtn: !!resetBtn
+        });
+
+        // Setup custom select dropdown
+        this.setupCustomSelect();
+
+        // Setup modal close buttons
+        const closeModalBtn = document.getElementById('closeInvoiceModal');
+        const closeModalBtnFooter = document.getElementById('closeInvoiceModalBtn');
+        const modalOverlay = document.getElementById('invoiceDetailsModal');
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                this.closeInvoiceModal();
+            });
+        }
+
+        if (closeModalBtnFooter) {
+            closeModalBtnFooter.addEventListener('click', () => {
+                this.closeInvoiceModal();
+            });
+        }
+
+        // Close modal when clicking outside
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    this.closeInvoiceModal();
+                }
+            });
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('invoiceDetailsModal');
+                if (modal && modal.style.display === 'flex') {
+                    this.closeInvoiceModal();
+                }
+            }
+        });
+
+        // Handle form submission
+        if (paymentForm) {
+            // Handle form submit event
+            paymentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('Form submit event triggered');
+                await this.handlePaymentSubmit();
+                return false;
+            });
+            
+            // Also handle button click directly as backup
+            const submitButton = paymentForm.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.addEventListener('click', async (e) => {
+                    // Only handle if form validation passes
+                    if (paymentForm.checkValidity()) {
+                        e.preventDefault();
+                        console.log('Submit button clicked');
+                        await this.handlePaymentSubmit();
+                    }
+                });
+            }
+        }
+
+        // Handle reset
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetPaymentForm();
+            });
+        }
+
+        // Handle refresh invoice list
+        const refreshBtn = document.getElementById('refreshInvoiceList');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', async () => {
+                await this.loadAllInvoices();
+                showNotification('Danh sách hóa đơn đã được làm mới!', 'success');
+            });
+        }
+
+        // Handle invoice list search
+        const invoiceListSearch = document.getElementById('invoiceListSearch');
+        if (invoiceListSearch) {
+            invoiceListSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value;
+                this.filterAndDisplayInvoicesList(searchTerm);
+            });
+        }
+
+        // Handle sortable headers - use event delegation for dynamically loaded content
+        const invoicesTableContainer = document.querySelector('.invoices-table-container');
+        if (invoicesTableContainer) {
+            invoicesTableContainer.addEventListener('click', (e) => {
+                // Handle click on sortable header or its children (icon, text)
+                let sortable = e.target.closest('.sortable');
+                
+                // If clicked on icon, get parent sortable
+                if (!sortable && e.target.tagName === 'I') {
+                    sortable = e.target.parentElement;
+                }
+                
+                // If clicked on text node, get parent sortable
+                if (!sortable && e.target.parentElement) {
+                    sortable = e.target.parentElement.closest('.sortable');
+                }
+                
+                if (sortable && sortable.classList.contains('sortable')) {
+                    const sortField = sortable.dataset.sort;
+                    if (sortField) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Sorting by:', sortField);
+                        this.sortInvoicesList(sortField);
+                    }
+                }
+            });
+        }
+    }
+
+    async handlePaymentSubmit() {
+        // Validate custom select
+        const hiddenInput = document.getElementById('invoiceSelect');
+        if (!hiddenInput || !hiddenInput.value) {
+            showNotification('Vui lòng chọn hóa đơn!', 'error');
+            const wrapper = document.getElementById('invoiceSelectWrapper');
+            if (wrapper) {
+                wrapper.classList.add('open');
+            }
+            return;
+        }
+        
+        // Validate payment method
+        const paymentMethodSelect = document.getElementById('paymentMethod');
+        if (!paymentMethodSelect || !paymentMethodSelect.value) {
+            showNotification('Vui lòng chọn phương thức thanh toán!', 'error');
+            return;
+        }
+        
+        try {
+            await this.processPayment();
+        } catch (error) {
+            console.error('Error in payment submit handler:', error);
+        }
+    }
+
+    sortInvoicesList(field) {
+        // Toggle sort direction if same field
+        if (this.currentSortField === field) {
+            this.currentSortDirection = this.currentSortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.currentSortField = field;
+            this.currentSortDirection = 'asc';
+        }
+
+        // Update sort icons
+        document.querySelectorAll('.sortable i').forEach(icon => {
+            icon.className = 'fas fa-sort';
+        });
+
+        const activeHeader = document.querySelector(`[data-sort="${field}"] i`);
+        if (activeHeader) {
+            activeHeader.className = this.currentSortDirection === 'asc' 
+                ? 'fas fa-sort-up' 
+                : 'fas fa-sort-down';
+        }
+
+        // Get current search term
+        const searchInput = document.getElementById('invoiceListSearch');
+        const searchTerm = searchInput ? searchInput.value : '';
+        
+        // Re-display with new sort
+        this.filterAndDisplayInvoicesList(searchTerm);
+    }
+
+    sortInvoices(invoices, field, direction) {
+        const sorted = [...invoices].sort((a, b) => {
+            let aVal, bVal;
+
+            switch (field) {
+                case 'idHoaDon':
+                    aVal = a.idHoaDon || '';
+                    bVal = b.idHoaDon || '';
+                    break;
+                case 'studentName':
+                    aVal = a.studentName || '';
+                    bVal = b.studentName || '';
+                    break;
+                case 'tenLop':
+                    aVal = a.tenLop || '';
+                    bVal = b.tenLop || '';
+                    break;
+                case 'tongTien':
+                    aVal = a.tongTien ? parseFloat(a.tongTien) : 0;
+                    bVal = b.tongTien ? parseFloat(b.tongTien) : 0;
+                    break;
+                case 'ngayDangKy':
+                    aVal = a.ngayDangKy ? new Date(a.ngayDangKy).getTime() : 0;
+                    bVal = b.ngayDangKy ? new Date(b.ngayDangKy).getTime() : 0;
+                    break;
+                case 'ngayThanhToan':
+                    aVal = a.ngayThanhToan ? new Date(a.ngayThanhToan).getTime() : 0;
+                    bVal = b.ngayThanhToan ? new Date(b.ngayThanhToan).getTime() : 0;
+                    break;
+                case 'trangThai':
+                    aVal = a.trangThai || '';
+                    bVal = b.trangThai || '';
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (typeof aVal === 'string') {
+                return direction === 'asc' 
+                    ? aVal.localeCompare(bVal, 'vi')
+                    : bVal.localeCompare(aVal, 'vi');
+            } else {
+                return direction === 'asc' ? aVal - bVal : bVal - aVal;
+            }
+        });
+
+        return sorted;
+    }
+
+    async loadPaymentDetails(idHoaDon) {
+        try {
+            const details = await window.tutorAPI.getPaymentDetails(idHoaDon);
+            this.displayStudentInfo(details);
+        } catch (error) {
+            console.error('Error loading payment details:', error);
+            window.tutorAPI.handleError(error);
+        }
+    }
+
+    displayStudentInfo(details) {
+        // Show student info section
+        const studentInfoSection = document.getElementById('studentInfoSection');
+        if (studentInfoSection) {
+            studentInfoSection.style.display = 'block';
+        }
+
+        // Update student information
+        document.getElementById('studentName').textContent = details.studentName || '-';
+        document.getElementById('studentEmail').textContent = details.studentEmail || '-';
+        document.getElementById('studentPhone').textContent = details.studentPhone || '-';
+        document.getElementById('studentAddress').textContent = details.studentAddress || '-';
+        
+        // Display class information
+        const classInfo = details.tenLop || '-';
+        if (details.chuongTrinh) {
+            document.getElementById('studentClass').textContent = `${classInfo} (${details.chuongTrinh})`;
+        } else {
+            document.getElementById('studentClass').textContent = classInfo;
+        }
+        
+        // Show and display payment amount section
+        const paymentAmountSection = document.getElementById('paymentAmountSection');
+        if (paymentAmountSection) {
+            paymentAmountSection.style.display = 'block';
+        }
+        
+        // Format and display amount
+        const amount = details.tongTien ? details.tongTien.toLocaleString('vi-VN') + ' VNĐ' : '-';
+        document.getElementById('paymentAmount').textContent = amount;
+
+        // Display payment date (always today - auto)
+        this.setPaymentDate();
+
+        // Display payment deadline
+        const paymentDeadlineInput = document.getElementById('paymentDeadline');
+        if (paymentDeadlineInput && details.hanThanhToan) {
+            const deadlineDate = new Date(details.hanThanhToan);
+            paymentDeadlineInput.value = deadlineDate.toLocaleDateString('vi-VN');
+        } else if (paymentDeadlineInput) {
+            paymentDeadlineInput.value = '-';
+        }
+    }
+
+    hideStudentInfo() {
+        const studentInfoSection = document.getElementById('studentInfoSection');
+        if (studentInfoSection) {
+            studentInfoSection.style.display = 'none';
+        }
+
+        // Hide payment amount section
+        const paymentAmountSection = document.getElementById('paymentAmountSection');
+        if (paymentAmountSection) {
+            paymentAmountSection.style.display = 'none';
+        }
+
+        // Clear payment deadline, but keep payment date as today
+        const paymentDeadlineInput = document.getElementById('paymentDeadline');
+        if (paymentDeadlineInput) {
+            paymentDeadlineInput.value = '';
+        }
+        
+        // Reset payment date to today
+        this.setPaymentDate();
+    }
+
+    async processPayment() {
+        const hiddenInput = document.getElementById('invoiceSelect');
+        const paymentMethodSelect = document.getElementById('paymentMethod');
+        const notesTextarea = document.getElementById('notes');
+
+        console.log('Processing payment...', {
+            invoiceId: hiddenInput?.value,
+            paymentMethod: paymentMethodSelect?.value,
+            notes: notesTextarea?.value
+        });
+
+        if (!hiddenInput || !hiddenInput.value) {
+            showNotification('Vui lòng chọn hóa đơn!', 'error');
+            const wrapper = document.getElementById('invoiceSelectWrapper');
+            if (wrapper) {
+                wrapper.classList.add('open');
+            }
+            return;
+        }
+
+        if (!paymentMethodSelect || !paymentMethodSelect.value) {
+            showNotification('Vui lòng chọn phương thức thanh toán!', 'error');
+            return;
+        }
+
+        const paymentData = {
+            idHoaDon: hiddenInput.value,
+            idPt: paymentMethodSelect.value,
+            ghiChu: notesTextarea ? notesTextarea.value : null
+        };
+
+        console.log('Sending payment data:', paymentData);
+
+        try {
+            const result = await window.tutorAPI.processPayment(paymentData);
+            console.log('Payment result:', result);
+            
+            // Show success message
+            showNotification('Thanh toán thành công!', 'success');
+            
+            // Display invoice details in modal
+            this.displayInvoiceDetails(result);
+            this.openInvoiceModal();
+            
+            // Reset form and reload unpaid invoices and all invoices
+            this.resetPaymentForm();
+            await this.loadUnpaidInvoices();
+            await this.loadAllInvoices();
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            
+            // Show user-friendly error message
+            let errorMessage = 'Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.';
+            
+            if (error.message) {
+                errorMessage = error.message;
+            } else if (error.status === 400) {
+                errorMessage = 'Dữ liệu thanh toán không hợp lệ. Vui lòng kiểm tra lại.';
+            } else if (error.status === 500) {
+                errorMessage = 'Lỗi máy chủ. Vui lòng thử lại sau.';
+            } else if (error.status === 401 || error.status === 403) {
+                errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+            }
+            
+            showNotification(errorMessage, 'error');
+            window.tutorAPI.handleError(error);
+        }
+    }
+
+    displayInvoiceDetails(invoice) {
+        // Check if invoice is paid
+        const isPaid = invoice.trangThai === 'Da Thanh Toan' || 
+                      (invoice.ngayThanhToan !== null && invoice.ngayThanhToan !== undefined) ||
+                      (invoice.idLs !== null && invoice.idLs !== undefined && invoice.idLs !== '');
+
+        // Format date
+        const paymentDate = invoice.ngayThanhToan ? 
+            new Date(invoice.ngayThanhToan).toLocaleDateString('vi-VN') : '-';
+
+        // Helper function to set text with unpaid class
+        const setInvoiceField = (elementId, value, isUnpaid = false) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
+                if (isUnpaid) {
+                    element.classList.add('invoice-unpaid');
+                } else {
+                    element.classList.remove('invoice-unpaid');
+                }
+            }
+        };
+
+        // Update invoice information
+        // Receipt number - show "Chưa thanh toán" if unpaid
+        setInvoiceField('invoiceReceiptNumber', isPaid ? (invoice.idLs || '-') : 'Chưa thanh toán', !isPaid);
+        
+        document.getElementById('invoiceId').textContent = invoice.idHoaDon || '-';
+        document.getElementById('invoiceStudentName').textContent = invoice.studentName || '-';
+        document.getElementById('invoiceStudentEmail').textContent = invoice.studentEmail || '-';
+        document.getElementById('invoiceStudentPhone').textContent = invoice.studentPhone || '-';
+        document.getElementById('invoiceStudentAddress').textContent = invoice.studentAddress || '-';
+        
+        // Display class information
+        const classInfo = invoice.tenLop || '-';
+        if (invoice.chuongTrinh) {
+            document.getElementById('invoiceClass').textContent = `${classInfo} (${invoice.chuongTrinh})`;
+        } else {
+            document.getElementById('invoiceClass').textContent = classInfo;
+        }
+        document.getElementById('invoiceProgram').textContent = invoice.chuongTrinh || '-';
+        
+        const amount = invoice.tongTien ? invoice.tongTien.toLocaleString('vi-VN') + ' VNĐ' : '-';
+        document.getElementById('invoiceAmount').textContent = amount;
+        
+        // Payment method - show "Chưa thanh toán" if unpaid
+        setInvoiceField('invoicePaymentMethod', isPaid ? (invoice.paymentMethodName || '-') : 'Chưa thanh toán', !isPaid);
+        
+        // Payment date - show "Chưa thanh toán" if unpaid
+        setInvoiceField('invoicePaymentDate', isPaid ? paymentDate : 'Chưa thanh toán', !isPaid);
+        
+        // Notes - show "-" if unpaid, otherwise show ghiChu
+        document.getElementById('invoiceNotes').textContent = isPaid ? (invoice.ghiChu || '-') : '-';
+    }
+
+    setupCustomSelect() {
+        const wrapper = document.getElementById('invoiceSelectWrapper');
+        const trigger = document.getElementById('invoiceSelectTrigger');
+        const options = document.getElementById('invoiceSelectOptions');
+        const searchInput = document.getElementById('invoiceSelectSearch');
+
+        if (!wrapper || !trigger || !options) return;
+
+        // Toggle dropdown
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpening = !wrapper.classList.contains('open');
+            wrapper.classList.toggle('open');
+            
+            if (isOpening) {
+                // Load invoices if not loaded yet
+                if (!this.allUnpaidInvoices) {
+                    this.loadUnpaidInvoices();
+                } else {
+                    // Reset search and show all invoices
+                    if (searchInput) {
+                        searchInput.value = '';
+                    }
+                    this.filterAndDisplayUnpaidInvoices('');
+                }
+                
+                // Focus search input
+                if (searchInput) {
+                    setTimeout(() => searchInput.focus(), 100);
+                }
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) {
+                wrapper.classList.remove('open');
+            }
+        });
+
+        // Handle search in dropdown
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                e.stopPropagation();
+                const searchTerm = e.target.value;
+                this.filterAndDisplayUnpaidInvoices(searchTerm);
+            });
+
+            // Prevent dropdown from closing when clicking in search box
+            searchInput.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            // Handle keyboard navigation
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    wrapper.classList.remove('open');
+                    trigger.focus();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const firstOption = document.querySelector('.custom-select-option:not(.disabled)');
+                    if (firstOption) {
+                        firstOption.focus();
+                    }
+                }
+            });
+        }
+
+        // Prevent dropdown from closing when clicking in options list
+        const optionsList = document.getElementById('invoiceSelectList');
+        if (optionsList) {
+            optionsList.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            // Keyboard navigation in options
+            optionsList.addEventListener('keydown', (e) => {
+                const options = Array.from(optionsList.querySelectorAll('.custom-select-option:not(.disabled)'));
+                const currentIndex = options.findIndex(opt => opt === document.activeElement);
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const nextIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
+                    options[nextIndex].focus();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
+                    options[prevIndex].focus();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (document.activeElement.classList.contains('custom-select-option')) {
+                        document.activeElement.click();
+                    }
+                } else if (e.key === 'Escape') {
+                    wrapper.classList.remove('open');
+                    trigger.focus();
+                }
+            });
+        }
+
+        // Make options focusable
+        this.makeOptionsFocusable = () => {
+            const options = document.querySelectorAll('.custom-select-option:not(.disabled)');
+            options.forEach(option => {
+                option.setAttribute('tabindex', '0');
+            });
+        };
+    }
+
+    resetPaymentForm() {
+        const paymentForm = document.getElementById('paymentForm');
+        if (paymentForm) {
+            paymentForm.reset();
+        }
+        
+        // Reset custom select
+        const hiddenInput = document.getElementById('invoiceSelect');
+        const triggerText = document.getElementById('invoiceSelectText');
+        const wrapper = document.getElementById('invoiceSelectWrapper');
+        const searchInput = document.getElementById('invoiceSelectSearch');
+
+        if (hiddenInput) {
+            hiddenInput.value = '';
+        }
+        if (triggerText) {
+            triggerText.textContent = 'Chọn hóa đơn...';
+        }
+        if (wrapper) {
+            wrapper.classList.remove('open');
+        }
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        
+        this.filterAndDisplayUnpaidInvoices('');
+        this.hideStudentInfo();
+        
+        // Reset payment date to today and clear deadline
+        this.setPaymentDate();
+        const paymentDeadlineInput = document.getElementById('paymentDeadline');
+        if (paymentDeadlineInput) {
+            paymentDeadlineInput.value = '';
+        }
+        
+        // Close invoice modal if open
+        this.closeInvoiceModal();
     }
 
     loadSupportData() {
@@ -657,10 +1469,8 @@ class TutorDashboard {
         // Implement view payment functionality
     }
 
-    processPayment() {
-        console.log('Process payment');
-        // Implement process payment functionality
-    }
+    // Note: processPayment() is defined earlier as async method for payment processing
+    // This method is kept for backward compatibility but should not be used
 
     printInvoice() {
         console.log('Print invoice');
@@ -986,20 +1796,8 @@ class TutorDashboard {
 
     // Payment Processing functions
     async function addPayment() {
-        const form = document.getElementById('paymentForm');
-        if (form) {
-            const formData = new FormData(form);
-            try {
-                await window.tutorAPI.createPayment(formData);
-                showNotification('Giao dịch đã được lưu thành công!', 'success');
-                form.reset();
-                loadPayments();
-                updatePaymentSummary();
-            } catch (error) {
-                console.error('Error creating payment:', error);
-                window.tutorAPI.handleError(error);
-            }
-        }
+        // This function is now handled by the TutorDashboard class
+        console.log('Payment processing handled by TutorDashboard');
     }
 
     async function updatePaymentStatus(paymentId, status) {
@@ -1044,56 +1842,8 @@ class TutorDashboard {
         }
     }
 
-    async function syncWithFinanceSystem() {
-        try {
-            showNotification('Đang đồng bộ với hệ thống tài chính...', 'info');
-            await window.tutorAPI.syncWithFinanceSystem();
-            showNotification('Đồng bộ thành công!', 'success');
-            updateVerificationStatus();
-        } catch (error) {
-            console.error('Error syncing with finance system:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
-
-    async function exportPaymentReport() {
-        try {
-            const report = await window.tutorAPI.generatePaymentReport();
-            downloadReport(report);
-            showNotification('Báo cáo đã được xuất thành công!', 'success');
-        } catch (error) {
-            console.error('Error exporting payment report:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
-
-    function viewFinanceSystem() {
-        // Open finance system in new tab
-        window.open('/finance-system', '_blank');
-    }
-
-    function updatePaymentSummary() {
-        // Update payment summary statistics
-        const today = new Date().toISOString().split('T')[0];
-        // This would typically fetch real data from API
-        const summary = {
-            transactions: 4,
-            totalAmount: 7200000,
-            verified: 3,
-            pending: 1
-        };
-        
-        document.querySelector('.stat-item:nth-child(1) .stat-value').textContent = summary.transactions;
-        document.querySelector('.stat-item:nth-child(2) .stat-value').textContent = summary.totalAmount.toLocaleString();
-        document.querySelector('.stat-item:nth-child(3) .stat-value').textContent = summary.verified;
-        document.querySelector('.stat-item:nth-child(4) .stat-value').textContent = summary.pending;
-    }
-
-    function updateVerificationStatus() {
-        const now = new Date();
-        const timeString = now.toLocaleString('vi-VN');
-        document.querySelector('.status-item:nth-child(2) span').textContent = `Lần đồng bộ cuối: ${timeString}`;
-    }
+    // Removed syncWithFinanceSystem, exportPaymentReport, viewFinanceSystem, 
+    // updatePaymentSummary, and updateVerificationStatus functions as they are no longer needed
 
     function downloadReport(report) {
         const blob = new Blob([report.content], { type: 'application/pdf' });
@@ -1196,6 +1946,53 @@ class TutorDashboard {
 
     function printReport() {
         window.print();
+    }
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Add styles if not already present
+        if (!document.getElementById('notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                .notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease-out;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+                .notification-success { background-color: #10b981; }
+                .notification-error { background-color: #ef4444; }
+                .notification-info { background-color: #3b82f6; }
+                .notification-warning { background-color: #f59e0b; }
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideIn 0.3s ease-out reverse';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
     }
 
     function exportStudentList() {
@@ -1575,8 +2372,10 @@ class TutorDashboard {
     }
 
 // Initialize the dashboard when DOM is loaded
+let tutorDashboardInstance;
 document.addEventListener('DOMContentLoaded', () => {
-    new TutorDashboard();
+    tutorDashboardInstance = new TutorDashboard();
+    window.tutorDashboard = tutorDashboardInstance;
 });
 
 // Export for potential module usage

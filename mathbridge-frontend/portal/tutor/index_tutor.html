@@ -712,35 +712,6 @@
             <section class="content-section" id="payments">
                 <div class="section-header">
                     <h2>Thanh toán tại trung tâm</h2>
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm kiếm thanh toán...">
-                        </div>
-                        <div class="filter-buttons">
-                            <select class="form-select" id="paymentStatusFilter">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="pending">Chờ xử lý</option>
-                                <option value="confirmed">Đã xác nhận</option>
-                                <option value="reported">Đã báo cáo</option>
-                                <option value="verified">Đã đối chiếu</option>
-                            </select>
-                            <select class="form-select" id="paymentDateFilter">
-                                <option value="">Tất cả ngày</option>
-                                <option value="today">Hôm nay</option>
-                                <option value="week">Tuần này</option>
-                                <option value="month">Tháng này</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" id="addPaymentBtn">
-                            <i class="fas fa-plus"></i>
-                            Ghi nhận thanh toán
-                        </button>
-                        <button class="btn btn-secondary" id="verifyPaymentsBtn">
-                            <i class="fas fa-check-double"></i>
-                            Đối chiếu
-                        </button>
-                    </div>
                 </div>
 
                 <div class="payment-form-section">
@@ -749,58 +720,90 @@
                         <form id="paymentForm">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="studentSelect">Học sinh <span class="required">*</span></label>
-                                    <select class="form-select" id="studentSelect" required>
-                                        <option value="">Chọn học sinh</option>
-                                        <option value="TC">Trần Văn C - Lớp 10A1 - Cambridge IGCSE</option>
-                                        <option value="LD">Lê Thị D - Lớp 11B2 - IB Math HL</option>
-                                        <option value="PE">Phạm Văn E - Lớp 12C1 - AP Calculus</option>
-                                        <option value="NF">Nguyễn Văn F - Lớp 10A2 - Cambridge IGCSE</option>
-                                        <option value="TG">Trần Thị G - Lớp 11B1 - IB Math SL</option>
-                                    </select>
+                                    <label for="invoiceSelect">Chọn hóa đơn chưa thanh toán <span class="required">*</span></label>
+                                    <div class="custom-select-wrapper" id="invoiceSelectWrapper">
+                                        <div class="custom-select-trigger" id="invoiceSelectTrigger">
+                                            <span id="invoiceSelectText">Chọn hóa đơn...</span>
+                                            <i class="fas fa-chevron-down"></i>
                                 </div>
-                                <div class="form-group">
-                                    <label for="amount">Số tiền (VNĐ) <span class="required">*</span></label>
-                                    <input type="number" class="form-control" id="amount" placeholder="Nhập số tiền" min="0" step="1000" required>
+                                        <div class="custom-select-options" id="invoiceSelectOptions">
+                                            <div class="custom-select-search">
+                                                <i class="fas fa-search"></i>
+                                                <input type="text" id="invoiceSelectSearch" placeholder="Tìm kiếm theo tên học sinh hoặc lớp học...">
+                                </div>
+                                            <div class="custom-select-list" id="invoiceSelectList">
+                                                <!-- Options will be loaded here -->
+                            </div>
+                                        </div>
+                                        <input type="hidden" id="invoiceSelect" name="invoiceSelect" required>
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <!-- Student Information Display -->
+                            <div id="studentInfoSection" class="student-info-section" style="display: none;">
+                                <h4>Thông tin học sinh</h4>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label>Họ tên:</label>
+                                        <span id="studentName">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Email:</label>
+                                        <span id="studentEmail">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Số điện thoại:</label>
+                                        <span id="studentPhone">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Địa chỉ:</label>
+                                        <span id="studentAddress">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Lớp học:</label>
+                                        <span id="studentClass">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="paymentDate">Ngày thanh toán <span class="required">*</span></label>
-                                    <input type="date" class="form-control" id="paymentDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="paymentTime">Giờ thanh toán <span class="required">*</span></label>
-                                    <input type="time" class="form-control" id="paymentTime" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="paymentType">Loại thanh toán <span class="required">*</span></label>
-                                    <select class="form-select" id="paymentType" required>
-                                        <option value="">Chọn loại thanh toán</option>
-                                        <option value="tuition">Học phí tháng</option>
-                                        <option value="registration">Phí đăng ký</option>
-                                        <option value="exam">Phí thi</option>
-                                        <option value="material">Phí tài liệu</option>
-                                        <option value="other">Khác</option>
+                                    <label for="paymentMethod">Phương thức thanh toán <span class="required">*</span></label>
+                                    <select class="form-select" id="paymentMethod" required>
+                                        <option value="">Chọn phương thức thanh toán...</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="receiptNumber">Số biên lai</label>
-                                    <input type="text" class="form-control" id="receiptNumber" placeholder="Nhập số biên lai (nếu có)">
+                                <div id="paymentAmountSection" class="form-group payment-amount-group" style="display: none;">
+                                    <label class="payment-amount-label">Số tiền cần thanh toán</label>
+                                    <div class="payment-amount-display">
+                                        <span id="paymentAmount" class="payment-amount-value">-</span>
                                 </div>
                             </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="paymentDate">Ngày thanh toán</label>
+                                    <input type="text" class="form-control" id="paymentDate" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="paymentDeadline">Hạn thanh toán</label>
+                                    <input type="text" class="form-control" id="paymentDeadline" readonly>
+                                </div>
+                            </div>
+                            
                             <div class="form-group">
                                 <label for="notes">Ghi chú</label>
-                                <textarea class="form-control" id="notes" rows="3" placeholder="Ghi chú về thanh toán (ví dụ: thanh toán học phí tháng 12, phụ huynh: Nguyễn Văn A...)"></textarea>
+                                <textarea class="form-control" id="notes" rows="3" placeholder="Ghi chú về thanh toán (nếu có)"></textarea>
                             </div>
+                            
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save"></i>
-                                    Lưu giao dịch
+                                    Xác nhận thanh toán
                                 </button>
-                                <button type="reset" class="btn btn-secondary">
+                                <button type="reset" class="btn btn-secondary" id="resetPaymentForm">
                                     <i class="fas fa-undo"></i>
                                     Làm mới
                                 </button>
@@ -809,237 +812,126 @@
                     </div>
                 </div>
 
-                <div class="payments-table-container">
-                    <div class="table-header">
-                        <div>Học sinh</div>
-                        <div>Số tiền</div>
-                        <div>Loại</div>
-                        <div>Ngày/Giờ</div>
-                        <div>Biên lai</div>
-                        <div>Trạng thái</div>
-                        <div>Ghi chú</div>
-                        <div>Hành động</div>
+                <!-- Invoice List Section -->
+                <div class="invoice-list-section">
+                    <div class="section-header">
+                        <h3>Danh sách hóa đơn</h3>
+                        <div class="header-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="invoiceListSearch" placeholder="Tìm kiếm theo tên học sinh...">
                     </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">TC</div>
-                            <div class="student-info">
-                                <div class="student-name">Trần Văn C</div>
-                                <div class="student-email">Lớp 10A1 • Cambridge IGCSE</div>
+                            <button class="btn btn-secondary" id="refreshInvoiceList">
+                                <i class="fas fa-sync-alt"></i>
+                                Làm mới
+                            </button>
                             </div>
                         </div>
-                        <div class="amount-info">
-                            <span class="amount-value">2,500,000</span>
-                            <span class="currency">VNĐ</span>
+                    <div class="invoices-table-container">
+                        <div class="table-header">
+                            <div class="sortable" data-sort="idHoaDon">
+                                Mã HĐ <i class="fas fa-sort"></i>
                         </div>
-                        <div>
-                            <span class="payment-type tuition">Học phí tháng</span>
+                            <div class="sortable" data-sort="studentName">
+                                Học sinh <i class="fas fa-sort"></i>
                         </div>
-                        <div class="datetime-info">
-                            <div class="date">18/12/2024</div>
-                            <div class="time">14:30</div>
+                            <div class="sortable" data-sort="tenLop">
+                                Lớp học <i class="fas fa-sort"></i>
                         </div>
-                        <div class="receipt-info">
-                            <span class="receipt-number">BL001234</span>
+                            <div class="sortable" data-sort="tongTien">
+                                Số tiền <i class="fas fa-sort"></i>
                         </div>
-                        <div>
-                            <span class="status-badge verified">Đã đối chiếu</span>
+                            <div class="sortable" data-sort="ngayDangKy">
+                                Ngày đăng ký <i class="fas fa-sort"></i>
                         </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Thanh toán học phí tháng 12, phụ huynh: Trần Văn A</span>
+                            <div class="sortable" data-sort="ngayThanhToan">
+                                Ngày thanh toán <i class="fas fa-sort"></i>
                         </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewPaymentDetails('TC001')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="editPayment('TC001')">Sửa</button>
-                            <button class="btn btn-sm btn-info" onclick="printReceipt('TC001')">In biên lai</button>
+                            <div class="sortable" data-sort="trangThai">
+                                Trạng thái <i class="fas fa-sort"></i>
                         </div>
+                            <div>Hành động</div>
                     </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">LD</div>
-                            <div class="student-info">
-                                <div class="student-name">Lê Thị D</div>
-                                <div class="student-email">Lớp 11B2 • IB Math HL</div>
+                        <div id="invoicesTableBody" class="table-body">
+                            <!-- Invoices will be loaded here -->
                             </div>
                         </div>
-                        <div class="amount-info">
-                            <span class="amount-value">3,000,000</span>
-                            <span class="currency">VNĐ</span>
                         </div>
-                        <div>
-                            <span class="payment-type tuition">Học phí tháng</span>
-                        </div>
-                        <div class="datetime-info">
-                            <div class="date">17/12/2024</div>
-                            <div class="time">10:15</div>
-                        </div>
-                        <div class="receipt-info">
-                            <span class="receipt-number">BL001235</span>
-                        </div>
-                        <div>
-                            <span class="status-badge reported">Đã báo cáo</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Thanh toán học phí tháng 12, phụ huynh: Lê Thị B</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewPaymentDetails('LD001')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="editPayment('LD001')">Sửa</button>
-                            <button class="btn btn-sm btn-info" onclick="printReceipt('LD001')">In biên lai</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">PE</div>
-                            <div class="student-info">
-                                <div class="student-name">Phạm Văn E</div>
-                                <div class="student-email">Lớp 12C1 • AP Calculus</div>
-                            </div>
-                        </div>
-                        <div class="amount-info">
-                            <span class="amount-value">500,000</span>
-                            <span class="currency">VNĐ</span>
-                        </div>
-                        <div>
-                            <span class="payment-type exam">Phí thi</span>
-                        </div>
-                        <div class="datetime-info">
-                            <div class="date">16/12/2024</div>
-                            <div class="time">16:45</div>
-                        </div>
-                        <div class="receipt-info">
-                            <span class="receipt-number">BL001236</span>
-                        </div>
-                        <div>
-                            <span class="status-badge confirmed">Đã xác nhận</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Phí thi AP Calculus, phụ huynh: Phạm Văn C</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewPaymentDetails('PE001')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="editPayment('PE001')">Sửa</button>
-                            <button class="btn btn-sm btn-info" onclick="printReceipt('PE001')">In biên lai</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">NF</div>
-                            <div class="student-info">
-                                <div class="student-name">Nguyễn Văn F</div>
-                                <div class="student-email">Lớp 10A2 • Cambridge IGCSE</div>
-                            </div>
-                        </div>
-                        <div class="amount-info">
-                            <span class="amount-value">1,200,000</span>
-                            <span class="currency">VNĐ</span>
-                        </div>
-                        <div>
-                            <span class="payment-type registration">Phí đăng ký</span>
-                        </div>
-                        <div class="datetime-info">
-                            <div class="date">15/12/2024</div>
-                            <div class="time">09:30</div>
-                        </div>
-                        <div class="receipt-info">
-                            <span class="receipt-number">BL001237</span>
-                        </div>
-                        <div>
-                            <span class="status-badge pending">Chờ xử lý</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Phí đăng ký khóa học mới, phụ huynh: Nguyễn Văn D</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewPaymentDetails('NF001')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="editPayment('NF001')">Sửa</button>
-                            <button class="btn btn-sm btn-info" onclick="printReceipt('NF001')">In biên lai</button>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="payment-summary-section">
-                    <div class="summary-card">
-                        <h3>Tổng kết thanh toán hôm nay</h3>
-                        <div class="summary-stats">
-                            <div class="stat-item">
-                                <div class="stat-value">4</div>
-                                <div class="stat-label">Giao dịch</div>
+                <!-- Invoice Details Modal -->
+                <div id="invoiceDetailsModal" class="modal-overlay" style="display: none;">
+                    <div class="modal-container invoice-modal">
+                        <div class="modal-header">
+                            <h3>Thông tin hóa đơn</h3>
+                            <button class="modal-close" id="closeInvoiceModal">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="invoice-card">
+                                <div class="invoice-content">
+                                    <div class="invoice-header">
+                                        <h4>MATHBRIDGE EDUCATION CENTER</h4>
+                                        <p>Hóa đơn thanh toán</p>
+                        </div>
+                                    <div class="invoice-body">
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Số biên lai:</div>
+                                            <div class="invoice-value" id="invoiceReceiptNumber">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Mã hóa đơn:</div>
+                                            <div class="invoice-value" id="invoiceId">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Họ tên học sinh:</div>
+                                            <div class="invoice-value" id="invoiceStudentName">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Lớp học:</div>
+                                            <div class="invoice-value" id="invoiceClass">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Chương trình:</div>
+                                            <div class="invoice-value" id="invoiceProgram">-</div>
+                    </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Email:</div>
+                                            <div class="invoice-value" id="invoiceStudentEmail">-</div>
                             </div>
-                            <div class="stat-item">
-                                <div class="stat-value">7,200,000</div>
-                                <div class="stat-label">Tổng tiền (VNĐ)</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">3</div>
-                                <div class="stat-label">Đã đối chiếu</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">1</div>
-                                <div class="stat-label">Chờ xử lý</div>
-                            </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Số điện thoại:</div>
+                                            <div class="invoice-value" id="invoiceStudentPhone">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Địa chỉ:</div>
+                                            <div class="invoice-value" id="invoiceStudentAddress">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Số tiền:</div>
+                                            <div class="invoice-value amount-display" id="invoiceAmount">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Phương thức thanh toán:</div>
+                                            <div class="invoice-value" id="invoicePaymentMethod">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Ngày thanh toán:</div>
+                                            <div class="invoice-value" id="invoicePaymentDate">-</div>
+                        </div>
+                                        <div class="invoice-row">
+                                            <div class="invoice-label">Ghi chú:</div>
+                                            <div class="invoice-value" id="invoiceNotes">-</div>
+                        </div>
+                        </div>
+                                    <div class="invoice-footer">
+                                        <p>Cảm ơn quý khách!</p>
                         </div>
                     </div>
-                </div>
-
-                <div class="verification-section">
-                    <div class="verification-card">
-                        <h3>Đối chiếu với hệ thống quản lý tài chính</h3>
-                        <div class="verification-content">
-                            <div class="verification-status">
-                                <div class="status-item">
-                                    <i class="fas fa-check-circle text-success"></i>
-                                    <span>Đã đồng bộ với hệ thống tài chính</span>
-                                </div>
-                                <div class="status-item">
-                                    <i class="fas fa-clock text-warning"></i>
-                                    <span>Lần đồng bộ cuối: 18/12/2024 17:30</span>
-                                </div>
-                                <div class="status-item">
-                                    <i class="fas fa-sync text-info"></i>
-                                    <span>Tự động đồng bộ mỗi 30 phút</span>
-                                </div>
-                            </div>
-                            <div class="verification-actions">
-                                <button class="btn btn-primary" onclick="syncWithFinanceSystem()">
-                                    <i class="fas fa-sync"></i>
-                                    Đồng bộ ngay
-                                </button>
-                                <button class="btn btn-secondary" onclick="exportPaymentReport()">
-                                    <i class="fas fa-download"></i>
-                                    Xuất báo cáo
-                                </button>
-                                <button class="btn btn-info" onclick="viewFinanceSystem()">
-                                    <i class="fas fa-external-link-alt"></i>
-                                    Xem hệ thống tài chính
-                                </button>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="payment-policy-section">
-                    <div class="policy-card">
-                        <h3>Quy trình xử lý thanh toán tại trung tâm</h3>
-                        <div class="policy-content">
-                            <div class="policy-item">
-                                <h4>Bước 1: Ghi nhận thanh toán</h4>
-                                <ul>
-                                    <li>Xác nhận thông tin học sinh</li>
-                                    <li>Kiểm tra số tiền và loại thanh toán</li>
-                                    <li>Ghi chú chi tiết về giao dịch</li>
-                                    <li>Lưu vào hệ thống</li>
-                                </ul>
-                            </div>
-                            <div class="policy-item">
-                                <h4>Bước 2: Xác nhận và báo cáo</h4>
-                                <ul>
-                                    <li>Xác nhận giao dịch với phụ huynh</li>
-                                    <li>In biên lai thanh toán</li>
-                                    <li>Báo cáo lên bộ phận kế toán</li>
-                                    <li>Đối chiếu với hệ thống tài chính</li>
-                                </ul>
-                            </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" id="closeInvoiceModalBtn">Đóng</button>
                         </div>
                     </div>
                 </div>
