@@ -1,17 +1,16 @@
-package com.mathbridge.service.impl;
+package com.mathbridge.service;
 
 import com.mathbridge.dto.AuthenticatedAccountDTO;
 import com.mathbridge.dto.RegisterRequestDTO;
 import com.mathbridge.entity.*;
 import com.mathbridge.repository.*;
-import com.mathbridge.service.RegistrationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Service
+@Service("registrationService")
 public class RegistrationServiceImpl implements RegistrationService {
 
     private final TaiKhoanRepository taiKhoanRepo;
@@ -87,18 +86,26 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .orElseGet(() -> { 
                     return roleRepo.findByTenVaiTro("HOC_SINH").orElse(null);
                 });
+        
+        // Nếu không tìm thấy role, throw exception thay vì tạo role không hợp lệ
+        if (r001 == null) {
+            throw new RuntimeException("Không tìm thấy role R001 (HOC_SINH) trong hệ thống. Vui lòng kiểm tra database.");
+        }
+        
         TaiKhoanVaiTro tkvt = new TaiKhoanVaiTro();
-        tkvt.setId(new TaiKhoanVaiTroId(idTk, r001 != null ? r001.getIdRole() : "R001"));
+        tkvt.setId(new TaiKhoanVaiTroId(idTk, r001.getIdRole()));
         tkvt.setTaiKhoan(tk);
-        tkvt.setRole(r001 != null ? r001 : new Role("R001"));
+        tkvt.setRole(r001);
         tkvtRepo.save(tkvt);
 
         // 8) Trả về AuthenticatedAccountDTO để Controller phát hành JWT
         String fullName = (hs.getHo() + " " + (hs.getTenDem() == null ? "" : hs.getTenDem() + " ") + hs.getTen()).trim();
+        
+        // r001 đã được kiểm tra null ở trên, nên ở đây chắc chắn không null
         return new AuthenticatedAccountDTO(
                 tk.getIdTk(),
                 tk.getEmail(),
-                List.of(tkvt.getRole().getIdRole()), // ["R001"]
+                List.of(r001.getIdRole()), // ["R001"]
                 fullName,
                 idHs,
                 null

@@ -326,6 +326,128 @@
         </div>
     </div>
 
+    <!-- ========== COURSE INFO MODAL (Form 1) ========== -->
+    <div id="course-info-modal" class="mb-modal" aria-hidden="true">
+        <div class="mb-modal__backdrop" data-close-course-info-modal></div>
+        <div class="mb-modal__dialog course-info-dialog" role="dialog" aria-modal="true" aria-labelledby="course-info-title">
+            <div class="course-info-header">
+                <div class="course-info-header__row">
+                    <h3 id="course-info-title" class="course-info-title">Thông tin khóa học</h3>
+                    <button type="button" class="course-info-close" data-close-course-info-modal aria-label="Đóng">×</button>
+                </div>
+                <p class="course-info-sub">Vui lòng xem lại thông tin và chọn số tháng thanh toán</p>
+            </div>
+            
+            <div class="course-info-content">
+                <div class="course-info-head">
+                    <span class="course-info-badge">Khóa học</span>
+                    <h4 id="course-info-name" class="course-info-name">—</h4>
+                    <p class="course-info-teacher">Giảng viên: <span id="course-info-teacher">—</span></p>
+                </div>
+
+                <div class="course-info-meta-grid">
+                    <div class="course-info-meta-card">
+                        <span class="meta-label">Học phí/tháng</span>
+                        <span id="course-info-price" class="meta-value">—</span>
+                    </div>
+                    <div class="course-info-meta-card">
+                        <span class="meta-label">Số buổi</span>
+                        <span id="course-info-sobuoi" class="meta-value">—</span>
+                    </div>
+                    <div class="course-info-meta-card">
+                        <span class="meta-label">Ngày học</span>
+                        <span id="course-info-ngayhoc" class="meta-value">—</span>
+                    </div>
+                    <div class="course-info-meta-card">
+                        <span class="meta-label">Hình thức</span>
+                        <span id="course-info-hinhthuc" class="meta-value">—</span>
+                    </div>
+                </div>
+
+                <div class="course-info-description">
+                    <h4 class="meta-label">Giới thiệu khóa học</h4>
+                    <div id="course-info-description" class="course-info-description__text">—</div>
+                </div>
+
+                <div class="course-info-selection">
+                    <div class="course-info-months">
+                        <label class="course-info-months__label" for="course-info-months-select">Chọn số tháng thanh toán</label>
+                        <select id="course-info-months-select" class="course-info-select">
+                            <!-- JS sẽ render -->
+                        </select>
+                    </div>
+                    <div class="course-info-total">
+                        <span class="course-info-total__label">Tổng tiền dự kiến</span>
+                        <span id="course-info-total-amount" class="course-info-total__amount">0 VNĐ</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="course-info-actions">
+                <button type="button" class="btn btn--ghost" data-close-course-info-modal>Hủy</button>
+                <button type="button" class="btn btn--primary" id="confirm-course-info-btn">
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PAYMENT METHOD MODAL (Form 2) ========== -->
+    <div id="payment-method-modal" class="mb-modal" aria-hidden="true">
+        <div class="mb-modal__backdrop" data-close-payment-method-modal></div>
+        <div class="mb-modal__dialog payment-method-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-method-title">
+            <div class="payment-method-header">
+                <div class="payment-method-header__row">
+                    <h3 id="payment-method-title" class="payment-method-title">Chọn phương thức thanh toán</h3>
+                    <button type="button" class="course-info-close" data-close-payment-method-modal aria-label="Đóng">×</button>
+                </div>
+                <p class="payment-method-sub">Vui lòng chọn phương thức thanh toán phù hợp</p>
+            </div>
+
+            <!-- Tóm tắt đơn hàng -->
+            <div class="payment-summary">
+                <div class="payment-summary__item">
+                    <span class="payment-summary__label">Khóa học:</span>
+                    <span id="payment-summary-course" class="payment-summary__value">—</span>
+                </div>
+                <div class="payment-summary__item">
+                    <span class="payment-summary__label">Số tháng:</span>
+                    <span id="payment-summary-months" class="payment-summary__value">—</span>
+                </div>
+                <div class="payment-summary__item payment-summary__total">
+                    <span class="payment-summary__label">Tổng tiền:</span>
+                    <span id="payment-summary-total" class="payment-summary__value">—</span>
+                </div>
+            </div>
+
+            <!-- Chọn phương thức thanh toán -->
+            <div class="payment-methods">
+                <label class="payment-methods__label">Phương thức thanh toán:</label>
+                <div class="payment-methods__grid">
+                    <button type="button" class="payment-method-btn" data-payment-method="momo">
+                        <img src="assets/img/momo.png" alt="MoMo" class="payment-method__logo" />
+                        <span class="payment-method__name">MoMo</span>
+                    </button>
+                    <button type="button" class="payment-method-btn" data-payment-method="bank">
+                        <img src="assets/img/nganhang.png" alt="Ngân hàng" class="payment-method__logo" />
+                        <span class="payment-method__name">Ngân hàng</span>
+                    </button>
+                    <button type="button" class="payment-method-btn" data-payment-method="cash">
+                        <div class="payment-method__icon">💵</div>
+                        <span class="payment-method__name">Tiền mặt</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="payment-method-actions">
+                <button type="button" class="btn btn--ghost" id="back-to-course-info-btn">Quay lại</button>
+                <button type="button" class="btn btn--primary" id="confirm-payment-btn" disabled>
+                    Xác nhận thanh toán
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== CREDENTIALS MODAL ========== -->
     <div id="credentials-modal" class="mb-modal" aria-hidden="true">
         <div class="mb-modal__backdrop" data-close-credentials-modal></div>

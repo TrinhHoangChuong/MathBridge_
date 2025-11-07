@@ -100,10 +100,9 @@ export async function getCoursesByFilter({ idCT, hinhThucHoc, loaiNgay, trangTha
   return json.data.map(normalizeCourseFromBE);
 }
 
-// BE của bạn CHƯA có endpoint đăng ký lớp (chỉ có repository).
-// Ta để hàm này để FE không lỗi, và bạn chỉ cần viết thêm POST bên BE sau.
+// BE endpoint: /api/public/enroll/pending
 export async function enrollCourse(payload) {
-  const url = `${CONFIG.BASE_URL}/api/public/course/enroll`;
+  const url = `${CONFIG.BASE_URL}/api/public/enroll/pending`;
 
   try {
     const res = await fetch(url, {

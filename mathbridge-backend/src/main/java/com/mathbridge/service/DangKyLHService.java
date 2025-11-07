@@ -7,10 +7,15 @@ import com.mathbridge.entity.DangKyLH;
 import com.mathbridge.entity.DangKyLHId;
 import com.mathbridge.entity.LopHoc;
 import com.mathbridge.entity.TaiKhoan;
+import com.mathbridge.entity.TaiKhoanVaiTro;
+import com.mathbridge.entity.TaiKhoanVaiTroId;
+import com.mathbridge.entity.Role;
 import com.mathbridge.repository.HocSinhRepository;
 import com.mathbridge.repository.DangKyLHRepository;
 import com.mathbridge.repository.LopHocRepository;
 import com.mathbridge.repository.TaiKhoanRepository;
+import com.mathbridge.repository.TaiKhoanVaiTroRepository;
+import com.mathbridge.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +42,12 @@ public class DangKyLHService {
 
     @Autowired
     private TaiKhoanRepository taiKhoanRepository;
+
+    @Autowired
+    private TaiKhoanVaiTroRepository taiKhoanVaiTroRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     /**
      * Tạo email unique, tự động thêm số nếu trùng
@@ -89,7 +100,14 @@ public class DangKyLHService {
     private HocSinh createOrGetStudent(DangKyLHRequest req) {
         Optional<HocSinh> existing = hocSinhRepository.findBySdt(req.getSoDienThoai());
         if (existing.isPresent()) {
-            return existing.get();
+            // Refresh từ DB để đảm bảo có đầy đủ thông tin (bao gồm TaiKhoan)
+            HocSinh student = existing.get();
+            String studentId = student.getIdHs();
+            if (studentId != null) {
+                // Refresh để load TaiKhoan nếu là LAZY
+                return hocSinhRepository.findById(studentId).orElse(student);
+            }
+            return student;
         }
 
         String email = generateUniqueEmail(req.getHoTen());
@@ -100,7 +118,7 @@ public class DangKyLHService {
         taiKhoan.setIdTk(tkId);
         taiKhoan.setEmail(email);
         taiKhoan.setPassword(defaultPassword);
-        taiKhoan.setTrangThai("pending");
+        taiKhoan.setTrangThai("ACTIVE");
         taiKhoan.setThoiDiemTao(LocalDateTime.now());
         taiKhoan = taiKhoanRepository.save(taiKhoan);
 
@@ -133,6 +151,27 @@ public class DangKyLHService {
         taiKhoan.setIdHsRef(newId);
         taiKhoanRepository.save(taiKhoan);
 
+        // Gán role R001 vào TaiKhoan_VaiTro (giống RegistrationServiceImpl)
+        Role r001 = roleRepository.findById("R001")
+                .orElseGet(() -> {
+                    return roleRepository.findByTenVaiTro("HOC_SINH").orElse(null);
+                });
+
+        // Nếu không tìm thấy role, throw exception thay vì tạo role không hợp lệ
+        if (r001 == null) {
+            throw new RuntimeException("Không tìm thấy role R001 (HOC_SINH) trong hệ thống. Vui lòng kiểm tra database.");
+        }
+
+        TaiKhoanVaiTro tkvt = new TaiKhoanVaiTro();
+        tkvt.setId(new TaiKhoanVaiTroId(tkId, r001.getIdRole()));
+        tkvt.setTaiKhoan(taiKhoan);
+        tkvt.setRole(r001);
+        taiKhoanVaiTroRepository.save(tkvt);
+
+        // Refresh từ DB để đảm bảo có đầy đủ thông tin
+        if (newId != null) {
+            return hocSinhRepository.findById(newId).orElse(hs);
+        }
         return hs;
     }
 
@@ -148,13 +187,13 @@ public class DangKyLHService {
     }
 
     private String generateNextTaiKhoanId() {
-        long count = taiKhoanRepository.count();
-        return "TK" + String.format("%03d", count + 1);
+        int maxNo = taiKhoanRepository.findMaxTkNumber();
+        return "TK" + String.format("%03d", maxNo + 1);
     }
 
     private String generateNextStudentId() {
-        long count = hocSinhRepository.count();
-        return "HS" + String.format("%03d", count + 1);
+        int maxNo = hocSinhRepository.findMaxHsNumber();
+        return "HS" + String.format("%03d", maxNo + 1);
     }
 
     /**
@@ -174,9 +213,6 @@ public class DangKyLHService {
     @Transactional
     public DangKyLHResponse createPendingEnrollment(DangKyLHRequest req) {
         // Validate request
-        if (req.getCourseId() == null || req.getCourseId().trim().isEmpty()) {
-            throw new RuntimeException("Mã lớp học không được để trống");
-        }
         if (req.getHoTen() == null || req.getHoTen().trim().isEmpty()) {
             throw new RuntimeException("Họ tên không được để trống");
         }
@@ -184,9 +220,50 @@ public class DangKyLHService {
             throw new RuntimeException("Số điện thoại không được để trống");
         }
         
+        // Tạo hoặc lấy học sinh
+        HocSinh student = createOrGetStudent(req);
+        
+        // Nếu không có courseId, chỉ tạo tài khoản học sinh, không đăng ký lớp
+        String courseId = req.getCourseId();
+        if (courseId == null || courseId.trim().isEmpty()) {
+            // Refresh student từ DB để đảm bảo có đầy đủ thông tin
+            String studentId = student.getIdHs();
+            HocSinh refreshedStudent = (studentId != null) 
+                ? hocSinhRepository.findById(studentId).orElse(student) 
+                : student;
+            
+            // Lấy email và password từ TaiKhoan (ưu tiên) hoặc từ HocSinh
+            String email = null;
+            String password = null;
+            
+            if (refreshedStudent.getTaiKhoan() != null) {
+                String tkId = refreshedStudent.getTaiKhoan().getIdTk();
+                if (tkId != null) {
+                    TaiKhoan tk = taiKhoanRepository.findById(tkId).orElse(null);
+                    if (tk != null) {
+                        password = tk.getPassword();
+                        email = tk.getEmail();
+                    }
+                }
+            }
+            
+            // Fallback: nếu không lấy được từ TaiKhoan, lấy từ HocSinh
+            if (email == null || email.isEmpty()) {
+                email = refreshedStudent.getEmail();
+            }
+            
+            if (password == null || password.isEmpty()) {
+                password = generateDefaultPassword(req.getSoDienThoai());
+            }
+            
+            String finalStudentId = refreshedStudent.getIdHs();
+            return new DangKyLHResponse(null, finalStudentId != null ? finalStudentId : "", email != null ? email : "", password != null ? password : "");
+        }
+        
+        // Có courseId - đăng ký lớp học
         // Kiểm tra và lấy thông tin lớp học
-        LopHoc lopHoc = lopHocRepository.findById(req.getCourseId())
-            .orElseThrow(() -> new RuntimeException("Lớp học không tồn tại với mã: " + req.getCourseId()));
+        LopHoc lopHoc = lopHocRepository.findById(courseId)
+            .orElseThrow(() -> new RuntimeException("Lớp học không tồn tại với mã: " + courseId));
         
         // Kiểm tra trạng thái lớp học có cho phép đăng ký không
         String trangThai = lopHoc.getTrangThai();
@@ -194,27 +271,34 @@ public class DangKyLHService {
             throw new RuntimeException("Lớp học này hiện không nhận đăng ký. Trạng thái: " + trangThai);
         }
         
-        // Tạo hoặc lấy học sinh
-        HocSinh student = createOrGetStudent(req);
-        
+        // Lấy email và password từ TaiKhoan (ưu tiên) hoặc từ HocSinh
         String password = null;
-        String email = student.getEmail();
+        String email = null;
         
-        if (student.getTaiKhoan() != null) {
-            String tkId = student.getTaiKhoan().getIdTk();
-            TaiKhoan tk = taiKhoanRepository.findById(tkId).orElse(null);
-            if (tk != null) {
-                password = tk.getPassword();
-                email = tk.getEmail();
+        // Refresh student từ DB để đảm bảo có đầy đủ thông tin
+        String studentId = student.getIdHs();
+        HocSinh refreshedStudent = (studentId != null) 
+            ? hocSinhRepository.findById(studentId).orElse(student) 
+            : student;
+        
+        if (refreshedStudent.getTaiKhoan() != null) {
+            String tkId = refreshedStudent.getTaiKhoan().getIdTk();
+            if (tkId != null) {
+                TaiKhoan tk = taiKhoanRepository.findById(tkId).orElse(null);
+                if (tk != null) {
+                    password = tk.getPassword();
+                    email = tk.getEmail();
+                }
             }
+        }
+        
+        // Fallback: nếu không lấy được từ TaiKhoan, lấy từ HocSinh
+        if (email == null || email.isEmpty()) {
+            email = refreshedStudent.getEmail();
         }
         
         if (password == null || password.isEmpty()) {
             password = generateDefaultPassword(req.getSoDienThoai());
-        }
-        
-        if (email == null || email.isEmpty()) {
-            email = student.getEmail();
         }
 
         // Kiểm tra xem đã đăng ký chưa
