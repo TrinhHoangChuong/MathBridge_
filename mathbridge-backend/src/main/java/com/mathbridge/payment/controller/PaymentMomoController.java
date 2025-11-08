@@ -117,8 +117,7 @@ public class PaymentMomoController {
      * Chỉ dùng cho testing khi IPN callback không được gọi
      * Hỗ trợ cả GET và POST để dễ test từ browser
      */
-    @GetMapping("/manual-update")
-    @PostMapping("/manual-update")
+    @RequestMapping(value = "/manual-update", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<?> manualUpdatePaymentStatus(
             @RequestParam String orderId,
             @RequestParam(defaultValue = "success") String status) {

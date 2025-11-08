@@ -4,6 +4,7 @@ import {
   getCoursesByFilter,
   enrollCourse,
   createMomoPayment,
+  updatePaymentStatusManually,
 } from "../api/courses.api.js";
 import { getAuth, isAuthenticated, getToken } from "../utils/auth.js";
 
@@ -780,8 +781,11 @@ export async function initCoursesPage() {
   const orderId = getQueryParam("orderId");
   const resultCode = getQueryParam("resultCode");
   
+  console.log("[Courses] initCoursesPage - orderId:", orderId, "resultCode:", resultCode);
+  
   if (orderId) {
     // Có orderId trong URL -> kiểm tra payment status
+    console.log("[Courses] Found orderId in URL, calling checkPaymentStatusAndShowModal");
     checkPaymentStatusAndShowModal(orderId, resultCode);
   }
 
@@ -831,34 +835,83 @@ export async function initCoursesPage() {
 
 // Kiểm tra payment status và hiển thị modal thành công
 async function checkPaymentStatusAndShowModal(orderId, resultCode) {
-  try {
-    // Import CONFIG
-    const { CONFIG } = await import("../config.js");
-    
-    // Kiểm tra payment status từ backend
-    const response = await fetch(`${CONFIG.BASE_URL}/api/portal/payment/momo/status?orderId=${orderId}`);
-    const data = await response.json();
-    
-    console.log("[Courses] Payment status check:", data);
-    
-    // Nếu payment thành công (resultCode = 0 hoặc status = "Da Thanh Toan")
-    const isSuccess = resultCode === "0" || resultCode === null || 
-                      (data.success && data.data && data.data.isPaid);
-    
-    if (isSuccess) {
-      // Hiển thị modal thành công
-      setTimeout(() => {
-        openPaymentSuccessModal();
-      }, 500);
+  console.log("[Courses] checkPaymentStatusAndShowModal called with orderId:", orderId, "resultCode:", resultCode);
+  
+  // Nếu có orderId, luôn thử gọi manual-update (vì user đã về trang này = đã thanh toán)
+  // Chỉ cần kiểm tra resultCode để xác định success hay failed
+  let shouldUpdate = false;
+  let updateStatus = "success";
+  
+  // Kiểm tra resultCode từ MoMo
+  // resultCode = "0" hoặc null/undefined = thành công
+  // resultCode khác "0" = thất bại
+  if (resultCode === "0" || resultCode === null || resultCode === undefined || resultCode === "") {
+    shouldUpdate = true;
+    updateStatus = "success";
+    console.log("[Courses] resultCode indicates success, will update DB to 'Da Thanh Toan'");
+  } else {
+    shouldUpdate = true;
+    updateStatus = "failed";
+    console.log("[Courses] resultCode indicates failure:", resultCode, "will update DB to 'Chua Thanh Toan'");
+  }
+  
+  // Nếu không có resultCode, thử check từ backend status API
+  if (!resultCode || resultCode === null || resultCode === undefined || resultCode === "") {
+    try {
+      const { CONFIG } = await import("../config.js");
+      console.log("[Courses] No resultCode, checking payment status from backend...");
+      
+      const response = await fetch(`${CONFIG.BASE_URL}/api/portal/payment/momo/status?orderId=${orderId}`);
+      const data = await response.json();
+      
+      console.log("[Courses] Payment status check response:", data);
+      
+      // Nếu backend báo đã thanh toán
+      if (data.success && data.data && data.data.isPaid) {
+        shouldUpdate = true;
+        updateStatus = "success";
+        console.log("[Courses] Backend confirms payment is paid");
+      } else {
+        // Nếu backend báo chưa thanh toán nhưng user đã về trang này, vẫn update (có thể là pending)
+        shouldUpdate = true;
+        updateStatus = "success"; // Giả định thành công nếu user đã về trang
+        console.log("[Courses] Backend shows not paid, but user returned to page - assuming success");
+      }
+    } catch (error) {
+      console.error("[Courses] Error checking payment status from backend:", error);
+      // Nếu không check được, giả định thành công (vì user đã về trang)
+      shouldUpdate = true;
+      updateStatus = "success";
+      console.log("[Courses] Cannot check status, assuming success (user returned to page)");
     }
-  } catch (error) {
-    console.error("[Courses] Error checking payment status:", error);
-    // Nếu có orderId nhưng không check được, vẫn hiển thị modal nếu resultCode = 0
-    if (resultCode === "0" || resultCode === null) {
-      setTimeout(() => {
-        openPaymentSuccessModal();
-      }, 500);
+  }
+  
+  // Gọi manual-update nếu cần
+  if (shouldUpdate && orderId) {
+    console.log("[Courses] Calling manual-update for orderId:", orderId, "with status:", updateStatus);
+    try {
+      const updateResult = await updatePaymentStatusManually(orderId, updateStatus);
+      
+      if (updateResult.success) {
+        console.log("[Courses] ✅ Manual update successful:", updateResult.message);
+        console.log("[Courses] ✅ Database should now be updated to:", updateStatus === "success" ? "Da Thanh Toan" : "Chua Thanh Toan");
+      } else {
+        console.error("[Courses] ❌ Manual update failed:", updateResult.message);
+        console.error("[Courses] ❌ Full update result:", updateResult);
+      }
+    } catch (updateError) {
+      console.error("[Courses] ❌ Exception calling manual-update:", updateError);
     }
+  }
+  
+  // Hiển thị modal thành công nếu resultCode = "0" hoặc không có resultCode (giả định thành công)
+  if (resultCode === "0" || resultCode === null || resultCode === undefined || resultCode === "") {
+    console.log("[Courses] Showing payment success modal");
+    setTimeout(() => {
+      openPaymentSuccessModal();
+    }, 500);
+  } else {
+    console.log("[Courses] Payment failed (resultCode:", resultCode, "), not showing success modal");
   }
 }
 

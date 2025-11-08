@@ -199,3 +199,43 @@ export async function createMomoPayment(courseId, months) {
     };
   }
 }
+
+// BE endpoint: /api/portal/payment/momo/manual-update (cho testing)
+export async function updatePaymentStatusManually(orderId, status = "success") {
+  const url = `${CONFIG.BASE_URL}/api/portal/payment/momo/manual-update?orderId=${encodeURIComponent(orderId)}&status=${encodeURIComponent(status)}`;
+
+  try {
+    console.log("[updatePaymentStatusManually] Calling API:", url);
+    
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("[updatePaymentStatusManually] Response status:", res.status);
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.error("[updatePaymentStatusManually] Error response:", errData);
+      return {
+        success: false,
+        message: errData.message || `Cập nhật trạng thái không thành công (${res.status}).`,
+      };
+    }
+
+    const data = await res.json();
+    return {
+      success: data.success || false,
+      message: data.message || "",
+      data: data.data || {},
+    };
+  } catch (err) {
+    console.error("updatePaymentStatusManually error:", err);
+    return {
+      success: false,
+      message: "Không kết nối được tới máy chủ.",
+    };
+  }
+}
