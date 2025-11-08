@@ -31,7 +31,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/public/**")
+                .securityMatcher("/api/public/**", "/api/portal/payment/momo/ipn", "/api/portal/payment/momo/status", "/api/portal/payment/momo/manual-update")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
@@ -51,7 +51,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/portal/student/**").hasAuthority("R001")
                         .requestMatchers("/api/portal/teacher/**").hasAuthority("R002")
                         .requestMatchers("/api/portal/covan/**").hasAuthority("R003")
+                        .requestMatchers("/api/portal/**").permitAll()
                         .anyRequest().authenticated()
+
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
