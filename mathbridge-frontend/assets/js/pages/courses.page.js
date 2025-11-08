@@ -3,8 +3,9 @@ import {
   getCoursesByGrade,
   getCoursesByFilter,
   enrollCourse,
+  createMomoPayment,
 } from "../api/courses.api.js";
-import { getAuth } from "../utils/auth.js";
+import { getAuth, isAuthenticated, getToken } from "../utils/auth.js";
 
 let ALL_COURSES = [];
 let CURRENT_GRADE = "9";
@@ -12,6 +13,22 @@ let FILTER_SESSION = "all";
 let FILTER_DAY = "all";
 let FILTER_METHOD = "all";
 let IS_LOADING = false;
+
+function setEnrollTab(target) {
+  const tabButtons = document.querySelectorAll(".mb-tab-btn[data-tab]");
+  const tabPanels = document.querySelectorAll(".mb-tab-panel");
+  tabButtons.forEach((btn) => {
+    const name = btn.getAttribute("data-tab");
+    const isActive = name === target;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-selected", String(isActive));
+  });
+  tabPanels.forEach((panel) => {
+    const isActive = panel.id === `tab-${target}`;
+    panel.classList.toggle("is-active", isActive);
+    panel.hidden = !isActive;
+  });
+}
 
 const GRADE_TEXT = {
   "9": {
@@ -192,10 +209,9 @@ function initFilters() {
 
 /* --------- modal enroll --------- */
 function openEnrollModal(courseId, courseName) {
-  // Kiểm tra đã đăng nhập chưa
-  const auth = getAuth();
-  if (auth && auth.user) {
-    // Đã đăng nhập -> mở trực tiếp course info modal (Form 1)
+  // Kiểm tra đã đăng nhập chưa - phải có cả user VÀ token
+  if (isAuthenticated()) {
+    // Đã đăng nhập đầy đủ -> mở trực tiếp course info modal (Form 1)
     const course = ALL_COURSES.find(c => c.id === courseId);
     if (course) {
       openCourseInfoModal(course);
@@ -357,6 +373,32 @@ function closePaymentMethodModal() {
   modal.setAttribute("aria-hidden", "true");
 }
 
+function openPaymentSuccessModal() {
+  const modal = document.getElementById("payment-success-modal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closePaymentSuccessModal() {
+  const modal = document.getElementById("payment-success-modal");
+  if (!modal) return;
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  // Xóa query params sau khi đóng modal
+  const urlParams = new URLSearchParams(window.location.search);
+  urlParams.delete("orderId");
+  urlParams.delete("resultCode");
+  urlParams.delete("message");
+  urlParams.delete("amount");
+  const newUrl = urlParams.toString() 
+    ? `${window.location.pathname}?${urlParams.toString()}`
+    : window.location.pathname;
+  window.history.replaceState({}, "", newUrl);
+}
+
 let savedEmail = "";
 let savedPassword = "";
 
@@ -384,15 +426,38 @@ function closeCredentialsModal() {
   modal.style.display = "none";
   modal.setAttribute("aria-hidden", "true");
 
-  // Redirect đến trang login với email/password
-  if (savedEmail && savedPassword) {
-    // Lưu vào localStorage để trang login có thể lấy
-    localStorage.setItem("pendingLoginEmail", savedEmail);
-    localStorage.setItem("pendingLoginPassword", savedPassword);
-    
-    // Redirect đến trang login
-    window.location.href = "pages/login.html?tab=login";
+  const courseInfoModalEl = document.getElementById("course-info-modal");
+  if (courseInfoModalEl) {
+    courseInfoModalEl.style.display = "none";
+    courseInfoModalEl.setAttribute("aria-hidden", "true");
   }
+  const paymentModalEl = document.getElementById("payment-method-modal");
+  if (paymentModalEl) {
+    paymentModalEl.style.display = "none";
+    paymentModalEl.setAttribute("aria-hidden", "true");
+  }
+
+  const enrollModal = document.getElementById("enroll-modal");
+  if (enrollModal) {
+    enrollModal.style.display = "flex";
+    enrollModal.setAttribute("aria-hidden", "false");
+    setEnrollTab("login");
+
+    const usernameInput = document.getElementById("lf-username");
+    const passwordInput = document.getElementById("lf-password");
+    if (usernameInput) {
+      usernameInput.value = savedEmail || "";
+      usernameInput.focus();
+      usernameInput.select?.();
+    }
+    if (passwordInput) {
+      passwordInput.value = savedPassword || "";
+    }
+  }
+
+  // Clear cache
+  savedEmail = "";
+  savedPassword = "";
 }
 
 function initModalEvents() {
@@ -408,6 +473,9 @@ function initModalEvents() {
   });
   document.querySelectorAll("[data-close-payment-method-modal]").forEach((el) => {
     el.addEventListener("click", closePaymentMethodModal);
+  });
+  document.querySelectorAll("[data-close-payment-success-modal]").forEach((el) => {
+    el.addEventListener("click", closePaymentSuccessModal);
   });
 
   // Confirm course info button -> mở payment method modal
@@ -477,17 +545,61 @@ function initPaymentConfirmButton() {
     confirmBtn.addEventListener("click", async () => {
       if (!currentCourse || !selectedPaymentMethod || selectedMonths < 1) return;
       
-      // TODO: Gọi API để tạo HoaDon
-      console.log("Confirm payment:", {
-        courseId: currentCourse.id,
-        months: selectedMonths,
-        method: selectedPaymentMethod,
-        total: (currentCourse.mucGiaThang || 0) * selectedMonths
-      });
+      // Kiểm tra đăng nhập trước khi thanh toán
+      if (!isAuthenticated()) {
+        // Chưa đăng nhập -> yêu cầu đăng nhập
+        const shouldLogin = confirm(
+          "Bạn cần đăng nhập để thanh toán. Bạn có muốn chuyển đến trang đăng nhập không?"
+        );
+        if (shouldLogin) {
+          // Lưu thông tin khóa học để quay lại sau khi đăng nhập
+          const returnUrl = `${window.location.pathname}${window.location.search}`;
+          localStorage.setItem("payment_return_url", returnUrl);
+          localStorage.setItem("payment_course_id", currentCourse.id);
+          localStorage.setItem("payment_months", selectedMonths.toString());
+          localStorage.setItem("payment_method", selectedPaymentMethod);
+          
+          // Redirect đến trang login
+          window.location.href = "pages/login.html";
+        }
+        return;
+      }
+      
+      // Disable button để tránh double click
+      confirmBtn.disabled = true;
+      const oldText = confirmBtn.textContent;
+      confirmBtn.textContent = "Đang xử lý...";
 
-      // Tạm thời hiển thị thông báo
-      alert(`Đã xác nhận thanh toán ${selectedMonths} tháng bằng ${selectedPaymentMethod === "momo" ? "MoMo" : selectedPaymentMethod === "bank" ? "Ngân hàng" : "Tiền mặt"}`);
-      closePaymentMethodModal();
+      try {
+        if (selectedPaymentMethod === "momo") {
+          // Gọi API tạo MoMo payment
+          const result = await createMomoPayment(currentCourse.id, selectedMonths);
+          
+          if (result.success && result.data && result.data.payUrl) {
+            // Redirect đến MoMo payment page
+            window.location.href = result.data.payUrl;
+          } else {
+            alert(result.message || "Không thể tạo payment. Vui lòng thử lại.");
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = oldText;
+          }
+        } else if (selectedPaymentMethod === "bank") {
+          // TODO: Xử lý thanh toán ngân hàng
+          alert(`Chức năng thanh toán ngân hàng đang được phát triển.`);
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = oldText;
+        } else if (selectedPaymentMethod === "cash") {
+          // TODO: Xử lý thanh toán tiền mặt
+          alert(`Chức năng thanh toán tiền mặt đang được phát triển.`);
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = oldText;
+        }
+      } catch (err) {
+        console.error("Payment error:", err);
+        alert("Có lỗi xảy ra. Vui lòng thử lại.");
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = oldText;
+      }
     });
   }
 }
@@ -495,20 +607,10 @@ function initPaymentConfirmButton() {
 function initTabSwitching() {
   // tab switching
   const tabButtons = document.querySelectorAll(".mb-tab-btn[data-tab]");
-  const tabPanels = document.querySelectorAll(".mb-tab-panel");
   tabButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const target = btn.getAttribute("data-tab");
-      tabButtons.forEach((b) => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-
-      tabPanels.forEach((panel) => {
-        if (panel.id === `tab-${target}`) {
-          panel.classList.add("is-active");
-        } else {
-          panel.classList.remove("is-active");
-        }
-      });
+      setEnrollTab(target);
     });
   });
 }
@@ -554,13 +656,9 @@ function initEnrollForm() {
         if (courseId) {
           const course = ALL_COURSES.find(c => c.id === courseId);
           if (course) {
-            // Lưu auth tạm thời để có thể mở confirmation modal
-            if (email && password) {
-              // Tạm thời set auth để có thể mở confirmation modal
-              const tempAuth = { user: { email, roles: ["R001"] } };
-              localStorage.setItem("mb_auth", JSON.stringify(tempAuth));
-            }
-            // Mở course info modal (Form 1)
+            // KHÔNG set tempAuth vì chưa có token thực sự
+            // User cần đăng nhập trước khi thanh toán
+            // Mở course info modal (Form 1) - nhưng sẽ yêu cầu đăng nhập khi thanh toán
             setTimeout(() => {
               openCourseInfoModal(course);
               // Sau đó hiển thị credentials modal nếu có
@@ -677,6 +775,91 @@ export async function initCoursesPage() {
   initGradeSwitcher();
 
   await loadCourses();
+
+  // Kiểm tra payment success từ URL params (redirect từ MoMo)
+  const orderId = getQueryParam("orderId");
+  const resultCode = getQueryParam("resultCode");
+  
+  if (orderId) {
+    // Có orderId trong URL -> kiểm tra payment status
+    checkPaymentStatusAndShowModal(orderId, resultCode);
+  }
+
+  // Kiểm tra nếu có thông tin payment đã lưu (từ redirect sau khi đăng nhập)
+  const paymentCourseId = localStorage.getItem("payment_course_id");
+  const paymentMonths = localStorage.getItem("payment_months");
+  const paymentMethod = localStorage.getItem("payment_method");
+  
+  if (paymentCourseId && paymentMonths) {
+    // Xóa thông tin payment đã lưu
+    localStorage.removeItem("payment_course_id");
+    localStorage.removeItem("payment_months");
+    localStorage.removeItem("payment_method");
+    localStorage.removeItem("payment_return_url");
+    
+    // Kiểm tra đã đăng nhập chưa
+    if (isAuthenticated()) {
+      // Đã đăng nhập -> mở modal thanh toán
+      const course = ALL_COURSES.find(c => c.id === paymentCourseId);
+      if (course) {
+        currentCourse = course;
+        selectedMonths = parseInt(paymentMonths) || 1;
+        selectedPaymentMethod = paymentMethod || null;
+        
+        // Mở course info modal trước
+        setTimeout(() => {
+          openCourseInfoModal(course);
+          // Restore selected months
+          const select = document.getElementById("course-info-months-select");
+          if (select) {
+            select.value = selectedMonths;
+            updateCourseInfoTotal();
+          }
+          
+          // Sau đó tự động mở payment method modal
+          setTimeout(() => {
+            const confirmBtn = document.getElementById("confirm-course-info-btn");
+            if (confirmBtn) {
+              confirmBtn.click();
+            }
+          }, 500);
+        }, 300);
+      }
+    }
+  }
+}
+
+// Kiểm tra payment status và hiển thị modal thành công
+async function checkPaymentStatusAndShowModal(orderId, resultCode) {
+  try {
+    // Import CONFIG
+    const { CONFIG } = await import("../config.js");
+    
+    // Kiểm tra payment status từ backend
+    const response = await fetch(`${CONFIG.BASE_URL}/api/portal/payment/momo/status?orderId=${orderId}`);
+    const data = await response.json();
+    
+    console.log("[Courses] Payment status check:", data);
+    
+    // Nếu payment thành công (resultCode = 0 hoặc status = "Da Thanh Toan")
+    const isSuccess = resultCode === "0" || resultCode === null || 
+                      (data.success && data.data && data.data.isPaid);
+    
+    if (isSuccess) {
+      // Hiển thị modal thành công
+      setTimeout(() => {
+        openPaymentSuccessModal();
+      }, 500);
+    }
+  } catch (error) {
+    console.error("[Courses] Error checking payment status:", error);
+    // Nếu có orderId nhưng không check được, vẫn hiển thị modal nếu resultCode = 0
+    if (resultCode === "0" || resultCode === null) {
+      setTimeout(() => {
+        openPaymentSuccessModal();
+      }, 500);
+    }
+  }
 }
 
 document.addEventListener("DOMContentLoaded", initCoursesPage);

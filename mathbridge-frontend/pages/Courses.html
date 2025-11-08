@@ -485,6 +485,27 @@
             </div>
         </div>
     </div>
+
+    <!-- ========== PAYMENT SUCCESS MODAL ========== -->
+    <div id="payment-success-modal" class="mb-modal" aria-hidden="true">
+        <div class="mb-modal__backdrop" data-close-payment-success-modal></div>
+        <div class="mb-modal__dialog cred-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-success-title">
+            <button class="mb-modal__close" type="button" title="Đóng" data-close-payment-success-modal>×</button>
+            <div class="cred-header">
+                <div class="cred-emoji" aria-hidden="true">🎉</div>
+                <h3 id="payment-success-title" class="cred-title">Chúc mừng em đã đăng ký khóa học thành công!</h3>
+                <p class="cred-sub">
+                    Em đã thanh toán thành công. Hãy theo dõi thời khóa biểu và chuẩn bị cho khóa học sắp tới.<br>
+                    <strong>Chúc em học tốt!</strong> 🎉
+                </p>
+            </div>
+            <div class="cred-actions">
+                <button type="button" class="btn btn--primary" data-close-payment-success-modal>
+                    Đã hiểu
+                </button>
+            </div>
+        </div>
+    </div>
 </main>
 
 <footer></footer>

@@ -13,6 +13,7 @@
 //  CT005 = Thi chứng chỉ / nâng cao
 
 import { CONFIG } from "../config.js";
+import { getToken } from "../utils/auth.js";
 
 // map grade (9,10,11,12,adv) -> idCT BE
 const PROGRAM_MAP = {
@@ -136,6 +137,62 @@ export async function enrollCourse(payload) {
     };
   } catch (err) {
     console.error("enrollCourse error:", err);
+    return {
+      success: false,
+      message: "Không kết nối được tới máy chủ.",
+    };
+  }
+}
+
+// BE endpoint: /api/portal/payment/momo/create
+export async function createMomoPayment(courseId, months) {
+  const url = `${CONFIG.BASE_URL}/api/portal/payment/momo/create`;
+  
+  // Lấy JWT token từ auth utils
+  const token = getToken();
+  
+  if (!token) {
+    return {
+      success: false,
+      message: "Bạn cần đăng nhập để thanh toán.",
+    };
+  }
+
+  try {
+    console.log("[createMomoPayment] Calling API:", url);
+    console.log("[createMomoPayment] Token:", token ? token.substring(0, 20) + "..." : "null");
+    
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        courseId: courseId,
+        months: months,
+      }),
+    });
+
+    console.log("[createMomoPayment] Response status:", res.status);
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.error("[createMomoPayment] Error response:", errData);
+      return {
+        success: false,
+        message: errData.message || `Tạo payment không thành công (${res.status}).`,
+      };
+    }
+
+    const data = await res.json();
+    return {
+      success: data.success || false,
+      message: data.message || "",
+      data: data.data || {},
+    };
+  } catch (err) {
+    console.error("createMomoPayment error:", err);
     return {
       success: false,
       message: "Không kết nối được tới máy chủ.",
