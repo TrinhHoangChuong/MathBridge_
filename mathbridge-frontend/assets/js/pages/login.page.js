@@ -6,6 +6,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorBox = document.getElementById("auth-error");
   if (!form) return;
 
+  // Kiểm tra localStorage có email/password từ đăng ký không
+  const pendingEmail = localStorage.getItem("pendingLoginEmail");
+  const pendingPassword = localStorage.getItem("pendingLoginPassword");
+  
+  if (pendingEmail && pendingPassword) {
+    // Xóa localStorage
+    localStorage.removeItem("pendingLoginEmail");
+    localStorage.removeItem("pendingLoginPassword");
+    
+    // Điền email/password vào form
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    if (emailInput) emailInput.value = pendingEmail;
+    if (passwordInput) passwordInput.value = pendingPassword;
+    
+    // Chuyển sang tab login (nếu đang ở tab register)
+    setTimeout(() => {
+      if (typeof setTab === "function") {
+        setTab("login");
+      } else {
+        const tabLogin = document.getElementById("tab-login");
+        if (tabLogin) {
+          tabLogin.click();
+        }
+      }
+      
+      // Focus vào email input
+      if (emailInput) {
+        emailInput.focus();
+      }
+    }, 100);
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     hideError();

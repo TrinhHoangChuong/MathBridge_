@@ -582,8 +582,11 @@
 .page-courses .mb-modal {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 4000;
   display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
 }
 
 .page-courses .mb-modal__backdrop {
@@ -597,10 +600,13 @@
   position: relative;
   background: #fff;
   border-radius: 1.1rem;
-  width: min(460px, calc(100% - 2.5rem));
-  margin: 4rem auto;
+  width: min(500px, 100%);
+  margin: 0;
   padding: 1.3rem 1.25rem 1.25rem;
   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.12);
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  z-index: 4001;
 }
 
 .page-courses .mb-modal__title {
@@ -617,16 +623,27 @@
 
 .page-courses .mb-modal__close {
   position: absolute;
-  inset: 0.55rem 0.55rem auto auto;
+  top: 0.75rem;
+  right: 0.75rem;
   background: rgba(15, 23, 42, 0.03);
   border: 1px solid rgba(15, 23, 42, 0.05);
   border-radius: 999px;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  z-index: 1002;
+  transition: all 0.2s ease;
+  color: var(--mb-dark);
+  line-height: 1;
+}
+
+.page-courses .mb-modal__close:hover {
+  background: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.15);
+  transform: scale(1.1);
 }
 
 .page-courses .mb-tabs {
@@ -775,6 +792,369 @@
 }
 
 /* =========================================================
+   14. COURSE INFO MODAL (Form 1)
+   ========================================================= */
+.page-courses .course-info-dialog {
+  width: min(580px, calc(100% - 2.5rem));
+  max-height: calc(100vh - 3rem);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-courses .course-info-header {
+  margin-bottom: 0.9rem;
+  flex-shrink: 0;
+}
+
+.page-courses .course-info-header__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+}
+
+.page-courses .course-info-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--mb-dark);
+  margin: 0;
+}
+
+.page-courses .course-info-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--mb-muted);
+  line-height: 1;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.page-courses .course-info-close:hover {
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--mb-dark);
+}
+
+.page-courses .course-info-sub {
+  font-size: 0.8rem;
+  color: var(--mb-muted);
+  margin: 0;
+}
+
+.page-courses .course-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 0.25rem;
+  margin-right: -0.25rem;
+}
+
+.page-courses .course-info-head {
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.75rem;
+  background: rgba(248, 250, 252, 0.7);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.page-courses .course-info-badge {
+  align-self: flex-start;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(225, 29, 72, 0.12);
+  color: var(--mb-brand);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.page-courses .course-info-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--mb-dark);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.page-courses .course-info-teacher {
+  font-size: 0.8rem;
+  color: var(--mb-muted);
+  margin: 0;
+}
+
+.page-courses .course-info-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.page-courses .course-info-meta-card {
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0.7rem;
+  padding: 0.7rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+}
+
+.page-courses .meta-label {
+  font-size: 0.7rem;
+  color: var(--mb-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.page-courses .meta-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--mb-dark);
+}
+
+.page-courses .course-info-description {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.page-courses .course-info-description .meta-label {
+  margin: 0;
+}
+
+.page-courses .course-info-description__text {
+  font-size: 0.8rem;
+  color: var(--mb-muted);
+  line-height: 1.4;
+  max-height: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  padding: 0;
+  margin: 0;
+}
+
+.page-courses .course-info-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.page-courses .course-info-months {
+  flex-shrink: 0;
+}
+
+.page-courses .course-info-months__label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--mb-dark);
+  margin-bottom: 0.35rem;
+}
+
+.page-courses .course-info-select {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid var(--mb-border);
+  border-radius: 0.65rem;
+  font-size: 0.85rem;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-courses .course-info-select:focus {
+  outline: none;
+  border-color: var(--mb-brand);
+  box-shadow: 0 0 0 3px var(--mb-brand-soft);
+}
+
+.page-courses .course-info-total {
+  background: rgba(225, 29, 72, 0.08);
+  border-radius: 0.65rem;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.page-courses .course-info-total__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--mb-dark);
+}
+
+.page-courses .course-info-total__amount {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--mb-brand);
+}
+
+.page-courses .course-info-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   15. PAYMENT METHOD MODAL (Form 2)
+   ========================================================= */
+.page-courses .payment-method-dialog {
+  width: min(480px, calc(100% - 2.5rem));
+}
+
+.page-courses .payment-method-header {
+  margin-bottom: 1.25rem;
+}
+
+.page-courses .payment-method-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--mb-dark);
+  margin-bottom: 0.4rem;
+}
+
+.page-courses .payment-method-sub {
+  font-size: 0.85rem;
+  color: var(--mb-muted);
+}
+
+.page-courses .payment-summary {
+  background: rgba(248, 250, 252, 0.6);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-courses .payment-summary__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.page-courses .payment-summary__item:last-child {
+  border-bottom: none;
+}
+
+.page-courses .payment-summary__item.payment-summary__total {
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  border-top: 2px solid var(--mb-border);
+  border-bottom: none;
+}
+
+.page-courses .payment-summary__label {
+  font-size: 0.875rem;
+  color: var(--mb-muted);
+  font-weight: 500;
+}
+
+.page-courses .payment-summary__value {
+  font-size: 0.875rem;
+  color: var(--mb-dark);
+  font-weight: 600;
+}
+
+.page-courses .payment-summary__total .payment-summary__label,
+.page-courses .payment-summary__total .payment-summary__value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--mb-brand);
+}
+
+.page-courses .payment-method-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+/* Payment methods styles (dùng chung cho payment method modal) */
+.page-courses .payment-methods {
+  margin-bottom: 1.25rem;
+}
+
+.page-courses .payment-methods__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mb-dark);
+  margin-bottom: 0.75rem;
+}
+
+.page-courses .payment-methods__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.page-courses .payment-method-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px solid var(--mb-border);
+  border-radius: 0.75rem;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-courses .payment-method-btn:hover {
+  border-color: var(--mb-brand);
+  background: var(--mb-brand-soft);
+}
+
+.page-courses .payment-method-btn.is-active {
+  border-color: var(--mb-brand);
+  background: var(--mb-brand-soft);
+}
+
+.page-courses .payment-method__logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.page-courses .payment-method__icon {
+  font-size: 2rem;
+}
+
+.page-courses .payment-method__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mb-dark);
+}
+
+/* =========================================================
    15. RESPONSIVE
    ========================================================= */
 @media (max-width: 1080px) {
@@ -810,7 +1190,77 @@
     grid-template-columns: 1fr;
   }
 
-  .page-courses .mb-modal__dialog {
-    margin-top: 3rem;
+  .page-courses .mb-modal {
+    padding: 1rem;
   }
+
+  .page-courses .mb-modal__dialog {
+    width: 100%;
+    max-height: calc(100vh - 2rem);
+  }
+
+  .page-courses .course-info-dialog,
+  .page-courses .payment-method-dialog {
+    width: calc(100% - 1.5rem);
+    max-height: calc(100vh - 2rem);
+  }
+
+  .page-courses .course-info-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-courses .course-info-description__text {
+    max-height: 50px;
+    -webkit-line-clamp: 2;
+  }
+
+  .page-courses .course-info-head {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .page-courses .course-info-name {
+    font-size: 0.9rem;
+  }
+
+  .page-courses .payment-methods__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-courses .course-info-actions,
+  .page-courses .payment-method-actions {
+    flex-direction: column;
+  }
+
+  .page-courses .course-info-actions .btn,
+  .page-courses .payment-method-actions .btn {
+    width: 100%;
+  }
+}
+
+.page-courses .course-info-header__row,
+.page-courses .payment-method-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.page-courses .course-info-close {
+  border: none;
+  background: rgba(15, 23, 42, 0.05);
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  color: var(--mb-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-courses .course-info-close:hover {
+  background: rgba(225, 29, 72, 0.15);
+  color: var(--mb-brand);
+  transform: scale(1.05);
 }
