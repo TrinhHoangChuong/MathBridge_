@@ -136,11 +136,11 @@ public class DangKyLHService {
         hs.setSdt(req.getSoDienThoai());
         hs.setGioiTinh(req.getGioiTinh() != null && req.getGioiTinh() == 1);
         hs.setDiaChi(req.getDiaChi());
-        
-        if (req.getNgaySinh() != null) {
+
+        /*        if (req.getNgaySinh() != null) {
             LocalDate ns = req.getNgaySinh().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             hs.setNgaySinh(ns);
-        }
+        }  */ 
 
         hs.setThoiGianTao(LocalDateTime.now());
         hs.setThoiGianCapNhat(LocalDateTime.now());
