@@ -1,8 +1,12 @@
 package com.mathbridge.service;
 
 import com.mathbridge.dto.AuthenticatedAccountDTO;
+import com.mathbridge.entity.HocSinh;
+import com.mathbridge.entity.NhanVien;
 import com.mathbridge.entity.TaiKhoan;
 import com.mathbridge.entity.TaiKhoanVaiTro;
+import com.mathbridge.repository.HocSinhRepository;
+import com.mathbridge.repository.NhanVienRepository;
 import com.mathbridge.repository.TaiKhoanRepository;
 import com.mathbridge.repository.TaiKhoanVaiTroRepository;
 import org.springframework.stereotype.Service;
@@ -16,11 +20,17 @@ public class AuthService {
 
     private final TaiKhoanRepository taiKhoanRepository;
     private final TaiKhoanVaiTroRepository taiKhoanVaiTroRepository;
+    private final NhanVienRepository nhanVienRepository;
+    private final HocSinhRepository hocSinhRepository;
 
     public AuthService(TaiKhoanRepository taiKhoanRepository,
-                       TaiKhoanVaiTroRepository taiKhoanVaiTroRepository) {
+                       TaiKhoanVaiTroRepository taiKhoanVaiTroRepository,
+                       NhanVienRepository nhanVienRepository,
+                       HocSinhRepository hocSinhRepository) {
         this.taiKhoanRepository = taiKhoanRepository;
         this.taiKhoanVaiTroRepository = taiKhoanVaiTroRepository;
+        this.nhanVienRepository = nhanVienRepository;
+        this.hocSinhRepository = hocSinhRepository;
     }
 
     /**
@@ -49,10 +59,56 @@ public class AuthService {
                 .map(t -> t.getRole().getIdRole())   // R001, R002, R003
                 .collect(Collectors.toList());
 
+        String fullName = null;
+        String idHs = null;
+        String idNv = null;
+
+        Optional<NhanVien> nhanVienOpt = nhanVienRepository.findFirstByTaiKhoan_IdTk(tk.getIdTk());
+        if (nhanVienOpt.isPresent()) {
+            NhanVien nv = nhanVienOpt.get();
+            fullName = buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen());
+            idNv = nv.getIdNv();
+        } else {
+            Optional<HocSinh> hocSinhOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(tk.getIdTk());
+            if (hocSinhOpt.isPresent()) {
+                HocSinh hs = hocSinhOpt.get();
+                fullName = buildFullName(hs.getHo(), hs.getTenDem(), hs.getTen());
+                idHs = hs.getIdHs();
+            }
+        }
+
+        if (fullName == null || fullName.isBlank()) {
+            fullName = tk.getEmail();
+        }
+
         return new AuthenticatedAccountDTO(
                 tk.getIdTk(),
                 tk.getEmail(),
-                roleIds
+                roleIds,
+                fullName,
+                idHs,
+                idNv
         );
+    }
+
+    private String buildFullName(String ho, String tenDem, String ten) {
+        StringBuilder builder = new StringBuilder();
+        if (ho != null && !ho.isBlank()) {
+            builder.append(ho.trim());
+        }
+        if (tenDem != null && !tenDem.isBlank()) {
+            if (builder.length() > 0) {
+                builder.append(' ');
+            }
+            builder.append(tenDem.trim());
+        }
+        if (ten != null && !ten.isBlank()) {
+            if (builder.length() > 0) {
+                builder.append(' ');
+            }
+            builder.append(ten.trim());
+        }
+        String result = builder.toString().trim();
+        return result.isBlank() ? null : result;
     }
 }

@@ -1,9 +1,14 @@
 package com.mathbridge.controller;
 
+import com.mathbridge.dto.ApiResponse;
 import com.mathbridge.dto.GiaoVienCardDTO;
 import com.mathbridge.dto.LopHocDTO;
+import com.mathbridge.dto.NhanVienProfileDTO;
+import com.mathbridge.dto.NhanVienProfileUpdateDTO;
 import com.mathbridge.service.LopHocService;
 import com.mathbridge.service.NhanVienService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,15 +27,28 @@ public class NhanVienController {
         this.lopHocService = lopHocService;
     }
 
-    // GET /api/public/nhanvien/giaovien
     @GetMapping("/giaovien")
     public List<GiaoVienCardDTO> getDanhSachGiaoVien() {
         return nhanVienService.getDanhSachGiaoVien();
     }
 
-    // GET /api/public/nhanvien/{idNv}/lophoc
     @GetMapping("/{idNv}/lophoc")
     public List<LopHocDTO> getLopHocByGiaoVien(@PathVariable("idNv") String idNv) {
         return lopHocService.getLopHocByGiaoVien(idNv);
+    }
+
+    @GetMapping("/account/{idTk}")
+    public ResponseEntity<ApiResponse<NhanVienProfileDTO>> getProfileByAccount(@PathVariable("idTk") String idTk) {
+        return nhanVienService.getProfileByAccountId(idTk)
+                .map(dto -> ResponseEntity.ok(new ApiResponse<>(true, "Lấy thông tin nhân viên thành công", dto)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(false, "Không tìm thấy thông tin nhân viên", null)));
+    }
+
+    @PutMapping("/account/{idTk}")
+    public ResponseEntity<ApiResponse<NhanVienProfileDTO>> updateProfileByAccount(@PathVariable("idTk") String idTk,
+                                                                                  @RequestBody NhanVienProfileUpdateDTO request) {
+        NhanVienProfileDTO dto = nhanVienService.updateProfileByAccountId(idTk, request);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật thông tin nhân viên thành công", dto));
     }
 }
