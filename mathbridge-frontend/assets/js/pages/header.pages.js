@@ -91,7 +91,7 @@
         btn.addEventListener("click", function () {
           const action = btn.dataset.action;
           if (action === "portal") {
-            window.location.href = "portal/";
+            window.location.href = "portal/student/index_student.html";
           }
           if (action === "logout") {
             // xoá chuẩn
