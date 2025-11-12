@@ -1,4 +1,4 @@
-package com.mathbridge.service.impl;
+package com.mathbridge.service;
 
 import com.mathbridge.dto.AuthenticatedAccountDTO;
 import com.mathbridge.dto.RegisterRequestDTO;
