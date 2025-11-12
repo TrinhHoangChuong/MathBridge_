@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PhuongThucThanhToanRepository extends JpaRepository<PhuongThucThanhToan, String> {
+public interface TuPhuongThucThanhToanRepository extends JpaRepository<PhuongThucThanhToan, String> {
     List<PhuongThucThanhToan> findAll();
 }
 

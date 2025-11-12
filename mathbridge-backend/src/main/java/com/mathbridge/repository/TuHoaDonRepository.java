@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface HoaDonRepository extends JpaRepository<HoaDon, String> {
+public interface TuHoaDonRepository extends JpaRepository<HoaDon, String> {
     
     // Lấy tất cả hóa đơn chưa thanh toán
     @Query("SELECT h FROM HoaDon h WHERE h.trangThai = 'Chua Thanh Toan' OR h.ngayThanhToan IS NULL")

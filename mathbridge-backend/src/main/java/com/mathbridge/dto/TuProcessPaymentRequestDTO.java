@@ -1,6 +1,6 @@
 package com.mathbridge.dto;
 
-public class ProcessPaymentRequestDTO {
+public class TuProcessPaymentRequestDTO {
     private String idHoaDon;
     private String idPt;
     private String ghiChu;

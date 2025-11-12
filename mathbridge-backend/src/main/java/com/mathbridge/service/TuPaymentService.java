@@ -13,27 +13,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class PaymentService {
+public class TuPaymentService {
 
-    private final HoaDonRepository hoaDonRepository;
-    private final LichSuThanhToanRepository lichSuThanhToanRepository;
-    private final PhuongThucThanhToanRepository phuongThucThanhToanRepository;
+    private final TuHoaDonRepository hoaDonRepository;
+    private final TuLichSuThanhToanRepository lichSuThanhToanRepository;
+    private final TuPhuongThucThanhToanRepository phuongThucThanhToanRepository;
 
-    public PaymentService(
-            HoaDonRepository hoaDonRepository,
+    public TuPaymentService(
+            TuHoaDonRepository hoaDonRepository,
             HocSinhRepository hocSinhRepository,
-            LichSuThanhToanRepository lichSuThanhToanRepository,
-            PhuongThucThanhToanRepository phuongThucThanhToanRepository) {
+            TuLichSuThanhToanRepository lichSuThanhToanRepository,
+            TuPhuongThucThanhToanRepository phuongThucThanhToanRepository) {
         this.hoaDonRepository = hoaDonRepository;
         this.lichSuThanhToanRepository = lichSuThanhToanRepository;
         this.phuongThucThanhToanRepository = phuongThucThanhToanRepository;
     }
 
     // Lấy danh sách học sinh chưa thanh toán
-    public List<UnpaidInvoiceDTO> getUnpaidInvoices() {
+    public List<TuUnpaidInvoiceDTO> getUnpaidInvoices() {
         List<HoaDon> unpaidInvoices = hoaDonRepository.findUnpaidInvoices();
         return unpaidInvoices.stream().map(invoice -> {
-            UnpaidInvoiceDTO dto = new UnpaidInvoiceDTO();
+            TuUnpaidInvoiceDTO dto = new TuUnpaidInvoiceDTO();
             dto.setIdHoaDon(invoice.getIdHoaDon());
             dto.setIdHs(invoice.getHocSinh().getIdHs());
             dto.setStudentName(invoice.getHocSinh().getHo() + " " + 
@@ -52,14 +52,14 @@ public class PaymentService {
     }
 
     // Lấy thông tin chi tiết học sinh và hóa đơn
-    public PaymentDTO getPaymentDetails(String idHoaDon) {
+    public TuPaymentDTO getPaymentDetails(String idHoaDon) {
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon)
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
         
         HocSinh hocSinh = hoaDon.getHocSinh();
         LopHoc lopHoc = hoaDon.getLopHoc();
         
-        PaymentDTO dto = new PaymentDTO();
+        TuPaymentDTO dto = new TuPaymentDTO();
         dto.setIdHoaDon(hoaDon.getIdHoaDon());
         dto.setIdHs(hocSinh.getIdHs());
         dto.setStudentName(hocSinh.getHo() + " " + 
@@ -85,10 +85,10 @@ public class PaymentService {
     }
 
     // Lấy danh sách phương thức thanh toán
-    public List<PaymentMethodDTO> getPaymentMethods() {
+    public List<TuPaymentMethodDTO> getPaymentMethods() {
         List<PhuongThucThanhToan> methods = phuongThucThanhToanRepository.findAll();
         return methods.stream().map(method -> {
-            PaymentMethodDTO dto = new PaymentMethodDTO();
+            TuPaymentMethodDTO dto = new TuPaymentMethodDTO();
             dto.setIdPt(method.getIdPt());
             dto.setTenPt(method.getTenPt());
             dto.setHinhThucTt(method.getHinhThucTt());
@@ -99,7 +99,7 @@ public class PaymentService {
 
     // Xử lý thanh toán
     @Transactional
-    public PaymentDTO processPayment(ProcessPaymentRequestDTO request) {
+    public TuPaymentDTO processPayment(TuProcessPaymentRequestDTO request) {
         // Lấy hóa đơn
         HoaDon hoaDon = hoaDonRepository.findById(request.getIdHoaDon())
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
@@ -143,7 +143,7 @@ public class PaymentService {
         HocSinh hocSinh = hoaDon.getHocSinh();
         LopHoc lopHoc = hoaDon.getLopHoc();
         
-        PaymentDTO response = new PaymentDTO();
+        TuPaymentDTO response = new TuPaymentDTO();
         response.setIdHoaDon(hoaDon.getIdHoaDon());
         response.setIdHs(hocSinh.getIdHs());
         response.setStudentName(hocSinh.getHo() + " " + 
@@ -175,7 +175,7 @@ public class PaymentService {
     }
 
     // Lấy thông tin hóa đơn sau khi thanh toán
-    public PaymentDTO getInvoiceDetails(String idHoaDon) {
+    public TuPaymentDTO getInvoiceDetails(String idHoaDon) {
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon)
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
         
@@ -183,7 +183,7 @@ public class PaymentService {
         LopHoc lopHoc = hoaDon.getLopHoc();
         LichSuThanhToan lichSu = hoaDon.getLichSuThanhToan();
         
-        PaymentDTO dto = new PaymentDTO();
+        TuPaymentDTO dto = new TuPaymentDTO();
         dto.setIdHoaDon(hoaDon.getIdHoaDon());
         dto.setIdHs(hocSinh.getIdHs());
         dto.setStudentName(hocSinh.getHo() + " " + 
@@ -217,10 +217,10 @@ public class PaymentService {
     }
 
     // Lấy danh sách tất cả hóa đơn
-    public List<InvoiceDTO> getAllInvoices() {
+    public List<TuInvoiceDTO> getAllInvoices() {
         List<HoaDon> invoices = hoaDonRepository.findAll();
         return invoices.stream().map(invoice -> {
-            InvoiceDTO dto = new InvoiceDTO();
+            TuInvoiceDTO dto = new TuInvoiceDTO();
             HocSinh hocSinh = invoice.getHocSinh();
             LopHoc lopHoc = invoice.getLopHoc();
             LichSuThanhToan lichSu = invoice.getLichSuThanhToan();

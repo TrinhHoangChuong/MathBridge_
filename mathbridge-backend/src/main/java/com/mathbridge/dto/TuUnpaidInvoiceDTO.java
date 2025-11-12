@@ -3,7 +3,7 @@ package com.mathbridge.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class UnpaidInvoiceDTO {
+public class TuUnpaidInvoiceDTO {
     private String idHoaDon;
     private String idHs;
     private String studentName;

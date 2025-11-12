@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface LichSuThanhToanRepository extends JpaRepository<LichSuThanhToan, String> {
+public interface TuLichSuThanhToanRepository extends JpaRepository<LichSuThanhToan, String> {
     
     // Lấy lịch sử thanh toán theo học sinh (qua hóa đơn)
     @Query("SELECT lst FROM LichSuThanhToan lst JOIN lst.hoaDons h WHERE h.hocSinh.idHs = :idHs ORDER BY lst.idLs DESC")

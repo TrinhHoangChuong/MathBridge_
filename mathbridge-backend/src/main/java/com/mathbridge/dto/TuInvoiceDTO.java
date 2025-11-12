@@ -2,9 +2,9 @@ package com.mathbridge.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+// Hy
 
-public class PaymentDTO {
+public class TuInvoiceDTO {
     private String idHoaDon;
     private String idHs;
     private String studentName;
@@ -15,14 +15,15 @@ public class PaymentDTO {
     private String tenLop;
     private String chuongTrinh;
     private BigDecimal tongTien;
-    private String idPt;
+    private LocalDate ngayDangKy;
+    private LocalDate ngayThanhToan;
+    private LocalDate hanThanhToan;
+    private String soThang;
+    private String trangThai;
+    private String idLs;
     private String paymentMethodName;
     private String paymentMethodType;
     private String ghiChu;
-    private LocalDate ngayThanhToan;
-    private LocalDateTime gioThanhToan;
-    private LocalDate hanThanhToan;
-    private String idLs; // Receipt number (payment history ID)
 
     // Getters and Setters
     public String getIdHoaDon() {
@@ -105,12 +106,52 @@ public class PaymentDTO {
         this.tongTien = tongTien;
     }
 
-    public String getIdPt() {
-        return idPt;
+    public LocalDate getNgayDangKy() {
+        return ngayDangKy;
     }
 
-    public void setIdPt(String idPt) {
-        this.idPt = idPt;
+    public void setNgayDangKy(LocalDate ngayDangKy) {
+        this.ngayDangKy = ngayDangKy;
+    }
+
+    public LocalDate getNgayThanhToan() {
+        return ngayThanhToan;
+    }
+
+    public void setNgayThanhToan(LocalDate ngayThanhToan) {
+        this.ngayThanhToan = ngayThanhToan;
+    }
+
+    public LocalDate getHanThanhToan() {
+        return hanThanhToan;
+    }
+
+    public void setHanThanhToan(LocalDate hanThanhToan) {
+        this.hanThanhToan = hanThanhToan;
+    }
+
+    public String getSoThang() {
+        return soThang;
+    }
+
+    public void setSoThang(String soThang) {
+        this.soThang = soThang;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public String getIdLs() {
+        return idLs;
+    }
+
+    public void setIdLs(String idLs) {
+        this.idLs = idLs;
     }
 
     public String getPaymentMethodName() {
@@ -135,38 +176,6 @@ public class PaymentDTO {
 
     public void setGhiChu(String ghiChu) {
         this.ghiChu = ghiChu;
-    }
-
-    public LocalDate getNgayThanhToan() {
-        return ngayThanhToan;
-    }
-
-    public void setNgayThanhToan(LocalDate ngayThanhToan) {
-        this.ngayThanhToan = ngayThanhToan;
-    }
-
-    public LocalDateTime getGioThanhToan() {
-        return gioThanhToan;
-    }
-
-    public void setGioThanhToan(LocalDateTime gioThanhToan) {
-        this.gioThanhToan = gioThanhToan;
-    }
-
-    public LocalDate getHanThanhToan() {
-        return hanThanhToan;
-    }
-
-    public void setHanThanhToan(LocalDate hanThanhToan) {
-        this.hanThanhToan = hanThanhToan;
-    }
-
-    public String getIdLs() {
-        return idLs;
-    }
-
-    public void setIdLs(String idLs) {
-        this.idLs = idLs;
     }
 }
 
