@@ -1,19 +1,14 @@
-package com.mathbridge.service;
 
-import com.mathbridge.dto.LopHocDTO;
+package com.mathbridge.service.PortalAdmin;
+
+
 import com.mathbridge.dto.PortalAdmin.Request.LopHocRequest;
 import com.mathbridge.dto.PortalAdmin.Response.LopHocResponse;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.*;
 
-import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
-import java.util.List;
 
-public interface LopHocService {
-
-    // lấy các lớp do giáo viên này phụ trách
-    List<LopHocDTO> getLopHocByGiaoVien(String idNv);
-
+public interface LopHocAdminService {
     Page<LopHocResponse> list(String ct, String nv, String status, String hinhThuc,
                               LocalDateTime from, LocalDateTime to,
                               String q, Pageable pageable);

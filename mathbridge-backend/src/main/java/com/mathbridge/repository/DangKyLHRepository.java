@@ -25,5 +25,7 @@ public interface DangKyLHRepository extends JpaRepository<DangKyLH, DangKyLHId> 
      */
     @Query("SELECT COUNT(d) FROM DangKyLH d WHERE d.lopHoc.idLh = :idLH")
     long countByLopHocId(@Param("idLH") String idLH);
+
+    long countByLopHoc_IdLh(String idLh);
 }
 
