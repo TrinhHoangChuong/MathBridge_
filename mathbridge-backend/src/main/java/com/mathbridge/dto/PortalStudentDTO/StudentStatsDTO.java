@@ -1,4 +1,4 @@
-package com.mathbridge.dto;
+package com.mathbridge.dto.PortalStudentDTO;
 
 public class StudentStatsDTO {
     private int totalClasses;

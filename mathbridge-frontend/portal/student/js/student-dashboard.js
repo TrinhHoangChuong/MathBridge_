@@ -1,10 +1,51 @@
 // Student Dashboard JavaScript
+import { CONFIG } from '../../assets/js/config.js';
+
 class StudentDashboard {
     constructor() {
         this.currentSection = 'dashboard';
         this.studentData = null;
         this.charts = {};
+        // Check authentication before initializing
+        this.checkAuthentication();
         this.init();
+    }
+
+    // Check if user is authenticated
+    checkAuthentication() {
+        const token = localStorage.getItem('mb_token');
+        const authData = localStorage.getItem('mb_auth');
+        
+        // Check if we have token or auth data
+        let hasToken = !!token;
+        if (!hasToken && authData) {
+            try {
+                const auth = JSON.parse(authData);
+                hasToken = !!auth.token;
+            } catch (e) {
+                console.warn('Failed to parse mb_auth:', e);
+            }
+        }
+
+        // Check if user has student role
+        let isStudent = false;
+        if (authData) {
+            try {
+                const auth = JSON.parse(authData);
+                const user = auth.user || auth.account || {};
+                const roles = user.roles || [];
+                isStudent = roles.includes('R001') || roles.some(r => /hoc\s*sinh/i.test(r));
+            } catch (e) {
+                console.warn('Failed to parse mb_auth for roles:', e);
+            }
+        }
+
+        if (!hasToken || !isStudent) {
+            // Redirect to login page
+            alert('Vui lòng đăng nhập để truy cập portal học sinh.');
+            window.location.href = '../../pages/login.html';
+            return;
+        }
     }
 
     init() {
@@ -150,64 +191,33 @@ class StudentDashboard {
     }
 
     async loadDashboardData() {
-        // Detect if running in static/offline mode
-        const isStaticMode = this.isStaticMode();
+        // Always use API to get real data from SQL Server
+        // No mock data or static mode
+        try {
+            this.showLoading();
 
-        if (!isStaticMode) {
-            // Normal mode: try backend first, show loading
-            try {
-                this.showLoading();
-
-                // Try to load student dashboard data from backend
-                const dashboardResponse = await this.apiCall('/api/portal/student/dashboard');
+            // Load student dashboard data from backend API
+            const dashboardResponse = await this.apiCall('/api/portal/student/dashboard');
+            
+            // Handle response format: ApiResponse<StudentDashboardDTO> has structure {success, message, data}
+            if (dashboardResponse && dashboardResponse.success && dashboardResponse.data) {
                 this.studentData = dashboardResponse.data;
-
-                // Cache successful data
-                this.cacheDashboardData(this.studentData);
-
-                this.hideLoading();
-
-                // Update UI with loaded data
-                this.updateDashboardUI();
-                this.updateUserInfo();
-                this.loadClasses();
-                this.loadAssignments();
-                this.loadGrades();
-                this.loadMessages();
-
-            } catch (error) {
-                console.warn('Backend data loading failed, falling back to local:', error);
-
-                // Load cached data or use default data
-                this.studentData = this.loadCachedDashboardData() || this.getDefaultDashboardData();
-
-                // Perform local calculations for metrics
-                this.calculateLocalMetrics();
-
-                this.hideLoading();
-
-                // Update UI with calculated data
-                this.updateDashboardUI();
-                this.updateUserInfo();
-                this.loadClasses();
-                this.loadAssignments();
-                this.loadGrades();
-                this.loadMessages();
-
-                // Show offline mode notification
-                this.showNotification('Đang hiển thị dữ liệu ngoại tuyến. Một số tính năng có thể bị hạn chế.', 'warning', 8000);
+            } else if (dashboardResponse && dashboardResponse.data) {
+                // Fallback: if response has data directly
+                this.studentData = dashboardResponse.data;
+            } else if (dashboardResponse) {
+                // Fallback: if response is the data itself
+                this.studentData = dashboardResponse;
+            } else {
+                throw new Error('Không nhận được dữ liệu từ server');
             }
-        } else {
-            // Static mode: load default data immediately without loading screen
-            console.log('Running in static mode, loading default data without loading screen');
 
-            // Load default data directly
-            this.studentData = this.getDefaultDashboardData();
+            // Cache successful data
+            this.cacheDashboardData(this.studentData);
 
-            // Perform local calculations for metrics
-            this.calculateLocalMetrics();
+            this.hideLoading();
 
-            // Update UI immediately with default data
+            // Update UI with loaded data
             this.updateDashboardUI();
             this.updateUserInfo();
             this.loadClasses();
@@ -217,31 +227,120 @@ class StudentDashboard {
             this.loadHistory();
             this.loadSupportRequests();
 
-            // Optional: Show a brief notification about static mode
-            setTimeout(() => {
-                this.showNotification('Đang chạy ở chế độ tĩnh với dữ liệu mẫu.', 'info', 3000);
-            }, 1000);
+        } catch (error) {
+            console.error('Backend data loading failed:', error);
+            
+            // Check if it's a connection error
+            const isConnectionError = error.message.includes('Failed to fetch') || 
+                                     error.message.includes('ERR_CONNECTION_REFUSED') ||
+                                     error.message.includes('NetworkError') ||
+                                     error.name === 'TypeError';
+            
+            if (isConnectionError) {
+                this.hideLoading();
+                this.showNotification(
+                    'Không thể kết nối đến server. Vui lòng đảm bảo backend server đang chạy tại http://localhost:8080', 
+                    'error', 
+                    15000
+                );
+                this.showConnectionErrorState();
+                return;
+            }
+            
+            // Only use cached data if available, never use mock/default data
+            const cachedData = this.loadCachedDashboardData();
+            
+            if (cachedData) {
+                console.warn('Using cached data due to API error');
+                this.studentData = cachedData;
+                
+                this.hideLoading();
+                
+                // Update UI with cached data
+                this.updateDashboardUI();
+                this.updateUserInfo();
+                this.loadClasses();
+                this.loadAssignments();
+                this.loadGrades();
+                this.loadMessages();
+                this.loadHistory();
+                this.loadSupportRequests();
+                
+                // Show offline mode notification
+                this.showNotification('Đang hiển thị dữ liệu đã lưu. Vui lòng kiểm tra kết nối mạng.', 'warning', 8000);
+            } else {
+                // No cached data available - show error
+                this.hideLoading();
+                this.showNotification('Không thể tải dữ liệu. Vui lòng kiểm tra kết nối và thử lại.', 'error', 10000);
+                
+                // Show empty state
+                this.showEmptyState();
+            }
+        }
+    }
+    
+    showEmptyState() {
+        // Show empty state message when no data is available
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            // Remove existing empty state if any
+            const existing = mainContent.querySelector('.empty-state');
+            if (existing) existing.remove();
+            
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <div class="empty-state-content">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
+                    <h3>Không thể tải dữ liệu</h3>
+                    <p>Vui lòng kiểm tra kết nối mạng và thử lại.</p>
+                    <button class="btn btn-primary" onclick="dashboard.loadDashboardData()">
+                        <i class="fas fa-redo"></i> Thử lại
+                    </button>
+                </div>
+            `;
+            mainContent.appendChild(emptyState);
+        }
+    }
+    
+    showConnectionErrorState() {
+        // Show connection error state when backend server is not running
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            // Remove existing empty state if any
+            const existing = mainContent.querySelector('.empty-state');
+            if (existing) existing.remove();
+            
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <div class="empty-state-content">
+                    <i class="fas fa-server" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"></i>
+                    <h3>Không thể kết nối đến server</h3>
+                    <p style="margin-bottom: 12px;">Backend server chưa được khởi động hoặc không thể truy cập.</p>
+                    <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0; text-align: left;">
+                        <p style="margin: 8px 0;"><strong>Để khắc phục:</strong></p>
+                        <ol style="margin: 8px 0; padding-left: 24px;">
+                            <li>Đảm bảo backend server đang chạy tại <code>http://localhost:8080</code></li>
+                            <li>Kiểm tra terminal/console của backend để xem có lỗi không</li>
+                            <li>Thử khởi động lại backend server</li>
+                        </ol>
+                    </div>
+                    <button class="btn btn-primary" onclick="dashboard.loadDashboardData()">
+                        <i class="fas fa-redo"></i> Thử lại
+                    </button>
+                </div>
+            `;
+            mainContent.appendChild(emptyState);
         }
     }
 
     // Detect if running in static/offline mode
+    // Always return false to force API calls - no mock data
     isStaticMode() {
-        // Check multiple indicators for static mode
-        const isFileProtocol = window.location.protocol === 'file:';
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const isNoBackendPort = window.location.port === '' || window.location.port === '80' || window.location.port === '443';
-        const hasStaticIndicator = document.body.hasAttribute('data-static-mode');
-
-        // For demo purposes, force static mode when opening HTML directly
-        // Set to false in production to enable automatic backend detection
-        const forceStaticMode = isFileProtocol || hasStaticIndicator;
-
-        // Consider static mode if:
-        // 1. File protocol (file://) - opening HTML directly
-        // 2. Explicit static mode attribute on body
-        // 3. Localhost without specific backend port (fallback)
-        return forceStaticMode ||
-               (isLocalhost && isNoBackendPort && !this.hasBackendConfig());
+        // Only check for file protocol (opening HTML directly)
+        // In production, always use API
+        return window.location.protocol === 'file:';
     }
 
     // Check if backend configuration exists
@@ -266,14 +365,26 @@ class StudentDashboard {
             this.addOfflineModeStyling();
         }
 
-        // Update header
-        document.getElementById('userName').textContent = fullName;
-        document.getElementById('headerUserName').textContent = fullName;
+        // Update header - check if elements exist before setting
+        const userNameEl = document.getElementById('userName');
+        const headerUserNameEl = document.getElementById('headerUserName');
+        if (userNameEl) userNameEl.textContent = fullName;
+        if (headerUserNameEl) headerUserNameEl.textContent = fullName;
 
-        // Update hero section
-        document.getElementById('welcomeMessage').textContent = `Chào mừng ${fullName.split(' ').pop()}!`;
-        document.getElementById('todayClassesCount').textContent = stats.todayClasses;
-        document.getElementById('pendingAssignmentsCount').textContent = stats.pendingAssignments;
+        // Update hero section - check if elements exist before setting
+        const welcomeMessageEl = document.getElementById('welcomeMessage');
+        const todayClassesCountEl = document.getElementById('todayClassesCount');
+        const pendingAssignmentsCountEl = document.getElementById('pendingAssignmentsCount');
+        
+        if (welcomeMessageEl && fullName) {
+            welcomeMessageEl.textContent = `Chào mừng ${fullName.split(' ').pop()}!`;
+        }
+        if (todayClassesCountEl && stats) {
+            todayClassesCountEl.textContent = stats.todayClasses || 0;
+        }
+        if (pendingAssignmentsCountEl && stats) {
+            pendingAssignmentsCountEl.textContent = stats.pendingAssignments || 0;
+        }
 
         // Update stats cards with local calculations
         this.updateStatsCards(stats, isOfflineMode || isStaticMode);
@@ -572,12 +683,39 @@ class StudentDashboard {
 
     loadClasses() {
         const classesGrid = document.getElementById('classesGrid');
-        if (!this.studentData?.classes) return;
+        if (!classesGrid) return;
 
-        classesGrid.innerHTML = this.studentData.classes.map(classItem => `
+        // Check if we have classes data from API
+        if (!this.studentData?.classes || this.studentData.classes.length === 0) {
+            classesGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                    <div class="empty-state-content">
+                        <i class="fas fa-chalkboard-teacher" style="font-size: 64px; color: #9ca3af; margin-bottom: 20px;"></i>
+                        <h3>Chưa có lớp học nào</h3>
+                        <p>Bạn chưa đăng ký lớp học nào. Hãy tham gia lớp học mới để bắt đầu!</p>
+                        <button class="btn btn-primary" onclick="joinNewClass()">
+                            <i class="fas fa-plus"></i> Tham gia lớp mới
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Render classes from API data
+        classesGrid.innerHTML = this.studentData.classes.map(classItem => {
+            // Handle null/undefined values safely
+            const averageGrade = classItem.averageGrade != null ? classItem.averageGrade.toFixed(1) : 'N/A';
+            const attendancePercentage = classItem.attendancePercentage != null ? classItem.attendancePercentage : 0;
+            const studentCount = classItem.studentCount != null ? classItem.studentCount : 0;
+            const schedule = classItem.schedule || 'Chưa có lịch học';
+            const room = classItem.room || 'Chưa có phòng';
+            const teacherName = classItem.teacherName || 'Chưa có giáo viên';
+
+            return `
             <div class="class-card">
                 <div class="class-header">
-                    <h3>${classItem.className}</h3>
+                    <h3>${classItem.className || 'Lớp học'}</h3>
                     <div class="class-actions">
                         <button class="btn-icon" title="Xem chi tiết" onclick="dashboard.viewClassDetails('${classItem.classId}')">
                             <i class="fas fa-eye"></i>
@@ -590,22 +728,22 @@ class StudentDashboard {
                 <div class="class-body">
                     <div class="class-stats">
                         <div class="stat">
-                            <span class="stat-value">${classItem.studentCount}</span>
+                            <span class="stat-value">${studentCount}</span>
                             <span class="stat-label">HỌC SINH</span>
                         </div>
                         <div class="stat">
-                            <span class="stat-value">${classItem.averageGrade.toFixed(1)}</span>
+                            <span class="stat-value">${averageGrade}</span>
                             <span class="stat-label">ĐIỂM TB</span>
                         </div>
                         <div class="stat">
-                            <span class="stat-value">${classItem.attendancePercentage}%</span>
+                            <span class="stat-value">${attendancePercentage}%</span>
                             <span class="stat-label">THAM GIA</span>
                         </div>
                     </div>
                     <div class="class-schedule">
-                        <p><i class="fas fa-clock"></i> ${classItem.schedule}</p>
-                        <p><i class="fas fa-map-marker-alt"></i> ${classItem.room}</p>
-                        <p><i class="fas fa-user-tie"></i> ${classItem.teacherName}</p>
+                        <p><i class="fas fa-clock"></i> ${schedule}</p>
+                        <p><i class="fas fa-map-marker-alt"></i> ${room}</p>
+                        <p><i class="fas fa-user-tie"></i> ${teacherName}</p>
                     </div>
                     <div class="class-actions-full">
                         <button class="btn btn-sm btn-primary" onclick="dashboard.viewClassDetails('${classItem.classId}')">
@@ -614,7 +752,8 @@ class StudentDashboard {
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     loadAssignments() {
@@ -694,9 +833,13 @@ class StudentDashboard {
         const grades = this.studentData.grades.map(g => g.score);
         const average = grades.reduce((a, b) => a + b, 0) / grades.length;
 
-        document.getElementById('overallAverage').textContent = average.toFixed(1);
-        document.getElementById('totalGradesCount').textContent = grades.length;
-        document.getElementById('gradeRanking').textContent = this.getGradeRanking(average);
+        const overallAverageEl = document.getElementById('overallAverage');
+        const totalGradesCountEl = document.getElementById('totalGradesCount');
+        const gradeRankingEl = document.getElementById('gradeRanking');
+        
+        if (overallAverageEl) overallAverageEl.textContent = average.toFixed(1);
+        if (totalGradesCountEl) totalGradesCountEl.textContent = grades.length;
+        if (gradeRankingEl) gradeRankingEl.textContent = this.getGradeRanking(average);
     }
 
     loadMessages() {
@@ -781,8 +924,20 @@ class StudentDashboard {
 
     formatDate(dateString) {
         if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN');
+        try {
+            // Handle LocalDateTime format from backend (ISO format)
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return 'N/A';
+        }
     }
 
     updateDateTime() {
@@ -824,7 +979,8 @@ class StudentDashboard {
             'history': 'Lịch sử',
             'support': 'Hỗ trợ'
         };
-        document.getElementById('pageTitle').textContent = titles[sectionName];
+        const pageTitleEl = document.getElementById('pageTitle');
+        if (pageTitleEl) pageTitleEl.textContent = titles[sectionName];
 
         // Show section
         document.querySelectorAll('.content-section').forEach(section => {
@@ -833,6 +989,13 @@ class StudentDashboard {
         document.getElementById(sectionName).classList.add('active');
 
         this.currentSection = sectionName;
+
+        // Load section-specific data
+        if (sectionName === 'schedule') {
+            this.loadSchedule();
+        } else if (sectionName === 'support') {
+            this.loadSupportRequests();
+        }
     }
 
     // Filter methods
@@ -1451,6 +1614,7 @@ class StudentDashboard {
 
             case 'viewSchedule':
                 this.switchSection('schedule');
+                this.loadSchedule();
                 this.closeModal();
                 break;
 
@@ -1596,30 +1760,23 @@ class StudentDashboard {
                 // 2. Create new DangKyLH record linking HocSinh and LopHoc
                 // 3. Set trangThai to 'pending' initially, then 'approved' after admin approval
 
-                if (!this.isStaticMode()) {
-                    // Real API call
-                    const response = await this.apiCall('/api/student/join-class', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            classCode: classCode,
-                            studentId: this.studentData?.studentId
-                        })
-                    });
+                // Always use API to join class
+                const response = await this.apiCall('/api/student/join-class', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        classCode: classCode,
+                        studentId: this.studentData?.studentId
+                    })
+                });
 
-                    if (response.success) {
-                        this.hideLoading();
-                        this.closeModal();
-                        this.showNotification('Đã gửi yêu cầu tham gia lớp học. Vui lòng chờ phê duyệt!', 'success');
-                        // Optionally refresh classes or show pending status
-                    } else {
-                        throw new Error(response.message || 'Không thể tham gia lớp học');
-                    }
-                } else {
-                    // Static mode simulation
+                if (response.success) {
                     this.hideLoading();
                     this.closeModal();
-                    this.showNotification('Đã tham gia lớp học thành công!', 'success');
-                    this.loadClasses(); // Refresh classes
+                    this.showNotification('Đã gửi yêu cầu tham gia lớp học. Vui lòng chờ phê duyệt!', 'success');
+                    // Reload dashboard to get updated data
+                    await this.loadDashboardData();
+                } else {
+                    throw new Error(response.message || 'Không thể tham gia lớp học');
                 }
 
             } catch (error) {
@@ -1815,24 +1972,8 @@ class StudentDashboard {
         }
     }
 
-    getDefaultDashboardData() {
-        const data = {
-            studentId: 'HS001',
-            fullName: 'Nguyễn Văn A',
-            email: 'nguyenvana@example.com',
-            classes: this.getDefaultClasses(),
-            assignments: this.getDefaultAssignments(),
-            grades: this.getDefaultGrades(),
-            messages: this.getDefaultMessages(),
-            registrations: this.getDefaultRegistrations(),
-            attendedClasses: this.getDefaultAttendedClasses(),
-            supportRequests: this.getDefaultSupportRequests(),
-            stats: this.getDefaultStats(),
-            _isOffline: true // Mark as offline data
-        };
-
-        return data;
-    }
+    // Removed getDefaultDashboardData() - now using API only
+    // All data is fetched from /api/portal/student/dashboard endpoint
 
     calculateLocalMetricsForData(data) {
         // Calculate comprehensive metrics for default data
@@ -1922,43 +2063,8 @@ class StudentDashboard {
         data.stats.recentAverage = Math.round(recentAvg * 10) / 10;
     }
 
-    getDefaultClasses() {
-        return [
-            {
-                classId: 'MATH101',
-                className: 'Toán học nâng cao 10',
-                teacherName: 'Thầy Nguyễn Văn Minh',
-                schedule: 'Thứ 2, 4, 6 (08:00-10:00)',
-                room: 'Phòng 101',
-                studentCount: 25,
-                averageGrade: 8.5,
-                attendancePercentage: 92,
-                status: 'active'
-            },
-            {
-                classId: 'MATH102',
-                className: 'Giải tích 11',
-                teacherName: 'Cô Trần Thị Lan',
-                schedule: 'Thứ 3, 5 (10:30-12:30)',
-                room: 'Phòng 203',
-                studentCount: 22,
-                averageGrade: 7.8,
-                attendancePercentage: 88,
-                status: 'active'
-            },
-            {
-                classId: 'MATH103',
-                className: 'Đại số tuyến tính 12',
-                teacherName: 'Thầy Lê Văn Hùng',
-                schedule: 'Thứ 4, 7 (14:00-16:00)',
-                room: 'Phòng 305',
-                studentCount: 18,
-                averageGrade: 8.2,
-                attendancePercentage: 95,
-                status: 'active'
-            }
-        ];
-    }
+    // Removed getDefaultClasses() - classes are now fetched from API
+    // Data comes from /api/portal/student/dashboard endpoint which queries the database
 
     getDefaultAssignments() {
         const now = new Date();
@@ -2326,22 +2432,65 @@ class StudentDashboard {
 
     // API and utility methods
     async apiCall(endpoint, options = {}) {
-        const baseUrl = window.CONFIG?.BASE_URL || 'http://localhost:8080';
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            ...options
-        };
-
-        const response = await fetch(`${baseUrl}${endpoint}`, config);
-
-        if (!response.ok) {
-            throw new Error(`API call failed: ${response.status}`);
+        // Get token from localStorage (mb_token or from mb_auth object)
+        let token = localStorage.getItem('mb_token');
+        if (!token) {
+            // Try to get from mb_auth object
+            const authData = localStorage.getItem('mb_auth');
+            if (authData) {
+                try {
+                    const auth = JSON.parse(authData);
+                    token = auth.token;
+                } catch (e) {
+                    console.warn('Failed to parse mb_auth:', e);
+                }
+            }
         }
 
-        return await response.json();
+        if (!token) {
+            throw new Error('Không tìm thấy token. Vui lòng đăng nhập lại.');
+        }
+
+        // Get base URL from CONFIG (imported from config.js) or use default
+        const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG?.BASE_URL) 
+            ? CONFIG.BASE_URL 
+            : (window.CONFIG?.BASE_URL || 'http://localhost:8080');
+
+        const config = {
+            method: options.method || 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...(options.headers || {})
+            },
+            ...(options.body && { body: typeof options.body === 'string' ? options.body : JSON.stringify(options.body) })
+        };
+
+        let response;
+        try {
+            response = await fetch(`${baseUrl}${endpoint}`, config);
+        } catch (fetchError) {
+            // Handle network errors (connection refused, timeout, etc.)
+            if (fetchError.name === 'TypeError' || fetchError.message.includes('Failed to fetch')) {
+                throw new Error('ERR_CONNECTION_REFUSED: Không thể kết nối đến server. Vui lòng đảm bảo backend server đang chạy.');
+            }
+            throw fetchError;
+        }
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                // Token expired or invalid, redirect to login
+                localStorage.removeItem('mb_auth');
+                localStorage.removeItem('mb_token');
+                window.location.href = '../../pages/login.html';
+                throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+            }
+            const errorData = await response.json().catch(() => ({ message: `API call failed: ${response.status}` }));
+            throw new Error(errorData.message || `API call failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
     }
 
     showLoading() {
@@ -2353,8 +2502,10 @@ class StudentDashboard {
     }
 
     showError(message) {
-        document.getElementById('errorMessage').textContent = message;
-        document.getElementById('errorModal').classList.add('active');
+        const errorMessageEl = document.getElementById('errorMessage');
+        const errorModalEl = document.getElementById('errorModal');
+        if (errorMessageEl) errorMessageEl.textContent = message;
+        if (errorModalEl) errorModalEl.classList.add('active');
     }
 
     updateMessageStats() {
@@ -2370,25 +2521,30 @@ class StudentDashboard {
         }).length;
         const urgentMessages = messages.filter(m => m.unread && m.type === 'teacher').length;
 
-        document.getElementById('totalMessages').textContent = totalMessages;
-        document.getElementById('unreadMessages').textContent = unreadMessages;
-        document.getElementById('todayMessages').textContent = todayMessages;
-        document.getElementById('urgentMessages').textContent = urgentMessages;
+        const totalMessagesEl = document.getElementById('totalMessages');
+        const unreadMessagesEl = document.getElementById('unreadMessages');
+        const todayMessagesEl = document.getElementById('todayMessages');
+        const urgentMessagesEl = document.getElementById('urgentMessages');
+        
+        if (totalMessagesEl) totalMessagesEl.textContent = totalMessages;
+        if (unreadMessagesEl) unreadMessagesEl.textContent = unreadMessages;
+        if (todayMessagesEl) todayMessagesEl.textContent = todayMessages;
+        if (urgentMessagesEl) urgentMessagesEl.textContent = urgentMessages;
     }
 
     updateUserInfo() {
         if (!this.studentData) return;
 
-        const { fullName, email, studentId } = this.studentData;
+        const { fullName, email, studentId, phone, address, gender } = this.studentData;
 
         // Update header user info
         const userNameElement = document.getElementById('userName');
         const headerUserNameElement = document.getElementById('headerUserName');
         const userEmailElement = document.getElementById('userEmail');
 
-        if (userNameElement) userNameElement.textContent = fullName || 'Loading...';
-        if (headerUserNameElement) headerUserNameElement.textContent = fullName || 'Loading...';
-        if (userEmailElement) userEmailElement.textContent = email || '';
+        if (userNameElement) userNameElement.textContent = fullName;
+        if (headerUserNameElement) headerUserNameElement.textContent = fullName;
+        if (userEmailElement) userEmailElement.textContent = email;
 
         // Update welcome message
         const welcomeMessageElement = document.getElementById('welcomeMessage');
@@ -2401,10 +2557,16 @@ class StudentDashboard {
         const profileNameElement = document.getElementById('profileUserName');
         const profileEmailElement = document.getElementById('profileUserEmail');
         const profileIdElement = document.getElementById('profileUserId');
+        const profilePhoneElement = document.getElementById('profileUserPhone');
+        const profileAddressElement = document.getElementById('profileUserAddress');
+        const profileGenderElement = document.getElementById('profileUserGender');
 
         if (profileNameElement) profileNameElement.textContent = fullName || '';
         if (profileEmailElement) profileEmailElement.textContent = email || '';
         if (profileIdElement) profileIdElement.textContent = studentId || '';
+        if (profilePhoneElement) profilePhoneElement.textContent = phone || '';
+        if (profileAddressElement) profileAddressElement.textContent = address || '';
+        if (profileGenderElement) profileGenderElement.textContent = gender !== null ? (gender ? 'Nữ' : 'Nam') : '';
 
         // Update dropdown user info
         this.updateDropdownUserInfo();
@@ -2734,9 +2896,8 @@ class StudentDashboard {
                             <label for="profileGender">Giới tính</label>
                             <select id="profileGender">
                                 <option value="">Chọn giới tính</option>
-                                <option value="male" ${this.studentData.gender === 'male' ? 'selected' : ''}>Nam</option>
-                                <option value="female" ${this.studentData.gender === 'female' ? 'selected' : ''}>Nữ</option>
-                                <option value="other" ${this.studentData.gender === 'other' ? 'selected' : ''}>Khác</option>
+                                <option value="0" ${this.studentData.gender === false || this.studentData.gender === 0 || this.studentData.gender === '0' ? 'selected' : ''}>Nam</option>
+                                <option value="1" ${this.studentData.gender === true || this.studentData.gender === 1 || this.studentData.gender === '1' ? 'selected' : ''}>Nữ</option>
                             </select>
                         </div>
                     </div>
@@ -2815,7 +2976,7 @@ class StudentDashboard {
             phone: document.getElementById('profilePhone').value.trim(),
             address: document.getElementById('profileAddress').value.trim(),
             birthDate: document.getElementById('profileBirthDate').value,
-            gender: document.getElementById('profileGender').value
+            gender: document.getElementById('profileGender').value ? parseInt(document.getElementById('profileGender').value) : null
         };
 
         // Validation
@@ -2833,38 +2994,18 @@ class StudentDashboard {
         this.showLoading();
 
         try {
-            // In static mode, just update local data
-            if (this.isStaticMode()) {
-                // Update local data
-                this.studentData.fullName = `${profileData.firstName} ${profileData.middleName} ${profileData.lastName}`.trim();
-                this.studentData.email = profileData.email;
-                this.studentData.phone = profileData.phone;
-                this.studentData.address = profileData.address;
-                this.studentData.birthDate = profileData.birthDate;
-                this.studentData.gender = profileData.gender;
+            // Always use API to update profile
+            await this.apiCall('/api/portal/student/profile', {
+                method: 'PUT',
+                body: JSON.stringify(profileData)
+            });
 
-                // Update UI
-                this.updateDashboardUI();
-                this.updateUserInfo();
+            this.hideLoading();
+            this.closeModal();
+            this.showNotification('Hồ sơ đã được cập nhật thành công!', 'success');
 
-                this.hideLoading();
-                this.closeModal();
-                this.showNotification('Hồ sơ đã được cập nhật thành công!', 'success');
-
-            } else {
-                // API call for backend
-                await this.apiCall('/api/student/profile', {
-                    method: 'PUT',
-                    body: JSON.stringify(profileData)
-                });
-
-                this.hideLoading();
-                this.closeModal();
-                this.showNotification('Hồ sơ đã được cập nhật thành công!', 'success');
-
-                // Reload data
-                this.loadDashboardData();
-            }
+            // Reload data from server
+            await this.loadDashboardData();
 
         } catch (error) {
             this.hideLoading();
@@ -3381,10 +3522,15 @@ class StudentDashboard {
         const totalSessions = this.studentData.attendedClasses?.length || 0;
         const attendedSessions = totalSessions; // Assuming all listed sessions were attended
 
-        document.getElementById('totalCourses').textContent = totalCourses;
-        document.getElementById('completedCourses').textContent = completedCourses;
-        document.getElementById('totalSessions').textContent = totalSessions;
-        document.getElementById('attendedSessions').textContent = attendedSessions;
+        const totalCoursesEl = document.getElementById('totalCourses');
+        const completedCoursesEl = document.getElementById('completedCourses');
+        const totalSessionsEl = document.getElementById('totalSessions');
+        const attendedSessionsEl = document.getElementById('attendedSessions');
+        
+        if (totalCoursesEl) totalCoursesEl.textContent = totalCourses;
+        if (completedCoursesEl) completedCoursesEl.textContent = completedCourses;
+        if (totalSessionsEl) totalSessionsEl.textContent = totalSessions;
+        if (attendedSessionsEl) attendedSessionsEl.textContent = attendedSessions;
     }
 
     initializeTimelineFilters() {
@@ -3553,55 +3699,116 @@ class StudentDashboard {
     // Support Section Methods
     async loadSupportRequests() {
         const supportRequestsList = document.getElementById('supportRequestsList');
+        const supportEmptyState = document.getElementById('supportEmptyState');
 
-        if (!this.isStaticMode()) {
-            try {
-                // Fetch support requests from API
-                const response = await this.apiCall('/api/portal/support');
-                if (response.success && response.data) {
-                    this.studentData.supportRequests = response.data.map(req => ({
-                        id: req.id,
-                        type: req.type,
-                        title: req.title,
-                        description: req.description,
-                        className: req.className,
-                        status: req.status,
-                        createdAt: req.createdAt,
-                        response: req.response,
-                        respondedAt: req.respondedAt
-                    }));
-                }
-            } catch (error) {
-                console.warn('Failed to load support requests from API:', error);
-                // Fall back to dashboard data if available
+        // Always fetch support requests from API
+        try {
+            const response = await this.apiCall('/api/portal/support');
+            console.log('Support requests API response:', response);
+            
+            // Handle different response structures
+            let requestsData = [];
+            if (response && response.success && response.data) {
+                requestsData = response.data;
+            } else if (response && Array.isArray(response)) {
+                // Direct array response
+                requestsData = response;
+            } else if (response && response.data && Array.isArray(response.data)) {
+                requestsData = response.data;
             }
+            
+            this.studentData.supportRequests = requestsData.map(req => ({
+                id: req.id || req.idYc,
+                type: req.type || req.loaiYeuCau,
+                title: req.title || req.tieuDe,
+                description: req.description || req.noiDung,
+                className: req.className || req.tenLop,
+                status: req.status || req.trangThai || 'pending',
+                createdAt: req.createdAt || req.thoiDiemTao,
+                respondedAt: req.respondedAt || req.thoiDiemDong,
+                fileUrl: req.fileUrl || req.fileURL
+            }));
+            
+            console.log('Processed support requests:', this.studentData.supportRequests);
+        } catch (error) {
+            console.error('Failed to load support requests from API:', error);
+            this.studentData.supportRequests = [];
         }
 
-        if (!this.studentData?.supportRequests) return;
+        if (!supportRequestsList) return;
 
+        // Update stats
+        this.updateSupportStats();
+
+        // Show empty state if no requests
+        if (!this.studentData?.supportRequests || this.studentData.supportRequests.length === 0) {
+            if (supportEmptyState) {
+                supportEmptyState.style.display = 'block';
+            }
+            if (supportRequestsList) {
+                supportRequestsList.innerHTML = '';
+            }
+            return;
+        }
+
+        // Hide empty state
+        if (supportEmptyState) {
+            supportEmptyState.style.display = 'none';
+        }
+
+        // Render support requests
         supportRequestsList.innerHTML = this.studentData.supportRequests.map(request => `
             <div class="support-request-card">
                 <div class="support-request-header">
-                    <h4>${request.title}</h4>
-                    <div class="support-status ${request.status}">
-                        ${this.getSupportStatusText(request.status)}
+                    <h4>${this.escapeHtml(request.title || 'Không có tiêu đề')}</h4>
+                    <div class="support-status ${request.status || 'pending'}">
+                        ${this.getSupportStatusText(request.status || 'pending')}
                     </div>
                 </div>
                 <div class="support-request-body">
                     <div class="support-meta">
-                        <span><i class="fas fa-tag"></i> ${this.getSupportTypeText(request.type)}</span>
+                        <span><i class="fas fa-tag"></i> ${this.getSupportTypeText(request.type || 'other')}</span>
                         <span><i class="fas fa-calendar"></i> ${this.formatDate(request.createdAt)}</span>
-                        ${request.className ? `<span><i class="fas fa-graduation-cap"></i> ${request.className}</span>` : ''}
+                        ${request.className ? `<span><i class="fas fa-graduation-cap"></i> ${this.escapeHtml(request.className)}</span>` : ''}
                     </div>
-                    <p class="support-description">${request.description}</p>
+                    <p class="support-description">${this.escapeHtml(request.description || '')}</p>
                 </div>
                 <div class="support-request-actions">
                     <button class="btn btn-sm btn-info" onclick="dashboard.viewSupportRequest('${request.id}')">
                         <i class="fas fa-eye"></i> Xem chi tiết
                     </button>
+                    ${request.status === 'pending' || request.status === 'processing' ? `
+                    <button class="btn btn-sm btn-danger" onclick="dashboard.deleteSupportRequest('${request.id}')">
+                        <i class="fas fa-trash"></i> Xóa
+                    </button>
+                    ` : ''}
                 </div>
             </div>
         `).join('');
+    }
+
+    updateSupportStats() {
+        if (!this.studentData?.supportRequests) return;
+
+        const activeRequests = this.studentData.supportRequests.filter(
+            req => req.status === 'pending' || req.status === 'processing'
+        ).length;
+        const resolvedRequests = this.studentData.supportRequests.filter(
+            req => req.status === 'resolved' || req.status === 'closed'
+        ).length;
+
+        const activeEl = document.getElementById('activeRequests');
+        const resolvedEl = document.getElementById('resolvedRequests');
+        
+        if (activeEl) activeEl.textContent = activeRequests;
+        if (resolvedEl) resolvedEl.textContent = resolvedRequests;
+    }
+
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     getSupportStatusText(status) {
@@ -3615,29 +3822,49 @@ class StudentDashboard {
     }
 
     getSupportTypeText(type) {
+        if (!type) return 'Khác';
         const texts = {
             'technical': 'Vấn đề kỹ thuật',
             'academic': 'Hỗ trợ học tập',
-            'billing': 'Thanh toán',
+            'billing': 'Thanh toán & hóa đơn',
+            'career': 'Tư vấn hướng nghiệp',
+            'emergency': 'Hỗ trợ khẩn cấp',
             'other': 'Khác'
         };
         return texts[type] || type;
     }
 
     createSupportRequest() {
-        // Populate class options
-        const relatedClassSelect = document.getElementById('relatedClass');
-        if (relatedClassSelect && this.studentData?.classes) {
-            relatedClassSelect.innerHTML = '<option value="">Chọn lớp học</option>' +
-                this.studentData.classes.map(cls => `<option value="${cls.classId}">${cls.className}</option>`).join('');
+        const formContainer = document.getElementById('supportFormContainer');
+        const requestsContainer = document.getElementById('supportRequestsContainer');
+        
+        if (formContainer) {
+            formContainer.style.display = 'block';
         }
-
-        document.getElementById('supportFormContainer').style.display = 'block';
+        
+        // Ẩn bảng yêu cầu khi đang tạo form
+        if (requestsContainer) {
+            requestsContainer.style.display = 'none';
+        }
     }
 
     cancelSupportRequest() {
-        document.getElementById('supportFormContainer').style.display = 'none';
-        document.getElementById('supportRequestForm').reset();
+        const formContainer = document.getElementById('supportFormContainer');
+        const requestsContainer = document.getElementById('supportRequestsContainer');
+        
+        if (formContainer) {
+            formContainer.style.display = 'none';
+        }
+        
+        // Hiển thị lại bảng yêu cầu khi đóng form
+        if (requestsContainer) {
+            requestsContainer.style.display = 'block';
+        }
+        
+        const form = document.getElementById('supportRequestForm');
+        if (form) {
+            form.reset();
+        }
     }
 
     async submitSupportRequest(event) {
@@ -3648,60 +3875,72 @@ class StudentDashboard {
             type: formData.get('supportType'),
             title: formData.get('supportTitle'),
             description: formData.get('supportDescription'),
-            classId: formData.get('relatedClass'),
-            fileUrl: formData.get('supportFile') // In a real implementation, this would be uploaded first
+            classId: null, // Không còn trường chọn lớp học
+            fileUrl: null // File upload will be handled separately in future
         };
 
         // Validation
         if (!supportData.type || !supportData.title || !supportData.description) {
-            this.showError('Vui lòng điền đầy đủ thông tin bắt buộc');
+            this.showNotification('Vui lòng điền đầy đủ thông tin bắt buộc (Loại, Tiêu đề, Mô tả)', 'error');
             return;
         }
 
         this.showLoading();
 
         try {
-            if (!this.isStaticMode()) {
-                // Real API call
-                const response = await this.apiCall('/api/portal/support', {
-                    method: 'POST',
-                    body: JSON.stringify(supportData)
-                });
+            // Always use API to submit support request
+            const response = await this.apiCall('/api/portal/support', {
+                method: 'POST',
+                body: JSON.stringify(supportData)
+            });
 
-                if (response.success) {
-                    this.hideLoading();
-                    this.cancelSupportRequest();
-                    this.loadSupportRequests();
-                    this.showNotification('Yêu cầu hỗ trợ đã được gửi thành công!', 'success');
-                } else {
-                    throw new Error(response.message || 'Không thể gửi yêu cầu hỗ trợ');
-                }
-            } else {
-                // Static mode: add to mock data
-                const newRequest = {
-                    id: 'YC' + Date.now(),
-                    type: supportData.type,
-                    title: supportData.title,
-                    description: supportData.description,
-                    className: this.studentData.classes?.find(c => c.classId === supportData.classId)?.className,
-                    status: 'pending',
-                    createdAt: new Date().toISOString()
-                };
-
-                if (!this.studentData.supportRequests) {
-                    this.studentData.supportRequests = [];
-                }
-                this.studentData.supportRequests.unshift(newRequest);
-
+            if (response.success) {
                 this.hideLoading();
                 this.cancelSupportRequest();
-                this.loadSupportRequests();
+                
+                // Reload danh sách yêu cầu để cập nhật trạng thái
+                await this.loadSupportRequests();
+                
+                // Cập nhật lại UI để hiển thị yêu cầu mới và trạng thái
+                this.updateSupportStats();
+                
                 this.showNotification('Yêu cầu hỗ trợ đã được gửi thành công!', 'success');
+            } else {
+                throw new Error(response.message || 'Không thể gửi yêu cầu hỗ trợ');
             }
         } catch (error) {
             this.hideLoading();
             this.showError('Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại.');
             console.error('Submit support request failed:', error);
+        }
+    }
+
+    async deleteSupportRequest(requestId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa yêu cầu hỗ trợ này?')) {
+            return;
+        }
+
+        this.showLoading();
+
+        try {
+            const response = await this.apiCall(`/api/portal/support/${requestId}`, {
+                method: 'DELETE'
+            });
+
+            if (response && response.success) {
+                this.hideLoading();
+                this.showNotification('Yêu cầu hỗ trợ đã được xóa thành công!', 'success');
+                
+                // Reload danh sách yêu cầu
+                await this.loadSupportRequests();
+                this.updateSupportStats();
+            } else {
+                throw new Error(response?.message || 'Không thể xóa yêu cầu hỗ trợ');
+            }
+        } catch (error) {
+            this.hideLoading();
+            this.showNotification('Không thể xóa yêu cầu hỗ trợ. Vui lòng thử lại.', 'error');
+            console.error('Delete support request failed:', error);
         }
     }
 
@@ -3982,4 +4221,142 @@ class StudentDashboard {
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.dashboard = new StudentDashboard();
+    
+    // Expose functions to global scope for HTML onclick handlers
+    window.createSupportRequest = function() {
+        if (window.dashboard) {
+            window.dashboard.createSupportRequest();
+        }
+    };
+    
+    window.submitSupportRequest = function(event) {
+        if (window.dashboard) {
+            window.dashboard.submitSupportRequest(event);
+        }
+    };
+    
+    window.cancelSupportRequest = function() {
+        if (window.dashboard) {
+            window.dashboard.cancelSupportRequest();
+        }
+    };
+    
+    window.closeErrorModal = function() {
+        if (window.dashboard) {
+            window.dashboard.closeErrorModal();
+        }
+    };
+    
+    window.retryLastAction = function() {
+        if (window.dashboard) {
+            window.dashboard.retryLastAction();
+        }
+    };
 });
+
+// Schedule loading methods
+StudentDashboard.prototype.loadSchedule = function() {
+    // Update today's date
+    const todayDateElement = document.getElementById('todayDate');
+    if (todayDateElement) {
+        const today = new Date();
+        todayDateElement.textContent = today.toLocaleDateString('vi-VN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    // Load today's schedule
+    this.loadTodaySchedule();
+
+    // Update calendar
+    this.updateCalendar();
+};
+
+StudentDashboard.prototype.loadTodaySchedule = function() {
+    const todayScheduleList = document.getElementById('todayScheduleList');
+    if (!todayScheduleList) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    // First, try to get today's schedule from attendedClasses
+    let scheduleItems = '';
+    
+    if (this.studentData?.attendedClasses && this.studentData.attendedClasses.length > 0) {
+        const todayClasses = this.studentData.attendedClasses.filter(ac => {
+            if (!ac.sessionDate) return false;
+            const sessionDate = new Date(ac.sessionDate);
+            sessionDate.setHours(0, 0, 0, 0);
+            return sessionDate.getTime() === today.getTime();
+        });
+
+        if (todayClasses.length > 0) {
+            scheduleItems = todayClasses.map(ac => {
+                const startTime = ac.startTime ? ac.startTime.substring(0, 5) : 'N/A';
+                const endTime = ac.endTime ? ac.endTime.substring(0, 5) : 'N/A';
+                return `
+                    <div class="schedule-item">
+                        <div class="schedule-time">
+                            <div class="time">${startTime}</div>
+                            <div class="duration">${endTime}</div>
+                        </div>
+                        <div class="schedule-details">
+                            <h4>${this.escapeHtml(ac.className || 'Lớp học')}</h4>
+                            <p><i class="fas fa-map-marker-alt"></i> ${this.escapeHtml(ac.room || 'Chưa có phòng')}</p>
+                            <p><i class="fas fa-user"></i> Buổi ${ac.sessionNumber || 'N/A'}</p>
+                            ${ac.content ? `<p>${this.escapeHtml(ac.content)}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    // If no attended classes for today, show schedule from classes list
+    if (!scheduleItems && this.studentData?.classes && this.studentData.classes.length > 0) {
+        scheduleItems = this.studentData.classes
+            .filter(cls => cls.schedule && cls.schedule !== 'Chưa có lịch học')
+            .map(cls => `
+                <div class="schedule-item">
+                    <div class="schedule-time">
+                        <div class="time">Lịch học</div>
+                    </div>
+                    <div class="schedule-details">
+                        <h4>${this.escapeHtml(cls.className || 'Lớp học')}</h4>
+                        <p><i class="fas fa-clock"></i> ${this.escapeHtml(cls.schedule || 'Chưa có lịch học')}</p>
+                        <p><i class="fas fa-map-marker-alt"></i> ${this.escapeHtml(cls.room || 'Chưa có phòng')}</p>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    if (scheduleItems) {
+        todayScheduleList.innerHTML = scheduleItems;
+    } else {
+        todayScheduleList.innerHTML = '<p class="empty-state">Không có lịch học hôm nay</p>';
+    }
+};
+
+StudentDashboard.prototype.updateCalendar = function() {
+    const calendarGrid = document.getElementById('calendarGrid');
+    if (!calendarGrid) return;
+
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    // Update month display
+    const currentMonthElement = document.getElementById('currentMonth');
+    if (currentMonthElement) {
+        const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                          'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+        currentMonthElement.textContent = `${monthNames[currentMonth]}, ${currentYear}`;
+    }
+
+    // Simple calendar grid
+    calendarGrid.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Lịch học sẽ được hiển thị ở đây</p>';
+};

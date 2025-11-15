@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body data-static-mode>
+<body>
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
     <!-- Sidebar Header - Loaded dynamically -->
@@ -766,48 +766,17 @@
                         <p>Điền thông tin chi tiết để chúng tôi hỗ trợ bạn tốt nhất</p>
                     </div>
                     <form id="supportRequestForm" onsubmit="submitSupportRequest(event)">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="supportType">Loại yêu cầu hỗ trợ *</label>
-                                <select id="supportType" name="supportType" required>
-                                    <option value="">Chọn loại yêu cầu</option>
-                                    <option value="academic">📚 Hỗ trợ học tập</option>
-                                    <option value="technical">🔧 Vấn đề kỹ thuật</option>
-                                    <option value="billing">💳 Thanh toán & hóa đơn</option>
-                                    <option value="career">🎯 Tư vấn hướng nghiệp</option>
-                                    <option value="emergency">🚨 Hỗ trợ khẩn cấp</option>
-                                    <option value="other">❓ Khác</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="relatedProgram">Liên quan đến chương trình</label>
-                                <select id="relatedProgram" name="relatedProgram">
-                                    <option value="">Chọn chương trình</option>
-                                    <option value="igcse">Cambridge IGCSE</option>
-                                    <option value="alevel">A-Level Mathematics</option>
-                                    <option value="ib">IB Math</option>
-                                    <option value="ap">AP Calculus</option>
-                                    <option value="vietnamese">Toán nâng cao VN</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="relatedClass">Liên quan đến lớp học</label>
-                                <select id="relatedClass" name="relatedClass">
-                                    <option value="">Chọn lớp học (nếu có)</option>
-                                    <!-- Classes will be populated by JS -->
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="priority">Mức độ ưu tiên</label>
-                                <select id="priority" name="priority">
-                                    <option value="normal">Bình thường</option>
-                                    <option value="high">Cao</option>
-                                    <option value="urgent">Khẩn cấp</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label for="supportType">Loại yêu cầu hỗ trợ *</label>
+                            <select id="supportType" name="supportType" required>
+                                <option value="">Chọn loại yêu cầu</option>
+                                <option value="academic">📚 Hỗ trợ học tập</option>
+                                <option value="technical">🔧 Vấn đề kỹ thuật</option>
+                                <option value="billing">💳 Thanh toán & hóa đơn</option>
+                                <option value="career">🎯 Tư vấn hướng nghiệp</option>
+                                <option value="emergency">🚨 Hỗ trợ khẩn cấp</option>
+                                <option value="other">❓ Khác</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
@@ -856,7 +825,7 @@
             </div>
 
             <!-- Support Requests Management -->
-            <div class="support-requests-container">
+            <div class="support-requests-container" id="supportRequestsContainer">
                 <div class="requests-header">
                     <h3><i class="fas fa-list"></i> Yêu cầu hỗ trợ của bạn</h3>
                     <div class="requests-stats">
@@ -905,9 +874,6 @@
                         <div class="empty-icon">🛠️</div>
                         <h4>Chưa có yêu cầu hỗ trợ nào</h4>
                         <p>Nếu bạn gặp vấn đề gì trong quá trình học tập, đừng ngần ngại tạo yêu cầu hỗ trợ. Đội ngũ MathBridge luôn sẵn sàng giúp đỡ!</p>
-                        <button class="btn btn-primary" onclick="createSupportRequest()">
-                            <i class="fas fa-plus"></i> Tạo yêu cầu hỗ trợ đầu tiên
-                        </button>
                     </div>
                 </div>
             </div>

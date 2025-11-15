@@ -1,4 +1,4 @@
-package com.mathbridge.repository;
+package com.mathbridge.repository.StudentRepo;
 
 import com.mathbridge.entity.DangKyLH;
 import com.mathbridge.entity.DangKyLHId;
@@ -12,8 +12,8 @@ import java.util.List;
 @Repository
 public interface DangKyLHRepository extends JpaRepository<DangKyLH, DangKyLHId> {
     
-    List<DangKyLH> findByTrangThai(String trangThai);
-
+    // Removed findByTrangThai() because trangThai field is @Transient (column doesn't exist in database)
+    
     @Query("SELECT d FROM DangKyLH d WHERE d.hocSinh.idHs = :idHS")
     List<DangKyLH> findByHocSinhId(@Param("idHS") String idHS);
 

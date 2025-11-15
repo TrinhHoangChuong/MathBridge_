@@ -8,7 +8,7 @@ import com.mathbridge.repository.NhanVienRepository;
 import com.mathbridge.entity.NhanVien;
 import com.mathbridge.repository.ChuongTrinhRepository;
 import com.mathbridge.entity.ChuongTrinh;
-import com.mathbridge.repository.DangKyLHRepository;
+import com.mathbridge.repository.StudentRepo.DangKyLHRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

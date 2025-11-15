@@ -1,4 +1,4 @@
-package com.mathbridge.dto;
+package com.mathbridge.dto.PortalStudentDTO;
 
 public class StudentRegistrationDTO {
     private String id;

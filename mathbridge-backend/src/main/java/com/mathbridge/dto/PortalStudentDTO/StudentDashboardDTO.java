@@ -1,4 +1,4 @@
-package com.mathbridge.dto;
+package com.mathbridge.dto.PortalStudentDTO;
 
 import java.util.List;
 

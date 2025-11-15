@@ -1,8 +1,9 @@
 package com.mathbridge.controller;
 
 import com.mathbridge.dto.ApiResponse;
-import com.mathbridge.dto.StudentDashboardDTO;
-import com.mathbridge.service.StudentService;
+import com.mathbridge.dto.PortalStudentDTO.StudentDashboardDTO;
+import com.mathbridge.dto.PortalStudentDTO.UpdateStudentProfileDTO;
+import com.mathbridge.service.PortalStudent.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -41,15 +42,59 @@ public class StudentController {
             ));
 
         } catch (RuntimeException e) {
+            e.printStackTrace(); // Log for debugging
             return ResponseEntity.badRequest().body(new ApiResponse<StudentDashboardDTO>(
                 false,
-                e.getMessage(),
+                e.getMessage() != null ? e.getMessage() : "Lỗi khi lấy dữ liệu dashboard",
                 null
             ));
         } catch (Exception e) {
+            e.printStackTrace(); // Log for debugging
             return ResponseEntity.internalServerError().body(new ApiResponse<StudentDashboardDTO>(
                 false,
-                "Lỗi hệ thống: " + e.getMessage(),
+                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                null
+            ));
+        }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<String>> updateProfile(
+            @RequestBody UpdateStudentProfileDTO profileDTO,
+            Authentication authentication) {
+        try {
+            // Extract user ID from JWT token
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String userId = jwt.getClaimAsString("uid");
+
+            if (userId == null) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false,
+                    "Không thể xác định ID người dùng từ token",
+                    null
+                ));
+            }
+
+            studentService.updateStudentProfile(userId, profileDTO);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Cập nhật hồ sơ thành công",
+                "Profile updated successfully"
+            ));
+
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                false,
+                e.getMessage() != null ? e.getMessage() : "Lỗi khi cập nhật hồ sơ",
+                null
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                false,
+                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
                 null
             ));
         }
