@@ -313,141 +313,78 @@
             <!-- Assigned Students Section -->
             <section class="content-section" id="assigned-students">
                 <div class="section-header">
-                    <h2>Học sinh được phân công</h2>
+                    <h2><i class="fas fa-user-graduate"></i> Học sinh được phân công</h2>
                     <div class="header-actions">
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm kiếm học sinh...">
+                            <input type="text" id="studentSearchInput" placeholder="Tìm kiếm học sinh..." onkeyup="tutorDashboard.filterStudents()">
                         </div>
                         <div class="filter-buttons">
-                            <select class="form-select" id="statusFilter">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="good">Tốt</option>
-                                <option value="need-support">Cần hỗ trợ</option>
-                                <option value="at-risk">Nguy cơ thấp điểm</option>
-                            </select>
-                            <select class="form-select" id="classFilter">
-                                <option value="">Tất cả lớp</option>
-                                <option value="10">Lớp 10</option>
-                                <option value="11">Lớp 11</option>
-                                <option value="12">Lớp 12</option>
+                            <select class="form-select" id="assignmentStatusFilter" onchange="tutorDashboard.filterStudents()">
+                                <option value="active">Đang phụ trách</option>
+                                <option value="all">Tất cả</option>
+                                <option value="Dang phu trach">Đang phụ trách</option>
+                                <option value="Tam dung">Tạm dừng</option>
+                                <option value="Ket thuc">Kết thúc</option>
                             </select>
                         </div>
-                        <button class="btn btn-primary" id="exportBtn">
+                        <button class="btn btn-primary" id="exportBtn" onclick="tutorDashboard.exportStudents()">
                             <i class="fas fa-download"></i>
                             Xuất danh sách
                         </button>
                     </div>
                 </div>
 
-                <div class="assigned-students-table-container">
+                <!-- Stats Cards -->
+                <div class="assigned-students-stats" id="assignedStudentsStats" style="display: none;">
+                    <div class="stat-card-mini">
+                        <div class="stat-icon-mini">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content-mini">
+                            <h3 id="totalStudentsCount">0</h3>
+                            <p>Tổng số học sinh</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <div class="stat-icon-mini">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-content-mini">
+                            <h3 id="activeStudentsCount">0</h3>
+                            <p>Đang phụ trách</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-container" id="assignedStudentsLoading">
+                    <div class="spinner"></div>
+                    <p>Đang tải danh sách học sinh...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="assignedStudentsEmpty" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>Chưa có học sinh được phân công</h3>
+                    <p>Hiện tại bạn chưa được phân công học sinh nào. Vui lòng liên hệ quản trị viên.</p>
+                </div>
+
+                <!-- Students Table -->
+                <div class="assigned-students-table-container" id="assignedStudentsTable" style="display: none;">
                     <div class="table-header">
                         <div>Học sinh</div>
-                        <div>Lớp/Chương trình</div>
-                        <div>Tiến độ học tập</div>
-                        <div>Điểm TB</div>
-                        <div>Trạng thái</div>
+                        <div>Thông tin liên hệ</div>
+                        <div>Ngày bắt đầu</div>
+                        <div>Ngày kết thúc</div>
+                        <div>Trạng thái phân công</div>
                         <div>Ghi chú</div>
                         <div>Hành động</div>
                     </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">TC</div>
-                            <div class="student-info">
-                                <div class="student-name">Trần Văn C</div>
-                                <div class="student-email">tranvanc@email.com</div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="class-info">Toán 10A1</div>
-                            <div class="program-info">Cambridge IGCSE</div>
-                        </div>
-                        <div class="progress-info">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%"></div>
-                            </div>
-                            <span class="progress-text">75%</span>
-                        </div>
-                        <div class="grade-info">
-                            <span class="grade-badge good">8.5</span>
-                        </div>
-                        <div>
-                            <span class="status-badge good">Tốt</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Học tập tích cực...</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewStudentDetails('TC')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="addNote('TC')">Ghi chú</button>
-                            <button class="btn btn-sm btn-info" onclick="generateReport('TC')">Báo cáo</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">LD</div>
-                            <div class="student-info">
-                                <div class="student-name">Lê Thị D</div>
-                                <div class="student-email">lethid@email.com</div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="class-info">Toán 11B2</div>
-                            <div class="program-info">IB Math HL</div>
-                        </div>
-                        <div class="progress-info">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 45%"></div>
-                            </div>
-                            <span class="progress-text">45%</span>
-                        </div>
-                        <div class="grade-info">
-                            <span class="grade-badge average">6.2</span>
-                        </div>
-                        <div>
-                            <span class="status-badge need-support">Cần hỗ trợ</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Cần hỗ trợ thêm...</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewStudentDetails('LD')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="addNote('LD')">Ghi chú</button>
-                            <button class="btn btn-sm btn-info" onclick="generateReport('LD')">Báo cáo</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">PE</div>
-                            <div class="student-info">
-                                <div class="student-name">Phạm Văn E</div>
-                                <div class="student-email">phamvane@email.com</div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="class-info">Toán 12C1</div>
-                            <div class="program-info">AP Calculus</div>
-                        </div>
-                        <div class="progress-info">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 30%"></div>
-                            </div>
-                            <span class="progress-text">30%</span>
-                        </div>
-                        <div class="grade-info">
-                            <span class="grade-badge poor">4.8</span>
-                        </div>
-                        <div>
-                            <span class="status-badge at-risk">Nguy cơ thấp điểm</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Cần can thiệp...</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewStudentDetails('PE')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="addNote('PE')">Ghi chú</button>
-                            <button class="btn btn-sm btn-info" onclick="generateReport('PE')">Báo cáo</button>
-                        </div>
+                    <div class="table-body" id="assignedStudentsTableBody">
+                        <!-- Students will be loaded here dynamically -->
                     </div>
                 </div>
             </section>

@@ -587,6 +587,9 @@ class TutorDashboard {
             case 'students':
                 this.loadStudentsData();
                 break;
+            case 'assigned-students':
+                this.loadAssignedStudentsData();
+                break;
             case 'teachers':
                 this.loadTeachersData();
                 break;
@@ -611,6 +614,320 @@ class TutorDashboard {
     loadStudentsData() {
         // Simulate loading students data
         console.log('Loading students data...');
+    }
+
+    // Load assigned students data
+    async loadAssignedStudentsData() {
+        const loadingEl = document.getElementById('assignedStudentsLoading');
+        const emptyEl = document.getElementById('assignedStudentsEmpty');
+        const tableEl = document.getElementById('assignedStudentsTable');
+        const tableBodyEl = document.getElementById('assignedStudentsTableBody');
+        const statsEl = document.getElementById('assignedStudentsStats');
+        
+        // Show loading
+        if (loadingEl) loadingEl.style.display = 'flex';
+        if (emptyEl) emptyEl.style.display = 'none';
+        if (tableEl) tableEl.style.display = 'none';
+        if (statsEl) statsEl.style.display = 'none';
+        
+        try {
+            // Get tutor ID from auth data
+            const authData = localStorage.getItem('mb_auth');
+            let idNv = null;
+            let idTk = null;
+            
+            if (authData) {
+                try {
+                    const data = JSON.parse(authData);
+                    const user = data.user || data.account || {};
+                    idNv = user.idNv || null;
+                    idTk = user.idTk || user.id || localStorage.getItem('mb_user_id') || null;
+                } catch (e) {
+                    console.error('Error parsing auth data:', e);
+                }
+            }
+            
+            // If idNv not found in auth data, try to get it from idTk
+            if (!idNv && idTk) {
+                try {
+                    const tutorIdResponse = await window.tutorAPI.getTutorIdFromAccountId(idTk);
+                    if (tutorIdResponse && tutorIdResponse.idNv) {
+                        idNv = tutorIdResponse.idNv;
+                        // Cache it in auth data for next time
+                        if (authData) {
+                            try {
+                                const data = JSON.parse(authData);
+                                if (data.user) {
+                                    data.user.idNv = idNv;
+                                } else if (data.account) {
+                                    data.account.idNv = idNv;
+                                }
+                                localStorage.setItem('mb_auth', JSON.stringify(data));
+                            } catch (e) {
+                                console.error('Error updating auth data:', e);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error getting tutor ID from account ID:', error);
+                }
+            }
+            
+            if (!idNv) {
+                // If no ID_NV, show empty state
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (emptyEl) emptyEl.style.display = 'flex';
+                showNotification('Không tìm thấy thông tin cố vấn. Vui lòng đăng nhập lại.', 'warning');
+                return;
+            }
+            
+            // Get filter value
+            const filterSelect = document.getElementById('assignmentStatusFilter');
+            const filter = filterSelect ? filterSelect.value : 'active';
+            
+            // Load students
+            const students = await window.tutorAPI.getAssignedStudents(idNv, filter);
+            this.assignedStudents = students || [];
+            
+            // Load count
+            const activeCount = await window.tutorAPI.getAssignedStudentsCount(idNv);
+            
+            // Hide loading
+            if (loadingEl) loadingEl.style.display = 'none';
+            
+            // Update stats
+            if (statsEl) {
+                const totalCountEl = document.getElementById('totalStudentsCount');
+                const activeCountEl = document.getElementById('activeStudentsCount');
+                if (totalCountEl) totalCountEl.textContent = this.assignedStudents.length;
+                if (activeCountEl) activeCountEl.textContent = activeCount || 0;
+                statsEl.style.display = 'grid';
+            }
+            
+            // Render students
+            if (this.assignedStudents.length === 0) {
+                if (emptyEl) emptyEl.style.display = 'flex';
+                if (tableEl) tableEl.style.display = 'none';
+            } else {
+                if (emptyEl) emptyEl.style.display = 'none';
+                if (tableEl) tableEl.style.display = 'block';
+                this.renderAssignedStudents(this.assignedStudents);
+            }
+            
+        } catch (error) {
+            console.error('Error loading assigned students:', error);
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (emptyEl) emptyEl.style.display = 'flex';
+            showNotification('Không thể tải danh sách học sinh. Vui lòng thử lại.', 'error');
+            window.tutorAPI.handleError(error);
+        }
+    }
+
+    // Render assigned students table
+    renderAssignedStudents(students) {
+        const tableBodyEl = document.getElementById('assignedStudentsTableBody');
+        if (!tableBodyEl) return;
+        
+        if (!students || students.length === 0) {
+            tableBodyEl.innerHTML = `
+                <div class="table-row">
+                    <div colspan="7" style="text-align: center; padding: 2rem; grid-column: 1 / -1;">
+                        Không có học sinh nào
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        tableBodyEl.innerHTML = students.map(student => {
+            const initials = this.getStudentInitials(student.hoTen || '');
+            const ngayBatDau = student.ngayBatDau ? 
+                new Date(student.ngayBatDau).toLocaleDateString('vi-VN') : '-';
+            const ngayKetThuc = student.ngayKetThuc ? 
+                new Date(student.ngayKetThuc).toLocaleDateString('vi-VN') : 'Đang phụ trách';
+            const trangThai = student.trangThai || 'Dang phu trach';
+            const trangThaiClass = this.getStatusClass(trangThai);
+            const trangThaiText = this.getStatusText(trangThai);
+            const ghiChu = student.ghiChu || 'Không có ghi chú';
+            const gioiTinhIcon = student.gioiTinh ? 'fa-venus' : 'fa-mars';
+            const gioiTinhText = student.gioiTinh ? 'Nữ' : 'Nam';
+            
+            return `
+                <div class="table-row student-row" data-student-id="${student.idHs}">
+                    <div class="col-name">
+                        <div class="student-avatar">${initials}</div>
+                        <div class="student-info">
+                            <div class="student-name">
+                                ${student.hoTen || 'N/A'}
+                                <i class="fas ${gioiTinhIcon}" title="${gioiTinhText}"></i>
+                            </div>
+                            <div class="student-id">${student.idHs || ''}</div>
+                        </div>
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:${student.email || ''}">${student.email || 'N/A'}</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:${student.sdt || ''}">${student.sdt || 'N/A'}</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${student.diaChi || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="date-info">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>${ngayBatDau}</span>
+                    </div>
+                    <div class="date-info">
+                        <i class="fas fa-calendar-times"></i>
+                        <span>${ngayKetThuc}</span>
+                    </div>
+                    <div>
+                        <span class="status-badge ${trangThaiClass}">${trangThaiText}</span>
+                    </div>
+                    <div class="notes-info">
+                        <span class="notes-preview" title="${ghiChu}">${ghiChu.length > 50 ? ghiChu.substring(0, 50) + '...' : ghiChu}</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-primary" onclick="tutorDashboard.viewStudentDetails('${student.idHs}')" title="Xem chi tiết">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="tutorDashboard.viewSupportRequests('${student.idHs}')" title="Xem yêu cầu hỗ trợ">
+                            <i class="fas fa-headset"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Get student initials
+    getStudentInitials(name) {
+        if (!name) return '??';
+        const parts = name.trim().split(' ');
+        if (parts.length >= 2) {
+            return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    // Get status class
+    getStatusClass(status) {
+        if (!status) return 'default';
+        const statusLower = status.toLowerCase();
+        if (statusLower.includes('dang phu trach') || statusLower.includes('đang')) {
+            return 'success';
+        } else if (statusLower.includes('tam dung') || statusLower.includes('tạm')) {
+            return 'warning';
+        } else if (statusLower.includes('ket thuc') || statusLower.includes('kết')) {
+            return 'secondary';
+        }
+        return 'default';
+    }
+
+    // Get status text
+    getStatusText(status) {
+        if (!status) return 'Chưa xác định';
+        if (status.includes('Dang phu trach')) return 'Đang phụ trách';
+        if (status.includes('Tam dung')) return 'Tạm dừng';
+        if (status.includes('Ket thuc')) return 'Kết thúc';
+        return status;
+    }
+
+    // Filter students
+    filterStudents() {
+        const searchInput = document.getElementById('studentSearchInput');
+        const filterSelect = document.getElementById('assignmentStatusFilter');
+        
+        if (!this.assignedStudents) {
+            this.loadAssignedStudentsData();
+            return;
+        }
+        
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const filter = filterSelect ? filterSelect.value : 'active';
+        
+        // If filter changed, reload from API
+        if (filter !== 'active' && filter !== 'all') {
+            this.loadAssignedStudentsData();
+            return;
+        }
+        
+        // Filter by search term
+        let filtered = this.assignedStudents;
+        if (searchTerm) {
+            filtered = this.assignedStudents.filter(student => {
+                const name = (student.hoTen || '').toLowerCase();
+                const email = (student.email || '').toLowerCase();
+                const idHs = (student.idHs || '').toLowerCase();
+                return name.includes(searchTerm) || email.includes(searchTerm) || idHs.includes(searchTerm);
+            });
+        }
+        
+        this.renderAssignedStudents(filtered);
+    }
+
+    // View student details
+    viewStudentDetails(idHs) {
+        // Navigate to support section and filter by student
+        const supportNav = document.querySelector('[data-section="support"]');
+        if (supportNav) {
+            supportNav.click();
+            // After navigation, filter support requests by student
+            setTimeout(() => {
+                // This will be handled in support section
+                showNotification(`Đang tải yêu cầu hỗ trợ của học sinh ${idHs}`, 'info');
+            }, 500);
+        }
+    }
+
+    // View support requests for student
+    viewSupportRequests(idHs) {
+        // Navigate to support section
+        const supportNav = document.querySelector('[data-section="support"]');
+        if (supportNav) {
+            supportNav.click();
+            // Filter by student ID
+            setTimeout(() => {
+                // This will be handled in support section
+                showNotification(`Đang tải yêu cầu hỗ trợ của học sinh ${idHs}`, 'info');
+            }, 500);
+        }
+    }
+
+    // Export students
+    exportStudents() {
+        if (!this.assignedStudents || this.assignedStudents.length === 0) {
+            showNotification('Không có dữ liệu để xuất', 'warning');
+            return;
+        }
+        
+        // Simple CSV export
+        const headers = ['ID_HS', 'Họ tên', 'Email', 'SĐT', 'Địa chỉ', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái', 'Ghi chú'];
+        const rows = this.assignedStudents.map(s => [
+            s.idHs || '',
+            s.hoTen || '',
+            s.email || '',
+            s.sdt || '',
+            s.diaChi || '',
+            s.ngayBatDau ? new Date(s.ngayBatDau).toLocaleDateString('vi-VN') : '',
+            s.ngayKetThuc ? new Date(s.ngayKetThuc).toLocaleDateString('vi-VN') : '',
+            s.trangThai || '',
+            (s.ghiChu || '').replace(/,/g, ';')
+        ]);
+        
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Danh_sach_hoc_sinh_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        
+        showNotification('Đã xuất danh sách học sinh thành công', 'success');
     }
 
     loadTeachersData() {

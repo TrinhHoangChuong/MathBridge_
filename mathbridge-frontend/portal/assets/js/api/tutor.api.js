@@ -555,9 +555,31 @@ class TutorAPI {
     }
 
     // Assigned Students API Methods
-    async getAssignedStudents(params = {}) {
+    async getAssignedStudents(idNv = null, filter = 'active') {
+        const params = {};
+        if (idNv) {
+            params.idNv = idNv;
+        }
+        params.filter = filter;
         const queryString = new URLSearchParams(params).toString();
-        const endpoint = queryString ? `/assigned-students?${queryString}` : '/assigned-students';
+        const endpoint = `/assigned-students?${queryString}`;
+        return await this.request(endpoint);
+    }
+
+    async getAssignedStudentsCount(idNv = null) {
+        const params = {};
+        if (idNv) {
+            params.idNv = idNv;
+        }
+        const queryString = new URLSearchParams(params).toString();
+        const endpoint = `/assigned-students/count?${queryString}`;
+        return await this.request(endpoint);
+    }
+
+    async getTutorIdFromAccountId(idTk) {
+        const params = { idTk };
+        const queryString = new URLSearchParams(params).toString();
+        const endpoint = `/assigned-students/tutor-id?${queryString}`;
         return await this.request(endpoint);
     }
 
