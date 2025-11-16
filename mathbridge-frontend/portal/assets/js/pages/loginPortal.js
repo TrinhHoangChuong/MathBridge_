@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Điều hướng dựa trên role
     if (isTeacher) {
-      window.location.href = "teacher/index_teacher.html";
+      window.location.href = "portal/teacher/index_teacher.html";
     } else if (isTutor) {
       window.location.href = "portal/tutor/index_tutor.html";
     } else {

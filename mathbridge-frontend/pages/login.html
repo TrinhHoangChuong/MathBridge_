@@ -221,27 +221,26 @@
                         <!-- Cột trái -->
                         <div>
                             <div class="mb-field">
-                                <label for="reg-email">Email</label>
-                                <input id="reg-email" type="email" autocomplete="email" placeholder="vd: hs.moi@mathbridge.vn" required>
-                            </div>
-
-                            <div class="mb-field">
-                                <label for="reg-password">Mật khẩu</label>
-                                <input id="reg-password" type="password" placeholder="Tối thiểu 6 ký tự" required autocomplete="new-password">
-                                <p class="auth-hint">Mẹo: Dùng mật khẩu mạnh & dễ nhớ đối với bạn.</p>
+                                <label for="reg-hoTen">Họ và tên</label>
+                                <input id="reg-hoTen" type="text" placeholder="VD: Trịnh Hoàng Chương" required>
                             </div>
 
                             <div class="mb-field">
                                 <label for="reg-sdt">Số điện thoại</label>
-                                <input id="reg-sdt" type="tel" placeholder="vd: 0912345678" required inputmode="numeric">
+                                <input id="reg-sdt" type="tel" placeholder="VD: 09xxxxxxxx" required inputmode="numeric">
+                                <p class="auth-hint">Email và mật khẩu sẽ được hệ thống tự động tạo và gửi cho bạn.</p>
+                            </div>
+
+                            <div class="mb-field">
+                                <label for="reg-ngaySinh">Ngày sinh</label>
+                                <input id="reg-ngaySinh" type="date">
                             </div>
 
                             <div class="mb-field">
                                 <label for="reg-gioitinh">Giới tính</label>
-                                <select id="reg-gioitinh" required>
-                                    <option value="" selected>— Chọn —</option>
-                                    <option value="false">Nam</option>
-                                    <option value="true">Nữ</option>
+                                <select id="reg-gioitinh">
+                                    <option value="male">Nam</option>
+                                    <option value="female">Nữ</option>
                                 </select>
                             </div>
                         </div>
@@ -249,23 +248,8 @@
                         <!-- Cột phải -->
                         <div>
                             <div class="mb-field">
-                                <label for="reg-ho">Họ</label>
-                                <input id="reg-ho" type="text" placeholder="vd: Nguyễn" required>
-                            </div>
-
-                            <div class="mb-field">
-                                <label for="reg-tendem">Tên đệm (tuỳ chọn)</label>
-                                <input id="reg-tendem" type="text" placeholder="vd: Bảo">
-                            </div>
-
-                            <div class="mb-field">
-                                <label for="reg-ten">Tên</label>
-                                <input id="reg-ten" type="text" placeholder="vd: An" required>
-                            </div>
-
-                            <div class="mb-field">
-                                <label for="reg-diachi">Địa chỉ</label>
-                                <textarea id="reg-diachi" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" required></textarea>
+                                <label for="reg-diaChi">Địa chỉ</label>
+                                <textarea id="reg-diaChi" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></textarea>
                             </div>
                         </div>
                     </div>
@@ -285,6 +269,174 @@
 </main>
 
 <footer></footer>
+
+<!-- ========== CREDENTIALS MODAL ========== -->
+<div id="credentials-modal" class="mb-modal" aria-hidden="true" style="display: none;">
+    <div class="mb-modal__backdrop" data-close-credentials-modal></div>
+    <div class="mb-modal__dialog cred-dialog" role="dialog" aria-modal="true" aria-labelledby="cred-title" style="max-width: 500px;">
+        <button class="mb-modal__close" type="button" title="Đóng" data-close-credentials-modal>×</button>
+        <div class="cred-header">
+            <div class="cred-emoji" aria-hidden="true">🎉</div>
+            <h3 id="cred-title" class="cred-title">Chúc mừng bạn đã đăng ký thành công!</h3>
+            <p class="cred-sub">Vui lòng <strong>lưu lại</strong> thông tin đăng nhập bên dưới để tránh quên.</p>
+        </div>
+        <div class="cred-box">
+            <div class="cred-box__head">
+                <span class="cred-box__icon" aria-hidden="true">🔐</span>
+                <p class="cred-box__label">Thông tin đăng nhập</p>
+            </div>
+            <div class="cred-field">
+                <label for="cred-email">📧 Email</label>
+                <div class="cred-field__row">
+                    <input id="cred-email" type="text" readonly />
+                    <button type="button" class="cred-copy-btn" data-copy="email">Copy</button>
+                </div>
+            </div>
+            <div class="cred-field">
+                <label for="cred-password">🔑 Mật khẩu</label>
+                <div class="cred-field__row">
+                    <input id="cred-password" type="text" readonly />
+                    <button type="button" class="cred-copy-btn" data-copy="password">Copy</button>
+                </div>
+            </div>
+        </div>
+        <div class="cred-actions">
+            <button type="button" class="btn btn--navy cred-close" data-close-credentials-modal style="width: 100%;">
+                ✅ Đã ghi nhớ
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modal styles */
+    .mb-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .mb-modal__backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+    }
+    .mb-modal__dialog {
+        position: relative;
+        background: #fff;
+        border-radius: 20px;
+        padding: 24px;
+        max-width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 18px 35px rgba(15, 23, 42, 0.2);
+    }
+    .mb-modal__close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #f1f5f9;
+        border-radius: 8px;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .mb-modal__close:hover {
+        background: #e2e8f0;
+    }
+    .cred-header {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    .cred-emoji {
+        font-size: 48px;
+        margin-bottom: 12px;
+    }
+    .cred-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+    .cred-sub {
+        font-size: 0.9rem;
+        color: var(--muted);
+    }
+    .cred-box {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .cred-box__head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .cred-box__icon {
+        font-size: 20px;
+    }
+    .cred-box__label {
+        font-weight: 600;
+        color: var(--text);
+    }
+    .cred-field {
+        margin-bottom: 16px;
+    }
+    .cred-field:last-child {
+        margin-bottom: 0;
+    }
+    .cred-field label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+    .cred-field__row {
+        display: flex;
+        gap: 8px;
+    }
+    .cred-field__row input {
+        flex: 1;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        background: #fff;
+    }
+    .cred-copy-btn {
+        padding: 10px 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #fff;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: 0.18s ease;
+    }
+    .cred-copy-btn:hover {
+        background: #f1f5f9;
+    }
+    .cred-actions {
+        display: flex;
+        gap: 10px;
+    }
+</style>
 
 <script>
     // Include header/footer partials
@@ -337,6 +489,9 @@
       } else {
         setTab("login");
       }
+
+      // Expose setTab function globally để register.page.js có thể gọi
+      window.setTab = setTab;
     });
 </script>
 

@@ -1,10 +1,17 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.*;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "LichSuThanhToan")
 public class LichSuThanhToan {
@@ -13,12 +20,10 @@ public class LichSuThanhToan {
     @Column(name = "ID_LS", length = 10, nullable = false)
     private String idLs;
 
-    // FK -> PhuongThucThanhToan(ID_PT)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_PT", nullable = false, referencedColumnName = "ID_PT")
-    private PhuongThucThanhToan phuongThucThanhToan;
+    @Column(name = "ID_PT", length = 10, nullable = false)
+    private String idPt;
 
-    @Column(name = "TongTien", nullable = false)
+    @Column(name = "TongTien", precision = 18, scale = 0, nullable = false)
     private BigDecimal tongTien;
 
     @Column(name = "TrangThaiThanhToan", length = 100, nullable = false)
@@ -32,79 +37,12 @@ public class LichSuThanhToan {
 
     @Column(name = "GhiChu", length = 200)
     private String ghiChu;
+    // QUAN HỆ
 
-    // 1 LichSuThanhToan -> n HoaDon
-    @OneToMany(mappedBy = "lichSuThanhToan", fetch = FetchType.LAZY)
-    private List<HoaDon> hoaDons = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "ID_PT", insertable = false, updatable = false)
+    private PhuongThucThanhToan phuongThucThanhToan;
 
-    public LichSuThanhToan() {
-    }
-
-    public LichSuThanhToan(String idLs) {
-        this.idLs = idLs;
-    }
-
-    public String getIdLs() {
-        return idLs;
-    }
-
-    public void setIdLs(String idLs) {
-        this.idLs = idLs;
-    }
-
-    public PhuongThucThanhToan getPhuongThucThanhToan() {
-        return phuongThucThanhToan;
-    }
-
-    public void setPhuongThucThanhToan(PhuongThucThanhToan phuongThucThanhToan) {
-        this.phuongThucThanhToan = phuongThucThanhToan;
-    }
-
-    public BigDecimal getTongTien() {
-        return tongTien;
-    }
-
-    public void setTongTien(BigDecimal tongTien) {
-        this.tongTien = tongTien;
-    }
-
-    public String getTrangThaiThanhToan() {
-        return trangThaiThanhToan;
-    }
-
-    public void setTrangThaiThanhToan(String trangThaiThanhToan) {
-        this.trangThaiThanhToan = trangThaiThanhToan;
-    }
-
-    public String getHinhThuc() {
-        return hinhThuc;
-    }
-
-    public void setHinhThuc(String hinhThuc) {
-        this.hinhThuc = hinhThuc;
-    }
-
-    public String getThang() {
-        return thang;
-    }
-
-    public void setThang(String thang) {
-        this.thang = thang;
-    }
-
-    public String getGhiChu() {
-        return ghiChu;
-    }
-
-    public void setGhiChu(String ghiChu) {
-        this.ghiChu = ghiChu;
-    }
-
-    public List<HoaDon> getHoaDons() {
-        return hoaDons;
-    }
-
-    public void setHoaDons(List<HoaDon> hoaDons) {
-        this.hoaDons = hoaDons;
-    }
+    @OneToMany(mappedBy = "lichSuThanhToan")
+    private Set<HoaDon> hoaDons = new HashSet<>();
 }

@@ -19,3 +19,27 @@ export function setAuth(data) {
 export function clearAuth() {
   localStorage.removeItem(AUTH_KEY);
 }
+
+/**
+ * Kiểm tra user đã đăng nhập đầy đủ chưa (có cả user và token)
+ * @returns {boolean} true nếu đã đăng nhập đầy đủ
+ */
+export function isAuthenticated() {
+  const auth = getAuth();
+  const hasToken = auth?.token || localStorage.getItem("mb_token");
+  return !!(auth && auth.user && hasToken);
+}
+
+/**
+ * Lấy JWT token từ localStorage
+ * @returns {string|null} JWT token hoặc null nếu không có
+ */
+export function getToken() {
+  // Ưu tiên mb_token (format cũ)
+  let token = localStorage.getItem("mb_token");
+  if (token) return token;
+  
+  // Fallback về mb_auth.token (format mới)
+  const auth = getAuth();
+  return auth?.token || null;
+}

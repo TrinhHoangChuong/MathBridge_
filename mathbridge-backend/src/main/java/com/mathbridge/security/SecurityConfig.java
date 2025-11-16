@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/portal/**").permitAll()
                         .requestMatchers("/api/portal/student/**").hasAuthority("R001")
                         .requestMatchers("/api/portal/teacher/**").hasAuthority("R002")
                         .requestMatchers("/api/portal/covan/**").hasAuthority("R003")
