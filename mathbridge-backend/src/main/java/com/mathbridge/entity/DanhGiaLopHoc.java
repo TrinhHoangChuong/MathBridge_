@@ -1,88 +1,60 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-@Table(name = "DanhGiaLopHoc")
+@Table(
+        name = "DanhGiaLopHoc",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "UQ_DGLH_HS_LH",
+                        columnNames = {"ID_HS", "ID_LH"}
+                )
+        }
+)
 public class DanhGiaLopHoc {
 
     @Id
     @Column(name = "ID_DGLH", length = 10, nullable = false)
     private String idDglh;
 
-    // FK -> HocSinh(ID_HS)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_HS", nullable = false, referencedColumnName = "ID_HS")
+    @Column(name = "ID_HS", length = 10, nullable = false)
+    private String idHs;
+
+    @Column(name = "ID_LH", length = 10, nullable = false)
+    private String idLh;
+
+    @Column(name = "DiemDanhGia", nullable = false)
+    private Integer diemDanhGia; // tinyint
+
+    @Column(name = "NhanXet", length = 400)
+    private String nhanXet;
+
+    @Column(name = "ThoiDiemDanhGia", nullable = false)
+    private LocalDateTime thoiDiemDanhGia;
+
+    // QUAN HỆ
+
+    @ManyToOne
+    @JoinColumns({
+            @JoinColumn(name = "ID_HS", referencedColumnName = "ID_HS", insertable = false, updatable = false),
+            @JoinColumn(name = "ID_LH", referencedColumnName = "ID_LH", insertable = false, updatable = false)
+    })
+    private DangKyLH dangKyLh;
+
+    @ManyToOne
+    @JoinColumn(name = "ID_HS", insertable = false, updatable = false)
     private HocSinh hocSinh;
 
-    // FK -> LopHoc(ID_LH)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_LH", nullable = false, referencedColumnName = "ID_LH")
+    @ManyToOne
+    @JoinColumn(name = "ID_LH", insertable = false, updatable = false)
     private LopHoc lopHoc;
-
-    @Column(name = "DiemDanhGia")
-    private Integer diemDanhGia; // 1-5 sao, 5 sao = 5 điểm
-
-    @Column(name = "NhanXet", length = 500)
-    private String nhanXet; // Nhận xét đánh giá
-
-    @Column(name = "ThoiDiemDanhGia")
-    private LocalDateTime thoiDiemDanhGia; // Thời điểm đánh giá
-
-    public DanhGiaLopHoc() {
-    }
-
-    public DanhGiaLopHoc(String idDglh) {
-        this.idDglh = idDglh;
-    }
-
-    public String getIdDglh() {
-        return idDglh;
-    }
-
-    public void setIdDglh(String idDglh) {
-        this.idDglh = idDglh;
-    }
-
-    public HocSinh getHocSinh() {
-        return hocSinh;
-    }
-
-    public void setHocSinh(HocSinh hocSinh) {
-        this.hocSinh = hocSinh;
-    }
-
-    public LopHoc getLopHoc() {
-        return lopHoc;
-    }
-
-    public void setLopHoc(LopHoc lopHoc) {
-        this.lopHoc = lopHoc;
-    }
-
-    public Integer getDiemDanhGia() {
-        return diemDanhGia;
-    }
-
-    public void setDiemDanhGia(Integer diemDanhGia) {
-        this.diemDanhGia = diemDanhGia;
-    }
-
-    public String getNhanXet() {
-        return nhanXet;
-    }
-
-    public void setNhanXet(String nhanXet) {
-        this.nhanXet = nhanXet;
-    }
-
-    public LocalDateTime getThoiDiemDanhGia() {
-        return thoiDiemDanhGia;
-    }
-
-    public void setThoiDiemDanhGia(LocalDateTime thoiDiemDanhGia) {
-        this.thoiDiemDanhGia = thoiDiemDanhGia;
-    }
 }
-

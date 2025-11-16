@@ -1,9 +1,400 @@
 
+const AUTH_STORAGE_KEY = 'mb_auth';
+const TOKEN_STORAGE_KEY = 'mb_token';
+const TOKEN_TYPE_STORAGE_KEY = 'mb_token_type';
+const ROLE_TEACHER = 'R002';
+const ROLE_TUTOR = 'R003';
+
+function parseStoredAuth() {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) {
+        return null;
+    }
+    try {
+        return JSON.parse(raw);
+    } catch (error) {
+        console.warn('Failed to parse mb_auth payload', error);
+        return null;
+    }
+}
+
+function ensureTeacherOrTutorAccess() {
+    const payload = parseStoredAuth();
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const roles = Array.isArray(payload?.user?.roles) ? payload.user.roles : [];
+    const hasAccess = roles.includes(ROLE_TEACHER) || roles.includes(ROLE_TUTOR);
+
+    if (!token || !hasAccess) {
+        redirectToLogin();
+        return null;
+    }
+    return {
+        payload,
+        token,
+        tokenType: localStorage.getItem(TOKEN_TYPE_STORAGE_KEY) || 'Bearer'
+    };
+}
+
+function redirectToLogin() {
+    window.location.replace('../LoginPortal.html');
+}
+
+function getRoleLabel(roles) {
+    if (Array.isArray(roles)) {
+        if (roles.includes(ROLE_TEACHER)) {
+            return 'Giáo viên';
+        }
+        if (roles.includes(ROLE_TUTOR)) {
+            return 'Cố vấn học tập';
+        }
+    }
+    return 'Thành viên MathBridge';
+}
+
+function getInitials(name, emailFallback) {
+    if (name && name.trim().length) {
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) {
+            return parts[0].charAt(0).toUpperCase();
+        }
+        const first = parts[0].charAt(0);
+        const last = parts[parts.length - 1].charAt(0);
+        return (first + last).toUpperCase();
+    }
+    if (emailFallback) {
+        return emailFallback.charAt(0).toUpperCase();
+    }
+    return 'MB';
+}
+
+function closeUserDropdown() {
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        dropdown.classList.remove('open');
+    }
+}
+
+function applyAuthProfileToUI(authPayload, profileData) {
+    if (!authPayload) {
+        return;
+    }
+
+    const roles = Array.isArray(authPayload.user?.roles) ? authPayload.user.roles : [];
+    const roleLabel = getRoleLabel(roles);
+    const email =
+        profileData?.email ||
+        authPayload.user?.email ||
+        localStorage.getItem('mb_user_email') ||
+        'teacher@mathbridge.vn';
+
+    const displayName =
+        profileData?.fullName ||
+        authPayload.user?.fullName ||
+        localStorage.getItem('mb_user_name') ||
+        email;
+
+    const initials = getInitials(displayName, email);
+
+    if (profileData?.fullName) {
+        localStorage.setItem('mb_user_name', profileData.fullName);
+    }
+    if (email) {
+        localStorage.setItem('mb_user_email', email);
+    }
+
+    const sidebarName = document.querySelector('.user-name');
+    if (sidebarName) {
+        sidebarName.textContent = displayName;
+    }
+
+    const sidebarRole = document.querySelector('.user-role');
+    if (sidebarRole) {
+        sidebarRole.textContent = roleLabel;
+    }
+
+    const headerName = document.getElementById('headerDisplayName');
+    if (headerName) {
+        headerName.textContent = displayName;
+    }
+
+    const headerAvatar = document.getElementById('headerAvatar');
+    if (headerAvatar) {
+        headerAvatar.textContent = initials;
+    }
+
+    const dropdownName = document.getElementById('dropdownName');
+    if (dropdownName) {
+        dropdownName.textContent = displayName;
+    }
+
+    const dropdownEmail = document.getElementById('dropdownEmail');
+    if (dropdownEmail) {
+        dropdownEmail.textContent = email;
+    }
+
+    const dropdownRole = document.getElementById('dropdownRole');
+    if (dropdownRole) {
+        dropdownRole.textContent = roleLabel;
+    }
+
+    const dropdownAvatar = document.getElementById('dropdownAvatar');
+    if (dropdownAvatar) {
+        dropdownAvatar.textContent = initials;
+    }
+
+    const profileName = document.getElementById('profileModalName');
+    if (profileName) {
+        profileName.textContent = displayName;
+    }
+    const profileEmail = document.getElementById('profileModalEmail');
+    if (profileEmail) {
+        profileEmail.textContent = email;
+    }
+    const profileAvatar = document.getElementById('profileModalAvatar');
+    if (profileAvatar) {
+        profileAvatar.textContent = initials;
+    }
+    const profileCampus = document.getElementById('profileModalCampus');
+    if (profileCampus) {
+        profileCampus.textContent = profileData?.coSoTen
+            ? `Cơ sở: ${profileData.coSoTen}`
+            : 'Cơ sở: Đang cập nhật';
+    }
+}
+
+function performLogout() {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_TYPE_STORAGE_KEY);
+    localStorage.removeItem('mb_user_roles');
+    localStorage.removeItem('mb_user_id');
+    localStorage.removeItem('mb_user_email');
+    localStorage.removeItem('mb_user_name');
+    redirectToLogin();
+}
+
+function registerLogoutHandler() {
+    ['logoutBtn', 'logoutMenuBtn'].forEach((id) => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.addEventListener('click', () => {
+                closeUserDropdown();
+                performLogout();
+            });
+        }
+    });
+}
+
+function setupUserMenuInteractions() {
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const dropdown = document.getElementById('userDropdown');
+    if (!userMenuBtn || !dropdown) {
+        return;
+    }
+
+    userMenuBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        dropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!dropdown.contains(event.target) && !userMenuBtn.contains(event.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+}
+
+function populateProfileForm(profile, authPayload) {
+    const data = profile || {};
+    const hoInput = document.getElementById('profileHo');
+    const tenDemInput = document.getElementById('profileTenDem');
+    const tenInput = document.getElementById('profileTen');
+    const sdtInput = document.getElementById('profileSdt');
+    const chuyenMonInput = document.getElementById('profileChuyenMon');
+    const kinhNghiemInput = document.getElementById('profileKinhNghiem');
+    const gioiTinhSelect = document.getElementById('profileGioiTinh');
+
+    if (hoInput) hoInput.value = data.ho || '';
+    if (tenDemInput) tenDemInput.value = data.tenDem || '';
+    if (tenInput) tenInput.value = data.ten || '';
+    if (sdtInput) sdtInput.value = data.sdt || '';
+    if (chuyenMonInput) chuyenMonInput.value = data.chuyenMon || '';
+    if (kinhNghiemInput) kinhNghiemInput.value = data.kinhNghiem != null ? data.kinhNghiem : '';
+    if (gioiTinhSelect) {
+        if (data.gioiTinh === true || data.gioiTinh === false) {
+            gioiTinhSelect.value = String(data.gioiTinh);
+        } else {
+            gioiTinhSelect.value = '';
+        }
+    }
+
+    applyAuthProfileToUI(authPayload, data);
+}
+
+async function loadAndRenderTeacherProfile() {
+    const context = getAuthContext();
+    if (!context?.payload?.user?.idTk) {
+        console.warn('Missing account ID for profile fetch');
+        return;
+    }
+    const api = new TeacherAPI();
+    try {
+        const response = await api.getTeacherProfile(context.payload.user.idTk);
+        const profile = response?.data || response;
+        if (profile) {
+            window.__teacherProfile = profile;
+            populateProfileForm(profile, context.payload);
+            
+            // Hydrate and cache idNv (employee/teacher id) for subsequent API calls
+            try {
+                const hasIdNvInPayload = !!context.payload?.user?.idNv;
+                const idNvFromProfile = profile?.idNv || profile?.nhanVienId || profile?.id;
+                if (!hasIdNvInPayload && idNvFromProfile) {
+                    // Cache in auth context and localStorage for later usage
+                    context.payload.user.idNv = idNvFromProfile;
+                    window.__teacherAuthContext = context;
+                    try {
+                        localStorage.setItem('mb_idNv', String(idNvFromProfile));
+                    } catch (e) {
+                        console.warn('Failed to cache mb_idNv:', e);
+                    }
+
+                    // After resolving idNv, refresh data-driven sections
+                    if (window.teacherDashboard) {
+                        // Refresh dashboard statistics and class list
+                        window.teacherDashboard.loadClassStatistics();
+                        window.teacherDashboard.loadClassesSection();
+                        // Also refresh other sections that rely on teacher id
+                        window.teacherDashboard.loadUpcomingClasses();
+                        if (typeof loadAssignmentsSection === 'function') {
+                            loadAssignmentsSection();
+                        }
+                        if (typeof loadScheduleSection === 'function') {
+                            loadScheduleSection();
+                        }
+                    }
+                }
+            } catch (hydrateErr) {
+                console.warn('Could not hydrate idNv from profile:', hydrateErr);
+            }
+        } else {
+            applyAuthProfileToUI(context.payload);
+        }
+    } catch (error) {
+        console.error('Failed to load teacher profile:', error);
+        applyAuthProfileToUI(context.payload);
+        showNotification('Không thể tải thông tin giáo viên. Vui lòng thử lại sau.', 'warning');
+    }
+}
+
+async function handleProfileSave() {
+    const context = getAuthContext();
+    if (!context?.payload?.user?.idTk) {
+        return;
+    }
+    const ho = document.getElementById('profileHo')?.value?.trim() || null;
+    const tenDem = document.getElementById('profileTenDem')?.value?.trim() || null;
+    const ten = document.getElementById('profileTen')?.value?.trim() || null;
+    const sdt = document.getElementById('profileSdt')?.value?.trim() || null;
+    const chuyenMon = document.getElementById('profileChuyenMon')?.value?.trim() || null;
+    const kinhNghiemRaw = document.getElementById('profileKinhNghiem')?.value;
+    const gioiTinhRaw = document.getElementById('profileGioiTinh')?.value;
+
+    let kinhNghiem = kinhNghiemRaw === '' ? null : Number(kinhNghiemRaw);
+    if (Number.isNaN(kinhNghiem)) {
+        kinhNghiem = null;
+    }
+
+    const payload = {
+        ho,
+        tenDem,
+        ten,
+        sdt,
+        chuyenMon,
+        kinhNghiem,
+        gioiTinh: gioiTinhRaw === '' ? null : gioiTinhRaw === 'true'
+    };
+
+    const api = new TeacherAPI();
+    try {
+        const response = await api.updateTeacherProfile(context.payload.user.idTk, payload);
+        const updatedProfile = response?.data || response;
+        window.__teacherProfile = updatedProfile;
+        populateProfileForm(updatedProfile, context.payload);
+        closeProfileModal();
+        closeUserDropdown();
+        showNotification('Đã cập nhật thông tin cá nhân thành công!', 'success');
+    } catch (error) {
+        console.error('Update profile error:', error);
+        showNotification(error.message || 'Cập nhật thất bại. Vui lòng thử lại.', 'error');
+    }
+}
+
+function wireProfileModalEvents() {
+    const modal = document.getElementById('profileModal');
+    const openButtons = [
+        document.getElementById('openProfileModal'),
+        document.getElementById('viewProfileBtn')
+    ];
+    const closeBtn = document.getElementById('closeProfileModal');
+    const cancelBtn = document.getElementById('cancelProfileChanges');
+    const saveBtn = document.getElementById('saveProfileChanges');
+
+    const authContext = getAuthContext();
+
+    const openModal = () => {
+        if (!modal) return;
+        populateProfileForm(window.__teacherProfile, authContext?.payload);
+        modal.classList.add('active');
+    };
+
+    openButtons.forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', (event) => {
+                event.preventDefault();
+                closeUserDropdown();
+                openModal();
+            });
+        }
+    });
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeProfileModal);
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeProfileModal);
+    }
+    if (saveBtn) {
+        saveBtn.addEventListener('click', handleProfileSave);
+    }
+}
+
+function getAuthContext() {
+    if (!window.__teacherAuthContext) {
+        window.__teacherAuthContext = ensureTeacherOrTutorAccess();
+    }
+    // Ensure idNv is present if cached
+    try {
+        const ctx = window.__teacherAuthContext;
+        if (ctx?.payload?.user && !ctx.payload.user.idNv) {
+            const cachedIdNv = localStorage.getItem('mb_idNv');
+            if (cachedIdNv) {
+                ctx.payload.user.idNv = cachedIdNv;
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to enrich auth context with cached idNv:', e);
+    }
+    return window.__teacherAuthContext;
+}
+
 // ===== TEACHER API CLASS =====
 class TeacherAPI {
     constructor() {
         this.baseURL = 'http://localhost:8080/api'; // Adjust based on your backend URL
-        this.token = localStorage.getItem('authToken');
+        const authContext = getAuthContext();
+        this.token = authContext?.token || localStorage.getItem('authToken');
+        this.tokenType = authContext?.tokenType || 'Bearer';
     }
 
     // Generic HTTP methods
@@ -12,14 +403,24 @@ class TeacherAPI {
         const config = {
             headers: {
                 'Content-Type': 'application/json',
-                ...(this.token && { 'Authorization': `Bearer ${this.token}` })
+                ...(this.token && { 'Authorization': `${this.tokenType} ${this.token}` })
             },
             ...options
         };
 
+        if (!this.token) {
+            throw new Error('Không tìm thấy token xác thực. Vui lòng đăng nhập lại.');
+        }
+
         try {
             const response = await fetch(url, config);
             
+            if (response.status === 401) {
+                console.warn('Authentication failed with 401, redirecting to login.');
+                redirectToLogin();
+                throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+            }
+
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -83,6 +484,87 @@ class TeacherAPI {
             this.token = null;
             localStorage.removeItem('authToken');
         }
+    }
+
+    async getTeacherProfile(accountId) {
+        return this.get(`/public/nhanvien/account/${accountId}`);
+    }
+
+    async updateTeacherProfile(accountId, profileData) {
+        return this.put(`/public/nhanvien/account/${accountId}`, profileData);
+    }
+
+    // Get classes by teacher ID (employee ID)
+    async getTeacherClasses(idNv) {
+        return this.get(`/public/nhanvien/${idNv}/lophoc`);
+    }
+
+    // ===== HỌC SINH =====
+    async getHocSinhByLopHoc(idLh) {
+        return this.get(`/public/giaovien/lophoc/${idLh}/hocsinh`);
+    }
+
+    // ===== BÀI TẬP =====
+    async getBaiTapByLopHoc(idLh) {
+        return this.get(`/public/giaovien/lophoc/${idLh}/baitap`);
+    }
+
+    async getBaiTapByGiaoVien(idNv) {
+        return this.get(`/public/giaovien/${idNv}/baitap`);
+    }
+
+    async createBaiTap(baiTapData) {
+        return this.post(`/public/giaovien/baitap`, baiTapData);
+    }
+
+    async updateBaiTap(idBt, baiTapData) {
+        return this.put(`/public/giaovien/baitap/${idBt}`, baiTapData);
+    }
+
+    async deleteBaiTap(idBt) {
+        return this.delete(`/public/giaovien/baitap/${idBt}`);
+    }
+
+    async getBaiNopByBaiTap(idBt) {
+        return this.get(`/public/giaovien/baitap/${idBt}/bainop`);
+    }
+
+    async chamDiemBaiNop(idBn, diemSo, nhanXet) {
+        return this.put(`/public/giaovien/bainop/${idBn}/chamdiem?diemSo=${diemSo}&nhanXet=${encodeURIComponent(nhanXet || '')}`);
+    }
+
+    // ===== ĐIỂM SỐ =====
+    async getDiemSoByLopHoc(idLh) {
+        return this.get(`/public/giaovien/lophoc/${idLh}/diemso`);
+    }
+
+    async updateDiemSo(idLh, idHs, loaiDiem, diemSo) {
+        return this.put(`/public/giaovien/lophoc/${idLh}/hocsinh/${idHs}/diemso?loaiDiem=${loaiDiem}&diemSo=${diemSo}`);
+    }
+
+    async exportBaoCaoDiemSo(idLh) {
+        return this.get(`/public/giaovien/lophoc/${idLh}/diemso/export`);
+    }
+
+    // ===== LỊCH DẠY =====
+    async getBuoiHocByLopHoc(idLh) {
+        return this.get(`/public/giaovien/lophoc/${idLh}/buoihoc`);
+    }
+
+    async getBuoiHocByGiaoVien(idNv) {
+        return this.get(`/public/giaovien/${idNv}/buoihoc`);
+    }
+
+    async createBuoiHoc(buoiHocData) {
+        return this.post(`/public/giaovien/buoihoc`, buoiHocData);
+    }
+
+    async updateBuoiHoc(idBh, buoiHocData) {
+        return this.put(`/public/giaovien/buoihoc/${idBh}`, buoiHocData);
+    }
+
+    async deleteBuoiHoc(idBh) {
+        return this.delete(`/public/giaovien/buoihoc/${idBh}`);
     }
 
     // Class management methods
@@ -294,15 +776,125 @@ class TeacherDashboard {
         this.currentSection = 'dashboard';
         this.sidebarCollapsed = false;
         this.api = new TeacherAPI();
+        this.classesById = new Map();
         this.notifications = new NotificationManager();
+        this.gradeDataByClass = new Map();
+        this.currentGradeClassId = null;
         this.init();
     }
 
-    init() {
+    async init() {
         this.bindEvents();
         this.initializeCalendar();
-        this.loadDashboardData();
+        await this.loadDashboardData();
+        try {
+            await this.loadClassesSection();
+        } catch (error) {
+            console.error('Failed to preload classes section:', error);
+        }
+        
+        // Preload key sections so dữ liệu thật xuất hiện ngay khi chuyển tab
+        if (typeof loadAssignmentsSection === 'function') {
+            try {
+                await loadAssignmentsSection();
+            } catch (error) {
+                console.error('Failed to preload assignments section:', error);
+            }
+        }
+        if (typeof loadScheduleSection === 'function') {
+            try {
+                await loadScheduleSection();
+            } catch (error) {
+                console.error('Failed to preload schedule section:', error);
+            }
+        }
+
+        try {
+            await this.loadGradesSection();
+        } catch (error) {
+            console.error('Failed to preload grades section:', error);
+        }
+        
         this.initializeCharts();
+    }
+
+    cacheClasses(classes) {
+        if (!Array.isArray(classes)) {
+            return;
+        }
+
+        if (!this.classesById) {
+            this.classesById = new Map();
+        }
+
+        classes.forEach((cls) => {
+            if (!cls || typeof cls !== 'object') {
+                return;
+            }
+            const id = cls.idLh ?? cls.id ?? cls.idLop;
+            if (!id && id !== 0) {
+                return;
+            }
+            const key = String(id);
+            const existing = this.classesById.get(key) || {};
+            this.classesById.set(key, { ...existing, ...cls });
+        });
+
+        try {
+            window.__teacherClasses = Array.from(this.classesById.entries()).reduce((acc, [key, value]) => {
+                acc[key] = value;
+                return acc;
+            }, {});
+        } catch (error) {
+            console.warn('Failed to cache classes globally:', error);
+        }
+    }
+
+    escapeHtml(text) {
+        if (typeof text !== 'string') {
+            return '';
+        }
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    getCachedClassesArray() {
+        if (!this.classesById || this.classesById.size === 0) {
+            return [];
+        }
+        return Array.from(this.classesById.values());
+    }
+
+    async ensureClassCache() {
+        const cached = this.getCachedClassesArray();
+        if (cached.length > 0) {
+            return cached;
+        }
+
+        try {
+            const authContext = getAuthContext();
+            if (!authContext?.payload?.user?.idNv) {
+                return [];
+            }
+            const classes = await this.api.getTeacherClasses(authContext.payload.user.idNv);
+            this.cacheClasses(classes || []);
+            return this.getCachedClassesArray();
+        } catch (error) {
+            console.error('Failed to ensure class cache:', error);
+            return [];
+        }
+    }
+
+    getClassInfo(classId) {
+        if (!classId && classId !== 0) {
+            return null;
+        }
+        const key = String(classId);
+        return this.classesById?.get(key) || null;
     }
 
     bindEvents() {
@@ -312,15 +904,29 @@ class TeacherDashboard {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
 
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                this.toggleSidebar();
+        if (sidebarToggle && !sidebarToggle._toggleBound) {
+            sidebarToggle._toggleBound = true;
+            
+            sidebarToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                    this.toggleSidebar();
+                } catch (error) {
+                    console.error('Error toggling sidebar:', error);
+                }
             });
         }
 
         if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', () => {
-                this.toggleMobileMenu();
+            mobileMenuToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                    this.toggleMobileMenu();
+                } catch (error) {
+                    console.error('Error toggling mobile menu:', error);
+                }
             });
         }
 
@@ -359,13 +965,50 @@ class TeacherDashboard {
     }
 
     toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        
-        if (sidebar && mainContent) {
+        try {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            if (!sidebar) {
+                console.error('Sidebar element not found');
+                return;
+            }
+            
+            if (!mainContent) {
+                console.error('Main content element not found');
+                return;
+            }
+            
+            // Toggle collapsed state
             this.sidebarCollapsed = !this.sidebarCollapsed;
-            sidebar.classList.toggle('collapsed', this.sidebarCollapsed);
-            mainContent.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
+            
+            // Toggle classes
+            if (this.sidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('sidebar-collapsed');
+            } else {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('sidebar-collapsed');
+            }
+
+            // Update icon
+            if (toggleBtn) {
+                const icon = toggleBtn.querySelector('i');
+                if (icon) {
+                    if (this.sidebarCollapsed) {
+                        icon.className = 'fas fa-angle-right';
+                    } else {
+                        icon.className = 'fas fa-angle-left';
+                    }
+                } else {
+                    console.warn('Icon element not found in toggle button');
+                }
+            } else {
+                console.warn('Toggle button not found');
+            }
+        } catch (error) {
+            console.error('Error in toggleSidebar:', error);
         }
     }
 
@@ -398,7 +1041,481 @@ class TeacherDashboard {
         if (targetSection) {
             targetSection.style.display = 'block';
             this.currentSection = sectionId;
+            
+            // Load data for specific sections
+            if (sectionId === 'classes') {
+                this.loadClassesSection();
+            } else if (sectionId === 'assignments') {
+                if (typeof loadAssignmentsSection === 'function') {
+                    loadAssignmentsSection();
+                }
+            } else if (sectionId === 'schedule') {
+                if (typeof loadScheduleSection === 'function') {
+                    loadScheduleSection();
+                }
+            } else if (sectionId === 'grades') {
+                this.loadGradesSection(null, { preserveSelection: true });
+            }
         }
+    }
+
+    async loadClassesSection() {
+        try {
+            const authContext = getAuthContext();
+            if (!authContext?.payload?.user?.idNv) {
+                console.warn('Missing employee ID for loading classes');
+                return;
+            }
+
+            // Load classes from API
+            const classes = await this.api.getTeacherClasses(authContext.payload.user.idNv);
+            
+            if (!classes || classes.length === 0) {
+                this.cacheClasses([]);
+                const classesGrid = document.querySelector('.classes-grid');
+                if (classesGrid) {
+                    classesGrid.innerHTML = '<div class="empty-state"><p>Bạn chưa có lớp học nào</p></div>';
+                }
+                return;
+            }
+            
+            // Update classes grid
+            const classesGrid = document.querySelector('.classes-grid');
+            if (classesGrid && classes) {
+                // Load additional data for each class (diem so, attendance)
+                const classesWithStats = await Promise.all(classes.map(async (cls) => {
+                    try {
+                        // Load diem so to calculate average
+                        const diemSos = await this.api.getDiemSoByLopHoc(cls.idLh);
+                        const diemTB = diemSos && diemSos.length > 0 
+                            ? (diemSos.reduce((sum, ds) => sum + (parseFloat(ds.diemTrungBinh) || 0), 0) / diemSos.length).toFixed(1)
+                            : '-';
+                        
+                        return { ...cls, diemTB };
+                    } catch (error) {
+                        console.error(`Error loading stats for class ${cls.idLh}:`, error);
+                        return { ...cls, diemTB: '-' };
+                    }
+                }));
+                
+                this.cacheClasses(classesWithStats);
+                classesGrid.innerHTML = classesWithStats.map(cls => {
+                    const startDate = cls.ngayBatDau ? new Date(cls.ngayBatDau) : null;
+                    const dateStr = startDate ? startDate.toLocaleDateString('vi-VN') : 'Chưa có';
+                    
+                    return `
+                        <div class="class-card">
+                            <div class="class-header">
+                                <h3>${cls.tenLop || 'Chưa có tên'}</h3>
+                                <div class="class-actions">
+                                    <button class="btn-icon" title="Xem học sinh" onclick="viewClassStudents('${cls.idLh}')">
+                                        <i class="fas fa-users"></i>
+                                    </button>
+                                    <button class="btn-icon" title="Xem chi tiết" onclick="viewClassDetails('${cls.idLh}')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="class-body">
+                                <div class="class-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">${cls.soHocSinh || 0}</span>
+                                        <span class="stat-label">HỌC SINH</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">${cls.diemTB || '-'}</span>
+                                        <span class="stat-label">ĐIỂM TB</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">${cls.soHocSinh > 0 ? '100%' : '0%'}</span>
+                                        <span class="stat-label">THAM GIA</span>
+                                    </div>
+                                </div>
+                                <div class="class-schedule">
+                                    <p><i class="fas fa-calendar"></i> ${cls.loaiNgay || 'Chưa có'} - ${cls.soBuoi || 'Chưa có'}</p>
+                                    <p><i class="fas fa-clock"></i> Bắt đầu: ${dateStr}</p>
+                                    <p><i class="fas fa-info-circle"></i> ${cls.hinhThucHoc || 'Chưa có'}</p>
+                                    <p><i class="fas fa-tag"></i> Trạng thái: ${cls.trangThai || 'Chưa có'}</p>
+                                </div>
+                                <div class="class-actions-full">
+                                    <button class="btn btn-sm btn-primary" onclick="viewClassDetails('${cls.idLh}')">
+                                        <i class="fas fa-eye"></i> Xem chi tiết
+                                    </button>
+                                    <button class="btn btn-sm btn-success" onclick="viewDiemSo('${cls.idLh}')">
+                                        <i class="fas fa-chart-line"></i> Xem điểm
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        } catch (error) {
+            console.error('Error loading classes section:', error);
+            showNotification('Không thể tải danh sách lớp học. Vui lòng thử lại sau.', 'error');
+        }
+    }
+
+    async loadGradesSection(forceClassId = null, options = {}) {
+        const { preserveSelection = false } = options || {};
+        const gradesTableBody = document.querySelector('.grades-table tbody');
+        if (gradesTableBody) {
+            gradesTableBody.innerHTML = `
+                <tr class="placeholder-row">
+                    <td colspan="8" class="text-center">Đang tải dữ liệu điểm số...</td>
+                </tr>
+            `;
+        }
+
+        try {
+            const classes = await this.ensureClassCache();
+            const selectedClassId = forceClassId
+                ?? (preserveSelection ? this.currentGradeClassId : null)
+                ?? this.currentGradeClassId
+                ?? (classes[0] ? (classes[0].idLh ?? classes[0].id ?? classes[0].idLop) : null);
+
+            this.renderGradeFilters(classes, selectedClassId);
+            this.updateGradeClassSelect(classes, selectedClassId);
+
+            if (!selectedClassId) {
+                this.renderGradeEmptyState(classes.length === 0
+                    ? 'Bạn chưa được phân công lớp học nào.'
+                    : 'Hãy chọn một lớp để xem điểm số.');
+                return;
+            }
+
+            this.currentGradeClassId = String(selectedClassId);
+            const diemSos = await this.api.getDiemSoByLopHoc(selectedClassId);
+            this.gradeDataByClass.set(String(selectedClassId), diemSos || []);
+
+            this.renderGradeStats(diemSos);
+            this.renderGradeChart(diemSos);
+            this.renderGradeTable(selectedClassId, diemSos);
+        } catch (error) {
+            console.error('Error loading grades section:', error);
+            this.renderGradeEmptyState('Không thể tải dữ liệu điểm số. Vui lòng thử lại sau.');
+            showNotification('Không thể tải dữ liệu điểm số. Vui lòng thử lại sau.', 'error');
+        }
+    }
+
+    renderGradeFilters(classes, selectedClassId) {
+        const container = document.getElementById('gradeClassFilters');
+        if (!container) {
+            return;
+        }
+
+        if (!classes || classes.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>Bạn chưa có lớp học nào.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const selectedKey = selectedClassId ? String(selectedClassId) : this.currentGradeClassId;
+
+        container.innerHTML = classes.map((cls, index) => {
+            const id = cls.idLh ?? cls.id ?? cls.idLop;
+            const key = String(id);
+            const isActive = selectedKey ? selectedKey === key : index === 0;
+            const name = this.escapeHtml(cls.tenLop || `Lớp ${key}`);
+            const total = cls.soHocSinh ?? cls.tongHocSinh ?? 0;
+            const avg = cls.diemTB ?? (cls.diemTrungBinh ? Number(cls.diemTrungBinh).toFixed(1) : null);
+            return `
+                <button type="button"
+                        class="class-filter-chip ${isActive ? 'active' : ''}"
+                        data-class-id="${key}">
+                    <strong>${name}</strong>
+                    <span>${total} học sinh • Điểm TB: ${avg || '--'}</span>
+                </button>
+            `;
+        }).join('');
+
+        const chips = container.querySelectorAll('.class-filter-chip');
+        chips.forEach((chip) => {
+            chip.addEventListener('click', async (event) => {
+                const classId = event.currentTarget.getAttribute('data-class-id');
+                if (!classId) {
+                    return;
+                }
+                chips.forEach((btn) => btn.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+                await this.loadGradesSection(classId, { preserveSelection: true });
+            });
+        });
+    }
+
+    updateGradeClassSelect(classes, selectedClassId) {
+        const select = document.getElementById('classFilter');
+        if (!select) {
+            return;
+        }
+
+        const selectedKey = selectedClassId ? String(selectedClassId) : this.currentGradeClassId;
+        const optionsHtml = [
+            '<option value="">Tất cả lớp</option>',
+            ...(classes || []).map((cls) => {
+                const id = cls.idLh ?? cls.id ?? cls.idLop;
+                const key = String(id);
+                const label = this.escapeHtml(cls.tenLop || `Lớp ${key}`);
+                const isSelected = selectedKey && key === selectedKey;
+                return `<option value="${key}" ${isSelected ? 'selected' : ''}>${label}</option>`;
+            })
+        ].join('');
+
+        select.innerHTML = optionsHtml;
+    }
+
+    renderGradeStats(diemSos) {
+        const avgEl = document.getElementById('gradeAverageValue');
+        const totalEl = document.getElementById('gradeStudentCount');
+        const excellentEl = document.getElementById('gradeExcellentCount');
+        const needsSupportEl = document.getElementById('gradeNeedsSupportCount');
+
+        const list = Array.isArray(diemSos) ? diemSos : [];
+        const trungBinhList = list
+            .map((item) => parseFloat(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet))
+            .filter((value) => !Number.isNaN(value));
+
+        const average = trungBinhList.length > 0
+            ? (trungBinhList.reduce((sum, value) => sum + value, 0) / trungBinhList.length).toFixed(2)
+            : '--';
+
+        const excellentCount = list.filter((item) => {
+            const rank = (item.xepLoai || '').toLowerCase();
+            const score = parseFloat(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet);
+            return rank.includes('giỏi') || rank.includes('gioi') || (!Number.isNaN(score) && score >= 8);
+        }).length;
+
+        const needsSupportCount = list.filter((item) => {
+            const rank = (item.xepLoai || '').toLowerCase();
+            const score = parseFloat(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet);
+            return rank.includes('yếu') || rank.includes('yeu') || rank.includes('kém') || rank.includes('kem')
+                || (!Number.isNaN(score) && score < 5);
+        }).length;
+
+        if (avgEl) {
+            avgEl.textContent = average;
+        }
+        if (totalEl) {
+            totalEl.textContent = list.length.toString();
+        }
+        if (excellentEl) {
+            excellentEl.textContent = excellentCount.toString();
+        }
+        if (needsSupportEl) {
+            needsSupportEl.textContent = needsSupportCount.toString();
+        }
+    }
+
+    renderGradeChart(diemSos) {
+        const container = document.getElementById('gradeDistribution');
+        if (!container) {
+            return;
+        }
+
+        const list = Array.isArray(diemSos) ? diemSos : [];
+        const trungBinhList = list
+            .map((item) => parseFloat(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet))
+            .filter((value) => !Number.isNaN(value) && value >= 0);
+
+        if (trungBinhList.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>Chưa có dữ liệu điểm để hiển thị.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const buckets = [
+            { label: '0 - 2', min: 0, max: 2, count: 0 },
+            { label: '2 - 4', min: 2, max: 4, count: 0 },
+            { label: '4 - 6', min: 4, max: 6, count: 0 },
+            { label: '6 - 8', min: 6, max: 8, count: 0 },
+            { label: '8 - 10', min: 8, max: 10.01, count: 0 }
+        ];
+
+        trungBinhList.forEach((score) => {
+            const bucket = buckets.find((b) => score >= b.min && score < b.max);
+            if (bucket) {
+                bucket.count += 1;
+            }
+        });
+
+        const maxCount = Math.max(...buckets.map((b) => b.count), 1);
+
+        container.innerHTML = `
+            <div class="grade-distribution-bars">
+                ${buckets.map((bucket) => {
+                    const height = Math.round((bucket.count / maxCount) * 100);
+                    return `
+                        <div class="grade-distribution-bar">
+                            <div class="bar-track">
+                                <div class="bar-fill" style="height: ${height}%;"></div>
+                            </div>
+                            <span class="bar-label">${bucket.label}</span>
+                            <span class="bar-value">${bucket.count}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    renderGradeTable(classId, diemSos) {
+        const gradesTableBody = document.querySelector('.grades-table tbody');
+        if (!gradesTableBody) {
+            return;
+        }
+
+        const list = Array.isArray(diemSos) ? diemSos : [];
+        if (list.length === 0) {
+            gradesTableBody.innerHTML = `
+                <tr class="placeholder-row">
+                    <td colspan="8" class="text-center">Chưa có điểm số cho lớp này.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const classInfo = this.getClassInfo(classId);
+        const classLabel = classInfo?.tenLop || `Lớp ${classId}`;
+
+        gradesTableBody.innerHTML = list.map((item, index) => {
+            const studentName = item.hoTen || item.tenHocSinh || 'Chưa cập nhật';
+            const studentEmail = item.email || item.emailHocSinh || '';
+            const studentPhone = item.soDienThoai || item.sdtHocSinh || '';
+            const studentId = item.idHs ?? item.hocSinhId ?? item.maHocSinh ?? `HS${index + 1}`;
+            const diem15 = this.formatScore(item.diem15Phut ?? item.diem15p);
+            const diem45 = this.formatScore(item.diem45Phut ?? item.diem45p);
+            const diemHK = this.formatScore(item.diemThiHK ?? item.diemThiHocKy ?? item.diemThi);
+            const diemTB = this.formatScore(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet);
+            const xepLoai = item.xepLoai || this.classifyScore(diemTB);
+            const badgeClass = this.getGradeBadgeClass(xepLoai, diemTB);
+            const initials = getInitials(studentName, studentEmail);
+
+            return `
+                <tr>
+                    <td>
+                        <div class="student-info">
+                            <div class="student-avatar">${this.escapeHtml(initials)}</div>
+                            <div class="student-meta">
+                                <strong>${this.escapeHtml(studentName)}</strong>
+                                ${studentEmail ? `<div class="student-sub">${this.escapeHtml(studentEmail)}</div>` : ''}
+                                ${studentPhone ? `<div class="student-sub">${this.escapeHtml(studentPhone)}</div>` : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td>${this.escapeHtml(classLabel)}</td>
+                    <td>
+                        <input type="number" class="grade-input-small"
+                               value="${diem15}"
+                               min="0" max="10" step="0.1"
+                               onchange="updateDiemSo('${classId}', '${studentId}', '15P', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" class="grade-input-small"
+                               value="${diem45}"
+                               min="0" max="10" step="0.1"
+                               onchange="updateDiemSo('${classId}', '${studentId}', '45P', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" class="grade-input-small"
+                               value="${diemHK}"
+                               min="0" max="10" step="0.1"
+                               onchange="updateDiemSo('${classId}', '${studentId}', 'HK', this.value)">
+                    </td>
+                    <td>${diemTB || '-'}</td>
+                    <td><span class="grade-badge ${badgeClass}">${this.escapeHtml(xepLoai || 'Chưa có')}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editGrade('${studentId}', '${classId}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    renderGradeEmptyState(message) {
+        const avgEl = document.getElementById('gradeAverageValue');
+        const totalEl = document.getElementById('gradeStudentCount');
+        const excellentEl = document.getElementById('gradeExcellentCount');
+        const needsSupportEl = document.getElementById('gradeNeedsSupportCount');
+        const chartContainer = document.getElementById('gradeDistribution');
+        const gradesTableBody = document.querySelector('.grades-table tbody');
+
+        if (avgEl) avgEl.textContent = '--';
+        if (totalEl) totalEl.textContent = '--';
+        if (excellentEl) excellentEl.textContent = '--';
+        if (needsSupportEl) needsSupportEl.textContent = '--';
+
+        if (chartContainer) {
+            chartContainer.innerHTML = `
+                <div class="empty-state">
+                    <p>${this.escapeHtml(message || 'Chưa có dữ liệu điểm để hiển thị.')}</p>
+                </div>
+            `;
+        }
+
+        if (gradesTableBody) {
+            gradesTableBody.innerHTML = `
+                <tr class="placeholder-row">
+                    <td colspan="8" class="text-center">${this.escapeHtml(message || 'Chưa có dữ liệu điểm để hiển thị.')}</td>
+                </tr>
+            `;
+        }
+    }
+
+    formatScore(value) {
+        if (value === null || value === undefined || value === '') {
+            return '';
+        }
+        const number = Number(value);
+        if (Number.isNaN(number)) {
+            return '';
+        }
+        return number % 1 === 0 ? number.toFixed(0) : number.toFixed(1);
+    }
+
+    classifyScore(scoreText) {
+        const score = Number(scoreText);
+        if (Number.isNaN(score)) {
+            return '';
+        }
+        if (score >= 8.5) return 'Giỏi';
+        if (score >= 7) return 'Khá';
+        if (score >= 5.5) return 'Trung bình';
+        if (score >= 4) return 'Yếu';
+        return 'Kém';
+    }
+
+    getGradeBadgeClass(label, scoreText) {
+        const normalized = (label || '').toLowerCase();
+        if (normalized.includes('giỏi') || normalized.includes('gioi')) {
+            return 'excellent';
+        }
+        if (normalized.includes('khá') || normalized.includes('kha') || normalized.includes('good')) {
+            return 'good';
+        }
+        if (normalized.includes('trung bình') || normalized.includes('trung binh') || normalized.includes('average')) {
+            return 'average';
+        }
+        if (normalized.includes('yếu') || normalized.includes('kem') || normalized.includes('poor') || normalized.includes('yeu')) {
+            return 'poor';
+        }
+
+        const score = Number(scoreText);
+        if (!Number.isNaN(score)) {
+            if (score >= 8) return 'excellent';
+            if (score >= 6.5) return 'good';
+            if (score >= 5) return 'average';
+            return 'poor';
+        }
+
+        return 'average';
     }
 
     initializeCalendar() {
@@ -431,73 +1548,287 @@ class TeacherDashboard {
         });
     }
 
-    loadDashboardData() {
+    async loadDashboardData() {
         // Load dashboard statistics and data
-        this.loadClassStatistics();
-        this.loadRecentActivities();
-        this.loadUpcomingClasses();
+        await this.loadClassStatistics();
+        await this.loadRecentActivities();
+        await this.loadUpcomingClasses();
+        await this.loadUngradedAssignments();
     }
-
-    loadClassStatistics() {
-        // Mock data for class statistics
-        const stats = {
-            totalClasses: 3,
-            totalStudents: 30,
-            averageGrade: 7.8,
-            attendanceRate: 95
-        };
-
-        // Update dashboard stats
-        this.updateElement('totalClasses', stats.totalClasses);
-        this.updateElement('totalStudents', stats.totalStudents);
-        this.updateElement('averageGrade', stats.averageGrade);
-        this.updateElement('attendanceRate', stats.attendanceRate);
-    }
-
-    loadRecentActivities() {
-        // Load recent activities data
-        const activities = [
-            { type: 'assignment', message: 'Đã tạo bài tập mới cho lớp Toán 10A1', time: '2 giờ trước' },
-            { type: 'grade', message: 'Đã chấm điểm bài kiểm tra lớp Toán 11B2', time: '4 giờ trước' },
-            { type: 'message', message: 'Nhận tin nhắn từ phụ huynh học sinh', time: '6 giờ trước' }
-        ];
-
-        const activitiesContainer = document.getElementById('recentActivities');
-        if (activitiesContainer) {
-            activitiesContainer.innerHTML = activities.map(activity => `
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas fa-${this.getActivityIcon(activity.type)}"></i>
-                    </div>
-                    <div class="activity-content">
-                        <p>${activity.message}</p>
-                        <span class="activity-time">${activity.time}</span>
-                    </div>
-                </div>
-            `).join('');
+    
+    async loadUngradedAssignments() {
+        try {
+            const authContext = getAuthContext();
+            if (!authContext?.payload?.user?.idNv) {
+                return;
+            }
+            
+            // Load all assignments
+            const baiTaps = await this.api.getBaiTapByGiaoVien(authContext.payload.user.idNv);
+            
+            // Count ungraded assignments
+            const ungradedCount = baiTaps.reduce((sum, bt) => {
+                const ungraded = (bt.soBaiNop || 0) - (bt.soBaiDaCham || 0);
+                return sum + (ungraded > 0 ? ungraded : 0);
+            }, 0);
+            
+            // Update ungraded assignments card
+            const statCards = document.querySelectorAll('.stat-card');
+            if (statCards.length >= 3) {
+                const ungradedCard = statCards[2];
+                const ungradedCountEl = ungradedCard.querySelector('h3');
+                if (ungradedCountEl) {
+                    ungradedCountEl.textContent = ungradedCount;
+                }
+            }
+            
+            // Update assignments to grade section
+            const assignmentList = document.querySelector('.assignment-list');
+            if (assignmentList) {
+                // Get assignments with ungraded submissions
+                const ungradedAssignments = baiTaps
+                    .filter(bt => (bt.soBaiNop || 0) > (bt.soBaiDaCham || 0))
+                    .slice(0, 2);
+                
+                if (ungradedAssignments.length === 0) {
+                    assignmentList.innerHTML = '<div class="empty-state"><p>Không có bài tập cần chấm</p></div>';
+                } else {
+                    assignmentList.innerHTML = ungradedAssignments.map(bt => {
+                        const progress = bt.soBaiNop > 0 ? Math.round((bt.soBaiDaCham / bt.soBaiNop) * 100) : 0;
+                        const endDate = bt.ngayKetThuc ? new Date(bt.ngayKetThuc) : null;
+                        const endStr = endDate ? endDate.toLocaleDateString('vi-VN') : 'Chưa có';
+                        
+                        return `
+                            <div class="assignment-item">
+                                <div class="assignment-info">
+                                    <h4>${bt.tieuDe || 'Chưa có tiêu đề'}</h4>
+                                    <p>${bt.tenLop || 'Chưa có lớp'} • ${bt.soBaiNop || 0} bài nộp</p>
+                                </div>
+                                <div class="assignment-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${progress}%"></div>
+                                    </div>
+                                    <span>${bt.soBaiDaCham || 0}/${bt.soBaiNop || 0}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading ungraded assignments:', error);
         }
     }
 
-    loadUpcomingClasses() {
-        // Load upcoming classes data
-        const upcomingClasses = [
-            { time: '8:00', subject: 'Toán 10A1', topic: 'Phương trình bậc hai', room: 'A101' },
-            { time: '10:00', subject: 'Toán 11B2', topic: 'Hệ phương trình', room: 'B202' },
-            { time: '14:00', subject: 'Toán 12C1', topic: 'Giải tích', room: 'C303' }
-        ];
+    async loadClassStatistics() {
+        try {
+            const authContext = getAuthContext();
+            if (!authContext?.payload?.user?.idNv) {
+                console.warn('Missing employee ID for loading classes');
+                return;
+            }
 
-        const upcomingContainer = document.getElementById('upcomingClasses');
-        if (upcomingContainer) {
-            upcomingContainer.innerHTML = upcomingClasses.map(cls => `
-                <div class="upcoming-class">
-                    <div class="class-time">${cls.time}</div>
-                    <div class="class-info">
-                        <h4>${cls.subject}</h4>
-                        <p>${cls.topic}</p>
-                        <span class="class-room">Phòng ${cls.room}</span>
+            // Load classes from API
+            const classes = await this.api.getTeacherClasses(authContext.payload.user.idNv);
+            
+            // Calculate statistics
+            const totalClasses = classes?.length || 0;
+            const totalStudents = classes?.reduce((sum, cls) => sum + (cls.soHocSinh || 0), 0) || 0;
+            this.cacheClasses(classes);
+            
+            // Update dashboard stats cards
+            const statCards = document.querySelectorAll('.stat-card');
+            if (statCards.length >= 2) {
+                // Update "Lớp học" card
+                const classCard = statCards[0];
+                const classCount = classCard.querySelector('h3');
+                if (classCount) {
+                    classCount.textContent = totalClasses;
+                }
+                
+                // Update "Học sinh" card
+                const studentCard = statCards[1];
+                const studentCount = studentCard.querySelector('h3');
+                if (studentCount) {
+                    studentCount.textContent = totalStudents;
+                }
+            }
+
+            // Load recent classes
+            this.loadRecentClasses(classes);
+            
+        } catch (error) {
+            console.error('Error loading class statistics:', error);
+            showNotification('Không thể tải thống kê lớp học. Vui lòng thử lại sau.', 'error');
+        }
+    }
+
+    loadRecentClasses(classes) {
+        if (!classes || classes.length === 0) {
+            return;
+        }
+
+        // Sort classes by start date (most recent first)
+        const sortedClasses = [...classes].sort((a, b) => {
+            const dateA = new Date(a.ngayBatDau || 0);
+            const dateB = new Date(b.ngayBatDau || 0);
+            return dateB - dateA;
+        });
+
+        // Take first 3 classes
+        const recentClasses = sortedClasses.slice(0, 3);
+
+        // Update "Lớp học gần đây" section
+        const classList = document.querySelector('.class-list');
+        if (classList) {
+            const now = new Date();
+            
+            classList.innerHTML = recentClasses.map(cls => {
+                const startDate = cls.ngayBatDau ? new Date(cls.ngayBatDau) : null;
+                let statusClass = 'completed';
+                let statusText = 'Đã hoàn thành';
+                
+                if (startDate) {
+                    const diffTime = startDate - now;
+                    const diffHours = diffTime / (1000 * 60 * 60);
+                    
+                    if (diffHours > 0 && diffHours < 24) {
+                        statusClass = 'upcoming';
+                        statusText = 'Sắp tới';
+                    } else if (diffHours <= 0 && diffHours > -2) {
+                        statusClass = 'active';
+                        statusText = 'Đang dạy';
+                    }
+                }
+                
+                // Format date
+                const dateStr = startDate ? startDate.toLocaleDateString('vi-VN') : 'Chưa có';
+                const timeStr = startDate ? startDate.toLocaleTimeString('vi-VN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                }) : '';
+                
+                return `
+                    <div class="class-item">
+                        <div class="class-info">
+                            <h4>${cls.tenLop || 'Chưa có tên'}</h4>
+                            <p>${cls.soHocSinh || 0} học sinh • ${dateStr} ${timeStr ? `• ${timeStr}` : ''}</p>
+                        </div>
+                        <div class="class-status">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+    }
+
+    async loadRecentActivities() {
+        try {
+            const authContext = getAuthContext();
+            if (!authContext?.payload?.user?.idNv) {
+                return;
+            }
+            
+            // Load recent assignments
+            const baiTaps = await this.api.getBaiTapByGiaoVien(authContext.payload.user.idNv);
+            
+            // Sort by date and take recent 3
+            const recentBaiTaps = baiTaps
+                .sort((a, b) => new Date(b.ngayBatDau || 0) - new Date(a.ngayBatDau || 0))
+                .slice(0, 3);
+            
+            const activities = recentBaiTaps.map(bt => ({
+                type: 'assignment',
+                message: `Đã tạo ${window.getLoaiBaiTapLabel ? window.getLoaiBaiTapLabel(bt.loaiBt) : bt.loaiBt}: ${bt.tieuDe}`,
+                time: bt.ngayBatDau ? this.getTimeAgo(new Date(bt.ngayBatDau)) : 'Chưa có'
+            }));
+            
+            const activitiesContainer = document.getElementById('recentActivities');
+            if (activitiesContainer) {
+                if (activities.length === 0) {
+                    activitiesContainer.innerHTML = '<div class="empty-state"><p>Chưa có hoạt động gần đây</p></div>';
+                } else {
+                    activitiesContainer.innerHTML = activities.map(activity => `
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-${this.getActivityIcon(activity.type)}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>${activity.message}</p>
+                                <span class="activity-time">${activity.time}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading recent activities:', error);
+        }
+    }
+    
+    getTimeAgo(date) {
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        
+        if (days > 0) return `${days} ngày trước`;
+        if (hours > 0) return `${hours} giờ trước`;
+        if (minutes > 0) return `${minutes} phút trước`;
+        return 'Vừa xong';
+    }
+
+    async loadUpcomingClasses() {
+        try {
+            const authContext = getAuthContext();
+            if (!authContext?.payload?.user?.idNv) {
+                return;
+            }
+            
+            // Load today's schedule
+            const buoiHocs = await this.api.getBuoiHocByGiaoVien(authContext.payload.user.idNv);
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            // Filter upcoming classes for today
+            const upcomingClasses = buoiHocs
+                .filter(bh => {
+                    if (!bh.ngayHoc || !bh.gioBatDau) return false;
+                    const sessionDate = new Date(bh.ngayHoc);
+                    sessionDate.setHours(0, 0, 0, 0);
+                    return sessionDate.getTime() === today.getTime() && new Date(bh.gioBatDau) > now;
+                })
+                .sort((a, b) => new Date(a.gioBatDau) - new Date(b.gioBatDau))
+                .slice(0, 3);
+            
+            const upcomingContainer = document.getElementById('upcomingClasses');
+            if (upcomingContainer) {
+                if (upcomingClasses.length === 0) {
+                    upcomingContainer.innerHTML = '<div class="empty-state"><p>Không có lớp học sắp tới hôm nay</p></div>';
+                } else {
+                    upcomingContainer.innerHTML = upcomingClasses.map(bh => {
+                        const gioBatDau = bh.gioBatDau ? new Date(bh.gioBatDau) : null;
+                        const timeStr = gioBatDau ? gioBatDau.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
+                        
+                        return `
+                            <div class="upcoming-class">
+                                <div class="class-time">${timeStr}</div>
+                                <div class="class-info">
+                                    <h4>${bh.tenLop || 'Chưa có tên'}</h4>
+                                    <p>${bh.tenCaHoc || 'Chưa có'}</p>
+                                    <span class="class-room">${bh.tenPhong || 'Chưa có phòng'}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading upcoming classes:', error);
         }
     }
 
@@ -551,6 +1882,30 @@ class TeacherDashboard {
             attendance: 'user-check'
         };
         return icons[type] || 'info-circle';
+    }
+    
+    async loadClassFilterOptions() {
+        try {
+            const authContext = getAuthContext();
+            if (!authContext?.payload?.user?.idNv) {
+                return;
+            }
+            
+            const classes = await this.api.getTeacherClasses(authContext.payload.user.idNv);
+            const classFilter = document.getElementById('classFilter');
+            
+            if (classFilter && classes) {
+                const currentValue = classFilter.value;
+                classFilter.innerHTML = '<option value="">Tất cả lớp</option>' + 
+                    classes.map(c => `<option value="${c.idLh}">${c.tenLop}</option>`).join('');
+                
+                if (currentValue) {
+                    classFilter.value = currentValue;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading class filter options:', error);
+        }
     }
 }
 
@@ -634,20 +1989,53 @@ class RealTimeSchedule {
         const now = new Date();
         const currentTime = now.getHours() * 60 + now.getMinutes();
         
+        if (!this.scheduleData || !Array.isArray(this.scheduleData)) {
+            return;
+        }
+        
         this.scheduleData.forEach(item => {
-            const [startTime, endTime] = item.time.split(' - ');
-            const [startHour, startMin] = startTime.split(':').map(Number);
-            const [endHour, endMin] = endTime.split(':').map(Number);
+            // Validate item.time exists and is a string
+            if (!item || !item.time || typeof item.time !== 'string') {
+                return; // Skip invalid items
+            }
             
-            const startMinutes = startHour * 60 + startMin;
-            const endMinutes = endHour * 60 + endMin;
-            
-            if (currentTime >= startMinutes && currentTime <= endMinutes) {
-                item.status = 'active';
-            } else if (currentTime < startMinutes) {
-                item.status = 'upcoming';
-            } else {
-                item.status = 'completed';
+            try {
+                // Support both '8:00-9:30' and '8:00 - 9:30' formats
+                const timeParts = item.time.includes(' - ') 
+                    ? item.time.split(' - ') 
+                    : item.time.split('-');
+                if (timeParts.length !== 2) {
+                    return; // Skip invalid time format
+                }
+                
+                const [startTime, endTime] = timeParts;
+                const startParts = startTime.split(':');
+                const endParts = endTime.split(':');
+                
+                if (startParts.length !== 2 || endParts.length !== 2) {
+                    return; // Skip invalid time format
+                }
+                
+                const [startHour, startMin] = startParts.map(Number);
+                const [endHour, endMin] = endParts.map(Number);
+                
+                // Validate numbers are valid
+                if (isNaN(startHour) || isNaN(startMin) || isNaN(endHour) || isNaN(endMin)) {
+                    return; // Skip invalid numbers
+                }
+                
+                const startMinutes = startHour * 60 + startMin;
+                const endMinutes = endHour * 60 + endMin;
+                
+                if (currentTime >= startMinutes && currentTime <= endMinutes) {
+                    item.status = 'active';
+                } else if (currentTime < startMinutes) {
+                    item.status = 'upcoming';
+                } else {
+                    item.status = 'completed';
+                }
+            } catch (error) {
+                console.warn('Error processing schedule item:', item, error);
             }
         });
     }
@@ -1720,6 +3108,13 @@ window.sendReply = function(messageId) {
     closeReplyModal();
 };
 
+function closeProfileModal() {
+    const modal = document.getElementById('profileModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
 window.closeReplyModal = function() {
     const modal = document.getElementById('replyModal');
     if (modal) {
@@ -1807,6 +3202,16 @@ window.showNotification = function(message, type = 'info') {
 // ===== NAVIGATION HANDLER =====
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Setting up navigation...');
+
+    const authContext = getAuthContext();
+    if (!authContext) {
+        return;
+    }
+    applyAuthProfileToUI(authContext.payload);
+    setupUserMenuInteractions();
+    registerLogoutHandler();
+    wireProfileModalEvents();
+    loadAndRenderTeacherProfile();
     
     // Sidebar navigation
     const navItems = document.querySelectorAll('.nav-item');
@@ -1860,10 +3265,85 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     console.log('Navigation setup complete!');
+    window.__DISABLE_LEGACY_TEACHER_DEMO__ = true;
     
     // Initialize dashboard
     if (typeof window.teacherDashboard === 'undefined') {
         window.teacherDashboard = new TeacherDashboard();
+    }
+    
+    // Ensure sidebar toggle works (backup event listener)
+    const sidebarToggleBtn = document.getElementById('sidebarToggle');
+    if (sidebarToggleBtn) {
+        console.log('Sidebar toggle button found, setting up event listener');
+        
+        // Remove any existing listeners by cloning
+        const newBtn = sidebarToggleBtn.cloneNode(true);
+        sidebarToggleBtn.parentNode.replaceChild(newBtn, sidebarToggleBtn);
+        
+        // Verify icon exists
+        const icon = newBtn.querySelector('i');
+        if (icon) {
+            console.log('Icon found in toggle button:', icon.className);
+        } else {
+            console.warn('Icon not found in toggle button, creating one');
+            const newIcon = document.createElement('i');
+            newIcon.className = 'fas fa-angle-left';
+            newBtn.appendChild(newIcon);
+        }
+        
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Sidebar toggle clicked');
+            
+            // Try using TeacherDashboard instance first
+            if (window.teacherDashboard && typeof window.teacherDashboard.toggleSidebar === 'function') {
+                try {
+                    console.log('Using TeacherDashboard.toggleSidebar');
+                    window.teacherDashboard.toggleSidebar();
+                    return;
+                } catch (error) {
+                    console.error('Error in TeacherDashboard.toggleSidebar:', error);
+                }
+            }
+            
+            // Fallback: direct toggle
+            try {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                const currentIcon = newBtn.querySelector('i');
+                
+                if (sidebar && mainContent) {
+                    const isCollapsed = sidebar.classList.contains('collapsed');
+                    console.log('Sidebar collapsed state:', isCollapsed);
+                    
+                    if (isCollapsed) {
+                        sidebar.classList.remove('collapsed');
+                        mainContent.classList.remove('sidebar-collapsed');
+                        if (currentIcon) {
+                            currentIcon.className = 'fas fa-angle-left';
+                            console.log('Icon changed to fa-angle-left');
+                        }
+                    } else {
+                        sidebar.classList.add('collapsed');
+                        mainContent.classList.add('sidebar-collapsed');
+                        if (currentIcon) {
+                            currentIcon.className = 'fas fa-angle-right';
+                            console.log('Icon changed to fa-angle-right');
+                        }
+                    }
+                } else {
+                    console.error('Sidebar or mainContent not found');
+                }
+            } catch (error) {
+                console.error('Error in fallback sidebar toggle:', error);
+            }
+        });
+        
+        console.log('Sidebar toggle event listener attached');
+    } else {
+        console.error('Sidebar toggle button not found!');
     }
     
     // Initialize real-time components

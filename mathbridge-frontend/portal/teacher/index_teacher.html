@@ -6,12 +6,209 @@
     <title>Teacher Dashboard - MathBridge</title>
     <link rel="stylesheet" href="../assets/css/teacher-dashboard.css">
     <style>
-        /* Fallback styles if CSS doesn't load */
+        /* Fallback styles nếu file CSS chính không tải được */
         .sidebar { background: #1e293b; color: white; }
         .content-section { display: none; }
         .content-section.active { display: block; }
         .nav-item { cursor: pointer; }
         .btn { cursor: pointer; }
+
+        /* Lightweight styles cho danh sách học sinh trong modal khi thiếu CSS */
+        .students-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .students-summary .summary-item {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .students-summary .summary-number {
+            display: block;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .students-summary .summary-label {
+            font-size: 13px;
+            color: #64748b;
+        }
+        .students-card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .student-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+        }
+        .student-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+        .student-card-body {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .student-avatar.large {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+        .student-card-info {
+            flex: 1;
+        }
+        .student-card-info .student-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .student-card-info .student-meta {
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .student-card-footer {
+            margin-top: 16px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .student-card-footer .btn {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+        .student-order {
+            font-weight: 600;
+            letter-spacing: 0.08em;
+        }
+        .grade-class-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .class-filter-chip {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 16px;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .class-filter-chip strong {
+            font-size: 14px;
+            color: #0f172a;
+        }
+        .class-filter-chip span {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .class-filter-chip.active {
+            border-color: #ef4444;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.18);
+        }
+        .grade-stats-grid .grade-stat-card h3 {
+            font-size: 24px;
+            margin: 0;
+        }
+        .grade-stats-grid .grade-stat-card p {
+            margin: 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .grade-distribution-bars {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: inset 0 0 0 1px #e2e8f0;
+        }
+        .grade-distribution-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .grade-distribution-bar .bar-track {
+            width: 100%;
+            height: 120px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+        .grade-distribution-bar .bar-fill {
+            width: 100%;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #ef4444, #be123c);
+        }
+        .grade-distribution-bar .bar-label {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .grade-distribution-bar .bar-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .assignment-reference {
+            margin-top: 12px;
+        }
+        .assignment-reference .assignment-ref-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #ef4444;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .assignment-reference .assignment-ref-link i {
+            font-size: 14px;
+        }
+        .assignment-reference .assignment-ref-text {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 10px 12px;
+            color: #1e293b;
+            font-size: 13px;
+            line-height: 1.5;
+        }
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,7 +222,7 @@
                 <span>MathBridge</span>
             </div>
             <button class="sidebar-toggle" id="sidebarToggle">
-                <i class="fas fa-bars"></i>
+                <i class="fas fa-angle-left"></i>
             </button>
         </div>
         
@@ -108,13 +305,37 @@
                     </button>
                 </div>
                 <div class="user-menu">
-                    <button class="user-menu-btn" id="userMenuBtn">
-                        <div class="user-avatar-small">
+                    <button class="user-menu-btn" id="userMenuBtn" type="button">
+                        <div class="user-avatar-small" id="headerAvatar">
                             <i class="fas fa-user"></i>
                         </div>
-                        <span>Nguyễn Văn A</span>
+                        <span id="headerDisplayName">Giáo viên</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="profile-summary">
+                            <div class="avatar-lg" id="dropdownAvatar">GV</div>
+                            <div class="info">
+                                <span class="name" id="dropdownName">Giáo viên MathBridge</span>
+                                <span class="role" id="dropdownRole">Giáo viên</span>
+                                <span class="email" id="dropdownEmail">teacher@mathbridge.vn</span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button type="button" id="openProfileModal">
+                                <i class="fas fa-user-edit"></i>
+                                Cập nhật thông tin cá nhân
+                            </button>
+                            <button type="button" id="viewProfileBtn">
+                                <i class="fas fa-id-card-alt"></i>
+                                Xem hồ sơ chi tiết
+                            </button>
+                            <button type="button" class="danger" id="logoutMenuBtn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Đăng xuất
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -170,32 +391,8 @@
                         </div>
                         <div class="card-content">
                             <div class="class-list">
-                                <div class="class-item">
-                                    <div class="class-info">
-                                        <h4>Toán 10A1</h4>
-                                        <p>45 học sinh • 8:00 - 9:30</p>
-                                    </div>
-                                    <div class="class-status">
-                                        <span class="status-badge active">Đang dạy</span>
-                                    </div>
-                                </div>
-                                <div class="class-item">
-                                    <div class="class-info">
-                                        <h4>Toán 11B2</h4>
-                                        <p>42 học sinh • 10:00 - 11:30</p>
-                                    </div>
-                                    <div class="class-status">
-                                        <span class="status-badge upcoming">Sắp tới</span>
-                                    </div>
-                                </div>
-                                <div class="class-item">
-                                    <div class="class-info">
-                                        <h4>Toán 12C1</h4>
-                                        <p>38 học sinh • 14:00 - 15:30</p>
-                                    </div>
-                                    <div class="class-status">
-                                        <span class="status-badge completed">Đã hoàn thành</span>
-                                    </div>
+                                <div class="empty-state">
+                                    <p>Đang tải lớp học gần đây...</p>
                                 </div>
                             </div>
                         </div>
@@ -208,29 +405,8 @@
                         </div>
                         <div class="card-content">
                             <div class="assignment-list">
-                                <div class="assignment-item">
-                                    <div class="assignment-info">
-                                        <h4>Bài tập Đại số</h4>
-                                        <p>Lớp 10A1 • 25 bài nộp</p>
-                                    </div>
-                                    <div class="assignment-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 60%"></div>
-                                        </div>
-                                        <span>15/25</span>
-                                    </div>
-                                </div>
-                                <div class="assignment-item">
-                                    <div class="assignment-info">
-                                        <h4>Kiểm tra Hình học</h4>
-                                        <p>Lớp 11B2 • 40 bài nộp</p>
-                                    </div>
-                                    <div class="assignment-progress">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 30%"></div>
-                                        </div>
-                                        <span>12/40</span>
-                                    </div>
+                                <div class="empty-state">
+                                    <p>Đang tải bài tập cần chấm...</p>
                                 </div>
                             </div>
                         </div>
@@ -263,130 +439,8 @@
                 </div>
                 
                 <div class="classes-grid">
-                    <div class="class-card">
-                        <div class="class-header">
-                            <h3>Toán 10A1</h3>
-                            <div class="class-actions">
-                                <button class="btn-icon" title="Xem học sinh" onclick="viewClassStudents(1)">
-                                    <i class="fas fa-users"></i>
-                                </button>
-                                <button class="btn-icon" title="Điểm danh & Chấm điểm" onclick="openClassManagement(1)">
-                                    <i class="fas fa-clipboard-check"></i>
-                                </button>
-                                <button class="btn-icon" title="Xóa" onclick="deleteClass(1)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="class-body">
-                            <div class="class-stats">
-                                <div class="stat">
-                                    <span class="stat-value">45</span>
-                                    <span class="stat-label">HỌC SINH</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value">8.5</span>
-                                    <span class="stat-label">ĐIỂM TB</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value">95%</span>
-                                    <span class="stat-label">THAM GIA</span>
-                                </div>
-                            </div>
-                            <div class="class-schedule">
-                                <p><i class="fas fa-clock"></i> Thứ 2, 4, 6 - 8:00-9:30</p>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng A101</p>
-                            </div>
-                            <div class="class-actions-full">
-                                <button class="btn btn-sm btn-primary" onclick="viewClassDetails(1)">
-                                    <i class="fas fa-eye"></i> Xem chi tiết
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="class-card">
-                        <div class="class-header">
-                            <h3>Toán 11B2</h3>
-                            <div class="class-actions">
-                                <button class="btn-icon" title="Xem học sinh" onclick="viewClassStudents(2)">
-                                    <i class="fas fa-users"></i>
-                                </button>
-                                <button class="btn-icon" title="Điểm danh & Chấm điểm" onclick="openClassManagement(2)">
-                                    <i class="fas fa-clipboard-check"></i>
-                                </button>
-                                <button class="btn-icon" title="Xóa" onclick="deleteClass(2)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="class-body">
-                            <div class="class-stats">
-                                <div class="stat">
-                                    <span class="stat-value">42</span>
-                                    <span class="stat-label">HỌC SINH</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value">8.2</span>
-                                    <span class="stat-label">ĐIỂM TB</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value">92%</span>
-                                    <span class="stat-label">THAM GIA</span>
-                                </div>
-                            </div>
-                            <div class="class-schedule">
-                                <p><i class="fas fa-clock"></i> Thứ 3, 5, 7 - 10:00-11:30</p>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng B205</p>
-                            </div>
-                            <div class="class-actions-full">
-                                <button class="btn btn-sm btn-primary" onclick="viewClassDetails(2)">
-                                    <i class="fas fa-eye"></i> Xem chi tiết
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="class-card">
-                        <div class="class-header">
-                            <h3>Toán 12C1</h3>
-                            <div class="class-actions">
-                                <button class="btn-icon" title="Xem học sinh" onclick="viewClassStudents(3)">
-                                    <i class="fas fa-users"></i>
-                                </button>
-                                <button class="btn-icon" title="Điểm danh & Chấm điểm" onclick="openClassManagement(3)">
-                                    <i class="fas fa-clipboard-check"></i>
-                                </button>
-                                <button class="btn-icon" title="Xóa" onclick="deleteClass(3)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="class-body">
-                            <div class="class-stats">
-                                <div class="stat">
-                                    <span class="stat-value">38</span>
-                                    <span class="stat-label">HỌC SINH</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value">8.8</span>
-                                    <span class="stat-label">ĐIỂM TB</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-value">98%</span>
-                                    <span class="stat-label">THAM GIA</span>
-                                </div>
-                            </div>
-                            <div class="class-schedule">
-                                <p><i class="fas fa-clock"></i> Thứ 2, 4, 6 - 14:00-15:30</p>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng C301</p>
-                            </div>
-                            <div class="class-actions-full">
-                                <button class="btn btn-sm btn-primary" onclick="viewClassDetails(3)">
-                                    <i class="fas fa-eye"></i> Xem chi tiết
-                                </button>
-                            </div>
-                        </div>
+                    <div class="empty-state">
+                        <p>Đang tải danh sách lớp học...</p>
                     </div>
                 </div>
             </section>
@@ -417,34 +471,8 @@
                 </div>
                 
                 <div class="assignments-grid">
-                    <div class="assignment-card">
-                        <div class="assignment-header">
-                            <h3>Bài tập Đại số tuần 1</h3>
-                            <div class="assignment-actions">
-                                <button class="btn-icon" title="Chỉnh sửa">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-icon" title="Xóa">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="assignment-body">
-                            <div class="assignment-meta">
-                                <p><i class="fas fa-chalkboard-teacher"></i> Lớp 10A1</p>
-                                <p><i class="fas fa-calendar"></i> Hạn nộp: 15/12/2024</p>
-                                <p><i class="fas fa-clock"></i> Thời gian: 60 phút</p>
-                            </div>
-                            <div class="assignment-progress">
-                                <div class="progress-info">
-                                    <span>25/45 học sinh đã nộp</span>
-                                    <span>56%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 56%"></div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="empty-state">
+                        <p>Đang tải danh sách bài tập...</p>
                     </div>
                 </div>
             </section>
@@ -456,9 +484,6 @@
                     <div class="header-actions">
                         <select class="form-select" id="classFilter" onchange="filterGradesByClass(this.value)">
                             <option value="">Tất cả lớp</option>
-                            <option value="10A1">10A1</option>
-                            <option value="11B2">11B2</option>
-                            <option value="12C1">12C1</option>
                         </select>
                         <button class="btn btn-secondary" onclick="importGrades()">
                             <i class="fas fa-upload"></i>
@@ -470,7 +495,13 @@
                         </button>
                     </div>
                 </div>
-                
+
+                <div class="grade-class-filters" id="gradeClassFilters">
+                    <div class="empty-state">
+                        <p>Đang tải danh sách lớp...</p>
+                    </div>
+                </div>
+
                 <!-- Grade Statistics -->
                 <div class="grade-stats-grid">
                     <div class="grade-stat-card">
@@ -478,7 +509,7 @@
                             <i class="fas fa-chart-line"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>8.2</h3>
+                            <h3 id="gradeAverageValue">--</h3>
                             <p>Điểm trung bình</p>
                         </div>
                     </div>
@@ -487,8 +518,8 @@
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>125</h3>
-                            <p>Tổng học sinh</p>
+                            <h3 id="gradeStudentCount">--</h3>
+                            <p>Số học sinh</p>
                         </div>
                     </div>
                     <div class="grade-stat-card">
@@ -496,7 +527,7 @@
                             <i class="fas fa-trophy"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>15</h3>
+                            <h3 id="gradeExcellentCount">--</h3>
                             <p>Học sinh giỏi</p>
                         </div>
                     </div>
@@ -505,8 +536,8 @@
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>8</h3>
-                            <p>Cần cải thiện</p>
+                            <h3 id="gradeNeedsSupportCount">--</h3>
+                            <p>Cần hỗ trợ</p>
                         </div>
                     </div>
                 </div>
@@ -514,28 +545,9 @@
                 <!-- Grade Chart Placeholder -->
                 <div class="grades-chart">
                     <h3>Biểu đồ phân bố điểm số</h3>
-                    <div class="chart-placeholder">
-                        <div class="chart-bars">
-                            <div class="chart-bar" style="height: 20%;">
-                                <span class="bar-label">0-2</span>
-                                <span class="bar-value">5</span>
-                            </div>
-                            <div class="chart-bar" style="height: 35%;">
-                                <span class="bar-label">2-4</span>
-                                <span class="bar-value">12</span>
-                            </div>
-                            <div class="chart-bar" style="height: 60%;">
-                                <span class="bar-label">4-6</span>
-                                <span class="bar-value">25</span>
-                            </div>
-                            <div class="chart-bar" style="height: 80%;">
-                                <span class="bar-label">6-8</span>
-                                <span class="bar-value">45</span>
-                            </div>
-                            <div class="chart-bar" style="height: 100%;">
-                                <span class="bar-label">8-10</span>
-                                <span class="bar-value">38</span>
-                            </div>
+                    <div class="chart-placeholder" id="gradeDistribution">
+                        <div class="empty-state">
+                            <p>Chưa có dữ liệu điểm để hiển thị.</p>
                         </div>
                     </div>
                 </div>
@@ -558,68 +570,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="student-info">
-                                            <div class="student-avatar">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <span>Nguyễn Văn An</span>
-                                        </div>
-                                    </td>
-                                    <td>10A1</td>
-                                    <td>8.5</td>
-                                    <td>9.0</td>
-                                    <td>8.8</td>
-                                    <td>8.8</td>
-                                    <td><span class="grade-badge excellent">Giỏi</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary" onclick="editGrade(1)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="student-info">
-                                            <div class="student-avatar">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <span>Trần Thị Bình</span>
-                                        </div>
-                                    </td>
-                                    <td>10A1</td>
-                                    <td>7.5</td>
-                                    <td>8.0</td>
-                                    <td>7.8</td>
-                                    <td>7.8</td>
-                                    <td><span class="grade-badge good">Khá</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary" onclick="editGrade(2)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="student-info">
-                                            <div class="student-avatar">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <span>Lê Văn Cường</span>
-                                        </div>
-                                    </td>
-                                    <td>11B2</td>
-                                    <td>6.0</td>
-                                    <td>5.5</td>
-                                    <td>6.2</td>
-                                    <td>5.9</td>
-                                    <td><span class="grade-badge average">Trung bình</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary" onclick="editGrade(3)">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </td>
+                                <tr class="placeholder-row">
+                                    <td colspan="8" class="text-center">Vui lòng chọn lớp để xem điểm số.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -712,69 +664,10 @@
 
                 <!-- Today's Schedule -->
                 <div class="today-schedule">
-                    <h3><i class="fas fa-calendar-day"></i> Lịch dạy hôm nay (17/12/2024)</h3>
+                    <h3><i class="fas fa-calendar-day"></i> Lịch dạy hôm nay</h3>
                     <div class="schedule-list">
-                        <div class="schedule-item">
-                            <div class="schedule-time">
-                                <span class="time">8:00 - 9:30</span>
-                                <span class="duration">90 phút</span>
-                            </div>
-                            <div class="schedule-details">
-                                <h4>Toán 10A1 - Đại số</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng A101</p>
-                                <p><i class="fas fa-users"></i> 45 học sinh</p>
-                                <span class="status-badge active">Đang dạy</span>
-                            </div>
-                            <div class="schedule-actions">
-                                <button class="btn btn-sm btn-primary" onclick="startClass(1)">
-                                    <i class="fas fa-play"></i> Bắt đầu
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="viewClassDetails(1)">
-                                    <i class="fas fa-info"></i> Chi tiết
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="schedule-item">
-                            <div class="schedule-time">
-                                <span class="time">10:00 - 11:30</span>
-                                <span class="duration">90 phút</span>
-                            </div>
-                            <div class="schedule-details">
-                                <h4>Toán 11B2 - Hình học</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng B205</p>
-                                <p><i class="fas fa-users"></i> 42 học sinh</p>
-                                <span class="status-badge upcoming">Sắp tới</span>
-                            </div>
-                            <div class="schedule-actions">
-                                <button class="btn btn-sm btn-primary" onclick="startClass(2)">
-                                    <i class="fas fa-play"></i> Bắt đầu
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="viewClassDetails(2)">
-                                    <i class="fas fa-info"></i> Chi tiết
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="schedule-item">
-                            <div class="schedule-time">
-                                <span class="time">14:00 - 15:30</span>
-                                <span class="duration">90 phút</span>
-                            </div>
-                            <div class="schedule-details">
-                                <h4>Toán 12C1 - Luyện đề</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng C301</p>
-                                <p><i class="fas fa-users"></i> 38 học sinh</p>
-                                <span class="status-badge completed">Đã hoàn thành</span>
-                            </div>
-                            <div class="schedule-actions">
-                                <button class="btn btn-sm btn-success" onclick="viewClassDetails(3)">
-                                    <i class="fas fa-check"></i> Xem kết quả
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="reviewClass(3)">
-                                    <i class="fas fa-eye"></i> Đánh giá
-                                </button>
-                            </div>
+                        <div class="empty-state">
+                            <p>Đang tải lịch dạy hôm nay...</p>
                         </div>
                     </div>
                 </div>
@@ -990,6 +883,78 @@
     </div>
 
     <!-- Modals -->
+    <div class="modal profile-modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Thông tin cá nhân</h3>
+                <button class="modal-close" type="button" id="closeProfileModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-overview">
+                    <div class="avatar" id="profileModalAvatar">GV</div>
+                    <div class="meta">
+                        <span class="name" id="profileModalName">Giáo viên MathBridge</span>
+                        <span class="email" id="profileModalEmail">teacher@mathbridge.vn</span>
+                        <span class="helper" id="profileModalCampus">Cơ sở: MathBridge Center</span>
+                    </div>
+                </div>
+                <form class="profile-form" id="profileForm">
+                    <div class="group-title">Thông tin cơ bản</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="profileHo">Họ</label>
+                            <input type="text" id="profileHo" name="ho" placeholder="VD: Nguyễn">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileTenDem">Tên đệm</label>
+                            <input type="text" id="profileTenDem" name="tenDem" placeholder="VD: Văn">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="profileTen">Tên</label>
+                            <input type="text" id="profileTen" name="ten" placeholder="VD: Huy">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileGioiTinh">Giới tính</label>
+                            <select id="profileGioiTinh" name="gioiTinh">
+                                <option value="">Chọn giới tính</option>
+                                <option value="true">Nam</option>
+                                <option value="false">Nữ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="group-title">Liên hệ & Chuyên môn</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="profileSdt">Số điện thoại</label>
+                            <input type="tel" id="profileSdt" name="sdt" placeholder="VD: 0901 234 567">
+                        </div>
+                        <div class="form-group">
+                            <label for="profileKinhNghiem">Kinh nghiệm (năm)</label>
+                            <input type="number" min="0" id="profileKinhNghiem" name="kinhNghiem" placeholder="VD: 5">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileChuyenMon">Chuyên môn</label>
+                        <input type="text" id="profileChuyenMon" name="chuyenMon" placeholder="VD: Đại số nâng cao">
+                    </div>
+                    <span class="helper">Thông tin này dùng để hiển thị trên portal giáo viên và hỗ trợ phụ huynh liên hệ nhanh chóng.</span>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" type="button" id="cancelProfileChanges">Đóng</button>
+                <button class="btn btn-brand" type="button" id="saveProfileChanges">
+                    <i class="fas fa-save"></i>
+                    Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal" id="addClassModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1031,6 +996,7 @@
     </div>
 
     <script src="../assets/js/teacher-main.js"></script>
+    <script src="../assets/js/teacher-functions.js"></script>
     
 
     <!-- Students Modal -->
@@ -1276,8 +1242,10 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../assets/js/teacher-dashboard.js"></script>
     <script>
+        if (window.__DISABLE_LEGACY_TEACHER_DEMO__) {
+            console.debug('Legacy teacher demo script skipped');
+        } else {
         // Debug script to check if everything is loaded
         console.log('=== DEBUG SCRIPT LOADED ===');
         console.log('TeacherDashboard:', typeof window.TeacherDashboard);
@@ -1370,15 +1338,16 @@
             alert('Xóa lớp ' + classId + ' - Chức năng đã hoạt động!');
         };
         
-        // Assignment functions
-        window.createAssignment = function() {
-            console.log('createAssignment called');
-            alert('Tạo bài tập - Chức năng đã hoạt động!');
-        };
+        // Assignment functions - now handled by teacher-functions.js
         
-        window.assignToStudents = function() {
+        window.assignToStudents = async function() {
             console.log('assignToStudents called');
-            alert('Giao cho học sinh - Chức năng đã hoạt động!');
+            // Open create assignment modal
+            if (typeof createAssignment === 'function') {
+                createAssignment();
+            } else {
+                showNotification('Vui lòng chọn lớp học để giao bài tập', 'info');
+            }
         };
         
         window.bulkGradeAssignments = function() {
@@ -1402,10 +1371,7 @@
             alert('Lọc điểm số - Chức năng đã hoạt động!');
         };
         
-        window.exportGrades = function() {
-            console.log('exportGrades called');
-            alert('Xuất điểm số - Chức năng đã hoạt động!');
-        };
+        // exportGrades is now in teacher-functions.js
         
         window.generateGradeReport = function() {
             console.log('generateGradeReport called');
@@ -1417,9 +1383,15 @@
             alert('Gửi thông báo điểm - Chức năng đã hoạt động!');
         };
         
-        window.editGrade = function(gradeId) {
-            console.log('editGrade called with:', gradeId);
-            alert('Chỉnh sửa điểm ' + gradeId + ' - Chức năng đã hoạt động!');
+        window.editGrade = function(studentId, classId) {
+            console.log('editGrade called with:', studentId, classId);
+            // Navigate to grades section and filter by class
+            if (window.teacherDashboard) {
+                window.teacherDashboard.navigateToSection('grades');
+            }
+            if (typeof viewDiemSo === 'function') {
+                viewDiemSo(classId);
+            }
         };
         
         window.deleteGrade = function(gradeId) {
@@ -1463,9 +1435,13 @@
         };
         
         // Grade filter and import functions
-        window.filterGradesByClass = function(className) {
+        window.filterGradesByClass = async function(className) {
             console.log('filterGradesByClass called with:', className);
-            alert('Lọc điểm theo lớp ' + className + ' - Chức năng đã hoạt động!');
+            if (className && typeof viewDiemSo === 'function') {
+                await viewDiemSo(className);
+            } else {
+                showNotification('Vui lòng chọn lớp học', 'warning');
+            }
         };
         
         window.importGrades = function() {
@@ -4024,6 +4000,7 @@ Lớp 12C1: 38 học sinh, ĐTB: 8.1, Tỷ lệ tham gia: 90%`;
         });
         
         console.log('=== DEBUG SCRIPT COMPLETED ===');
+        }
     </script>
 </body>
 </html>
