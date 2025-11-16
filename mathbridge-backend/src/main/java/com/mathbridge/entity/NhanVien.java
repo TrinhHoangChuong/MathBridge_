@@ -69,6 +69,10 @@ public class NhanVien {
     @OneToMany(mappedBy = "nhanVien", fetch = FetchType.LAZY)
     private List<HopDong> hopDongs = new ArrayList<>();
 
+    // 1 NhanVien -> n CoVanHocSinh (cố vấn cho nhiều học sinh)
+    @OneToMany(mappedBy = "nhanVien", fetch = FetchType.LAZY)
+    private List<CoVanHocSinh> coVanHocSinhs = new ArrayList<>();
+
     public NhanVien() {
     }
 
@@ -218,5 +222,13 @@ public class NhanVien {
 
     public void setHopDongs(List<HopDong> hopDongs) {
         this.hopDongs = hopDongs;
+    }
+
+    public List<CoVanHocSinh> getCoVanHocSinhs() {
+        return coVanHocSinhs;
+    }
+
+    public void setCoVanHocSinhs(List<CoVanHocSinh> coVanHocSinhs) {
+        this.coVanHocSinhs = coVanHocSinhs;
     }
 }

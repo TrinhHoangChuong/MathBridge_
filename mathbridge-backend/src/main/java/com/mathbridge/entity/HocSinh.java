@@ -67,6 +67,10 @@ public class HocSinh {
     @OneToMany(mappedBy = "hocSinh", fetch = FetchType.LAZY)
     private List<DangKyLH> dangKyLHs = new ArrayList<>();
 
+    // 1 HocSinh -> n CoVanHocSinh (có nhiều cố vấn theo thời gian)
+    @OneToMany(mappedBy = "hocSinh", fetch = FetchType.LAZY)
+    private List<CoVanHocSinh> coVanHocSinhs = new ArrayList<>();
+
     public HocSinh() {
     }
 
@@ -209,5 +213,13 @@ public class HocSinh {
 
     public void setDangKyLHs(List<DangKyLH> dangKyLHs) {
         this.dangKyLHs = dangKyLHs;
+    }
+
+    public List<CoVanHocSinh> getCoVanHocSinhs() {
+        return coVanHocSinhs;
+    }
+
+    public void setCoVanHocSinhs(List<CoVanHocSinh> coVanHocSinhs) {
+        this.coVanHocSinhs = coVanHocSinhs;
     }
 }
