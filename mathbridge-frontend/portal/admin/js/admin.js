@@ -146,13 +146,18 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
           null
         );
       } else if (target === "chuongtrinh") {
-        await loadSectionModule(
-          "section-chuongtrinh",
-          "sections/chuongtrinh.html",
-          null,
-          null
-        );
-      } else if (target === "hocsinh") {
+          await loadSectionModule(
+            "section-chuongtrinh",
+            "sections/chuongtrinh.html",
+            "css/chuongtrinh.css",
+            async () => {
+              const module = await import("./pages/chuongtrinhPage.js");
+              if (module && typeof module.initChuongTrinhPage === "function") {
+                await module.initChuongTrinhPage();
+              }
+            }
+          );
+        }else if (target === "hocsinh") {
         await loadSectionModule(
           "section-hocsinh",
           "sections/hocsinh.html",

@@ -1,0 +1,530 @@
+/* ========= Layout cơ bản ========= */
+.ct-page {
+    padding: 24px 28px;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+/* Header */
+.ct-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 18px;
+}
+
+.ct-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: #0f172a;
+}
+
+.ct-subtitle {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #64748b;
+}
+
+/* Hai card giới thiệu trên cùng */
+.ct-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.ct-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 14px 30px rgba(15, 23, 42, 0.08),
+        0 3px 10px rgba(15, 23, 42, 0.05);
+}
+
+.ct-card-main {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.ct-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ct-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: #ffffff;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ct-icon-blue {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+}
+
+.ct-icon-green {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.ct-card-title {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 600;
+}
+
+.ct-card-desc {
+    margin: 4px 0 6px;
+    font-size: 0.88rem;
+    color: #64748b;
+}
+
+.ct-meta-list {
+    margin: 0;
+    padding-left: 16px;
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.ct-card-footer {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Buttons */
+.ct-btn {
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 0.84rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.05s ease,
+        border-color 0.15s ease;
+}
+
+.ct-btn:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+.ct-btn-primary {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: #f9fafb;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+}
+
+.ct-btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #4338ca);
+}
+
+.ct-btn-outline {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.ct-btn-outline:hover {
+    background: #eff6ff;
+}
+
+/* ========= Tabs ========= */
+.ct-tabs {
+    display: inline-flex;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+}
+
+.ct-tab {
+    border: none;
+    background: transparent;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: #64748b;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.ct-tab-active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+}
+
+/* ========= Tab panels ========= */
+.ct-tab-panels {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    padding: 18px 20px 20px;
+    box-shadow:
+        0 18px 35px rgba(15, 23, 42, 0.08),
+        0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.ct-tab-panel {
+    display: none;
+}
+
+.ct-tab-panel-active {
+    display: block;
+}
+
+.ct-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.ct-panel-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.ct-panel-sub {
+    margin: 3px 0 0;
+    font-size: 0.84rem;
+    color: #64748b;
+}
+
+/* ========= Program card grid ========= */
+.prog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+}
+
+.prog-card {
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 14px 14px 12px;
+    background: radial-gradient(circle at 0 0, #eff6ff 0, #ffffff 40%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition:
+        box-shadow 0.15s ease,
+        transform 0.1s ease,
+        border-color 0.15s ease;
+}
+
+.prog-card:hover {
+    box-shadow:
+        0 12px 24px rgba(15, 23, 42, 0.12),
+        0 3px 10px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+    border-color: #bfdbfe;
+}
+
+.prog-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.prog-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.prog-code {
+    font-size: 0.75rem;
+    color: #64748b;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #e0f2fe;
+}
+
+.prog-desc {
+    margin: 2px 0 6px;
+    font-size: 0.82rem;
+    color: #475569;
+}
+
+.prog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.prog-btn {
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    background: #ffffff;
+    cursor: pointer;
+    color: #0f172a;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.prog-btn:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.prog-btn.danger {
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.prog-btn.danger:hover {
+    background: #fee2e2;
+}
+
+/* ========= Class table ========= */
+.class-table-wrapper {
+    margin-top: 4px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.class-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+}
+
+.class-table thead {
+    background: #f8fafc;
+}
+
+.class-table th,
+.class-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.class-table th {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.class-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* Cột thông tin lớp (tên + chi tiết nhỏ) */
+.class-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.class-sub {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+/* Badge trạng thái */
+.class-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    background: #ecfeff;
+    color: #0e7490;
+}
+
+.class-status.offline {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.class-status.closed {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Cột actions với menu 3 chấm */
+.class-actions {
+    width: 1%;
+    white-space: nowrap;
+    position: relative;
+}
+
+.class-menu-trigger {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 999px;
+    font-size: 16px;
+    line-height: 1;
+    color: #94a3b8;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.class-menu-trigger:hover {
+    background: #e5e7eb;
+    color: #0f172a;
+}
+
+.class-menu {
+    position: absolute;
+    top: 28px;
+    right: 0;
+    min-width: 120px;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow:
+        0 12px 24px rgba(15, 23, 42, 0.16),
+        0 4px 8px rgba(15, 23, 42, 0.08);
+    padding: 4px;
+    display: none;
+    z-index: 10;
+}
+
+.class-menu.open {
+    display: block;
+}
+
+.class-menu button {
+    width: 100%;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.class-menu button:hover {
+    background: #f1f5f9;
+}
+
+.class-menu button.danger {
+    color: #b91c1c;
+}
+
+/* ========= Modal (dùng lại, chỉ tinh chỉnh chút) ========= */
+.ct-modal.hidden {
+    display: none;
+}
+
+.ct-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+}
+
+.ct-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.ct-modal-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 480px;
+    max-width: calc(100% - 32px);
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow:
+        0 24px 45px rgba(15, 23, 42, 0.4),
+        0 8px 18px rgba(15, 23, 42, 0.24);
+}
+
+.ct-modal-box h2 {
+    margin: 0 0 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.ct-form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.ct-form-group label {
+    font-size: 0.82rem;
+    margin-bottom: 3px;
+    color: #475569;
+}
+
+.ct-form-group input,
+.ct-form-group textarea {
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    padding: 7px 9px;
+    font-size: 0.86rem;
+    outline: none;
+}
+
+.ct-form-group input:focus,
+.ct-form-group textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.ct-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* ========= Responsive ========= */
+@media (max-width: 768px) {
+    .ct-page {
+        padding: 18px;
+    }
+
+    .ct-tab-panels {
+        padding: 14px 14px 16px;
+    }
+
+    .ct-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .class-table th,
+    .class-table td {
+        padding: 6px 8px;
+    }
+}
