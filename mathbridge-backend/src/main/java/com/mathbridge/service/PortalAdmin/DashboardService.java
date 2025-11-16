@@ -8,10 +8,10 @@ import com.mathbridge.dto.PortalAdmin.Response.DashboardResponse.RecruitmentSumm
 import com.mathbridge.dto.PortalAdmin.Response.DashboardResponse.TopClassByStudentDto;
 import com.mathbridge.repository.*;
 import com.mathbridge.repository.Admin.*;
-import com.mathbridge.repository.Admin.BuoiHocChiTietRepository;
-import com.mathbridge.repository.Admin.HoaDonRepository;
-import com.mathbridge.repository.Admin.PhongRepository;
-import com.mathbridge.repository.StudentRepo.DangKyLHRepository;
+import com.mathbridge.repository.Admin.BuoiHocChiTietAdminRepository;
+import com.mathbridge.repository.Admin.HoaDonAdminRepository;
+import com.mathbridge.repository.Admin.PhongAdmimRepository;
+import com.mathbridge.repository.DangKyLHRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
@@ -29,11 +29,11 @@ public class DashboardService {
     private final NhanVienRepository nhanVienRepository;
     private final LopHocRepository lopHocRepository;
     private final DangKyLHRepository dangKyLHRepository;
-    private final BuoiHocChiTietRepository buoiHocChiTietRepository;
-    private final PhongRepository phongRepository;
-    private final HoaDonRepository hoaDonRepository;
-    private final YeuCauHoTroRepository yeuCauHoTroRepository;
-    private final HopDongRepository hopDongRepository;
+    private final BuoiHocChiTietAdminRepository buoiHocChiTietAdminRepository;
+    private final PhongAdmimRepository phongAdmimRepository;
+    private final HoaDonAdminRepository hoaDonAdminRepository;
+    private final YeuCauHoTroAdminRepository yeuCauHoTroAdminRepository;
+    private final HopDongAdminRepository hopDongAdminRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -42,20 +42,20 @@ public class DashboardService {
                             NhanVienRepository nhanVienRepository,
                             LopHocRepository lopHocRepository,
                             DangKyLHRepository dangKyLHRepository,
-                            BuoiHocChiTietRepository buoiHocChiTietRepository,
-                            PhongRepository phongRepository,
-                            HoaDonRepository hoaDonRepository,
-                            YeuCauHoTroRepository yeuCauHoTroRepository,
-                            HopDongRepository hopDongRepository) {
+                            BuoiHocChiTietAdminRepository buoiHocChiTietAdminRepository,
+                            PhongAdmimRepository phongAdmimRepository,
+                            HoaDonAdminRepository hoaDonAdminRepository,
+                            YeuCauHoTroAdminRepository yeuCauHoTroAdminRepository,
+                            HopDongAdminRepository hopDongAdminRepository) {
         this.hocSinhRepository = hocSinhRepository;
         this.nhanVienRepository = nhanVienRepository;
         this.lopHocRepository = lopHocRepository;
         this.dangKyLHRepository = dangKyLHRepository;
-        this.buoiHocChiTietRepository = buoiHocChiTietRepository;
-        this.phongRepository = phongRepository;
-        this.hoaDonRepository = hoaDonRepository;
-        this.yeuCauHoTroRepository = yeuCauHoTroRepository;
-        this.hopDongRepository = hopDongRepository;
+        this.buoiHocChiTietAdminRepository = buoiHocChiTietAdminRepository;
+        this.phongAdmimRepository = phongAdmimRepository;
+        this.hoaDonAdminRepository = hoaDonAdminRepository;
+        this.yeuCauHoTroAdminRepository = yeuCauHoTroAdminRepository;
+        this.hopDongAdminRepository = hopDongAdminRepository;
     }
 
     public DashboardResponse getDashboardOverview() {
@@ -229,8 +229,8 @@ public class DashboardService {
         // - supportOpen      = ThoiDiemDong IS NULL
         // - supportClosed    = ThoiDiemDong IS NOT NULL
         // - supportProcessing: nếu sau này có enum/trạng thái riêng thì map thêm
-        long openSupport = yeuCauHoTroRepository.countByThoiDiemDongIsNull();
-        long closedSupport = yeuCauHoTroRepository.countByThoiDiemDongIsNotNull();
+        long openSupport = yeuCauHoTroAdminRepository.countByThoiDiemDongIsNull();
+        long closedSupport = yeuCauHoTroAdminRepository.countByThoiDiemDongIsNotNull();
 
         res.setSupportOpen(openSupport);
         res.setSupportClosed(closedSupport);
@@ -239,8 +239,8 @@ public class DashboardService {
         // ================== KPI 12: HỢP ĐỒNG THEO TRẠNG THÁI ==================
         // FROM HopDong.TrangThai
         // 'Hieu luc' / 'Het han' đã được seed trong script
-        long contractActive = hopDongRepository.countByTrangThai("Hieu luc");
-        long contractExpired = hopDongRepository.countByTrangThai("Het han");
+        long contractActive = hopDongAdminRepository.countByTrangThai("Hieu luc");
+        long contractExpired = hopDongAdminRepository.countByTrangThai("Het han");
 
         res.setContractActive(contractActive);
         res.setContractExpired(contractExpired);

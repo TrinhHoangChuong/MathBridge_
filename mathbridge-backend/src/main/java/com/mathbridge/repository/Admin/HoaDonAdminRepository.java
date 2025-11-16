@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.math.BigDecimal;
 import java.util.List;
 
-public interface HoaDonRepository extends JpaRepository<HoaDon, String> {
+public interface HoaDonAdminRepository extends JpaRepository<HoaDon, String> {
 
     @Query("SELECT COALESCE(SUM(h.tongTien), 0) FROM HoaDon h")
     BigDecimal sumTongTien();

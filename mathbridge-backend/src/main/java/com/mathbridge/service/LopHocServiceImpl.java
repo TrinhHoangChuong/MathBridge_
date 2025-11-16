@@ -23,7 +23,7 @@ public class LopHocServiceImpl implements LopHocService {
         return lopHocs.stream()
                 .map(lh -> {
                     // Đếm số học sinh đã đăng ký vào lớp học
-                    int soHocSinh = lh.getDangKyLHs() != null ? lh.getDangKyLHs().size() : 0;
+                    int soHocSinh = lh.getDangKyLhs() != null ? lh.getDangKyLhs().size() : 0;
                     
                     return new LopHocDTO(
                             lh.getIdLh(),

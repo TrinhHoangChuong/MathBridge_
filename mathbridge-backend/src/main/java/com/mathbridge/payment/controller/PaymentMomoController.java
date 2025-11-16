@@ -174,7 +174,7 @@ public class PaymentMomoController {
         
         // Lấy TaiKhoan và trả về idHsRef
         String idHsRef = taiKhoanRepository.findById(idTk)
-                .map(tk -> tk.getIdHsRef())
+                .map(tk -> tk.getIdHs())
                 .orElse(null);
         System.out.println("[PaymentMomoController] idHsRef: " + idHsRef);
         return idHsRef;
