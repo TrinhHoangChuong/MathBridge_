@@ -1,10 +1,17 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.*;
 
+import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "CoSo")
 public class CoSo {
@@ -22,111 +29,22 @@ public class CoSo {
     @Column(name = "HOTLINE", length = 100, nullable = false)
     private String hotline;
 
-    @Column(name = "GIOMOCUA", nullable = false)
+    @Column(name = "GIOMOCUA")
     private LocalTime gioMoCua;
 
-    @Column(name = "GIODONGCUA", nullable = false)
+    @Column(name = "GIODONGCUA")
     private LocalTime gioDongCua;
 
     @Column(name = "NGAYLAMVIEC", length = 100, nullable = false)
     private String ngayLamViec;
+    // QUAN HỆ
 
-    // 1 CoSo -> n NhanVien
-    @OneToMany(mappedBy = "coSo", fetch = FetchType.LAZY)
-    private List<NhanVien> nhanViens = new ArrayList<>();
+    @OneToMany(mappedBy = "coSo")
+    private Set<NhanVien> nhanViens = new HashSet<>();
 
-    // 1 CoSo -> n Phong
-    @OneToMany(mappedBy = "coSo", fetch = FetchType.LAZY)
-    private List<Phong> phongs = new ArrayList<>();
+    @OneToMany(mappedBy = "coSo")
+    private Set<Phong> phongs = new HashSet<>();
 
-    // Liên kết nhiều-nhiều với ChuongTrinh qua CSDaoTaoCT
-    @OneToMany(mappedBy = "coSo", fetch = FetchType.LAZY)
-    private List<CSDaoTaoCT> daoTaoCts = new ArrayList<>();
-
-    public CoSo() {
-    }
-
-    public CoSo(String idCs) {
-        this.idCs = idCs;
-    }
-
-    public String getIdCs() {
-        return idCs;
-    }
-
-    public void setIdCs(String idCs) {
-        this.idCs = idCs;
-    }
-
-    public String getTenCoSo() {
-        return tenCoSo;
-    }
-
-    public void setTenCoSo(String tenCoSo) {
-        this.tenCoSo = tenCoSo;
-    }
-
-    public String getDiaChi2() {
-        return diaChi2;
-    }
-
-    public void setDiaChi2(String diaChi2) {
-        this.diaChi2 = diaChi2;
-    }
-
-    public String getHotline() {
-        return hotline;
-    }
-
-    public void setHotline(String hotline) {
-        this.hotline = hotline;
-    }
-
-    public LocalTime getGioMoCua() {
-        return gioMoCua;
-    }
-
-    public void setGioMoCua(LocalTime gioMoCua) {
-        this.gioMoCua = gioMoCua;
-    }
-
-    public LocalTime getGioDongCua() {
-        return gioDongCua;
-    }
-
-    public void setGioDongCua(LocalTime gioDongCua) {
-        this.gioDongCua = gioDongCua;
-    }
-
-    public String getNgayLamViec() {
-        return ngayLamViec;
-    }
-
-    public void setNgayLamViec(String ngayLamViec) {
-        this.ngayLamViec = ngayLamViec;
-    }
-
-    public List<NhanVien> getNhanViens() {
-        return nhanViens;
-    }
-
-    public void setNhanViens(List<NhanVien> nhanViens) {
-        this.nhanViens = nhanViens;
-    }
-
-    public List<Phong> getPhongs() {
-        return phongs;
-    }
-
-    public void setPhongs(List<Phong> phongs) {
-        this.phongs = phongs;
-    }
-
-    public List<CSDaoTaoCT> getDaoTaoCts() {
-        return daoTaoCts;
-    }
-
-    public void setDaoTaoCts(List<CSDaoTaoCT> daoTaoCts) {
-        this.daoTaoCts = daoTaoCts;
-    }
+    @OneToMany(mappedBy = "coSo")
+    private Set<CS_DaoTao_CT> csDaoTaoCts = new HashSet<>();
 }

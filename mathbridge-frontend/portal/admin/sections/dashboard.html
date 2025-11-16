@@ -1,0 +1,263 @@
+<!-- DASHBOARD ADMIN - MATHBRIDGE -->
+
+<!-- KPI TỔNG QUAN (1-4) -->
+<div class="kpi-grid kpi-4">
+    <!-- (3) Lớp đang mở -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Lớp đang mở</span>
+            <span class="kpi-badge neutral">FROM LopHoc</span>
+        </div>
+        <div class="kpi-value" data-kpi="lop-dang-mo">--</div>
+        <div class="kpi-meta">Đếm lớp có TrangThai = 'Đang mở'</div>
+    </div>
+
+    <!-- (1) Học sinh đang hoạt động -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Học sinh active</span>
+            <span class="kpi-badge neutral">FROM HocSinh</span>
+        </div>
+        <div class="kpi-value" data-kpi="hs-active">--</div>
+        <div class="kpi-meta">TrangThaiHoatDong = 1</div>
+    </div>
+
+    <!-- (2) Nhân viên đang hoạt động -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Nhân viên active</span>
+            <span class="kpi-badge neutral">FROM NhanVien</span>
+        </div>
+        <div class="kpi-value" data-kpi="nv-active">--</div>
+        <div class="kpi-meta">TrangThaiHoatDong = 1</div>
+    </div>
+
+    <!-- (4) Tổng doanh thu đã thu -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Tổng doanh thu đã thu</span>
+            <span class="kpi-badge good">FROM HoaDon</span>
+        </div>
+        <div class="kpi-value" data-kpi="revenue-paid-total">--</div>
+        <div class="kpi-meta">SUM TongTien WHERE TrangThai = 'Da Thanh Toan'</div>
+    </div>
+</div>
+
+<!-- KPI THANH TOÁN & CÔNG NỢ (5-7) -->
+<div class="kpi-grid kpi-2">
+    <!-- (5) Hóa đơn theo trạng thái -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Tình trạng hóa đơn</span>
+            <span class="kpi-badge neutral">FROM HoaDon</span>
+        </div>
+        <div class="kpi-value kpi-stack">
+            <div class="kpi-pill">
+                <span class="pill-label">Đã thanh toán</span>
+                <span class="pill-value" data-kpi="invoice-paid-count">--</span>
+            </div>
+            <div class="kpi-pill">
+                <span class="pill-label">Chưa thanh toán</span>
+                <span class="pill-value" data-kpi="invoice-unpaid-count">--</span>
+            </div>
+        </div>
+        <div class="kpi-meta">GROUP BY TrangThai</div>
+    </div>
+
+    <!-- (7) Doanh thu theo PTTT -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Doanh thu theo phương thức</span>
+            <span class="kpi-badge good">FROM LichSuThanhToan</span>
+        </div>
+        <div class="kpi-list">
+            <!-- render bằng BE từ GROUP BY TenPT -->
+            <div class="kpi-row">
+                <span class="row-label">Chuyển khoản NH</span>
+                <span class="row-value" data-kpi="pttt-pt001">--</span>
+            </div>
+            <div class="kpi-row">
+                <span class="row-label">MoMo</span>
+                <span class="row-value" data-kpi="pttt-pt002">--</span>
+            </div>
+            <div class="kpi-row">
+                <span class="row-label">Tiền mặt</span>
+                <span class="row-value" data-kpi="pttt-pt003">--</span>
+            </div>
+            <div class="kpi-row">
+                <span class="row-label">Thẻ tín dụng</span>
+                <span class="row-value" data-kpi="pttt-pt004">--</span>
+            </div>
+            <div class="kpi-row">
+                <span class="row-label">Thẻ Visa</span>
+                <span class="row-value" data-kpi="pttt-pt005">--</span>
+            </div>
+        </div>
+        <div class="kpi-meta">SUM TongTien GROUP BY TenPT</div>
+    </div>
+</div>
+
+<!-- DANH SÁCH CÔNG NỢ CHI TIẾT (6) -->
+<div class="panel">
+    <div class="panel-header">
+        <h3>Hóa đơn chưa thanh toán sắp đến hạn</h3>
+        <span class="panel-sub">FROM HoaDon | 7 ngày tới</span>
+    </div>
+    <div class="table-wrapper">
+        <table class="mb-table">
+            <thead>
+            <tr>
+                <th>Mã HĐ</th>
+                <th>Mã HS</th>
+                <th>Mã Lớp</th>
+                <th>Ngày ĐK</th>
+                <th>Hạn thanh toán</th>
+                <th>Số tiền</th>
+            </tr>
+            </thead>
+            <tbody data-table="invoice-unpaid-soon">
+            <!-- BE render từ WHERE TrangThai='Chua Thanh Toan' AND HanThanhToan BETWEEN GETDATE() AND GETDATE()+7 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- LỚP HỌC & CHƯƠNG TRÌNH (8-9) -->
+<div class="grid-2">
+    <!-- (8) Top lớp đông HS -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Top lớp theo sĩ số</h3>
+            <span class="panel-sub">FROM LopHoc + DangKyLH</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="mb-table">
+                <thead>
+                <tr>
+                    <th>Mã lớp</th>
+                    <th>Tên lớp</th>
+                    <th>Số học sinh</th>
+                </tr>
+                </thead>
+                <tbody data-table="top-class-by-student">
+                <!-- BE render TOP 5 COUNT(DangKyLH.ID_HS) GROUP BY LopHoc -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- (9) Số lớp theo chương trình -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Lớp theo chương trình</h3>
+            <span class="panel-sub">FROM ChuongTrinh + LopHoc</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="mb-table">
+                <thead>
+                <tr>
+                    <th>Mã CT</th>
+                    <th>Tên chương trình</th>
+                    <th>Số lớp</th>
+                </tr>
+                </thead>
+                <tbody data-table="class-per-program">
+                <!-- BE render COUNT(LopHoc.ID_LH) GROUP BY ChuongTrinh -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TUYỂN DỤNG & HỖ TRỢ (10-11) -->
+<div class="grid-2">
+    <!-- (10) Tin tuyển dụng -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Tin tuyển dụng & ứng viên</h3>
+            <span class="panel-sub">FROM TinTuyenDung + Association_25</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="mb-table">
+                <thead>
+                <tr>
+                    <th>Mã tin</th>
+                    <th>Tiêu đề</th>
+                    <th>Trạng thái</th>
+                    <th>Số ứng viên</th>
+                </tr>
+                </thead>
+                <tbody data-table="recruitment-summary">
+                <!-- BE render COUNT(Association_25.ID_UV) GROUP BY TinTuyenDung -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- (11) Yêu cầu hỗ trợ -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Yêu cầu hỗ trợ theo trạng thái</h3>
+            <span class="panel-sub">FROM YeuCauHoTro</span>
+        </div>
+        <div class="kpi-list">
+            <!-- BE render GROUP BY TrangThai -->
+            <div class="kpi-row">
+                <span class="row-label">Mở</span>
+                <span class="row-value" data-kpi="support-open">--</span>
+            </div>
+            <div class="kpi-row">
+                <span class="row-label">Đang xử lý</span>
+                <span class="row-value" data-kpi="support-processing">--</span>
+            </div>
+            <div class="kpi-row">
+                <span class="row-label">Đã đóng</span>
+                <span class="row-value" data-kpi="support-closed">--</span>
+            </div>
+        </div>
+        <div class="kpi-meta">Tổng hợp trạng thái ticket hỗ trợ học viên / lớp</div>
+    </div>
+</div>
+
+<!-- HỢP ĐỒNG GIẢNG VIÊN (12-13) -->
+<div class="grid-2">
+    <!-- (12) Hợp đồng theo trạng thái -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Trạng thái hợp đồng giảng viên</h3>
+            <span class="panel-sub">FROM HopDong</span>
+        </div>
+        <div class="kpi-list">
+            <!-- BE render GROUP BY TrangThai -->
+            <div class="kpi-row">
+                <span class="row-label">Hiệu lực</span>
+                <span class="row-value" data-kpi="contract-active">--</span>
+            </div>
+            <div class="kpi-row">
+                <span class="row-label">Hết hạn</span>
+                <span class="row-value" data-kpi="contract-expired">--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- (13) Hợp đồng / Nhân viên -->
+    <div class="panel">
+        <div class="panel-header">
+            <h3>Hợp đồng theo nhân viên</h3>
+            <span class="panel-sub">FROM HopDong</span>
+        </div>
+        <div class="table-wrapper compact">
+            <table class="mb-table">
+                <thead>
+                <tr>
+                    <th>Mã NV</th>
+                    <th>Số HĐ</th>
+                </tr>
+                </thead>
+                <tbody data-table="contract-per-teacher">
+                <!-- BE render COUNT(ID_HD) GROUP BY ID_NV -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -16,4 +16,7 @@ public interface HocSinhRepository extends JpaRepository<HocSinh, String> {
     // Lấy phần số lớn nhất của ID_HS dạng HS###
     @Query(value = "SELECT ISNULL(MAX(TRY_CAST(SUBSTRING(ID_HS, 3, 10) AS INT)), 0) FROM HocSinh WHERE ID_HS LIKE 'HS%'", nativeQuery = true)
     int findMaxHsNumber();
+
+    long countByTrangThaiHoatDong(Boolean trangThaiHoatDong);
+
 }

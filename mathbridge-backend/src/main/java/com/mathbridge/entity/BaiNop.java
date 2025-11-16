@@ -1,8 +1,17 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
+import lombok.*;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "BaiNop")
 public class BaiNop {
@@ -11,20 +20,16 @@ public class BaiNop {
     @Column(name = "ID_BN", length = 10, nullable = false)
     private String idBn;
 
-    // FK -> BaiTap(ID_BT)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_BT", referencedColumnName = "ID_BT")
-    private BaiTap baiTap;
+    @Column(name = "ID_BT", length = 10)
+    private String idBt;
 
-    // FK -> HocSinh(ID_HS)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_HS", referencedColumnName = "ID_HS")
-    private HocSinh hocSinh;
+    @Column(name = "ID_HS", length = 10)
+    private String idHs;
 
     @Column(name = "FileURL", length = 400)
     private String fileUrl;
 
-    @Column(name = "DiemSo")
+    @Column(name = "DiemSo", precision = 18, scale = 0)
     private BigDecimal diemSo;
 
     @Column(name = "NhanXet", length = 255)
@@ -35,75 +40,16 @@ public class BaiNop {
 
     @Column(name = "GhiChu", length = 200)
     private String ghiChu;
+    // QUAN HỆ
 
-    public BaiNop() {
-    }
+    @ManyToOne
+    @JoinColumn(name = "ID_BT", insertable = false, updatable = false)
+    private BaiTap baiTap;
 
-    public BaiNop(String idBn) {
-        this.idBn = idBn;
-    }
+    @ManyToOne
+    @JoinColumn(name = "ID_HS", insertable = false, updatable = false)
+    private HocSinh hocSinh;
 
-    public String getIdBn() {
-        return idBn;
-    }
-
-    public void setIdBn(String idBn) {
-        this.idBn = idBn;
-    }
-
-    public BaiTap getBaiTap() {
-        return baiTap;
-    }
-
-    public void setBaiTap(BaiTap baiTap) {
-        this.baiTap = baiTap;
-    }
-
-    public HocSinh getHocSinh() {
-        return hocSinh;
-    }
-
-    public void setHocSinh(HocSinh hocSinh) {
-        this.hocSinh = hocSinh;
-    }
-
-    public String getFileUrl() {
-        return fileUrl;
-    }
-
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
-    }
-
-    public BigDecimal getDiemSo() {
-        return diemSo;
-    }
-
-    public void setDiemSo(BigDecimal diemSo) {
-        this.diemSo = diemSo;
-    }
-
-    public String getNhanXet() {
-        return nhanXet;
-    }
-
-    public void setNhanXet(String nhanXet) {
-        this.nhanXet = nhanXet;
-    }
-
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
-    }
-
-    public String getGhiChu() {
-        return ghiChu;
-    }
-
-    public void setGhiChu(String ghiChu) {
-        this.ghiChu = ghiChu;
-    }
+    @OneToMany(mappedBy = "baiNop")
+    private Set<BinhLuanBaiNop> binhLuanBaiNops = new HashSet<>();
 }

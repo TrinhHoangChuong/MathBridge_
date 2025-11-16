@@ -1,9 +1,16 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "HoaDon")
 public class HoaDon {
@@ -12,20 +19,14 @@ public class HoaDon {
     @Column(name = "ID_HoaDon", length = 10, nullable = false)
     private String idHoaDon;
 
-    // FK -> LopHoc(ID_LH)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_LH", nullable = false, referencedColumnName = "ID_LH")
-    private LopHoc lopHoc;
+    @Column(name = "ID_LH", length = 10, nullable = false)
+    private String idLh;
 
-    // FK -> LichSuThanhToan(ID_LS)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_LS", referencedColumnName = "ID_LS")
-    private LichSuThanhToan lichSuThanhToan;
+    @Column(name = "ID_LS", length = 10)
+    private String idLs;
 
-    // FK -> HocSinh(ID_HS)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_HS", nullable = false, referencedColumnName = "ID_HS")
-    private HocSinh hocSinh;
+    @Column(name = "ID_HS", length = 10, nullable = false)
+    private String idHs;
 
     @Column(name = "NgayDangKy")
     private LocalDate ngayDangKy;
@@ -39,96 +40,22 @@ public class HoaDon {
     @Column(name = "SoThang", length = 100)
     private String soThang;
 
-    @Column(name = "TongTien")
+    @Column(name = "TongTien", precision = 18, scale = 0)
     private BigDecimal tongTien;
 
     @Column(name = "TrangThai", length = 60)
     private String trangThai;
+    // QUAN HỆ
 
-    public HoaDon() {
-    }
+    @ManyToOne
+    @JoinColumn(name = "ID_LH", insertable = false, updatable = false)
+    private LopHoc lopHoc;
 
-    public HoaDon(String idHoaDon) {
-        this.idHoaDon = idHoaDon;
-    }
+    @ManyToOne
+    @JoinColumn(name = "ID_LS", insertable = false, updatable = false)
+    private LichSuThanhToan lichSuThanhToan;
 
-    public String getIdHoaDon() {
-        return idHoaDon;
-    }
-
-    public void setIdHoaDon(String idHoaDon) {
-        this.idHoaDon = idHoaDon;
-    }
-
-    public LopHoc getLopHoc() {
-        return lopHoc;
-    }
-
-    public void setLopHoc(LopHoc lopHoc) {
-        this.lopHoc = lopHoc;
-    }
-
-    public LichSuThanhToan getLichSuThanhToan() {
-        return lichSuThanhToan;
-    }
-
-    public void setLichSuThanhToan(LichSuThanhToan lichSuThanhToan) {
-        this.lichSuThanhToan = lichSuThanhToan;
-    }
-
-    public HocSinh getHocSinh() {
-        return hocSinh;
-    }
-
-    public void setHocSinh(HocSinh hocSinh) {
-        this.hocSinh = hocSinh;
-    }
-
-    public LocalDate getNgayDangKy() {
-        return ngayDangKy;
-    }
-
-    public void setNgayDangKy(LocalDate ngayDangKy) {
-        this.ngayDangKy = ngayDangKy;
-    }
-
-    public LocalDate getNgayThanhToan() {
-        return ngayThanhToan;
-    }
-
-    public void setNgayThanhToan(LocalDate ngayThanhToan) {
-        this.ngayThanhToan = ngayThanhToan;
-    }
-
-    public LocalDate getHanThanhToan() {
-        return hanThanhToan;
-    }
-
-    public void setHanThanhToan(LocalDate hanThanhToan) {
-        this.hanThanhToan = hanThanhToan;
-    }
-
-    public String getSoThang() {
-        return soThang;
-    }
-
-    public void setSoThang(String soThang) {
-        this.soThang = soThang;
-    }
-
-    public BigDecimal getTongTien() {
-        return tongTien;
-    }
-
-    public void setTongTien(BigDecimal tongTien) {
-        this.tongTien = tongTien;
-    }
-
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
-    }
+    @ManyToOne
+    @JoinColumn(name = "ID_HS", insertable = false, updatable = false)
+    private HocSinh hocSinh;
 }
