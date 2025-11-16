@@ -16,6 +16,11 @@ public class YeuCauHoTro {
     @JoinColumn(name = "ID_LH", referencedColumnName = "ID_LH")
     private LopHoc lopHoc;
 
+    // FK -> HocSinh(ID_HS), nullable
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_HS", referencedColumnName = "ID_HS")
+    private HocSinh hocSinh;
+
     @Column(name = "TieuDe", length = 100, nullable = false)
     private String tieuDe;
 
@@ -58,6 +63,14 @@ public class YeuCauHoTro {
 
     public void setLopHoc(LopHoc lopHoc) {
         this.lopHoc = lopHoc;
+    }
+
+    public HocSinh getHocSinh() {
+        return hocSinh;
+    }
+
+    public void setHocSinh(HocSinh hocSinh) {
+        this.hocSinh = hocSinh;
     }
 
     public String getTieuDe() {

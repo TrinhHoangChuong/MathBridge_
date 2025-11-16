@@ -71,6 +71,10 @@ public class HocSinh {
     @OneToMany(mappedBy = "hocSinh", fetch = FetchType.LAZY)
     private List<CoVanHocSinh> coVanHocSinhs = new ArrayList<>();
 
+    // 1 HocSinh -> n YeuCauHoTro (học sinh gửi nhiều yêu cầu hỗ trợ)
+    @OneToMany(mappedBy = "hocSinh", fetch = FetchType.LAZY)
+    private List<YeuCauHoTro> yeuCauHoTros = new ArrayList<>();
+
     public HocSinh() {
     }
 
@@ -221,5 +225,13 @@ public class HocSinh {
 
     public void setCoVanHocSinhs(List<CoVanHocSinh> coVanHocSinhs) {
         this.coVanHocSinhs = coVanHocSinhs;
+    }
+
+    public List<YeuCauHoTro> getYeuCauHoTros() {
+        return yeuCauHoTros;
+    }
+
+    public void setYeuCauHoTros(List<YeuCauHoTro> yeuCauHoTros) {
+        this.yeuCauHoTros = yeuCauHoTros;
     }
 }
