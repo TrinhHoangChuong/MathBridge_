@@ -1,6 +1,6 @@
-package com.mathbridge.controller;
+package com.mathbridge.controller.portaltutor;
 
-import com.mathbridge.dto.TuLienHeTuVanResponseDTO;
+import com.mathbridge.dto.portaltutor.TuLienHeTuVanResponseDTO;
 import com.mathbridge.service.LienHeTuVanService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

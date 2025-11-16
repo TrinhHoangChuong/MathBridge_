@@ -1,4 +1,4 @@
-package com.mathbridge.dto;
+package com.mathbridge.dto.portaltutor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

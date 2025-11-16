@@ -1,8 +1,9 @@
-package com.mathbridge.service;
+package com.mathbridge.service.portaltutor;
 
-import com.mathbridge.dto.*;
+import com.mathbridge.dto.portaltutor.*;
 import com.mathbridge.entity.*;
-import com.mathbridge.repository.*;
+import com.mathbridge.repository.HocSinhRepository;
+import com.mathbridge.repository.portaltutor.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

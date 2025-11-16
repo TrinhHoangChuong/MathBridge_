@@ -1,4 +1,4 @@
-package com.mathbridge.repository;
+package com.mathbridge.repository.portaltutor;
 
 import com.mathbridge.entity.LichSuThanhToan;
 import org.springframework.data.jpa.repository.JpaRepository;

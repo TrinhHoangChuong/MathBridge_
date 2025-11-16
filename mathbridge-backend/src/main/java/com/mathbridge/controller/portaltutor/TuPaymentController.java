@@ -1,7 +1,7 @@
-package com.mathbridge.controller;
+package com.mathbridge.controller.portaltutor;
 
-import com.mathbridge.dto.*;
-import com.mathbridge.service.TuPaymentService;
+import com.mathbridge.dto.portaltutor.*;
+import com.mathbridge.service.portaltutor.TuPaymentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,4 +1,4 @@
-package com.mathbridge.dto;
+package com.mathbridge.dto.portaltutor;
 
 public class TuPaymentMethodDTO {
     private String idPt;
