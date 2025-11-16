@@ -6,6 +6,11 @@ class StudentDashboard {
         this.currentSection = 'dashboard';
         this.studentData = null;
         this.charts = {};
+        this.currentMonth = new Date().getMonth();
+        this.currentYear = new Date().getFullYear();
+        this.currentWeek = this.getWeekNumber(new Date());
+        this.scheduleView = 'month'; // 'month' or 'week'
+        this.selectedDate = null;
         // Check authentication before initializing
         this.checkAuthentication();
         this.init();
@@ -130,6 +135,8 @@ class StudentDashboard {
                 .then(response => response.text())
                 .then(html => {
                     headerPlaceholder.innerHTML = html;
+                    // Re-bind sidebar toggle after loading
+                    this.bindSidebarToggle();
                 })
                 .catch(error => console.error('Error loading sidebar header:', error));
         }
@@ -154,8 +161,33 @@ class StudentDashboard {
                 .then(response => response.text())
                 .then(html => {
                     footerPlaceholder.innerHTML = html;
+                    // Re-bind logout button after loading
+                    const logoutBtn = document.getElementById('logoutBtn');
+                    if (logoutBtn) {
+                        logoutBtn.addEventListener('click', () => {
+                            this.logout();
+                        });
+                    }
+                    // Update user name if data is already loaded
+                    if (this.studentData?.fullName) {
+                        this.updateSidebarUserName();
+                    }
                 })
                 .catch(error => console.error('Error loading sidebar footer:', error));
+        }
+    }
+
+    bindSidebarToggle() {
+        // Re-bind sidebar toggle after dynamic load
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        if (sidebarToggle) {
+            // Remove existing listeners
+            const newToggle = sidebarToggle.cloneNode(true);
+            sidebarToggle.parentNode.replaceChild(newToggle, sidebarToggle);
+            // Add new listener
+            newToggle.addEventListener('click', () => {
+                this.toggleSidebar();
+            });
         }
     }
 
@@ -922,6 +954,16 @@ class StudentDashboard {
         return 'Yếu';
     }
 
+    formatCurrency(amount) {
+        if (!amount) return '0 VNĐ';
+        const num = parseFloat(amount);
+        if (isNaN(num)) return amount + ' VNĐ';
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(num);
+    }
+
     formatDate(dateString) {
         if (!dateString) return 'N/A';
         try {
@@ -995,6 +1037,8 @@ class StudentDashboard {
             this.loadSchedule();
         } else if (sectionName === 'support') {
             this.loadSupportRequests();
+        } else if (sectionName === 'history') {
+            this.loadHistory();
         }
     }
 
@@ -1789,8 +1833,15 @@ class StudentDashboard {
 
     // Calendar Functions
     changeMonth(delta) {
-        // Implementation for calendar navigation
-        console.log('Changing month by:', delta);
+        this.currentMonth += delta;
+        if (this.currentMonth < 0) {
+            this.currentMonth = 11;
+            this.currentYear--;
+        } else if (this.currentMonth > 11) {
+            this.currentMonth = 0;
+            this.currentYear++;
+        }
+        this.updateCalendar();
     }
 
     // Export Functions
@@ -2568,8 +2619,18 @@ class StudentDashboard {
         if (profileAddressElement) profileAddressElement.textContent = address || '';
         if (profileGenderElement) profileGenderElement.textContent = gender !== null ? (gender ? 'Nữ' : 'Nam') : '';
 
+        // Update sidebar user name
+        this.updateSidebarUserName();
+
         // Update dropdown user info
         this.updateDropdownUserInfo();
+    }
+
+    updateSidebarUserName() {
+        const sidebarUserName = document.getElementById('sidebarUserName');
+        if (sidebarUserName && this.studentData?.fullName) {
+            sidebarUserName.textContent = this.studentData.fullName;
+        }
     }
 
     viewMessage(messageId) {
@@ -3399,6 +3460,21 @@ class StudentDashboard {
 
     // History Section Methods
     loadHistory() {
+        // Chỉ load dữ liệu cho tab đang active
+        const learningHistory = document.getElementById('learningHistory');
+        const registrationsHistory = document.getElementById('registrationsHistory');
+        
+        if (learningHistory && learningHistory.classList.contains('active')) {
+            this.loadAttendedClasses();
+        }
+        
+        if (registrationsHistory && registrationsHistory.classList.contains('active')) {
+            this.loadRegistrations();
+        } else {
+            // Nếu tab registrations chưa active, chỉ load attendedClasses (tab mặc định)
+            this.loadAttendedClasses();
+        }
+        
         this.loadTimeline();
         this.loadHistoryStats();
         this.initializeTimelineFilters();
@@ -3644,46 +3720,195 @@ class StudentDashboard {
 
     loadRegistrations() {
         const registrationsList = document.getElementById('registrationsList');
-        if (!this.studentData?.registrations) return;
+        
+        if (!this.studentData?.registrations || registrationsList === null) {
+            if (registrationsList) {
+                registrationsList.innerHTML = '<p class="empty-state">Chưa có lịch sử đăng ký lớp nào</p>';
+            }
+            return;
+        }
 
-        registrationsList.innerHTML = this.studentData.registrations.map(registration => `
+        // Đảm bảo tab được active trước khi render
+        const registrationsHistory = document.getElementById('registrationsHistory');
+        if (registrationsHistory && !registrationsHistory.classList.contains('active')) {
+            registrationsHistory.classList.add('active');
+            // Remove active từ tab khác
+            const learningHistory = document.getElementById('learningHistory');
+            if (learningHistory) {
+                learningHistory.classList.remove('active');
+            }
+        }
+
+        try {
+            const html = this.studentData.registrations.map(registration => `
             <div class="history-item">
                 <div class="history-icon">
                     <i class="fas fa-clipboard-check"></i>
                 </div>
-                <div class="history-content">
-                    <h4>${registration.className}</h4>
+                <div class="history-item-content">
+                    <h4>${this.escapeHtml(registration.className || 'Lớp học')}</h4>
                     <div class="history-meta">
                         <span><i class="fas fa-calendar"></i> ${this.formatDate(registration.registrationDate)}</span>
-                        <span><i class="fas fa-user-tie"></i> ${registration.teacherName}</span>
+                        <span><i class="fas fa-user-tie"></i> ${this.escapeHtml(registration.teacherName || 'Chưa có giáo viên')}</span>
                         <span class="status-badge ${registration.status}">${this.getRegistrationStatusText(registration.status)}</span>
                     </div>
-                    <p>${registration.description}</p>
+                    <p>${this.escapeHtml(registration.description || '')}</p>
+                    
+                    <!-- Thông tin từ LopHoc -->
+                    <div class="class-info-details" style="margin-top: 0.75rem; padding: 0.75rem; background: #f8f9fa; border-radius: 4px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; font-size: 0.9rem;">
+                            ${registration.loaiNgay ? `<div><strong>Loại ngày:</strong> ${this.escapeHtml(registration.loaiNgay)}</div>` : ''}
+                            ${registration.soBuoi ? `<div><strong>Số buổi:</strong> ${this.escapeHtml(registration.soBuoi)}</div>` : ''}
+                            ${registration.hinhThucHoc ? `<div><strong>Hình thức:</strong> ${this.escapeHtml(registration.hinhThucHoc)}</div>` : ''}
+                            ${registration.mucGiaThang ? `<div><strong>Mức giá/tháng:</strong> ${this.formatCurrency(registration.mucGiaThang)}</div>` : ''}
+                            ${registration.trangThaiLop ? `<div><strong>Trạng thái lớp:</strong> ${this.escapeHtml(registration.trangThaiLop)}</div>` : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- Thông tin từ HoaDon -->
+                    ${registration.invoiceId ? `
+                    <div class="invoice-info" style="margin-top: 0.75rem; padding: 0.75rem; background: #e7f3ff; border-radius: 4px; border-left: 3px solid #2196F3;">
+                        <h5 style="margin: 0 0 0.5rem 0; color: #2196F3; font-size: 0.95rem;">
+                            <i class="fas fa-receipt"></i> Hóa đơn: ${this.escapeHtml(registration.invoiceId)}
+                        </h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; font-size: 0.9rem;">
+                            ${registration.ngayDangKy ? `<div><strong>Ngày đăng ký:</strong> ${this.escapeHtml(registration.ngayDangKy)}</div>` : ''}
+                            ${registration.ngayThanhToan ? `<div><strong>Ngày thanh toán:</strong> ${this.escapeHtml(registration.ngayThanhToan)}</div>` : ''}
+                            ${registration.hanThanhToan ? `<div><strong>Hạn thanh toán:</strong> ${this.escapeHtml(registration.hanThanhToan)}</div>` : ''}
+                            ${registration.soThang ? `<div><strong>Số tháng:</strong> ${this.escapeHtml(registration.soThang)}</div>` : ''}
+                            ${registration.tongTien ? `<div><strong>Tổng tiền:</strong> ${this.formatCurrency(registration.tongTien)}</div>` : ''}
+                            ${registration.trangThaiHoaDon ? `<div><strong>Trạng thái:</strong> <span class="status-badge ${registration.trangThaiHoaDon}">${this.escapeHtml(registration.trangThaiHoaDon)}</span></div>` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${registration.rating ? `
+                    <div class="rating-display" style="margin-top: 0.75rem;">
+                        <span style="color: #ffc107;">
+                            ${'★'.repeat(registration.rating)}${'☆'.repeat(5 - registration.rating)}
+                        </span>
+                        ${registration.ratingComment ? `<p style="margin-top: 0.25rem; font-size: 0.9rem; color: var(--text-secondary);">${this.escapeHtml(registration.ratingComment)}</p>` : ''}
+                    </div>
+                    ` : ''}
+                    <div class="history-actions" style="margin-top: 0.75rem;">
+                        ${(registration.status === 'approved' || registration.status === 'completed') && !registration.rating ? `
+                        <button class="btn btn-sm btn-primary" onclick="dashboard.rateClass('${registration.id}', '${this.escapeHtml(registration.className)}')">
+                            <i class="fas fa-star"></i> Đánh giá lớp học
+                        </button>
+                        ` : ''}
+                    </div>
                 </div>
             </div>
         `).join('');
+            
+            registrationsList.innerHTML = html;
+        } catch (error) {
+            console.error('Error rendering registrations:', error);
+            registrationsList.innerHTML = '<p class="empty-state">Lỗi khi hiển thị lịch sử đăng ký: ' + error.message + '</p>';
+        }
     }
 
     loadAttendedClasses() {
         const classesHistoryList = document.getElementById('classesHistoryList');
-        if (!this.studentData?.attendedClasses) return;
+        if (!this.studentData?.attendedClasses || classesHistoryList === null) {
+            if (classesHistoryList) {
+                classesHistoryList.innerHTML = '<p class="empty-state">Chưa có lịch sử học tập nào</p>';
+            }
+            return;
+        }
 
-        classesHistoryList.innerHTML = this.studentData.attendedClasses.map(attendedClass => `
-            <div class="history-item">
-                <div class="history-icon">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <div class="history-content">
-                    <h4>${attendedClass.className} - Buổi ${attendedClass.sessionNumber}</h4>
-                    <div class="history-meta">
-                        <span><i class="fas fa-calendar"></i> ${this.formatDate(attendedClass.sessionDate)}</span>
-                        <span><i class="fas fa-clock"></i> ${attendedClass.startTime} - ${attendedClass.endTime}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> ${attendedClass.room}</span>
+        // Group attended classes by classId and remove duplicates
+        const classesMap = new Map();
+        const sessionKeys = new Set(); // Track unique sessions: classId_sessionNumber
+        
+        this.studentData.attendedClasses.forEach(attendedClass => {
+            const classId = attendedClass.classId || 'unknown';
+            const sessionNumber = attendedClass.sessionNumber || 0;
+            
+            // Skip invalid sessions
+            if (sessionNumber <= 0) return;
+            
+            // Create unique key for this session
+            const sessionKey = `${classId}_${sessionNumber}`;
+            
+            // Skip if we've already seen this session
+            if (sessionKeys.has(sessionKey)) return;
+            sessionKeys.add(sessionKey);
+            
+            if (!classesMap.has(classId)) {
+                classesMap.set(classId, {
+                    classId: classId,
+                    className: attendedClass.className || 'Lớp học',
+                    teacherName: attendedClass.teacherName || 'Chưa có giáo viên',
+                    sessions: []
+                });
+            }
+            classesMap.get(classId).sessions.push(attendedClass);
+        });
+
+        // Sort sessions by sessionNumber within each class
+        classesMap.forEach((classData, classId) => {
+            classData.sessions.sort((a, b) => {
+                const numA = a.sessionNumber || 0;
+                const numB = b.sessionNumber || 0;
+                return numA - numB;
+            });
+        });
+
+        // Render grouped classes
+        if (classesMap.size === 0) {
+            classesHistoryList.innerHTML = '<p class="empty-state">Chưa có lịch sử học tập nào</p>';
+            return;
+        }
+
+        classesHistoryList.innerHTML = Array.from(classesMap.values()).map(classData => {
+            const sessionsHtml = classData.sessions.map(session => {
+                const sessionDate = session.sessionDate ? this.formatDate(session.sessionDate) : 'Chưa có ngày';
+                const startTime = session.startTime ? session.startTime.substring(0, 5) : 'N/A';
+                const endTime = session.endTime ? session.endTime.substring(0, 5) : 'N/A';
+                
+                return `
+                    <div class="session-card">
+                        <div class="session-header">
+                            <div class="session-number-badge">Buổi ${session.sessionNumber || 'N/A'}</div>
+                            <button class="btn btn-sm btn-primary" onclick="dashboard.rateSession('${session.id}', '${this.escapeHtml(session.className)}', ${session.sessionNumber})">
+                                <i class="fas fa-star"></i> Đánh giá
+                            </button>
+                        </div>
+                        <div class="session-details">
+                            <div class="session-info-row">
+                                <span class="session-info-item">
+                                    <i class="fas fa-calendar"></i> ${sessionDate}
+                                </span>
+                                <span class="session-info-item">
+                                    <i class="fas fa-clock"></i> ${startTime} - ${endTime}
+                                </span>
+                                <span class="session-info-item">
+                                    <i class="fas fa-map-marker-alt"></i> ${this.escapeHtml(session.room || 'Chưa có phòng')}
+                                </span>
+                            </div>
+                            ${session.content ? `<p class="session-content">${this.escapeHtml(session.content)}</p>` : ''}
+                        </div>
                     </div>
-                    <p>${attendedClass.content || 'Buổi học đã hoàn thành'}</p>
+                `;
+            }).join('');
+
+            return `
+                <div class="class-history-group">
+                    <div class="class-history-header">
+                        <div class="class-info">
+                            <h3>${this.escapeHtml(classData.className)}</h3>
+                            <p class="teacher-info">
+                                <i class="fas fa-user-tie"></i> Giáo viên: ${this.escapeHtml(classData.teacherName)}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="sessions-container">
+                        ${sessionsHtml}
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     getRegistrationStatusText(status) {
@@ -4024,13 +4249,204 @@ class StudentDashboard {
 
     // History Tab Switching
     switchHistoryTab(tab) {
-        // Update tab buttons
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`[onclick="switchHistoryTab('${tab}')"]`).classList.add('active');
+        // Remove active class from all tabs
+        document.querySelectorAll('.history-tab').forEach(t => t.classList.remove('active'));
+        // Add active class to clicked tab
+        const clickedTab = event?.target?.closest('.history-tab') || 
+                          document.querySelector(`[onclick*="switchHistoryTab('${tab}')"]`);
+        if (clickedTab) {
+            clickedTab.classList.add('active');
+        }
 
-        // Update content
+        // Show/hide content
         document.querySelectorAll('.history-content').forEach(content => content.classList.remove('active'));
-        document.getElementById(tab === 'registrations' ? 'registrationsHistory' : 'classesHistory').classList.add('active');
+        
+        if (tab === 'learning') {
+            const learningHistory = document.getElementById('learningHistory');
+            if (learningHistory) {
+                learningHistory.classList.add('active');
+            }
+            this.loadAttendedClasses();
+        } else if (tab === 'registrations') {
+            const registrationsHistory = document.getElementById('registrationsHistory');
+            if (registrationsHistory) {
+                // Active tab trước khi load để đảm bảo hiển thị
+                registrationsHistory.classList.add('active');
+                // Đảm bảo tab button cũng được active
+                document.querySelectorAll('.history-tab').forEach(t => {
+                    if (t.textContent.includes('Lịch sử đăng ký lớp')) {
+                        t.classList.add('active');
+                    } else {
+                        t.classList.remove('active');
+                    }
+                });
+            } else {
+                console.error('registrationsHistory element not found');
+            }
+            // Load sau khi tab đã active
+            setTimeout(() => {
+                this.loadRegistrations();
+            }, 0);
+        }
+    }
+
+    // Rate Class Method
+    rateClass(registrationId, className) {
+        const modalContent = `
+            <div class="rating-modal-content">
+                <div class="form-group">
+                    <label>Lớp học: <strong>${this.escapeHtml(className)}</strong></label>
+                </div>
+                <div class="form-group">
+                    <label>Đánh giá (1-5 sao):</label>
+                    <div class="rating-stars" id="ratingStars" role="group" aria-label="Đánh giá sao">
+                        <i class="far fa-star" data-rating="1" onclick="dashboard.selectRating(1)" role="button" aria-label="1 sao" tabindex="0"></i>
+                        <i class="far fa-star" data-rating="2" onclick="dashboard.selectRating(2)" role="button" aria-label="2 sao" tabindex="0"></i>
+                        <i class="far fa-star" data-rating="3" onclick="dashboard.selectRating(3)" role="button" aria-label="3 sao" tabindex="0"></i>
+                        <i class="far fa-star" data-rating="4" onclick="dashboard.selectRating(4)" role="button" aria-label="4 sao" tabindex="0"></i>
+                        <i class="far fa-star" data-rating="5" onclick="dashboard.selectRating(5)" role="button" aria-label="5 sao" tabindex="0"></i>
+                    </div>
+                    <input type="hidden" id="selectedRating" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="ratingComment">Nhận xét:</label>
+                    <textarea class="form-control" id="ratingComment" rows="4" placeholder="Nhập nhận xét của bạn về lớp học này..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="dashboard.closeModal()">Hủy</button>
+                    <button class="btn btn-primary" onclick="dashboard.submitRating('${registrationId}')">Gửi đánh giá</button>
+                </div>
+            </div>
+        `;
+        this.showModal('Đánh giá lớp học', modalContent, 'medium-modal');
+        this.currentRatingRegistrationId = registrationId;
+        this.currentRating = 0;
+    }
+
+    // Rate Session Method (for learning history)
+    rateSession(sessionId, className, sessionNumber) {
+        const modalContent = `
+            <div class="rating-modal-content">
+                <div class="form-group">
+                    <label>Lớp học: <strong>${this.escapeHtml(className)}</strong></label>
+                    <p style="margin-top: 0.5rem; color: var(--text-secondary);">Buổi học số: ${sessionNumber}</p>
+                </div>
+                <div class="form-group">
+                    <label>Đánh giá (1-5 sao):</label>
+                    <div class="rating-stars" id="ratingStars" role="group" aria-label="Đánh giá sao">
+                        <i class="far fa-star" data-rating="1" onclick="dashboard.selectRating(1)" role="button" aria-label="1 sao" tabindex="0"></i>
+                        <i class="far fa-star" data-rating="2" onclick="dashboard.selectRating(2)" role="button" aria-label="2 sao" tabindex="0"></i>
+                        <i class="far fa-star" data-rating="3" onclick="dashboard.selectRating(3)" role="button" aria-label="3 sao" tabindex="0"></i>
+                        <i class="far fa-star" data-rating="4" onclick="dashboard.selectRating(4)" role="button" aria-label="4 sao" tabindex="0"></i>
+                        <i class="far fa-star" data-rating="5" onclick="dashboard.selectRating(5)" role="button" aria-label="5 sao" tabindex="0"></i>
+                    </div>
+                    <input type="hidden" id="selectedRating" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="ratingComment">Nhận xét:</label>
+                    <textarea class="form-control" id="ratingComment" rows="4" placeholder="Nhập nhận xét của bạn về buổi học này..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="dashboard.closeModal()">Hủy</button>
+                    <button class="btn btn-primary" onclick="dashboard.submitSessionRating('${sessionId}')">Gửi đánh giá</button>
+                </div>
+            </div>
+        `;
+        this.showModal('Đánh giá buổi học', modalContent, 'medium-modal');
+        this.currentRatingSessionId = sessionId;
+        this.currentRating = 0;
+    }
+
+    selectRating(rating) {
+        this.currentRating = rating;
+        const selectedRatingInput = document.getElementById('selectedRating');
+        if (selectedRatingInput) {
+            selectedRatingInput.value = rating;
+        }
+        const stars = document.querySelectorAll('#ratingStars i');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+                star.classList.remove('far');
+                star.classList.add('fas');
+            } else {
+                star.classList.remove('active');
+                star.classList.add('far');
+                star.classList.remove('fas');
+            }
+        });
+    }
+
+    async submitRating(registrationId) {
+        const rating = this.currentRating || parseInt(document.getElementById('selectedRating')?.value || '0');
+        const comment = document.getElementById('ratingComment')?.value.trim() || '';
+
+        if (rating === 0) {
+            this.showNotification('Vui lòng chọn số sao đánh giá!', 'error');
+            return;
+        }
+
+        try {
+            const response = await this.apiCall('/api/portal/student/rate-class', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    registrationId: registrationId,
+                    rating: rating,
+                    comment: comment
+                })
+            });
+
+            if (response && (response.success !== false)) {
+                this.showNotification('Đánh giá đã được gửi thành công!', 'success');
+                this.closeModal();
+                // Reload registrations to show updated rating
+                this.loadRegistrations();
+            } else {
+                throw new Error(response?.message || 'Lỗi khi gửi đánh giá');
+            }
+        } catch (error) {
+            console.error('Error submitting rating:', error);
+            this.showNotification('Lỗi khi gửi đánh giá: ' + (error.message || 'Vui lòng thử lại'), 'error');
+        }
+    }
+
+    async submitSessionRating(sessionId) {
+        const rating = this.currentRating || parseInt(document.getElementById('selectedRating')?.value || '0');
+        const comment = document.getElementById('ratingComment')?.value.trim() || '';
+
+        if (rating === 0) {
+            this.showNotification('Vui lòng chọn số sao đánh giá!', 'error');
+            return;
+        }
+
+        try {
+            const response = await this.apiCall('/api/portal/student/rate-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sessionId: sessionId,
+                    rating: rating,
+                    comment: comment
+                })
+            });
+
+            if (response && (response.success !== false)) {
+                this.showNotification('Đánh giá buổi học đã được gửi thành công!', 'success');
+                this.closeModal();
+                // Reload attended classes to show updated rating
+                this.loadAttendedClasses();
+            } else {
+                throw new Error(response?.message || 'Lỗi khi gửi đánh giá');
+            }
+        } catch (error) {
+            console.error('Error submitting session rating:', error);
+            this.showNotification('Lỗi khi gửi đánh giá: ' + (error.message || 'Vui lòng thử lại'), 'error');
+        }
     }
 
     // Filter and Search Methods
@@ -4342,21 +4758,276 @@ StudentDashboard.prototype.loadTodaySchedule = function() {
 };
 
 StudentDashboard.prototype.updateCalendar = function() {
-    const calendarGrid = document.getElementById('calendarGrid');
-    if (!calendarGrid) return;
+        const calendarGrid = document.getElementById('calendarGrid');
+        if (!calendarGrid) return;
 
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    // Update month display
-    const currentMonthElement = document.getElementById('currentMonth');
-    if (currentMonthElement) {
+        // Update month display
+        const currentMonthElement = document.getElementById('currentMonth');
+        const currentMonthDisplay = document.getElementById('currentMonthDisplay');
+        const currentYearDisplay = document.getElementById('currentYearDisplay');
+        
         const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
                           'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-        currentMonthElement.textContent = `${monthNames[currentMonth]}, ${currentYear}`;
-    }
+        
+        if (currentMonthElement) {
+            currentMonthElement.textContent = `${monthNames[this.currentMonth]}, ${this.currentYear}`;
+        }
+        if (currentMonthDisplay) {
+            currentMonthDisplay.textContent = monthNames[this.currentMonth];
+        }
+        if (currentYearDisplay) {
+            currentYearDisplay.textContent = this.currentYear;
+        }
 
-    // Simple calendar grid
-    calendarGrid.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Lịch học sẽ được hiển thị ở đây</p>';
-};
+        // Đếm số lượng lớp học mỗi ngày
+        const dateClassCount = new Map(); // dateKey -> count
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Đếm từ attendedClasses
+        if (this.studentData?.attendedClasses) {
+            this.studentData.attendedClasses.forEach(ac => {
+                if (ac.sessionDate) {
+                    const date = new Date(ac.sessionDate);
+                    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                    dateClassCount.set(dateKey, (dateClassCount.get(dateKey) || 0) + 1);
+                }
+            });
+        }
+        
+        // Tính tổng số lớp trong tháng
+        let monthTotalClasses = 0;
+        dateClassCount.forEach(count => {
+            monthTotalClasses += count;
+        });
+        const monthClassesCountEl = document.getElementById('monthClassesCount');
+        if (monthClassesCountEl) {
+            monthClassesCountEl.textContent = monthTotalClasses;
+        }
+        
+        // Đếm số lớp hôm nay
+        const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const todayCount = dateClassCount.get(todayKey) || 0;
+        const todayClassesCountEl = document.getElementById('todayClassesCount');
+        if (todayClassesCountEl) {
+            todayClassesCountEl.textContent = todayCount;
+        }
+        
+        // Tạo calendar grid
+        const firstDay = new Date(this.currentYear, this.currentMonth, 1);
+        const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay(); // 0 = Chủ nhật, 1 = Thứ 2, ...
+        
+        // Tên các ngày trong tuần
+        const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        
+        let calendarHTML = '<div class="calendar-weekdays">';
+        dayNames.forEach(day => {
+            calendarHTML += `<div class="calendar-weekday">${day}</div>`;
+        });
+        calendarHTML += '</div><div class="calendar-days">';
+        
+        // Thêm các ô trống cho ngày đầu tháng
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            calendarHTML += '<div class="calendar-day empty"></div>';
+        }
+        
+        // Thêm các ngày trong tháng
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(this.currentYear, this.currentMonth, day);
+            const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const classCount = dateClassCount.get(dateKey) || 0;
+            
+            let dayClass = 'calendar-day';
+            let dayBadge = '';
+            
+            // Kiểm tra nếu là ngày hôm nay
+            const isToday = date.getTime() === today.getTime();
+            if (isToday) {
+                dayClass += ' today';
+            }
+            
+            // Hiển thị badge số lượng lớp
+            if (classCount > 0) {
+                let badgeClass = 'day-badge';
+                if (classCount >= 3) {
+                    badgeClass += ' badge-many'; // Đỏ cho 3+ lớp
+                } else if (classCount === 2) {
+                    badgeClass += ' badge-medium'; // Vàng cho 2 lớp
+                } else {
+                    badgeClass += ' badge-few'; // Xanh cho 1 lớp
+                }
+                dayBadge = `<div class="${badgeClass}">${classCount} khóa học</div>`;
+            }
+            
+            // Kiểm tra nếu là ngày quá khứ nhưng không có lớp
+            if (date < today && classCount === 0) {
+                dayClass += ' past';
+            }
+            
+            calendarHTML += `
+                <div class="${dayClass}" data-date="${dateKey}" onclick="dashboard.showDaySchedule('${dateKey}')">
+                    <span class="day-number">${day}</span>
+                    ${dayBadge}
+                </div>
+            `;
+        }
+        
+        calendarHTML += '</div>';
+        calendarGrid.innerHTML = calendarHTML;
+    };
+
+StudentDashboard.prototype.switchScheduleView = function(view) {
+        this.scheduleView = view;
+        const monthView = document.getElementById('monthView');
+        const weekView = document.getElementById('weekView');
+        const monthTab = document.getElementById('monthViewTab');
+        const weekTab = document.getElementById('weekViewTab');
+        
+        if (view === 'month') {
+            if (monthView) monthView.style.display = 'block';
+            if (weekView) weekView.style.display = 'none';
+            if (monthTab) monthTab.classList.add('active');
+            if (weekTab) weekTab.classList.remove('active');
+            this.updateCalendar();
+        } else {
+            if (monthView) monthView.style.display = 'none';
+            if (weekView) weekView.style.display = 'block';
+            if (monthTab) monthTab.classList.remove('active');
+            if (weekTab) weekTab.classList.add('active');
+            this.updateWeekView();
+        }
+    };
+
+StudentDashboard.prototype.changeWeek = function(delta) {
+        const today = new Date();
+        const currentWeekStart = this.getWeekStartDate(today);
+        currentWeekStart.setDate(currentWeekStart.getDate() + (delta * 7));
+        this.currentWeek = this.getWeekNumber(currentWeekStart);
+        this.updateWeekView();
+    };
+
+StudentDashboard.prototype.getWeekNumber = function(date) {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    };
+
+StudentDashboard.prototype.getWeekStartDate = function(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+        return new Date(d.setDate(diff));
+    };
+
+StudentDashboard.prototype.updateWeekView = function() {
+        const weekSchedule = document.getElementById('weekSchedule');
+        const currentWeekEl = document.getElementById('currentWeek');
+        if (!weekSchedule) return;
+
+        const today = new Date();
+        const weekStart = this.getWeekStartDate(today);
+        weekStart.setDate(weekStart.getDate() + ((this.currentWeek - this.getWeekNumber(today)) * 7));
+        
+        if (currentWeekEl) {
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                              'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+            currentWeekEl.textContent = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}, ${weekEnd.getFullYear()}`;
+        }
+
+        let weekHTML = '';
+        const dayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        
+        for (let i = 0; i < 7; i++) {
+            const currentDay = new Date(weekStart);
+            currentDay.setDate(weekStart.getDate() + i);
+            const dateKey = `${currentDay.getFullYear()}-${String(currentDay.getMonth() + 1).padStart(2, '0')}-${String(currentDay.getDate()).padStart(2, '0')}`;
+            
+            // Lấy các lớp học trong ngày
+            const dayClasses = this.getClassesForDate(dateKey);
+            const isToday = currentDay.toDateString() === new Date().toDateString();
+            
+            weekHTML += `
+                <div class="week-day ${isToday ? 'today' : ''}">
+                    <div class="week-day-header">
+                        <span class="week-day-name">${dayNames[i]}</span>
+                        <span class="week-day-date">${currentDay.getDate()}/${currentDay.getMonth() + 1}</span>
+                    </div>
+                    <div class="week-day-classes">
+                        ${dayClasses.length > 0 ? dayClasses.map(cls => `
+                            <div class="week-class-item" onclick="dashboard.showDaySchedule('${dateKey}')">
+                                <div class="week-class-time">${cls.startTime || 'N/A'}</div>
+                                <div class="week-class-name">${this.escapeHtml(cls.className || 'Lớp học')}</div>
+                                <div class="week-class-room">${this.escapeHtml(cls.room || 'Chưa có phòng')}</div>
+                            </div>
+                        `).join('') : '<div class="week-day-empty">Không có lịch học</div>'}
+                    </div>
+                </div>
+            `;
+        }
+        
+        weekSchedule.innerHTML = weekHTML;
+    };
+
+StudentDashboard.prototype.getClassesForDate = function(dateKey) {
+        if (!this.studentData?.attendedClasses) return [];
+        
+        return this.studentData.attendedClasses.filter(ac => {
+            if (!ac.sessionDate) return false;
+            const date = new Date(ac.sessionDate);
+            const acDateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            return acDateKey === dateKey;
+        });
+    };
+
+StudentDashboard.prototype.showDaySchedule = function(dateKey) {
+        this.selectedDate = dateKey;
+        const modal = document.getElementById('scheduleModal');
+        const modalTitle = document.getElementById('modalDateTitle');
+        const modalBody = document.getElementById('scheduleModalBody');
+        
+        if (!modal || !modalTitle || !modalBody) return;
+        
+        const date = new Date(dateKey + 'T00:00:00');
+        const dayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        const dayName = dayNames[date.getDay()];
+        const dateStr = `${dayName}, ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        
+        const classes = this.getClassesForDate(dateKey);
+        
+        modalTitle.textContent = `${dateStr} (${classes.length} Lịch Học)`;
+        
+        if (classes.length > 0) {
+            modalBody.innerHTML = classes.map((cls, index) => {
+                const startTime = cls.startTime ? cls.startTime.substring(0, 5) : 'N/A';
+                const endTime = cls.endTime ? cls.endTime.substring(0, 5) : 'N/A';
+                return `
+                    <div class="schedule-modal-item">
+                        <div class="schedule-modal-time">${startTime}</div>
+                        <div class="schedule-modal-content">
+                            <h4>${this.escapeHtml(cls.className || 'Lớp học')}</h4>
+                            <p><i class="fas fa-map-marker-alt"></i> Phòng: ${this.escapeHtml(cls.room || 'Chưa có phòng')}</p>
+                            <p><i class="fas fa-clock"></i> Thời gian: ${startTime} → ${endTime}</p>
+                            ${cls.content ? `<p><i class="fas fa-sticky-note"></i> Ghi chú: ${this.escapeHtml(cls.content)}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            modalBody.innerHTML = '<div class="empty-state">Không có lịch học trong ngày này</div>';
+        }
+        
+        modal.style.display = 'flex';
+    };
+
+StudentDashboard.prototype.closeScheduleModal = function() {
+        const modal = document.getElementById('scheduleModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    };

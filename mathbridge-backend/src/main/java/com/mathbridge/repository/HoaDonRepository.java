@@ -15,6 +15,10 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, String> {
     // Tìm hóa đơn theo lớp học
     List<HoaDon> findByLopHoc_IdLh(String idLh);
     
+    // Tìm hóa đơn theo học sinh và lớp học
+    @org.springframework.data.jpa.repository.Query("SELECT h FROM HoaDon h WHERE h.hocSinh.idHs = :idHS AND h.lopHoc.idLh = :idLH")
+    List<HoaDon> findByHocSinhIdAndLopHocId(@org.springframework.data.repository.query.Param("idHS") String idHS, @org.springframework.data.repository.query.Param("idLH") String idLH);
+    
     // Tìm hóa đơn theo trạng thái
     List<HoaDon> findByTrangThai(String trangThai);
     

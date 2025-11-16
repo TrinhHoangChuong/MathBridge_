@@ -93,9 +93,6 @@
                     <p id="heroSubtitle">Hôm nay bạn có <span id="todayClassesCount">0</span> lớp học và <span id="pendingAssignmentsCount">0</span> bài tập cần làm.</p>
                 </div>
                 <div class="hero-actions">
-                    <button class="btn btn-primary" onclick="dashboard.quickAction('joinClass')">
-                        <i class="fas fa-plus"></i> Tham gia lớp mới
-                    </button>
                     <button class="btn btn-secondary" onclick="dashboard.quickAction('viewSchedule')">
                         <i class="fas fa-calendar"></i> Xem lịch học
                     </button>
@@ -341,26 +338,83 @@
                 </div>
             </div>
 
-            <div class="schedule-calendar">
-                <div class="calendar-header">
-                    <button class="btn-icon" id="prevMonth" onclick="changeMonth(-1)">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <h3 id="currentMonth">Tháng 12, 2024</h3>
-                    <button class="btn-icon" id="nextMonth" onclick="changeMonth(1)">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+            <!-- Schedule View Tabs -->
+            <div class="schedule-view-tabs">
+                <button class="schedule-tab active" id="monthViewTab" onclick="dashboard.switchScheduleView('month')">
+                    <i class="fas fa-calendar-alt"></i> Lịch tháng
+                </button>
+                <button class="schedule-tab" id="weekViewTab" onclick="dashboard.switchScheduleView('week')">
+                    <i class="fas fa-calendar-week"></i> Lịch tuần
+                </button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="schedule-summary-cards">
+                <div class="summary-card">
+                    <div class="summary-label">Tháng</div>
+                    <div class="summary-value" id="currentMonthDisplay">Tháng 11</div>
+                    <div class="summary-year" id="currentYearDisplay">2025</div>
                 </div>
-                <div class="calendar-grid" id="calendarGrid">
-                    <!-- Calendar will be populated by JavaScript -->
+                <div class="summary-card">
+                    <div class="summary-label">
+                        <i class="fas fa-calendar-check"></i> Hôm nay
+                    </div>
+                    <div class="summary-value" id="todayClassesCount">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">
+                        <i class="fas fa-cog"></i> Tháng
+                    </div>
+                    <div class="summary-value" id="monthClassesCount">0</div>
                 </div>
             </div>
 
-            <!-- Today's Schedule -->
-            <div class="today-schedule">
-                <h3><i class="fas fa-calendar-day"></i> Lịch học hôm nay (<span id="todayDate"></span>)</h3>
-                <div class="schedule-list" id="todayScheduleList">
-                    <!-- Today's schedule will be loaded here -->
+            <!-- Month View -->
+            <div class="schedule-view" id="monthView">
+                <div class="schedule-calendar">
+                    <div class="calendar-header">
+                        <button class="btn-icon" id="prevMonth" onclick="dashboard.changeMonth(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h3 id="currentMonth">Tháng 12, 2024</h3>
+                        <button class="btn-icon" id="nextMonth" onclick="dashboard.changeMonth(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Calendar will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Week View -->
+            <div class="schedule-view" id="weekView" style="display: none;">
+                <div class="week-navigation">
+                    <button class="btn-icon" id="prevWeek" onclick="dashboard.changeWeek(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 id="currentWeek">Tuần hiện tại</h3>
+                    <button class="btn-icon" id="nextWeek" onclick="dashboard.changeWeek(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="week-schedule" id="weekSchedule">
+                    <!-- Week schedule will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Selected Day Schedule Modal -->
+            <div class="schedule-modal" id="scheduleModal">
+                <div class="schedule-modal-content">
+                    <div class="schedule-modal-header">
+                        <h3 id="modalDateTitle">Lịch học</h3>
+                        <button class="modal-close" onclick="dashboard.closeScheduleModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="schedule-modal-body" id="scheduleModalBody">
+                        <!-- Schedule details will be loaded here -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -497,8 +551,35 @@
                 </div>
             </div>
 
-            <!-- History Layout Container -->
-            <div class="history-layout">
+            <!-- History Tabs -->
+            <div class="history-tabs">
+                <button class="history-tab active" onclick="dashboard.switchHistoryTab('learning')">
+                    <i class="fas fa-book-open"></i> Lịch sử học tập
+                </button>
+                <button class="history-tab" onclick="dashboard.switchHistoryTab('registrations')">
+                    <i class="fas fa-clipboard-list"></i> Lịch sử đăng ký lớp
+                </button>
+            </div>
+
+            <!-- History Content -->
+            <div class="history-content-container">
+                <!-- Learning History Tab -->
+                <div class="history-content active" id="learningHistory">
+                    <div class="history-list" id="classesHistoryList">
+                        <!-- Attended classes will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Registration History Tab -->
+                <div class="history-content" id="registrationsHistory">
+                    <div class="history-list" id="registrationsList">
+                        <!-- Registrations will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Layout Container (Keep for backward compatibility) -->
+            <div class="history-layout" style="display: none;">
                 <!-- Left Column: Course Timeline -->
                 <div class="history-timeline-column">
                     <div class="timeline-container">
@@ -714,45 +795,6 @@
                             <h4>Hỗ trợ khẩn cấp</h4>
                             <p>Vấn đề quan trọng cần giải quyết ngay lập tức</p>
                             <div class="response-time">Trả lời trong 30 phút</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Help Resources -->
-            <div class="quick-help-section">
-                <h3><i class="fas fa-lightbulb"></i> Tài nguyên hỗ trợ nhanh</h3>
-                <div class="help-resources-grid">
-                    <div class="help-resource-card">
-                        <div class="resource-icon">📚</div>
-                        <div class="resource-content">
-                            <h5>Hướng dẫn sử dụng</h5>
-                            <p>Hướng dẫn chi tiết cách sử dụng nền tảng MathBridge</p>
-                            <a href="#" class="resource-link">Xem hướng dẫn →</a>
-                        </div>
-                    </div>
-                    <div class="help-resource-card">
-                        <div class="resource-icon">❓</div>
-                        <div class="resource-content">
-                            <h5>Câu hỏi thường gặp</h5>
-                            <p>Giải đáp các câu hỏi phổ biến về chương trình học</p>
-                            <a href="#" class="resource-link">Xem FAQ →</a>
-                        </div>
-                    </div>
-                    <div class="help-resource-card">
-                        <div class="resource-icon">🎥</div>
-                        <div class="resource-content">
-                            <h5>Video hướng dẫn</h5>
-                            <p>Thư viện video giải thích chi tiết các khái niệm toán</p>
-                            <a href="#" class="resource-link">Xem video →</a>
-                        </div>
-                    </div>
-                    <div class="help-resource-card">
-                        <div class="resource-icon">📞</div>
-                        <div class="resource-content">
-                            <h5>Liên hệ trực tiếp</h5>
-                            <p>Gọi hotline hoặc nhắn tin trực tiếp với giáo viên</p>
-                            <a href="#" class="resource-link">Liên hệ ngay →</a>
                         </div>
                     </div>
                 </div>

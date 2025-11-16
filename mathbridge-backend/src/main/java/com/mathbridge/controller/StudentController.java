@@ -3,6 +3,8 @@ package com.mathbridge.controller;
 import com.mathbridge.dto.ApiResponse;
 import com.mathbridge.dto.PortalStudentDTO.StudentDashboardDTO;
 import com.mathbridge.dto.PortalStudentDTO.UpdateStudentProfileDTO;
+import com.mathbridge.dto.PortalStudentDTO.RateSessionDTO;
+import com.mathbridge.dto.PortalStudentDTO.RateClassDTO;
 import com.mathbridge.service.PortalStudent.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -88,6 +90,108 @@ public class StudentController {
             return ResponseEntity.badRequest().body(new ApiResponse<>(
                 false,
                 e.getMessage() != null ? e.getMessage() : "Lỗi khi cập nhật hồ sơ",
+                null
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                false,
+                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                null
+            ));
+        }
+    }
+
+    @PostMapping("/rate-session")
+    public ResponseEntity<ApiResponse<String>> rateSession(
+            @RequestBody RateSessionDTO rateDTO,
+            Authentication authentication) {
+        try {
+            // Extract user ID from JWT token
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String userId = jwt.getClaimAsString("uid");
+
+            if (userId == null) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false,
+                    "Không thể xác định ID người dùng từ token",
+                    null
+                ));
+            }
+
+            // Validate rating
+            if (rateDTO.getRating() == null || rateDTO.getRating() < 1 || rateDTO.getRating() > 5) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false,
+                    "Đánh giá phải từ 1 đến 5 sao",
+                    null
+                ));
+            }
+
+            studentService.rateSession(userId, rateDTO);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Đánh giá buổi học đã được lưu thành công",
+                "Session rated successfully"
+            ));
+
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                false,
+                e.getMessage() != null ? e.getMessage() : "Lỗi khi lưu đánh giá",
+                null
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                false,
+                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                null
+            ));
+        }
+    }
+
+    @PostMapping("/rate-class")
+    public ResponseEntity<ApiResponse<String>> rateClass(
+            @RequestBody RateClassDTO rateDTO,
+            Authentication authentication) {
+        try {
+            // Extract user ID from JWT token
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String userId = jwt.getClaimAsString("uid");
+
+            if (userId == null) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false,
+                    "Không thể xác định ID người dùng từ token",
+                    null
+                ));
+            }
+
+            // Validate rating
+            if (rateDTO.getRating() == null || rateDTO.getRating() < 1 || rateDTO.getRating() > 5) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false,
+                    "Đánh giá phải từ 1 đến 5 sao",
+                    null
+                ));
+            }
+
+            studentService.rateClass(userId, rateDTO);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Đánh giá lớp học đã được lưu thành công",
+                "Class rated successfully"
+            ));
+
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                false,
+                e.getMessage() != null ? e.getMessage() : "Lỗi khi lưu đánh giá",
                 null
             ));
         } catch (Exception e) {

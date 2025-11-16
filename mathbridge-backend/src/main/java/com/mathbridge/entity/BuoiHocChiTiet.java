@@ -44,6 +44,9 @@ public class BuoiHocChiTiet {
     @Column(name = "GhiChu", length = 200)
     private String ghiChu;
 
+    // Note: Đánh giá buổi học được lưu trong entity DanhGiaBuoiHoc riêng biệt
+    // Không còn lưu DiemDanhGia và NhanXetDanhGia trong BuoiHocChiTiet
+
     // 1 BuoiHocChiTiet -> n BaiTap
     @OneToMany(mappedBy = "buoiHocChiTiet", fetch = FetchType.LAZY)
     private List<BaiTap> baiTaps = new ArrayList<>();
