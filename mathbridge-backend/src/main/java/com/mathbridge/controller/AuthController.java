@@ -38,8 +38,10 @@ public class AuthController {
                     );
         }
 
+        // Tạo token với userId (ID_TK) để có thể lấy studentId sau này
         String token = jwtUtil.generateToken(
                 account.getEmail(),
+                account.getIdTk(), // Thêm ID_TK vào token
                 account.getRoles()
         );
 

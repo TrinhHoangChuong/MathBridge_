@@ -1,10 +1,13 @@
 package com.mathbridge.service;
 
 import com.mathbridge.dto.GiaoVienCardDTO;
-import com.mathbridge.repository.Admin.NhanVienRepository;
+import com.mathbridge.dto.NhanVienProfileDTO;
+import com.mathbridge.dto.NhanVienProfileUpdateDTO;
+import com.mathbridge.repository.NhanVienRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,5 +37,15 @@ public class NhanVienServiceImpl implements NhanVienService {
                         nv.getKinhNghiem()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<NhanVienProfileDTO> getProfileByAccountId(String idTk) {
+        return Optional.empty();
+    }
+
+    @Override
+    public NhanVienProfileDTO updateProfileByAccountId(String idTk, NhanVienProfileUpdateDTO request) {
+        return null;
     }
 }
