@@ -1,8 +1,15 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "YeuCauHoTro")
 public class YeuCauHoTro {
@@ -11,10 +18,8 @@ public class YeuCauHoTro {
     @Column(name = "ID_YC", length = 10, nullable = false)
     private String idYc;
 
-    // FK -> LopHoc(ID_LH), nullable
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_LH", referencedColumnName = "ID_LH")
-    private LopHoc lopHoc;
+    @Column(name = "ID_LH", length = 10)
+    private String idLh;
 
     @Column(name = "TieuDe", length = 100, nullable = false)
     private String tieuDe;
@@ -36,83 +41,9 @@ public class YeuCauHoTro {
 
     @Column(name = "ThoiDiemDong")
     private LocalDateTime thoiDiemDong;
+    // QUAN HỆ
 
-    public YeuCauHoTro() {
-    }
-
-    public YeuCauHoTro(String idYc) {
-        this.idYc = idYc;
-    }
-
-    public String getIdYc() {
-        return idYc;
-    }
-
-    public void setIdYc(String idYc) {
-        this.idYc = idYc;
-    }
-
-    public LopHoc getLopHoc() {
-        return lopHoc;
-    }
-
-    public void setLopHoc(LopHoc lopHoc) {
-        this.lopHoc = lopHoc;
-    }
-
-    public String getTieuDe() {
-        return tieuDe;
-    }
-
-    public void setTieuDe(String tieuDe) {
-        this.tieuDe = tieuDe;
-    }
-
-    public String getNoiDung() {
-        return noiDung;
-    }
-
-    public void setNoiDung(String noiDung) {
-        this.noiDung = noiDung;
-    }
-
-    public String getFileUrl() {
-        return fileUrl;
-    }
-
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
-    }
-
-    public String getLoaiYeuCau() {
-        return loaiYeuCau;
-    }
-
-    public void setLoaiYeuCau(String loaiYeuCau) {
-        this.loaiYeuCau = loaiYeuCau;
-    }
-
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
-    }
-
-    public LocalDateTime getThoiDiemTao() {
-        return thoiDiemTao;
-    }
-
-    public void setThoiDiemTao(LocalDateTime thoiDiemTao) {
-        this.thoiDiemTao = thoiDiemTao;
-    }
-
-    public LocalDateTime getThoiDiemDong() {
-        return thoiDiemDong;
-    }
-
-    public void setThoiDiemDong(LocalDateTime thoiDiemDong) {
-        this.thoiDiemDong = thoiDiemDong;
-    }
+    @ManyToOne
+    @JoinColumn(name = "ID_LH", insertable = false, updatable = false)
+    private LopHoc lopHoc;
 }

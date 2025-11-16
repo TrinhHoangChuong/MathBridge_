@@ -1,10 +1,17 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "BaiTap")
 public class BaiTap {
@@ -13,10 +20,8 @@ public class BaiTap {
     @Column(name = "ID_BT", length = 10, nullable = false)
     private String idBt;
 
-    // FK -> BuoiHocChiTiet(ID_BH)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_BH", referencedColumnName = "ID_BH")
-    private BuoiHocChiTiet buoiHocChiTiet;
+    @Column(name = "ID_BH", length = 10)
+    private String idBh;
 
     @Column(name = "TieuDe", length = 100, nullable = false)
     private String tieuDe;
@@ -41,103 +46,12 @@ public class BaiTap {
 
     @Column(name = "GhiChu", length = 200)
     private String ghiChu;
+    // QUAN HỆ
 
-    // One BaiTap -> many BaiNop
-    @OneToMany(mappedBy = "baiTap", fetch = FetchType.LAZY)
-    private List<BaiNop> baiNops = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "ID_BH", insertable = false, updatable = false)
+    private BuoiHocChiTiet buoiHocChiTiet;
 
-    public BaiTap() {
-    }
-
-    public BaiTap(String idBt) {
-        this.idBt = idBt;
-    }
-
-    public String getIdBt() {
-        return idBt;
-    }
-
-    public void setIdBt(String idBt) {
-        this.idBt = idBt;
-    }
-
-    public BuoiHocChiTiet getBuoiHocChiTiet() {
-        return buoiHocChiTiet;
-    }
-
-    public void setBuoiHocChiTiet(BuoiHocChiTiet buoiHocChiTiet) {
-        this.buoiHocChiTiet = buoiHocChiTiet;
-    }
-
-    public String getTieuDe() {
-        return tieuDe;
-    }
-
-    public void setTieuDe(String tieuDe) {
-        this.tieuDe = tieuDe;
-    }
-
-    public String getMoTa() {
-        return moTa;
-    }
-
-    public void setMoTa(String moTa) {
-        this.moTa = moTa;
-    }
-
-    public String getLoaiBt() {
-        return loaiBt;
-    }
-
-    public void setLoaiBt(String loaiBt) {
-        this.loaiBt = loaiBt;
-    }
-
-    public String getFileUrl() {
-        return fileUrl;
-    }
-
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
-    }
-
-    public String getTaiLieuUrl() {
-        return taiLieuUrl;
-    }
-
-    public void setTaiLieuUrl(String taiLieuUrl) {
-        this.taiLieuUrl = taiLieuUrl;
-    }
-
-    public LocalDateTime getNgayBatDau() {
-        return ngayBatDau;
-    }
-
-    public void setNgayBatDau(LocalDateTime ngayBatDau) {
-        this.ngayBatDau = ngayBatDau;
-    }
-
-    public LocalDateTime getNgayKetThuc() {
-        return ngayKetThuc;
-    }
-
-    public void setNgayKetThuc(LocalDateTime ngayKetThuc) {
-        this.ngayKetThuc = ngayKetThuc;
-    }
-
-    public String getGhiChu() {
-        return ghiChu;
-    }
-
-    public void setGhiChu(String ghiChu) {
-        this.ghiChu = ghiChu;
-    }
-
-    public List<BaiNop> getBaiNops() {
-        return baiNops;
-    }
-
-    public void setBaiNops(List<BaiNop> baiNops) {
-        this.baiNops = baiNops;
-    }
+    @OneToMany(mappedBy = "baiTap")
+    private Set<BaiNop> baiNops = new HashSet<>();
 }

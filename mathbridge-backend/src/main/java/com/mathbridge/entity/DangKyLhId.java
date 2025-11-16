@@ -12,11 +12,11 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 @Embeddable
-public class TaiKhoanVaiTroId implements Serializable {
+public class DangKyLhId implements Serializable {
 
-    @Column(name = "ID_TK", length = 10, nullable = false)
-    private String idTk;
+    @Column(name = "ID_HS", length = 10, nullable = false)
+    private String idHs;
 
-    @Column(name = "ID_Role", length = 10, nullable = false)
-    private String idRole;
+    @Column(name = "ID_LH", length = 10, nullable = false)
+    private String idLh;
 }
