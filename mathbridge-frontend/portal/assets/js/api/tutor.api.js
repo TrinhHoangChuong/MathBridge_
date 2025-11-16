@@ -290,6 +290,31 @@ class TutorAPI {
         return await this.request(endpoint);
     }
 
+    // Enhanced Support API Methods for Tutor Portal
+    async getAllSupportRequests() {
+        return await this.request('/support', {
+            method: 'GET'
+        });
+    }
+
+    async getOpenSupportRequests() {
+        return await this.request('/support/open', {
+            method: 'GET'
+        });
+    }
+
+    async getSupportRequestsByStatus(trangThai) {
+        return await this.request(`/support/status/${trangThai}`, {
+            method: 'GET'
+        });
+    }
+
+    async getSupportRequestsByStudent(idHs) {
+        return await this.request(`/support/student/${idHs}`, {
+            method: 'GET'
+        });
+    }
+
     async getSupportRequestById(id) {
         return await this.request(`/support/${id}`);
     }
@@ -305,6 +330,23 @@ class TutorAPI {
         return await this.request(`/support/${id}`, {
             method: 'PUT',
             body: JSON.stringify(supportData)
+        });
+    }
+
+    async getSupportRequestById(idYc) {
+        return await this.request(`/support/${idYc}`, {
+            method: 'GET'
+        });
+    }
+
+    async updateSupportStatus(idYc, trangThai, ghiChu = null) {
+        const body = { trangThai };
+        if (ghiChu) {
+            body.ghiChu = ghiChu;
+        }
+        return await this.request(`/support/${idYc}/status`, {
+            method: 'PUT',
+            body: JSON.stringify(body)
         });
     }
 

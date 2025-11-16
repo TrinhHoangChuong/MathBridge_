@@ -254,6 +254,57 @@ class TutorDashboard {
                 }
             });
         });
+
+        // Support Details Modal
+        const supportModal = document.getElementById('supportDetailsModal');
+        const closeSupportModal = document.getElementById('closeSupportModal');
+        
+        if (closeSupportModal) {
+            closeSupportModal.addEventListener('click', () => {
+                if (supportModal) {
+                    supportModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Close support modal when clicking outside
+        if (supportModal) {
+            supportModal.addEventListener('click', (e) => {
+                if (e.target === supportModal) {
+                    supportModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Update Status Modal
+        const statusModal = document.getElementById('updateStatusModal');
+        const closeStatusModal = document.getElementById('closeStatusModal');
+        const closeStatusModalBtn = document.getElementById('closeStatusModalBtn');
+        
+        if (closeStatusModal) {
+            closeStatusModal.addEventListener('click', () => {
+                if (statusModal) {
+                    statusModal.style.display = 'none';
+                }
+            });
+        }
+
+        if (closeStatusModalBtn) {
+            closeStatusModalBtn.addEventListener('click', () => {
+                if (statusModal) {
+                    statusModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Close status modal when clicking outside
+        if (statusModal) {
+            statusModal.addEventListener('click', (e) => {
+                if (e.target === statusModal) {
+                    statusModal.style.display = 'none';
+                }
+            });
+        }
     }
 
     setupButtonActions() {
@@ -1389,9 +1440,584 @@ class TutorDashboard {
         this.closeInvoiceModal();
     }
 
-    loadSupportData() {
-        // Simulate loading support data
-        console.log('Loading support data...');
+    async loadSupportData() {
+        await this.loadSupportRequests();
+    }
+
+    async loadSupportRequests() {
+        const supportGrid = document.getElementById('supportGrid');
+        const supportLoading = document.getElementById('supportLoading');
+        const supportEmpty = document.getElementById('supportEmpty');
+        
+        if (!supportGrid) return;
+        
+        // Show loading state
+        if (supportLoading) supportLoading.style.display = 'block';
+        supportGrid.innerHTML = '';
+        if (supportEmpty) supportEmpty.style.display = 'none';
+        
+        try {
+            const requests = await window.tutorAPI.getAllSupportRequests();
+            
+            // Hide loading state
+            if (supportLoading) supportLoading.style.display = 'none';
+            
+            if (!requests || requests.length === 0) {
+                if (supportEmpty) supportEmpty.style.display = 'block';
+                return;
+            }
+            
+            // Store requests for filtering
+            this.allSupportRequests = requests || [];
+            
+            // Setup filters
+            this.setupSupportFilters();
+            
+            // Render support requests
+            this.renderSupportRequests(this.allSupportRequests);
+        } catch (error) {
+            console.error('Error loading support requests:', error);
+            if (supportLoading) supportLoading.style.display = 'none';
+            if (supportEmpty) supportEmpty.style.display = 'block';
+            supportGrid.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Không thể tải dữ liệu</h3>
+                    <p>Có lỗi xảy ra khi tải danh sách yêu cầu hỗ trợ</p>
+                    <button class="btn btn-primary" onclick="tutorDashboard.loadSupportRequests()">
+                        <i class="fas fa-redo"></i> Thử lại
+                    </button>
+                </div>
+            `;
+            showNotification('Không thể tải danh sách yêu cầu hỗ trợ', 'error');
+        }
+    }
+    
+    setupSupportFilters() {
+        const searchInput = document.getElementById('supportSearchInput');
+        const statusFilter = document.getElementById('supportStatusFilter');
+        const refreshBtn = document.getElementById('refreshSupportBtn');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterSupportRequests(e.target.value, statusFilter?.value || '');
+            });
+        }
+        
+        if (statusFilter) {
+            statusFilter.addEventListener('change', (e) => {
+                this.filterSupportRequests(searchInput?.value || '', e.target.value);
+            });
+        }
+        
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadSupportRequests();
+            });
+        }
+    }
+    
+    filterSupportRequests(searchTerm = '', statusFilter = '') {
+        if (!this.allSupportRequests) return;
+        
+        let filtered = [...this.allSupportRequests];
+        
+        // Filter by status
+        if (statusFilter) {
+            filtered = filtered.filter(request => 
+                request.trangThai && request.trangThai === statusFilter
+            );
+        }
+        
+        // Filter by search term
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(request => 
+                (request.tieuDe && request.tieuDe.toLowerCase().includes(term)) ||
+                (request.studentName && request.studentName.toLowerCase().includes(term)) ||
+                (request.studentEmail && request.studentEmail.toLowerCase().includes(term)) ||
+                (request.studentPhone && request.studentPhone.includes(term)) ||
+                (request.tenLop && request.tenLop.toLowerCase().includes(term)) ||
+                (request.noiDung && request.noiDung.toLowerCase().includes(term)) ||
+                (request.loaiYeuCau && request.loaiYeuCau.toLowerCase().includes(term))
+            );
+        }
+        
+        // Re-render filtered results
+        this.renderSupportRequests(filtered);
+    }
+
+    renderSupportRequests(requests) {
+        const supportGrid = document.getElementById('supportGrid');
+        const supportEmpty = document.getElementById('supportEmpty');
+        
+        if (!supportGrid) return;
+        
+        if (!requests || requests.length === 0) {
+            supportGrid.innerHTML = '';
+            if (supportEmpty) supportEmpty.style.display = 'block';
+            return;
+        }
+        
+        if (supportEmpty) supportEmpty.style.display = 'none';
+        supportGrid.innerHTML = requests.map(request => this.createSupportCard(request)).join('');
+    }
+
+    createSupportCard(request) {
+        const statusClass = this.getStatusClass(request.trangThai);
+        const statusText = request.trangThai || 'Chưa xử lý';
+        const formattedDate = this.formatDateTime(request.thoiDiemTao);
+        const studentName = request.studentName || 'Chưa có thông tin';
+        const tenLop = request.tenLop || 'Chưa có lớp';
+        const chuongTrinh = request.chuongTrinh ? ` • ${request.chuongTrinh}` : '';
+        const loaiYeuCau = request.loaiYeuCau || 'Không xác định';
+        const noiDung = request.noiDung || 'Không có mô tả';
+        const noiDungShort = noiDung.length > 150 ? noiDung.substring(0, 150) + '...' : noiDung;
+        const isClosed = request.thoiDiemDong != null;
+        const timeAgo = this.getTimeAgo(request.thoiDiemTao);
+        
+        return `
+            <div class="support-card ${isClosed ? 'closed' : ''}" data-id="${request.idYc}" data-status="${statusText}">
+                <div class="support-card-header">
+                    <div class="support-title-section">
+                        <h3 class="support-title">
+                            <i class="fas fa-question-circle"></i>
+                            ${request.tieuDe || 'Yêu cầu hỗ trợ'}
+                        </h3>
+                        <span class="support-time-ago">${timeAgo}</span>
+                    </div>
+                    <span class="status-badge ${statusClass}">
+                        <i class="fas fa-circle"></i>
+                        ${statusText}
+                    </span>
+                </div>
+                
+                <div class="support-card-body">
+                    <div class="support-student-info">
+                        <div class="student-avatar">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="student-details">
+                            <h4 class="student-name">${studentName}</h4>
+                            <div class="student-contact">
+                                ${request.studentEmail ? `
+                                    <span class="contact-item">
+                                        <i class="fas fa-envelope"></i>
+                                        ${request.studentEmail}
+                                    </span>
+                                ` : ''}
+                                ${request.studentPhone ? `
+                                    <span class="contact-item">
+                                        <i class="fas fa-phone"></i>
+                                        ${request.studentPhone}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="support-class-info">
+                        <i class="fas fa-book-open"></i>
+                        <span>${tenLop}${chuongTrinh}</span>
+                    </div>
+                    
+                    <div class="support-content">
+                        <div class="support-type">
+                            <i class="fas fa-tag"></i>
+                            <span>${loaiYeuCau}</span>
+                        </div>
+                        <p class="support-description">${noiDungShort}</p>
+                    </div>
+                    
+                    ${request.fileUrl ? `
+                        <div class="support-attachment">
+                            <i class="fas fa-paperclip"></i>
+                            <a href="${request.fileUrl}" target="_blank" class="attachment-link">
+                                Xem file đính kèm
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="support-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            ${formattedDate}
+                        </span>
+                        ${isClosed ? `
+                            <span class="meta-item closed-time">
+                                <i class="fas fa-check-circle"></i>
+                                Đã đóng: ${this.formatDateTime(request.thoiDiemDong)}
+                            </span>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <div class="support-card-footer">
+                    <button class="btn btn-sm btn-outline-primary" onclick="tutorDashboard.viewSupportDetails('${request.idYc}')">
+                        <i class="fas fa-eye"></i>
+                        Chi tiết
+                    </button>
+                    ${!isClosed ? `
+                        <button class="btn btn-sm btn-success" onclick="tutorDashboard.markSupportAsProcessed('${request.idYc}')">
+                            <i class="fas fa-check"></i>
+                            Đánh dấu đã xử lý
+                        </button>
+                    ` : `
+                        <span class="closed-badge">
+                            <i class="fas fa-lock"></i>
+                            Đã đóng
+                        </span>
+                    `}
+                </div>
+            </div>
+        `;
+    }
+    
+    getTimeAgo(dateTime) {
+        if (!dateTime) return '';
+        const now = new Date();
+        const date = new Date(dateTime);
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Vừa xong';
+        if (diffMins < 60) return `${diffMins} phút trước`;
+        if (diffHours < 24) return `${diffHours} giờ trước`;
+        if (diffDays < 7) return `${diffDays} ngày trước`;
+        return this.formatDateTime(dateTime);
+    }
+    
+    async viewSupportDetails(idYc) {
+        const modal = document.getElementById('supportDetailsModal');
+        const modalBody = document.getElementById('supportModalBody');
+        const modalFooter = document.getElementById('supportModalFooter');
+        
+        if (!modal) return;
+        
+        // Show modal with loading state
+        modal.style.display = 'flex';
+        modalBody.innerHTML = `
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Đang tải thông tin...</p>
+            </div>
+        `;
+        
+        try {
+            const request = await window.tutorAPI.getSupportRequestById(idYc);
+            
+            if (!request) {
+                throw new Error('Không tìm thấy yêu cầu hỗ trợ');
+            }
+            
+            // Render support details
+            const statusClass = this.getStatusClass(request.trangThai);
+            const formattedDate = this.formatDateTime(request.thoiDiemTao);
+            const closedDate = request.thoiDiemDong ? this.formatDateTime(request.thoiDiemDong) : null;
+            const isClosed = request.thoiDiemDong != null;
+            
+            modalBody.innerHTML = `
+                <div class="support-detail-content">
+                    <div class="detail-header">
+                        <div class="detail-title-section">
+                            <h4 class="detail-title">
+                                <i class="fas fa-question-circle"></i>
+                                ${request.tieuDe || 'Yêu cầu hỗ trợ'}
+                            </h4>
+                            <span class="status-badge ${statusClass}">
+                                <i class="fas fa-circle"></i>
+                                ${request.trangThai || 'Chưa xử lý'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-user-graduate"></i>
+                            Thông tin học sinh
+                        </h5>
+                        <div class="detail-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Họ tên:</span>
+                                <span class="info-value">${request.studentName || 'Chưa có thông tin'}</span>
+                            </div>
+                            ${request.studentEmail ? `
+                                <div class="info-item">
+                                    <span class="info-label">Email:</span>
+                                    <span class="info-value">
+                                        <a href="mailto:${request.studentEmail}">${request.studentEmail}</a>
+                                    </span>
+                                </div>
+                            ` : ''}
+                            ${request.studentPhone ? `
+                                <div class="info-item">
+                                    <span class="info-label">Số điện thoại:</span>
+                                    <span class="info-value">
+                                        <a href="tel:${request.studentPhone}">${request.studentPhone}</a>
+                                    </span>
+                                </div>
+                            ` : ''}
+                            ${request.idHs ? `
+                                <div class="info-item">
+                                    <span class="info-label">Mã học sinh:</span>
+                                    <span class="info-value">${request.idHs}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    ${request.tenLop ? `
+                        <div class="detail-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-book-open"></i>
+                                Thông tin lớp học
+                            </h5>
+                            <div class="detail-info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Tên lớp:</span>
+                                    <span class="info-value">${request.tenLop}</span>
+                                </div>
+                                ${request.chuongTrinh ? `
+                                    <div class="info-item">
+                                        <span class="info-label">Chương trình:</span>
+                                        <span class="info-value">${request.chuongTrinh}</span>
+                                    </div>
+                                ` : ''}
+                                ${request.idLh ? `
+                                    <div class="info-item">
+                                        <span class="info-label">Mã lớp:</span>
+                                        <span class="info-value">${request.idLh}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="detail-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-info-circle"></i>
+                            Chi tiết yêu cầu
+                        </h5>
+                        <div class="detail-info-grid">
+                            <div class="info-item full-width">
+                                <span class="info-label">Loại yêu cầu:</span>
+                                <span class="info-value">
+                                    <span class="support-type-badge">${request.loaiYeuCau || 'Không xác định'}</span>
+                                </span>
+                            </div>
+                            <div class="info-item full-width">
+                                <span class="info-label">Nội dung:</span>
+                                <div class="info-value content-text">${request.noiDung || 'Không có mô tả'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${request.fileUrl ? `
+                        <div class="detail-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-paperclip"></i>
+                                File đính kèm
+                            </h5>
+                            <div class="attachment-section">
+                                <a href="${request.fileUrl}" target="_blank" class="attachment-link-large">
+                                    <i class="fas fa-file"></i>
+                                    <span>Xem file đính kèm</span>
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="detail-section">
+                        <h5 class="section-title">
+                            <i class="fas fa-clock"></i>
+                            Thông tin thời gian
+                        </h5>
+                        <div class="detail-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Thời điểm tạo:</span>
+                                <span class="info-value">${formattedDate}</span>
+                            </div>
+                            ${closedDate ? `
+                                <div class="info-item">
+                                    <span class="info-label">Thời điểm đóng:</span>
+                                    <span class="info-value">${closedDate}</span>
+                                </div>
+                            ` : ''}
+                            <div class="info-item">
+                                <span class="info-label">Mã yêu cầu:</span>
+                                <span class="info-value code-value">${request.idYc}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Update footer with action buttons
+            modalFooter.innerHTML = `
+                ${!isClosed ? `
+                    <button class="btn btn-success" onclick="tutorDashboard.openUpdateStatusModal('${request.idYc}', 'Đã xử lý')">
+                        <i class="fas fa-check-circle"></i>
+                        Đánh dấu đã xử lý
+                    </button>
+                    <button class="btn btn-warning" onclick="tutorDashboard.openUpdateStatusModal('${request.idYc}', 'Đang xử lý')">
+                        <i class="fas fa-spinner"></i>
+                        Đang xử lý
+                    </button>
+                ` : ''}
+                <button class="btn btn-secondary" id="closeSupportModalBtn">
+                    <i class="fas fa-times"></i>
+                    Đóng
+                </button>
+            `;
+            
+            // Setup close button
+            const closeBtn = document.getElementById('closeSupportModalBtn');
+            if (closeBtn) {
+                closeBtn.onclick = () => this.closeSupportModal();
+            }
+            
+        } catch (error) {
+            console.error('Error loading support details:', error);
+            modalBody.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Không thể tải thông tin</h3>
+                    <p>${error.message || 'Có lỗi xảy ra khi tải chi tiết yêu cầu hỗ trợ'}</p>
+                    <button class="btn btn-primary" onclick="tutorDashboard.viewSupportDetails('${idYc}')">
+                        <i class="fas fa-redo"></i> Thử lại
+                    </button>
+                </div>
+            `;
+            showNotification('Không thể tải chi tiết yêu cầu hỗ trợ', 'error');
+        }
+    }
+    
+    closeSupportModal() {
+        const modal = document.getElementById('supportDetailsModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    openUpdateStatusModal(idYc, defaultStatus = '') {
+        const modal = document.getElementById('updateStatusModal');
+        const form = document.getElementById('updateStatusForm');
+        const statusSelect = document.getElementById('statusSelect');
+        const requestIdInput = document.getElementById('statusRequestId');
+        
+        if (!modal || !form) return;
+        
+        // Set request ID
+        if (requestIdInput) {
+            requestIdInput.value = idYc;
+        }
+        
+        // Set default status if provided
+        if (statusSelect && defaultStatus) {
+            statusSelect.value = defaultStatus;
+        } else if (statusSelect) {
+            statusSelect.value = '';
+        }
+        
+        // Clear note
+        const noteTextarea = document.getElementById('statusNote');
+        if (noteTextarea) {
+            noteTextarea.value = '';
+        }
+        
+        // Show modal
+        modal.style.display = 'flex';
+        
+        // Setup save button
+        const saveBtn = document.getElementById('saveStatusBtn');
+        if (saveBtn) {
+            saveBtn.onclick = () => this.saveSupportStatus();
+        }
+    }
+    
+    closeStatusModal() {
+        const modal = document.getElementById('updateStatusModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    async saveSupportStatus() {
+        const form = document.getElementById('updateStatusForm');
+        const requestIdInput = document.getElementById('statusRequestId');
+        const statusSelect = document.getElementById('statusSelect');
+        const noteTextarea = document.getElementById('statusNote');
+        const saveBtn = document.getElementById('saveStatusBtn');
+        
+        if (!form || !requestIdInput || !statusSelect) return;
+        
+        const idYc = requestIdInput.value;
+        const trangThai = statusSelect.value;
+        const ghiChu = noteTextarea ? noteTextarea.value.trim() : null;
+        
+        if (!trangThai) {
+            showNotification('Vui lòng chọn trạng thái', 'warning');
+            return;
+        }
+        
+        // Disable save button
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+        }
+        
+        try {
+            await window.tutorAPI.updateSupportStatus(idYc, trangThai, ghiChu);
+            
+            showNotification('Đã cập nhật trạng thái thành công', 'success');
+            
+            // Close modal
+            this.closeStatusModal();
+            
+            // Reload support requests
+            await this.loadSupportRequests();
+            
+        } catch (error) {
+            console.error('Error updating support status:', error);
+            showNotification('Có lỗi xảy ra khi cập nhật trạng thái', 'error');
+        } finally {
+            // Re-enable save button
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu thay đổi';
+            }
+        }
+    }
+    
+    async markSupportAsProcessed(idYc) {
+        // Quick action: mark as processed
+        await this.openUpdateStatusModal(idYc, 'Đã xử lý');
+    }
+
+    getStatusClass(status) {
+        if (!status) return 'normal';
+        const statusLower = status.toLowerCase();
+        if (statusLower.includes('khẩn') || statusLower.includes('urgent')) return 'urgent';
+        if (statusLower.includes('ưu tiên') || statusLower.includes('high')) return 'high';
+        if (statusLower.includes('đã') && (statusLower.includes('xử lý') || statusLower.includes('đóng'))) return 'completed';
+        if (statusLower.includes('đang')) return 'processing';
+        return 'normal';
+    }
+
+    formatDateTime(dateTime) {
+        if (!dateTime) return 'Chưa có thông tin';
+        const date = new Date(dateTime);
+        return date.toLocaleString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
 
     async loadConsultationsData() {
@@ -1845,7 +2471,7 @@ class TutorDashboard {
 
     async fetchSupportRequests() {
         try {
-            return await window.tutorAPI.getSupportRequests();
+            return await window.tutorAPI.getAllSupportRequests();
         } catch (error) {
             console.error('Error fetching support requests:', error);
             window.tutorAPI.handleError(error);

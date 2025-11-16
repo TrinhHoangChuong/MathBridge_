@@ -946,76 +946,42 @@
             <!-- Support Section -->
             <section class="content-section" id="support">
                 <div class="section-header">
-                    <h2>Hỗ trợ học tập</h2>
+                    <h2><i class="fas fa-headset"></i> Yêu cầu hỗ trợ</h2>
                     <div class="header-actions">
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm kiếm yêu cầu hỗ trợ...">
+                            <input type="text" id="supportSearchInput" placeholder="Tìm kiếm yêu cầu hỗ trợ...">
                         </div>
-                        <button class="btn btn-primary">
-                            <i class="fas fa-plus"></i>
-                            Tạo yêu cầu hỗ trợ
+                        <select class="form-select" id="supportStatusFilter">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="Chưa xử lý">Chưa xử lý</option>
+                            <option value="Đang xử lý">Đang xử lý</option>
+                            <option value="Đã xử lý">Đã xử lý</option>
+                            <option value="Đã đóng">Đã đóng</option>
+                        </select>
+                        <button class="btn btn-secondary" id="refreshSupportBtn">
+                            <i class="fas fa-sync-alt"></i>
+                            Làm mới
                         </button>
                     </div>
                 </div>
 
-                <div class="support-grid">
-                    <div class="support-card">
-                        <div class="support-header">
-                            <h3>Hỗ trợ học tập</h3>
-                            <span class="status-badge urgent">Khẩn cấp</span>
-                        </div>
-                        <div class="support-body">
-                            <div class="support-info">
-                                <p><strong>Học sinh:</strong> Trần Văn C</p>
-                                <p><strong>Lớp:</strong> Toán 10A1</p>
-                                <p><strong>Vấn đề:</strong> Cần hỗ trợ giải bài tập khó</p>
-                                <p><strong>Thời gian:</strong> 18/12/2024 14:30</p>
-                            </div>
-                            <div class="support-actions">
-                                <button class="btn btn-sm btn-primary">Xử lý</button>
-                                <button class="btn btn-sm btn-secondary">Chi tiết</button>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Loading State -->
+                <div id="supportLoading" class="loading-state" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Đang tải dữ liệu...</p>
+                </div>
 
-                    <div class="support-card">
-                        <div class="support-header">
-                            <h3>Tư vấn học tập</h3>
-                            <span class="status-badge high">Ưu tiên cao</span>
-                        </div>
-                        <div class="support-body">
-                            <div class="support-info">
-                                <p><strong>Học sinh:</strong> Lê Thị D</p>
-                                <p><strong>Lớp:</strong> Toán 11B2</p>
-                                <p><strong>Vấn đề:</strong> Cần tư vấn phương pháp học</p>
-                                <p><strong>Thời gian:</strong> 17/12/2024 16:00</p>
-                            </div>
-                            <div class="support-actions">
-                                <button class="btn btn-sm btn-primary">Xử lý</button>
-                                <button class="btn btn-sm btn-secondary">Chi tiết</button>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Empty State -->
+                <div id="supportEmpty" class="empty-state" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h3>Chưa có yêu cầu hỗ trợ</h3>
+                    <p>Hiện tại không có yêu cầu hỗ trợ nào từ học sinh.</p>
+                </div>
 
-                    <div class="support-card">
-                        <div class="support-header">
-                            <h3>Hỗ trợ đăng ký</h3>
-                            <span class="status-badge normal">Bình thường</span>
-                        </div>
-                        <div class="support-body">
-                            <div class="support-info">
-                                <p><strong>Học sinh:</strong> Phạm Văn E</p>
-                                <p><strong>Lớp:</strong> Toán 12C1</p>
-                                <p><strong>Vấn đề:</strong> Cần hỗ trợ đăng ký khóa học</p>
-                                <p><strong>Thời gian:</strong> 16/12/2024 10:00</p>
-                            </div>
-                            <div class="support-actions">
-                                <button class="btn btn-sm btn-primary">Xử lý</button>
-                                <button class="btn btn-sm btn-secondary">Chi tiết</button>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Support Grid -->
+                <div class="support-grid" id="supportGrid">
+                    <!-- Support cards will be dynamically loaded here -->
                 </div>
             </section>
 
@@ -1219,6 +1185,70 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="closeTeacherModalBtn">Đóng</button>
                 <button class="btn btn-primary">Chỉnh sửa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Details Modal -->
+    <div class="modal-overlay" id="supportDetailsModal" style="display: none;">
+        <div class="modal-container support-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-headset"></i> Chi tiết yêu cầu hỗ trợ</h3>
+                <button class="modal-close" id="closeSupportModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="supportModalBody">
+                <!-- Content will be loaded dynamically -->
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Đang tải thông tin...</p>
+                </div>
+            </div>
+            <div class="modal-footer" id="supportModalFooter">
+                <button class="btn btn-secondary" id="closeSupportModalBtn">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div class="modal-overlay" id="updateStatusModal" style="display: none;">
+        <div class="modal-container status-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Cập nhật trạng thái</h3>
+                <button class="modal-close" id="closeStatusModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm">
+                    <input type="hidden" id="statusRequestId" name="idYc">
+                    <div class="form-group">
+                        <label for="statusSelect">
+                            <i class="fas fa-tag"></i> Trạng thái
+                        </label>
+                        <select class="form-select" id="statusSelect" name="trangThai" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="Chưa xử lý">Chưa xử lý</option>
+                            <option value="Đang xử lý">Đang xử lý</option>
+                            <option value="Đã xử lý">Đã xử lý</option>
+                            <option value="Đã đóng">Đã đóng</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="statusNote">
+                            <i class="fas fa-comment"></i> Ghi chú (tùy chọn)
+                        </label>
+                        <textarea class="form-control" id="statusNote" name="ghiChu" rows="3" 
+                                  placeholder="Nhập ghi chú về việc cập nhật trạng thái..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeStatusModalBtn">Hủy</button>
+                <button class="btn btn-primary" id="saveStatusBtn">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                </button>
             </div>
         </div>
     </div>
