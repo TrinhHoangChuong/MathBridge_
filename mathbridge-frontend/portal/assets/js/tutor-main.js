@@ -548,6 +548,9 @@ class TutorDashboard {
             case 'support':
                 this.loadSupportData();
                 break;
+            case 'consultations':
+                this.loadConsultationsData();
+                break;
             case 'messages':
                 this.loadMessagesData();
                 break;
@@ -1389,6 +1392,247 @@ class TutorDashboard {
     loadSupportData() {
         // Simulate loading support data
         console.log('Loading support data...');
+    }
+
+    async loadConsultationsData() {
+        const container = document.getElementById('consultationsContainer');
+        const loadingState = document.getElementById('consultationsLoading');
+        
+        if (!container) return;
+
+        try {
+            if (loadingState) loadingState.style.display = 'block';
+            
+            const consultations = await window.tutorAPI.getConsultations();
+            
+            if (loadingState) loadingState.style.display = 'none';
+            
+            if (!consultations || consultations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Chưa có yêu cầu tư vấn nào</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date (newest first)
+            consultations.sort((a, b) => {
+                const dateA = new Date(a.thoiDiemTao);
+                const dateB = new Date(b.thoiDiemTao);
+                return dateB - dateA;
+            });
+
+            container.innerHTML = consultations.map(consultation => {
+                const date = new Date(consultation.thoiDiemTao);
+                const formattedDate = date.toLocaleDateString('vi-VN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const statusClass = consultation.trangThai === 'Chưa xử lý' ? 'urgent' :
+                                   consultation.trangThai === 'Đang xử lý' ? 'high' : 'normal';
+
+                return `
+                    <div class="consultation-item ${consultation.trangThai === 'Chưa xử lý' ? 'unread' : ''}">
+                        <div class="consultation-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="consultation-content">
+                            <div class="consultation-header">
+                                <h4>${consultation.hoTen}</h4>
+                                <span class="consultation-time">${formattedDate}</span>
+                            </div>
+                            <div class="consultation-subject">
+                                <strong>Tiêu đề:</strong> ${consultation.tieuDe}
+                            </div>
+                            <div class="consultation-type">
+                                <i class="fas fa-tag"></i> ${consultation.hinhThucTuVan}
+                            </div>
+                            <div class="consultation-details">
+                                <p><strong>Email:</strong> ${consultation.email || 'N/A'}</p>
+                                <p><strong>SĐT:</strong> ${consultation.sdt || 'N/A'}</p>
+                                ${consultation.noiDung ? `<p><strong>Nội dung:</strong> ${consultation.noiDung}</p>` : ''}
+                            </div>
+                            <div class="consultation-actions">
+                                ${consultation.trangThai === 'Chưa xử lý' ? 
+                                    `<button class="btn btn-sm btn-primary" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đang xử lý')">
+                                        <i class="fas fa-check"></i> Bắt đầu xử lý
+                                    </button>` : ''}
+                                ${consultation.trangThai === 'Đang xử lý' ? 
+                                    `<button class="btn btn-sm btn-success" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đã xử lý')">
+                                        <i class="fas fa-check-circle"></i> Hoàn thành
+                                    </button>` : ''}
+                                <button class="btn btn-sm btn-secondary" onclick="tutorDashboard.viewConsultationDetails('${consultation.idTv}')">
+                                    <i class="fas fa-info-circle"></i> Chi tiết
+                                </button>
+                            </div>
+                        </div>
+                        <div class="consultation-status">
+                            <span class="status-badge ${statusClass}">${consultation.trangThai}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Setup search and filter
+            this.setupConsultationFilters(consultations);
+
+        } catch (error) {
+            console.error('Error loading consultations:', error);
+            if (loadingState) loadingState.style.display = 'none';
+            container.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Có lỗi xảy ra khi tải yêu cầu tư vấn</p>
+                    <button class="btn btn-primary" onclick="tutorDashboard.loadConsultationsData()">
+                        Thử lại
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    setupConsultationFilters(allConsultations) {
+        const searchInput = document.getElementById('consultationSearch');
+        const statusFilter = document.getElementById('consultationStatusFilter');
+        const refreshBtn = document.getElementById('refreshConsultations');
+        const container = document.getElementById('consultationsContainer');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterConsultations(allConsultations, e.target.value, statusFilter?.value);
+            });
+        }
+
+        if (statusFilter) {
+            statusFilter.addEventListener('change', (e) => {
+                this.filterConsultations(allConsultations, searchInput?.value || '', e.target.value);
+            });
+        }
+
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadConsultationsData();
+            });
+        }
+    }
+
+    filterConsultations(allConsultations, searchTerm, statusFilter) {
+        const container = document.getElementById('consultationsContainer');
+        if (!container) return;
+
+        let filtered = [...allConsultations];
+
+        // Filter by status
+        if (statusFilter) {
+            filtered = filtered.filter(c => c.trangThai === statusFilter);
+        }
+
+        // Filter by search term
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(c => 
+                c.hoTen.toLowerCase().includes(term) ||
+                c.email?.toLowerCase().includes(term) ||
+                c.sdt?.includes(term) ||
+                c.tieuDe.toLowerCase().includes(term) ||
+                c.noiDung?.toLowerCase().includes(term)
+            );
+        }
+
+        // Re-render filtered results
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <p>Không tìm thấy yêu cầu tư vấn nào</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Sort by date (newest first)
+        filtered.sort((a, b) => {
+            const dateA = new Date(a.thoiDiemTao);
+            const dateB = new Date(b.thoiDiemTao);
+            return dateB - dateA;
+        });
+
+        container.innerHTML = filtered.map(consultation => {
+            const date = new Date(consultation.thoiDiemTao);
+            const formattedDate = date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const statusClass = consultation.trangThai === 'Chưa xử lý' ? 'urgent' :
+                               consultation.trangThai === 'Đang xử lý' ? 'high' : 'normal';
+
+            return `
+                <div class="consultation-item ${consultation.trangThai === 'Chưa xử lý' ? 'unread' : ''}">
+                    <div class="consultation-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="consultation-content">
+                        <div class="consultation-header">
+                            <h4>${consultation.hoTen}</h4>
+                            <span class="consultation-time">${formattedDate}</span>
+                        </div>
+                        <div class="consultation-subject">
+                            <strong>Tiêu đề:</strong> ${consultation.tieuDe}
+                        </div>
+                        <div class="consultation-type">
+                            <i class="fas fa-tag"></i> ${consultation.hinhThucTuVan}
+                        </div>
+                        <div class="consultation-details">
+                            <p><strong>Email:</strong> ${consultation.email || 'N/A'}</p>
+                            <p><strong>SĐT:</strong> ${consultation.sdt || 'N/A'}</p>
+                            ${consultation.noiDung ? `<p><strong>Nội dung:</strong> ${consultation.noiDung}</p>` : ''}
+                        </div>
+                        <div class="consultation-actions">
+                            ${consultation.trangThai === 'Chưa xử lý' ? 
+                                `<button class="btn btn-sm btn-primary" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đang xử lý')">
+                                    <i class="fas fa-check"></i> Bắt đầu xử lý
+                                </button>` : ''}
+                            ${consultation.trangThai === 'Đang xử lý' ? 
+                                `<button class="btn btn-sm btn-success" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đã xử lý')">
+                                    <i class="fas fa-check-circle"></i> Hoàn thành
+                                </button>` : ''}
+                            <button class="btn btn-sm btn-secondary" onclick="tutorDashboard.viewConsultationDetails('${consultation.idTv}')">
+                                <i class="fas fa-info-circle"></i> Chi tiết
+                            </button>
+                        </div>
+                    </div>
+                    <div class="consultation-status">
+                        <span class="status-badge ${statusClass}">${consultation.trangThai}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async updateConsultationStatus(idTv, trangThai) {
+        try {
+            await window.tutorAPI.updateConsultationStatus(idTv, trangThai);
+            showNotification(`Đã cập nhật trạng thái thành "${trangThai}"`, 'success');
+            await this.loadConsultationsData();
+        } catch (error) {
+            console.error('Error updating consultation status:', error);
+            showNotification('Có lỗi xảy ra khi cập nhật trạng thái', 'error');
+        }
+    }
+
+    viewConsultationDetails(idTv) {
+        // TODO: Implement modal for viewing consultation details
+        alert('Chi tiết yêu cầu tư vấn sẽ được hiển thị ở đây');
     }
 
     loadMessagesData() {

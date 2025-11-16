@@ -61,6 +61,12 @@
                         <span>Hỗ trợ</span>
                     </a>
                 </li>
+                <li class="nav-item" data-section="consultations">
+                    <a href="#consultations">
+                        <i class="fas fa-envelope"></i>
+                        <span>Yêu cầu tư vấn</span>
+                    </a>
+                </li>
                 <li class="nav-item" data-section="messages">
                     <a href="#messages">
                         <i class="fas fa-comments"></i>
@@ -1009,6 +1015,37 @@
                                 <button class="btn btn-sm btn-secondary">Chi tiết</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Consultation Requests Section -->
+            <section class="content-section" id="consultations">
+                <div class="section-header">
+                    <h2><i class="fas fa-envelope"></i> Yêu cầu tư vấn</h2>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="consultationSearch" placeholder="Tìm kiếm yêu cầu tư vấn...">
+                        </div>
+                        <select class="form-select" id="consultationStatusFilter">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="Chưa xử lý">Chưa xử lý</option>
+                            <option value="Đang xử lý">Đang xử lý</option>
+                            <option value="Đã xử lý">Đã xử lý</option>
+                        </select>
+                        <button class="btn btn-secondary" id="refreshConsultations">
+                            <i class="fas fa-sync-alt"></i>
+                            Làm mới
+                        </button>
+                    </div>
+                </div>
+
+                <div class="consultations-container" id="consultationsContainer">
+                    <!-- Consultation requests will be loaded here -->
+                    <div class="loading-state" id="consultationsLoading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Đang tải yêu cầu tư vấn...</p>
                     </div>
                 </div>
             </section>

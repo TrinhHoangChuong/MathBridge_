@@ -656,6 +656,20 @@ class TutorAPI {
         return await this.request(`/messages/quick-response/${type}`);
     }
 
+    // Consultation Requests API
+    async getConsultations() {
+        return await this.request('/consultations', {
+            method: 'GET'
+        });
+    }
+
+    async updateConsultationStatus(idTv, trangThai) {
+        return await this.request(`/consultations/${idTv}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ trangThai })
+        });
+    }
+
     async getConversationHistory(studentId) {
         return await this.request(`/messages/conversation/${studentId}`);
     }
