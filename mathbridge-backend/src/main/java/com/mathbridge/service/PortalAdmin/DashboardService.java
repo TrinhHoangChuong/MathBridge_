@@ -8,6 +8,10 @@ import com.mathbridge.dto.PortalAdmin.Response.DashboardResponse.RecruitmentSumm
 import com.mathbridge.dto.PortalAdmin.Response.DashboardResponse.TopClassByStudentDto;
 import com.mathbridge.repository.*;
 import com.mathbridge.repository.Admin.*;
+import com.mathbridge.repository.Admin.BuoiHocChiTietRepository;
+import com.mathbridge.repository.Admin.HoaDonRepository;
+import com.mathbridge.repository.Admin.PhongRepository;
+import com.mathbridge.repository.StudentRepo.DangKyLHRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
