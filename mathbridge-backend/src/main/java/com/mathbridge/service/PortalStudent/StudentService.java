@@ -63,7 +63,7 @@ public class StudentService {
     @Transactional(readOnly = true)
     public StudentDashboardDTO getStudentDashboard(String userId) {
         // Find student by account ID
-        Optional<HocSinh> studentOpt = hocSinhRepository.findByTaiKhoan_IdTk(userId);
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
 
         if (!studentOpt.isPresent()) {
             throw new RuntimeException("Student not found");
@@ -142,9 +142,8 @@ public class StudentService {
             int attendancePercentage = calculateAttendancePercentage(studentId, lopHoc.getIdLh(), sessions);
             classDTO.setAttendancePercentage(attendancePercentage);
             
-            // Set status from database
-            classDTO.setStatus(dk.getTrangThai() != null ? dk.getTrangThai() : 
-                (lopHoc.getTrangThai() != null ? lopHoc.getTrangThai() : "active"));
+            // Set status from LopHoc (DangKyLH currently has no status column)
+            classDTO.setStatus(lopHoc.getTrangThai() != null ? lopHoc.getTrangThai() : "active");
             
             classes.add(classDTO);
         }
@@ -390,7 +389,7 @@ public class StudentService {
                 regDTO.setRegistrationDate(lopHoc.getNgayBatDau().format(DATE_TIME_FORMATTER));
             }
             
-            regDTO.setStatus(dk.getTrangThai() != null ? dk.getTrangThai() : "pending");
+            regDTO.setStatus(lopHoc.getTrangThai() != null ? lopHoc.getTrangThai() : "pending");
             
             // Lấy mô tả từ LopHoc entity
             regDTO.setDescription(lopHoc.getMoTa() != null ? lopHoc.getMoTa() : "");
@@ -693,7 +692,7 @@ public class StudentService {
     @Transactional
     public void updateStudentProfile(String userId, UpdateStudentProfileDTO profileDTO) {
         // Find student by account ID
-        Optional<HocSinh> studentOpt = hocSinhRepository.findByTaiKhoan_IdTk(userId);
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
         
         if (!studentOpt.isPresent()) {
             throw new RuntimeException("Không tìm thấy học sinh");
@@ -738,7 +737,7 @@ public class StudentService {
     @Transactional
     public void rateSession(String userId, RateSessionDTO rateDTO) {
         // Find student by account ID
-        Optional<HocSinh> studentOpt = hocSinhRepository.findByTaiKhoan_IdTk(userId);
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
         if (!studentOpt.isPresent()) {
             throw new RuntimeException("Không tìm thấy học sinh");
         }
@@ -807,7 +806,7 @@ public class StudentService {
     @Transactional
     public void rateClass(String userId, RateClassDTO rateDTO) {
         // Find student by account ID
-        Optional<HocSinh> studentOpt = hocSinhRepository.findByTaiKhoan_IdTk(userId);
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
         if (!studentOpt.isPresent()) {
             throw new RuntimeException("Không tìm thấy học sinh");
         }

@@ -54,7 +54,7 @@ public class SupportRequestController {
             }
 
             // Get student by account ID
-            Optional<HocSinh> studentOpt = hocSinhRepository.findByTaiKhoan_IdTk(userId);
+            Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
             if (!studentOpt.isPresent()) {
                 return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(false, "Không tìm thấy học sinh", null));
@@ -187,7 +187,7 @@ public class SupportRequestController {
                 Optional<LopHoc> lopHocOpt = lopHocRepository.findById(createDTO.getClassId().trim());
                 if (lopHocOpt.isPresent()) {
                     // Verify student is registered in this class
-                    Optional<HocSinh> studentOpt = hocSinhRepository.findByTaiKhoan_IdTk(userId);
+                    Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
                     if (studentOpt.isPresent()) {
                         String studentId = studentOpt.get().getIdHs();
                         boolean isRegistered = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
@@ -292,7 +292,7 @@ public class SupportRequestController {
             }
 
             // Get student by account ID
-            Optional<HocSinh> studentOpt = hocSinhRepository.findByTaiKhoan_IdTk(userId);
+            Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
             if (!studentOpt.isPresent()) {
                 return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(false, "Không tìm thấy học sinh", null));
