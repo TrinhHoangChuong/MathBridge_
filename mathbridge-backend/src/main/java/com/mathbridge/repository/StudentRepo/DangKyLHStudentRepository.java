@@ -1,4 +1,4 @@
-package com.mathbridge.repository;
+package com.mathbridge.repository.StudentRepo;
 
 import com.mathbridge.entity.DangKyLH;
 import com.mathbridge.entity.DangKyLhId;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface DangKyLHStudentRepository extends JpaRepository<DangKyLH, DangKyLHId> {
+public interface DangKyLHStudentRepository extends JpaRepository<DangKyLH, DangKyLhId> {
     
     // Removed findByTrangThai() because trangThai field is @Transient (column doesn't exist in database)
     
@@ -32,4 +32,4 @@ public interface DangKyLHRepository extends JpaRepository<DangKyLH, DangKyLhId> 
     long countByLopHocId(@Param("idLH") String idLH);
 
     long countByLopHoc_IdLh(String idLh);
-}
+}}
