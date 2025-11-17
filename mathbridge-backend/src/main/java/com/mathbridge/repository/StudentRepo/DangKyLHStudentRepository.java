@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface DangKyLHRepository extends JpaRepository<DangKyLH, DangKyLHId> {
+public interface DangKyLHStudentRepository extends JpaRepository<DangKyLH, DangKyLHId> {
     
     // Removed findByTrangThai() because trangThai field is @Transient (column doesn't exist in database)
     

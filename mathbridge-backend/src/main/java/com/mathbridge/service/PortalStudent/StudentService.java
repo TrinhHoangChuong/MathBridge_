@@ -7,8 +7,8 @@ import com.mathbridge.dto.PortalStudentDTO.RateClassDTO;
 import com.mathbridge.entity.*;
 import com.mathbridge.repository.*;
 import com.mathbridge.repository.StudentRepo.*;
-import com.mathbridge.repository.StudentRepo.DanhGiaLopHocRepository;
-import com.mathbridge.repository.StudentRepo.DanhGiaBuoiHocRepository;
+import com.mathbridge.repository.StudentRepo.DanhGiaLopHocStudentRepository;
+import com.mathbridge.repository.StudentRepo.DanhGiaBuoiHocStudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,31 +29,31 @@ public class StudentService {
     private HocSinhRepository hocSinhRepository;
     
     @Autowired
-    private DangKyLHRepository dangKyLHRepository;
+    private DangKyLHStudentRepository dangKyLHStudentRepository;
     
     @Autowired
-    private BaiTapRepository baiTapRepository;
+    private BaiTapStudentRepository baiTapStudentRepository;
     
     @Autowired
-    private BaiNopRepository baiNopRepository;
+    private BaiNopStudentRepository baiNopStudentRepository;
     
     @Autowired
-    private KetQuaHocTapRepository ketQuaHocTapRepository;
+    private KetQuaHocTapStudentRepository ketQuaHocTapStudentRepository;
     
     @Autowired
-    private BuoiHocChiTietRepository buoiHocChiTietRepository;
+    private BuoiHocChiTietStudentRepository buoiHocChiTietStudentRepository;
     
     @Autowired
-    private YeuCauHoTroRepository yeuCauHoTroRepository;
+    private YeuCauHoTroStudentRepository yeuCauHoTroStudentRepository;
     
     @Autowired
     private LopHocRepository lopHocRepository;
     
     @Autowired
-    private DanhGiaLopHocRepository danhGiaLopHocRepository;
+    private DanhGiaLopHocStudentRepository danhGiaLopHocStudentRepository;
     
     @Autowired
-    private DanhGiaBuoiHocRepository danhGiaBuoiHocRepository;
+    private DanhGiaBuoiHocStudentRepository danhGiaBuoiHocStudentRepository;
     
     @Autowired
     private HoaDonRepository hoaDonRepository;
@@ -100,7 +100,7 @@ public class StudentService {
     }
 
     private List<StudentClassDTO> getStudentClasses(String studentId) {
-        List<DangKyLH> registrations = dangKyLHRepository.findByHocSinhId(studentId);
+        List<DangKyLH> registrations = dangKyLHStudentRepository.findByHocSinhId(studentId);
         List<StudentClassDTO> classes = new ArrayList<>();
         
         for (DangKyLH dk : registrations) {
@@ -122,7 +122,7 @@ public class StudentService {
             }
             
             // Build schedule from actual BuoiHocChiTiet data
-            List<BuoiHocChiTiet> sessions = buoiHocChiTietRepository.findByLopHoc_IdLh(lopHoc.getIdLh());
+            List<BuoiHocChiTiet> sessions = buoiHocChiTietStudentRepository.findByLopHoc_IdLh(lopHoc.getIdLh());
             String schedule = buildScheduleFromSessions(sessions, lopHoc);
             classDTO.setSchedule(schedule);
             
@@ -131,7 +131,7 @@ public class StudentService {
             classDTO.setRoom(roomName);
             
             // Count students in class from database
-            long studentCount = dangKyLHRepository.countByLopHocId(lopHoc.getIdLh());
+            long studentCount = dangKyLHStudentRepository.countByLopHocId(lopHoc.getIdLh());
             classDTO.setStudentCount((int) studentCount);
             
             // Calculate average grade for this class from BaiNop (real data)
@@ -257,7 +257,7 @@ public class StudentService {
     }
 
     private List<StudentAssignmentDTO> getStudentAssignments(String studentId) {
-        List<BaiTap> baiTaps = baiTapRepository.findByHocSinhId(studentId);
+        List<BaiTap> baiTaps = baiTapStudentRepository.findByHocSinhId(studentId);
         List<StudentAssignmentDTO> assignments = new ArrayList<>();
         
         for (BaiTap baiTap : baiTaps) {
@@ -278,7 +278,7 @@ public class StudentService {
             }
             
             // Check if student has submitted (BaiNop)
-            Optional<BaiNop> baiNopOpt = baiNopRepository.findByBaiTapAndHocSinh(
+            Optional<BaiNop> baiNopOpt = baiNopStudentRepository.findByBaiTapAndHocSinh(
                 baiTap.getIdBt(), studentId);
             
             if (baiNopOpt.isPresent()) {
@@ -308,7 +308,7 @@ public class StudentService {
 
     private List<StudentGradeDTO> getStudentGrades(String studentId) {
         // Get grades from BaiNop (assignment grades)
-        List<BaiNop> baiNops = baiNopRepository.findAllByHocSinhId(studentId);
+        List<BaiNop> baiNops = baiNopStudentRepository.findAllByHocSinhId(studentId);
         List<StudentGradeDTO> grades = new ArrayList<>();
         
         for (BaiNop baiNop : baiNops) {
@@ -333,7 +333,7 @@ public class StudentService {
         }
         
         // Also get grades from KetQuaHocTap
-        List<KetQuaHocTap> ketQuaHocTaps = ketQuaHocTapRepository.findByHocSinh_IdHs(studentId);
+        List<KetQuaHocTap> ketQuaHocTaps = ketQuaHocTapStudentRepository.findByHocSinh_IdHs(studentId);
         for (KetQuaHocTap kq : ketQuaHocTaps) {
             StudentGradeDTO gradeDTO = new StudentGradeDTO();
             gradeDTO.setGradeId(kq.getIdKq());
@@ -354,7 +354,7 @@ public class StudentService {
 
     private List<StudentRegistrationDTO> getStudentRegistrations(String studentId) {
         // Bước 1: Tìm ID_HS và ID_LH từ DangKyLH
-        List<DangKyLH> registrations = dangKyLHRepository.findByHocSinhId(studentId);
+        List<DangKyLH> registrations = dangKyLHStudentRepository.findByHocSinhId(studentId);
         List<StudentRegistrationDTO> registrationDTOs = new ArrayList<>();
         
         for (DangKyLH dk : registrations) {
@@ -430,7 +430,7 @@ public class StudentService {
             }
             
             // Lấy đánh giá lớp học từ DanhGiaLopHoc entity (nếu có)
-            Optional<DanhGiaLopHoc> danhGiaOpt = danhGiaLopHocRepository.findByHocSinhIdAndLopHocId(studentId, idLh);
+            Optional<DanhGiaLopHoc> danhGiaOpt = danhGiaLopHocStudentRepository.findByHocSinhIdAndLopHocId(studentId, idLh);
             if (danhGiaOpt.isPresent()) {
                 DanhGiaLopHoc danhGia = danhGiaOpt.get();
                 regDTO.setRating(danhGia.getDiemDanhGia());
@@ -444,7 +444,7 @@ public class StudentService {
     }
 
     private List<StudentAttendedClassDTO> getStudentAttendedClasses(String studentId) {
-        List<BuoiHocChiTiet> sessions = buoiHocChiTietRepository.findByHocSinhId(studentId);
+        List<BuoiHocChiTiet> sessions = buoiHocChiTietStudentRepository.findByHocSinhId(studentId);
         
         // Use Map to store unique sessions by classId + sessionNumber
         // Key: classId + "_" + sessionNumber, Value: StudentAttendedClassDTO (keep the most recent one)
@@ -539,7 +539,7 @@ public class StudentService {
 
     private List<StudentSupportRequestDTO> getSupportRequests(String studentId) {
         // Get support requests for classes that student is registered in
-        List<DangKyLH> registrations = dangKyLHRepository.findByHocSinhId(studentId);
+        List<DangKyLH> registrations = dangKyLHStudentRepository.findByHocSinhId(studentId);
         List<String> classIds = registrations.stream()
             .map(dk -> dk.getLopHoc().getIdLh())
             .collect(Collectors.toList());
@@ -548,7 +548,7 @@ public class StudentService {
         
         for (String classId : classIds) {
             // Get all support requests and filter by class
-            List<YeuCauHoTro> allRequests = yeuCauHoTroRepository.findAll();
+            List<YeuCauHoTro> allRequests = yeuCauHoTroStudentRepository.findAll();
             List<YeuCauHoTro> yeuCaus = allRequests.stream()
                 .filter(yc -> yc.getLopHoc() != null && yc.getLopHoc().getIdLh().equals(classId))
                 .collect(Collectors.toList());
@@ -635,7 +635,7 @@ public class StudentService {
     }
 
     private double calculateAverageGradeForClass(String studentId, String classId) {
-        List<BaiNop> baiNops = baiNopRepository.findAllByHocSinhId(studentId);
+        List<BaiNop> baiNops = baiNopStudentRepository.findAllByHocSinhId(studentId);
         
         return baiNops.stream()
             .filter(bn -> bn.getBaiTap() != null && 
@@ -667,7 +667,7 @@ public class StudentService {
         
         // Estimate attendance based on assignments submitted
         // If student has submitted assignments for this class, they likely attended
-        List<BaiNop> baiNops = baiNopRepository.findAllByHocSinhId(studentId);
+        List<BaiNop> baiNops = baiNopStudentRepository.findAllByHocSinhId(studentId);
         long assignmentsForClass = baiNops.stream()
             .filter(bn -> bn.getBaiTap() != null && 
                          bn.getBaiTap().getBuoiHocChiTiet() != null &&
@@ -747,7 +747,7 @@ public class StudentService {
         String studentId = student.getIdHs();
 
         // Find the session by ID
-        Optional<BuoiHocChiTiet> sessionOpt = buoiHocChiTietRepository.findById(rateDTO.getSessionId());
+        Optional<BuoiHocChiTiet> sessionOpt = buoiHocChiTietStudentRepository.findById(rateDTO.getSessionId());
         if (!sessionOpt.isPresent()) {
             throw new RuntimeException("Không tìm thấy buổi học");
         }
@@ -760,7 +760,7 @@ public class StudentService {
         }
 
         String classId = session.getLopHoc().getIdLh();
-        boolean isRegistered = dangKyLHRepository.findByHocSinhId(studentId).stream()
+        boolean isRegistered = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
             .anyMatch(dk -> dk.getLopHoc() != null && dk.getLopHoc().getIdLh().equals(classId));
 
         if (!isRegistered) {
@@ -769,7 +769,7 @@ public class StudentService {
 
         // Lưu đánh giá vào DanhGiaBuoiHoc entity thay vì BuoiHocChiTiet
         // Kiểm tra xem đã có đánh giá cho buổi học này chưa
-        Optional<DanhGiaBuoiHoc> existingRatingOpt = danhGiaBuoiHocRepository.findByHocSinhIdAndBuoiHocChiTietId(studentId, rateDTO.getSessionId());
+        Optional<DanhGiaBuoiHoc> existingRatingOpt = danhGiaBuoiHocStudentRepository.findByHocSinhIdAndBuoiHocChiTietId(studentId, rateDTO.getSessionId());
         
         DanhGiaBuoiHoc danhGia;
         if (existingRatingOpt.isPresent()) {
@@ -801,7 +801,7 @@ public class StudentService {
         danhGia.setThoiDiemDanhGia(LocalDateTime.now());
 
         // Save to database
-        danhGiaBuoiHocRepository.save(danhGia);
+        danhGiaBuoiHocStudentRepository.save(danhGia);
     }
 
     @Transactional
@@ -844,7 +844,7 @@ public class StudentService {
         LopHoc lopHoc = lopHocOpt.get();
 
         // Verify student is registered in this class
-        boolean isRegistered = dangKyLHRepository.findByHocSinhId(studentId).stream()
+        boolean isRegistered = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
             .anyMatch(dk -> dk.getLopHoc() != null && dk.getLopHoc().getIdLh().equals(idLh));
 
         if (!isRegistered) {
@@ -852,7 +852,7 @@ public class StudentService {
         }
 
         // Check if student already rated this class
-        Optional<DanhGiaLopHoc> existingRatingOpt = danhGiaLopHocRepository.findByHocSinhIdAndLopHocId(studentId, idLh);
+        Optional<DanhGiaLopHoc> existingRatingOpt = danhGiaLopHocStudentRepository.findByHocSinhIdAndLopHocId(studentId, idLh);
         
         DanhGiaLopHoc danhGia;
         if (existingRatingOpt.isPresent()) {
@@ -884,12 +884,12 @@ public class StudentService {
         danhGia.setThoiDiemDanhGia(LocalDateTime.now());
 
         // Save to database
-        danhGiaLopHocRepository.save(danhGia);
+        danhGiaLopHocStudentRepository.save(danhGia);
     }
 
     private String generateNextDanhGiaLopHocId() {
         try {
-            int maxNumber = danhGiaLopHocRepository.findMaxDglhNumber();
+            int maxNumber = danhGiaLopHocStudentRepository.findMaxDglhNumber();
             int nextNumber = maxNumber + 1;
             // Format: DG + 8 digits (e.g., DG00000001)
             return String.format("DG%08d", nextNumber);
@@ -907,7 +907,7 @@ public class StudentService {
 
     private String generateNextDanhGiaBuoiHocId() {
         try {
-            int maxNumber = danhGiaBuoiHocRepository.findMaxDgbhNumber();
+            int maxNumber = danhGiaBuoiHocStudentRepository.findMaxDgbhNumber();
             int nextNumber = maxNumber + 1;
             // Format: DGBH + 6 digits (e.g., DGBH000001) - total 10 characters
             return String.format("DGBH%06d", nextNumber);

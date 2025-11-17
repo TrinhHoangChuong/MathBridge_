@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BaiTapRepository extends JpaRepository<BaiTap, String> {
+public interface BaiTapStudentRepository extends JpaRepository<BaiTap, String> {
     
     @Query("SELECT bt FROM BaiTap bt WHERE bt.buoiHocChiTiet.lopHoc.idLh IN " +
            "(SELECT dk.lopHoc.idLh FROM DangKyLH dk WHERE dk.hocSinh.idHs = :idHS)")

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface YeuCauHoTroRepository extends JpaRepository<YeuCauHoTro, String> {
+public interface YeuCauHoTroStudentRepository extends JpaRepository<YeuCauHoTro, String> {
 
     // Find support requests by student ID (assuming we need to link to student somehow)
     // Since YeuCauHoTro doesn't have direct student reference, we might need to add it

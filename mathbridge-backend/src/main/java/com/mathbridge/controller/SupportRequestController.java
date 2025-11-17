@@ -8,8 +8,8 @@ import com.mathbridge.entity.LopHoc;
 import com.mathbridge.entity.YeuCauHoTro;
 import com.mathbridge.repository.HocSinhRepository;
 import com.mathbridge.repository.LopHocRepository;
-import com.mathbridge.repository.StudentRepo.YeuCauHoTroRepository;
-import com.mathbridge.repository.StudentRepo.DangKyLHRepository;
+import com.mathbridge.repository.StudentRepo.YeuCauHoTroStudentRepository;
+import com.mathbridge.repository.StudentRepo.DangKyLHStudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class SupportRequestController {
 
     @Autowired
-    private YeuCauHoTroRepository yeuCauHoTroRepository;
+    private YeuCauHoTroStudentRepository yeuCauHoTroStudentRepository;
 
     @Autowired
     private HocSinhRepository hocSinhRepository;
@@ -37,7 +37,7 @@ public class SupportRequestController {
     private LopHocRepository lopHocRepository;
 
     @Autowired
-    private DangKyLHRepository dangKyLHRepository;
+    private DangKyLHStudentRepository dangKyLHStudentRepository;
 
     // Get all support requests for the current user
     @GetMapping
@@ -64,7 +64,7 @@ public class SupportRequestController {
             String studentId = student.getIdHs();
 
             // Get all classes that student is registered in
-            List<String> classIds = dangKyLHRepository.findByHocSinhId(studentId).stream()
+            List<String> classIds = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
                 .map(dk -> dk.getLopHoc() != null ? dk.getLopHoc().getIdLh() : null)
                 .filter(id -> id != null)
                 .collect(Collectors.toList());
@@ -72,7 +72,7 @@ public class SupportRequestController {
             // Get all support requests and filter:
             // 1. Requests without class (ID_LH = NULL) - return for all students
             // 2. Requests with class that student is registered in
-            List<YeuCauHoTro> allRequests = yeuCauHoTroRepository.findAllOrderByThoiDiemTaoDesc();
+            List<YeuCauHoTro> allRequests = yeuCauHoTroStudentRepository.findAllOrderByThoiDiemTaoDesc();
             
             List<YeuCauHoTro> requests = allRequests.stream()
                 .filter(req -> {
@@ -103,7 +103,7 @@ public class SupportRequestController {
             @PathVariable String id,
             Authentication authentication) {
         try {
-            Optional<YeuCauHoTro> requestOpt = yeuCauHoTroRepository.findById(id);
+            Optional<YeuCauHoTro> requestOpt = yeuCauHoTroStudentRepository.findById(id);
 
             if (!requestOpt.isPresent()) {
                 return ResponseEntity.notFound().build();
@@ -190,7 +190,7 @@ public class SupportRequestController {
                     Optional<HocSinh> studentOpt = hocSinhRepository.findByTaiKhoan_IdTk(userId);
                     if (studentOpt.isPresent()) {
                         String studentId = studentOpt.get().getIdHs();
-                        boolean isRegistered = dangKyLHRepository.findByHocSinhId(studentId).stream()
+                        boolean isRegistered = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
                             .anyMatch(dk -> dk.getLopHoc() != null && 
                                           dk.getLopHoc().getIdLh().equals(createDTO.getClassId().trim()));
                         
@@ -205,7 +205,7 @@ public class SupportRequestController {
                 }
             }
 
-            YeuCauHoTro saved = yeuCauHoTroRepository.save(request);
+            YeuCauHoTro saved = yeuCauHoTroStudentRepository.save(request);
             SupportRequestDTO dto = convertToDTO(saved);
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Yêu cầu hỗ trợ đã được tạo thành công", dto));
@@ -224,7 +224,7 @@ public class SupportRequestController {
             @RequestBody SupportRequestDTO updateDTO,
             Authentication authentication) {
         try {
-            Optional<YeuCauHoTro> requestOpt = yeuCauHoTroRepository.findById(id);
+            Optional<YeuCauHoTro> requestOpt = yeuCauHoTroStudentRepository.findById(id);
 
             if (!requestOpt.isPresent()) {
                 return ResponseEntity.notFound().build();
@@ -245,7 +245,7 @@ public class SupportRequestController {
                 request.setThoiDiemDong(LocalDateTime.now());
             }
 
-            YeuCauHoTro saved = yeuCauHoTroRepository.save(request);
+            YeuCauHoTro saved = yeuCauHoTroStudentRepository.save(request);
             SupportRequestDTO dto = convertToDTO(saved);
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Support request updated successfully", dto));
@@ -262,13 +262,13 @@ public class SupportRequestController {
             @PathVariable String id,
             Authentication authentication) {
         try {
-            Optional<YeuCauHoTro> requestOpt = yeuCauHoTroRepository.findById(id);
+            Optional<YeuCauHoTro> requestOpt = yeuCauHoTroStudentRepository.findById(id);
 
             if (!requestOpt.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
 
-            yeuCauHoTroRepository.deleteById(id);
+            yeuCauHoTroStudentRepository.deleteById(id);
             return ResponseEntity.ok(new ApiResponse<>(true, "Support request deleted successfully", null));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -302,13 +302,13 @@ public class SupportRequestController {
             String studentId = student.getIdHs();
 
             // Get all classes that student is registered in
-            List<String> classIds = dangKyLHRepository.findByHocSinhId(studentId).stream()
+            List<String> classIds = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
                 .map(dk -> dk.getLopHoc() != null ? dk.getLopHoc().getIdLh() : null)
                 .filter(id -> id != null)
                 .collect(Collectors.toList());
 
             // Get support requests by status for these classes
-            List<YeuCauHoTro> allRequests = yeuCauHoTroRepository.findByTrangThaiOrderByThoiDiemTaoDesc(status);
+            List<YeuCauHoTro> allRequests = yeuCauHoTroStudentRepository.findByTrangThaiOrderByThoiDiemTaoDesc(status);
             
             List<YeuCauHoTro> requests = allRequests.stream()
                 .filter(req -> req.getLopHoc() != null && classIds.contains(req.getLopHoc().getIdLh()))
@@ -333,7 +333,7 @@ public class SupportRequestController {
      */
     private String generateNextSupportRequestId() {
         try {
-            int maxNo = yeuCauHoTroRepository.findMaxYcNumber();
+            int maxNo = yeuCauHoTroStudentRepository.findMaxYcNumber();
             int nextNo = maxNo + 1;
             
             // Format: YC + 8 số = 10 ký tự (YC00000001, YC00000002, ...)

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DanhGiaLopHocRepository extends JpaRepository<DanhGiaLopHoc, String> {
+public interface DanhGiaLopHocStudentRepository extends JpaRepository<DanhGiaLopHoc, String> {
     
     // Find by student ID
     List<DanhGiaLopHoc> findByHocSinh_IdHs(String idHS);

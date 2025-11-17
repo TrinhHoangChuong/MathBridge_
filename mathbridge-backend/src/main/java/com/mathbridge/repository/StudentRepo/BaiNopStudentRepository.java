@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BaiNopRepository extends JpaRepository<BaiNop, String> {
+public interface BaiNopStudentRepository extends JpaRepository<BaiNop, String> {
     
     List<BaiNop> findByHocSinh_IdHs(String idHS);
     

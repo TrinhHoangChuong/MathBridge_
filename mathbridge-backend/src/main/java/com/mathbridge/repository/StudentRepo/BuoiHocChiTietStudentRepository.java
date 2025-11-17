@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BuoiHocChiTietRepository extends JpaRepository<BuoiHocChiTiet, String> {
+public interface BuoiHocChiTietStudentRepository extends JpaRepository<BuoiHocChiTiet, String> {
     
     List<BuoiHocChiTiet> findByLopHoc_IdLh(String idLH);
 

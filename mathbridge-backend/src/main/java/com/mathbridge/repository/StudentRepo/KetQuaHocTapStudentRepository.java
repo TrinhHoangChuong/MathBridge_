@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface KetQuaHocTapRepository extends JpaRepository<KetQuaHocTap, String> {
+public interface KetQuaHocTapStudentRepository extends JpaRepository<KetQuaHocTap, String> {
     
     List<KetQuaHocTap> findByHocSinh_IdHs(String idHS);
     

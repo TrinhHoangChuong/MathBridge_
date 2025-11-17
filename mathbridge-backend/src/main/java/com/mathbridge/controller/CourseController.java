@@ -8,7 +8,7 @@ import com.mathbridge.repository.NhanVienRepository;
 import com.mathbridge.entity.NhanVien;
 import com.mathbridge.repository.ChuongTrinhRepository;
 import com.mathbridge.entity.ChuongTrinh;
-import com.mathbridge.repository.StudentRepo.DangKyLHRepository;
+import com.mathbridge.repository.StudentRepo.DangKyLHStudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +39,7 @@ public class CourseController {
     private NhanVienRepository nhanVienRepository;
 
     @Autowired
-    private DangKyLHRepository dangKyLHRepository;
+    private DangKyLHStudentRepository dangKyLHStudentRepository;
 
     /**
      * Convert từ Entity LopHoc sang DTO CourseResponse
@@ -227,7 +227,7 @@ public class CourseController {
             if (!courseService.getCourseById(idLH).isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            long count = dangKyLHRepository.countByLopHocId(idLH);
+            long count = dangKyLHStudentRepository.countByLopHocId(idLH);
             return ResponseEntity.ok(new ApiResponse<Long>(true, "Enrollment count retrieved successfully", count));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()

@@ -11,7 +11,7 @@ import com.mathbridge.entity.TaiKhoanVaiTro;
 import com.mathbridge.entity.TaiKhoanVaiTroId;
 import com.mathbridge.entity.Role;
 import com.mathbridge.repository.HocSinhRepository;
-import com.mathbridge.repository.StudentRepo.DangKyLHRepository;
+import com.mathbridge.repository.StudentRepo.DangKyLHStudentRepository;
 import com.mathbridge.repository.LopHocRepository;
 import com.mathbridge.repository.TaiKhoanRepository;
 import com.mathbridge.repository.TaiKhoanVaiTroRepository;
@@ -33,7 +33,7 @@ public class DangKyLHService {
     private HocSinhRepository hocSinhRepository;
 
     @Autowired
-    private DangKyLHRepository dangKyLHRepository;
+    private DangKyLHStudentRepository dangKyLHStudentRepository;
 
     @Autowired
     private LopHocRepository lopHocRepository;
@@ -301,7 +301,7 @@ public class DangKyLHService {
 
         // Kiểm tra xem đã đăng ký chưa
         DangKyLHId id = new DangKyLHId(student.getIdHs(), lopHoc.getIdLh());
-        Optional<DangKyLH> existingEnrollment = dangKyLHRepository.findById(id);
+        Optional<DangKyLH> existingEnrollment = dangKyLHStudentRepository.findById(id);
         
         if (existingEnrollment.isPresent()) {
             DangKyLH existing = existingEnrollment.get();
@@ -317,7 +317,7 @@ public class DangKyLHService {
         enrollment.setLopHoc(lopHoc);
         enrollment.setTrangThai("pending");
 
-        dangKyLHRepository.save(enrollment);
+        dangKyLHStudentRepository.save(enrollment);
 
         // Tạo registrationId string từ composite key
         String registrationId = student.getIdHs() + "-" + lopHoc.getIdLh();
