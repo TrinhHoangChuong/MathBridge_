@@ -13,6 +13,8 @@ public class LopHocDTO {
     private BigDecimal mucGiaThang;
     private String trangThai;
     private String moTa;
+    private String idLh;
+    private Integer soHocSinh;
 
     public LopHocDTO() {
     }
@@ -33,6 +35,28 @@ public class LopHocDTO {
         this.mucGiaThang = mucGiaThang;
         this.trangThai = trangThai;
         this.moTa = moTa;
+    }
+
+    public LopHocDTO(String idLh,
+                     String tenLop,
+                     String loaiNgay,
+                     String soBuoi,
+                     String hinhThucHoc,
+                     LocalDateTime ngayBatDau,
+                     BigDecimal mucGiaThang,
+                     String trangThai,
+                     String moTa,
+                     Integer soHocSinh) {
+        this.idLh = idLh;
+        this.tenLop = tenLop;
+        this.loaiNgay = loaiNgay;
+        this.soBuoi = soBuoi;
+        this.hinhThucHoc = hinhThucHoc;
+        this.ngayBatDau = ngayBatDau;
+        this.mucGiaThang = mucGiaThang;
+        this.trangThai = trangThai;
+        this.moTa = moTa;
+        this.soHocSinh = soHocSinh;
     }
 
     public String getTenLop() {
@@ -97,5 +121,21 @@ public class LopHocDTO {
 
     public void setMoTa(String moTa) {
         this.moTa = moTa;
+    }
+
+    public String getIdLh() {
+        return idLh;
+    }
+
+    public void setIdLh(String idLh) {
+        this.idLh = idLh;
+    }
+
+    public Integer getSoHocSinh() {
+        return soHocSinh;
+    }
+
+    public void setSoHocSinh(Integer soHocSinh) {
+        this.soHocSinh = soHocSinh;
     }
 }

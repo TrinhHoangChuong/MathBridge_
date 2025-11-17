@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface LopHocService {
 
-    // lấy các lớp do giáo viên này phụ trách
+    // PUBLIC API – dùng cho controller /nhanvien/{idNv}/lophoc
     List<LopHocDTO> getLopHocByGiaoVien(String idNv);
 }

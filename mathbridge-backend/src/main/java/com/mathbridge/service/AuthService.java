@@ -2,7 +2,7 @@ package com.mathbridge.service;
 
 import com.mathbridge.dto.AuthenticatedAccountDTO;
 import com.mathbridge.entity.TaiKhoan;
-import com.mathbridge.entity.TaiKhoanVaiTro;
+import com.mathbridge.entity.TaiKhoan_VaiTro;
 import com.mathbridge.repository.TaiKhoanRepository;
 import com.mathbridge.repository.TaiKhoanVaiTroRepository;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class AuthService {
         TaiKhoan tk = opt.get();
 
         // TODO: tạm thời so sánh plaintext
-        if (!tk.getPassword().equals(rawPassword)) {
+        if (!tk.getPassWord().equals(rawPassword)) {
             return null;
         }
 
@@ -44,7 +44,7 @@ public class AuthService {
         }
 
         // lấy roles từ bảng trung gian
-        List<TaiKhoanVaiTro> list = taiKhoanVaiTroRepository.findByTaiKhoan_IdTk(tk.getIdTk());
+        List<TaiKhoan_VaiTro> list = taiKhoanVaiTroRepository.findByTaiKhoan_IdTk(tk.getIdTk());
         List<String> roleIds = list.stream()
                 .map(t -> t.getRole().getIdRole())   // R001, R002, R003
                 .collect(Collectors.toList());

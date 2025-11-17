@@ -1,10 +1,17 @@
 package com.mathbridge.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "TinTuyenDung")
 public class TinTuyenDung {
@@ -51,135 +58,8 @@ public class TinTuyenDung {
 
     @Column(name = "TrangThai", length = 60)
     private String trangThai;
+    // QUAN HỆ
 
-    // Liên kết ứng viên qua bảng Association_25
-    @OneToMany(mappedBy = "tinTuyenDung", fetch = FetchType.LAZY)
-    private List<Association25> ungVienLinks = new ArrayList<>();
-
-    public TinTuyenDung() {
-    }
-
-    public TinTuyenDung(String idTd) {
-        this.idTd = idTd;
-    }
-
-    public String getIdTd() {
-        return idTd;
-    }
-
-    public void setIdTd(String idTd) {
-        this.idTd = idTd;
-    }
-
-    public String getTieuDe() {
-        return tieuDe;
-    }
-
-    public void setTieuDe(String tieuDe) {
-        this.tieuDe = tieuDe;
-    }
-
-    public String getViTri() {
-        return viTri;
-    }
-
-    public void setViTri(String viTri) {
-        this.viTri = viTri;
-    }
-
-    public String getMoTaNgan() {
-        return moTaNgan;
-    }
-
-    public void setMoTaNgan(String moTaNgan) {
-        this.moTaNgan = moTaNgan;
-    }
-
-    public String getMoTa() {
-        return moTa;
-    }
-
-    public void setMoTa(String moTa) {
-        this.moTa = moTa;
-    }
-
-    public String getYeuCau() {
-        return yeuCau;
-    }
-
-    public void setYeuCau(String yeuCau) {
-        this.yeuCau = yeuCau;
-    }
-
-    public String getCapBac() {
-        return capBac;
-    }
-
-    public void setCapBac(String capBac) {
-        this.capBac = capBac;
-    }
-
-    public String getHinhThucLamViec() {
-        return hinhThucLamViec;
-    }
-
-    public void setHinhThucLamViec(String hinhThucLamViec) {
-        this.hinhThucLamViec = hinhThucLamViec;
-    }
-
-    public String getMucLuongTu() {
-        return mucLuongTu;
-    }
-
-    public void setMucLuongTu(String mucLuongTu) {
-        this.mucLuongTu = mucLuongTu;
-    }
-
-    public String getMucLuongDen() {
-        return mucLuongDen;
-    }
-
-    public void setMucLuongDen(String mucLuongDen) {
-        this.mucLuongDen = mucLuongDen;
-    }
-
-    public Integer getKinhNghiem() {
-        return kinhNghiem;
-    }
-
-    public void setKinhNghiem(Integer kinhNghiem) {
-        this.kinhNghiem = kinhNghiem;
-    }
-
-    public Integer getSoLuongTuyen() {
-        return soLuongTuyen;
-    }
-
-    public void setSoLuongTuyen(Integer soLuongTuyen) {
-        this.soLuongTuyen = soLuongTuyen;
-    }
-
-    public LocalDateTime getHanNop() {
-        return hanNop;
-    }
-
-    public void setHanNop(LocalDateTime hanNop) {
-        this.hanNop = hanNop;
-    }
-
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
-    }
-
-    public List<Association25> getUngVienLinks() {
-        return ungVienLinks;
-    }
-
-    public void setUngVienLinks(List<Association25> ungVienLinks) {
-        this.ungVienLinks = ungVienLinks;
-    }
+    @OneToMany(mappedBy = "tinTuyenDung")
+    private Set<Association_25> associations = new HashSet<>();
 }

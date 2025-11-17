@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -27,38 +29,23 @@ public class SecurityConfig {
     @Value("${mathbridge.security.jwt-secret}")
     private String jwtSecret;
 
-    // SecurityFilterChain cho public endpoints (không cần JWT)
     @Bean
-    public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/public/**", "/api/portal/payment/momo/ipn", "/api/portal/payment/momo/status", "/api/portal/payment/momo/manual-update")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                );
-        return http.build();
-    }
-
-    // SecurityFilterChain cho protected endpoints (cần JWT)
-    @Bean
-    public SecurityFilterChain protectedSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .securityMatcher("/api/portal/**")
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(c -> c.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/portal/**").permitAll()
                         .requestMatchers("/api/portal/student/**").hasAuthority("R001")
                         .requestMatchers("/api/portal/teacher/**").hasAuthority("R002")
                         .requestMatchers("/api/portal/covan/**").hasAuthority("R003")
-                        .requestMatchers("/api/portal/**").permitAll()
                         .anyRequest().authenticated()
-
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthConverter())
+                                .jwtAuthenticationConverter(jwtAuthConverter())   // << thêm dòng này
                         )
                 );
         return http.build();
