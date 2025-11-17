@@ -109,8 +109,8 @@ public class BuoiHocChiTietServiceImpl implements BuoiHocChiTietService {
             dto.setTenLop(buoiHoc.getLopHoc().getTenLop());
             
             // Count students
-            int soHocSinh = buoiHoc.getLopHoc().getDangKyLHs() != null ? 
-                           buoiHoc.getLopHoc().getDangKyLHs().size() : 0;
+            int soHocSinh = buoiHoc.getLopHoc().getDangKyLhs()!= null ?
+                           buoiHoc.getLopHoc().getDangKyLhs().size() : 0;
             dto.setSoHocSinh(soHocSinh);
         }
         

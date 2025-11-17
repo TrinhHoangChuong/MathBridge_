@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 
-public interface HopDongRepository extends JpaRepository<HopDong, String> {
+public interface HopDongAdminRepository extends JpaRepository<HopDong, String> {
 
     long countByTrangThai(String trangThai);
 

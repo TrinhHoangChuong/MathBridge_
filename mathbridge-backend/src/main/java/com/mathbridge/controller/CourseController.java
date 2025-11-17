@@ -4,7 +4,7 @@ import com.mathbridge.dto.ApiResponse;
 import com.mathbridge.dto.CourseResponse;
 import com.mathbridge.entity.LopHoc;
 import com.mathbridge.service.CourseService;
-import com.mathbridge.repository.Admin.NhanVienRepository;
+import com.mathbridge.repository.NhanVienRepository;
 import com.mathbridge.entity.NhanVien;
 import com.mathbridge.repository.ChuongTrinhRepository;
 import com.mathbridge.entity.ChuongTrinh;
@@ -49,11 +49,11 @@ public class CourseController {
     private CourseResponse toCourseResponse(LopHoc lopHoc) {
         CourseResponse response = new CourseResponse();
         response.setIdLH(lopHoc.getIdLh());
-        
+
         // Get ID_NV from NhanVien relationship
         if (lopHoc.getNhanVien() != null) {
             response.setIdNV(lopHoc.getNhanVien().getIdNv());
-            
+
             // Get teacher name
             try {
                 NhanVien nv = nhanVienRepository.findById(lopHoc.getNhanVien().getIdNv()).orElse(null);
@@ -64,30 +64,30 @@ public class CourseController {
                 }
             } catch (Exception ignored) {}
         }
-        
+
         // Get ID_CT from ChuongTrinh relationship
         if (lopHoc.getChuongTrinh() != null) {
             response.setIdCT(lopHoc.getChuongTrinh().getIdCt());
         }
-        
+
         response.setTenLop(lopHoc.getTenLop());
         response.setLoaiNgay(lopHoc.getLoaiNgay());
         response.setSoBuoi(lopHoc.getSoBuoi());
         response.setHinhThucHoc(lopHoc.getHinhThucHoc());
-        
+
         // Convert LocalDateTime to Date
         if (lopHoc.getNgayBatDau() != null) {
             response.setNgayBatDau(Date.from(lopHoc.getNgayBatDau().atZone(ZoneId.systemDefault()).toInstant()));
         }
-        
+
         // LopHoc không có ngayKetThucDangKy, để null
         response.setNgayKetThucDangKy(null);
-        
+
         response.setMucGiaThang(lopHoc.getMucGiaThang());
         response.setDanhGia(lopHoc.getDanhGia());
         response.setTrangThai(lopHoc.getTrangThai());
         response.setMoTa(lopHoc.getMoTa());
-        
+
         return response;
     }
 
