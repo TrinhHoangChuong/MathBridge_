@@ -3,6 +3,7 @@ package com.mathbridge.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,6 +42,9 @@ public class HocSinh {
     @Column(name = "GioiTinh", nullable = false)
     private Boolean gioiTinh;
 
+    @Column(name = "NgaySinh")
+    private LocalDate ngaySinh;
+
     @Column(name = "DiaChi", length = 100, nullable = false)
     private String diaChi;
 
@@ -55,6 +59,7 @@ public class HocSinh {
 
     @Column(name = "TrangThaiHoatDong", nullable = false)
     private Boolean trangThaiHoatDong;
+
     // QUAN HỆ
 
     @ManyToOne
@@ -81,4 +86,8 @@ public class HocSinh {
 
     @OneToMany(mappedBy = "hocSinh")
     private Set<KetQuaHocTap> ketQuaHocTaps = new HashSet<>();
+
+    // Mới thêm: danh sách yêu cầu hỗ trợ của học sinh này
+    @OneToMany(mappedBy = "hocSinh")
+    private Set<YeuCauHoTro> yeuCauHoTros = new HashSet<>();
 }

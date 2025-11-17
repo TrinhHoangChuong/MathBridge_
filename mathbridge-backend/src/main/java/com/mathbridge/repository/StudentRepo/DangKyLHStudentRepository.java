@@ -1,4 +1,4 @@
-package com.mathbridge.repository;
+package com.mathbridge.repository.StudentRepo;
 
 import com.mathbridge.entity.DangKyLH;
 import com.mathbridge.entity.DangKyLhId;
@@ -10,10 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface DangKyLHRepository extends JpaRepository<DangKyLH, DangKyLhId> {
-
-    // BỎ HÀM NÀY VÌ ENTITY KHÔNG CÓ FIELD 'trangThai'
-    // List<DangKyLH> findByTrangThai(String trangThai);
+public interface DangKyLHStudentRepository extends JpaRepository<DangKyLH, DangKyLhId> {
 
     @Query("SELECT d FROM DangKyLH d WHERE d.hocSinh.idHs = :idHS")
     List<DangKyLH> findByHocSinhId(@Param("idHS") String idHS);
@@ -21,9 +18,6 @@ public interface DangKyLHRepository extends JpaRepository<DangKyLH, DangKyLhId> 
     @Query("SELECT d FROM DangKyLH d WHERE d.lopHoc.idLh = :idLH")
     List<DangKyLH> findByLopHocId(@Param("idLH") String idLH);
 
-    /**
-     * Đếm số lượng đăng ký cho một lớp học cụ thể
-     */
     @Query("SELECT COUNT(d) FROM DangKyLH d WHERE d.lopHoc.idLh = :idLH")
     long countByLopHocId(@Param("idLH") String idLH);
 
