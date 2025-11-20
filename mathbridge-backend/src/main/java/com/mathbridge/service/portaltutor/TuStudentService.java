@@ -17,8 +17,8 @@ public class TuStudentService {
     private final HocSinhRepository hocSinhRepository;
 
     public TuStudentService(TuAssignedStudentService assignedStudentService,
-                            StudentService studentService,
-                            HocSinhRepository hocSinhRepository) {
+            StudentService studentService,
+            HocSinhRepository hocSinhRepository) {
         this.assignedStudentService = assignedStudentService;
         this.studentService = studentService;
         this.hocSinhRepository = hocSinhRepository;

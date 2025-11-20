@@ -18,18 +18,21 @@ public class TuStudentDetailController {
     private final TuAssignedStudentService assignedStudentService;
     private final TuStudentService tuStudentService;
 
-    public TuStudentDetailController(TuAssignedStudentService assignedStudentService, TuStudentService tuStudentService) {
+    public TuStudentDetailController(TuAssignedStudentService assignedStudentService,
+            TuStudentService tuStudentService) {
         this.assignedStudentService = assignedStudentService;
         this.tuStudentService = tuStudentService;
     }
 
     /**
-     * Trả về dashboard chi tiết của học sinh cho cố vấn nếu cố vấn đang phụ trách học sinh đó.
-     * Yêu cầu: truyền `idNv` (ID cố vấn) như query param hoặc phân giải từ token ở phía frontend.
+     * Trả về dashboard chi tiết của học sinh cho cố vấn nếu cố vấn đang phụ trách
+     * học sinh đó.
+     * Yêu cầu: truyền `idNv` (ID cố vấn) như query param hoặc phân giải từ token ở
+     * phía frontend.
      */
     @GetMapping("/students/{idHs}/dashboard")
     public ResponseEntity<?> getStudentDashboardForTutor(@PathVariable String idHs,
-                                                         @RequestParam(name = "idNv", required = false) String idNv) {
+            @RequestParam(name = "idNv", required = false) String idNv) {
         if (idNv == null || idNv.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing idNv parameter");
         }

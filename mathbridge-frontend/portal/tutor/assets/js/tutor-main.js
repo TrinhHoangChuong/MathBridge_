@@ -1024,7 +1024,10 @@ class TutorDashboard {
       this.tutorInfo?.id;
 
     if (!idNv) {
-      showNotification("Không xác định được ID cố vấn. Vui lòng thử lại.", "error");
+      showNotification(
+        "Không xác định được ID cố vấn. Vui lòng thử lại.",
+        "error"
+      );
       return;
     }
 
@@ -1062,12 +1065,16 @@ class TutorDashboard {
       .getStudentDashboardForTutor(idNv, idHs)
       .then((dashboard) => {
         if (!dashboard) {
-          showNotification("Không có dữ liệu chi tiết cho học sinh.", "warning");
+          showNotification(
+            "Không có dữ liệu chi tiết cho học sinh.",
+            "warning"
+          );
           return;
         }
 
         // Basic info
-        if (nameEl) nameEl.textContent = dashboard.fullName || dashboard.studentId || "-";
+        if (nameEl)
+          nameEl.textContent = dashboard.fullName || dashboard.studentId || "-";
         if (emailEl) emailEl.textContent = dashboard.email || "-";
         if (phoneEl) phoneEl.textContent = dashboard.phone || "-";
         if (addressEl) addressEl.textContent = dashboard.address || "-";
@@ -1076,26 +1083,38 @@ class TutorDashboard {
         const classes = dashboard.classes || [];
         if (classes.length > 0) {
           const first = classes[0];
-          if (primaryClassEl) primaryClassEl.textContent = `Lớp: ${first.className || first.classId || "-"}`;
+          if (primaryClassEl)
+            primaryClassEl.textContent = `Lớp: ${
+              first.className || first.classId || "-"
+            }`;
         } else {
           if (primaryClassEl) primaryClassEl.textContent = "Lớp: -";
         }
 
         // Stats
         const stats = dashboard.stats || {};
-        if (avgEl) avgEl.textContent = stats.averageGrade != null ? stats.averageGrade : "-";
-        if (sessionsEl) sessionsEl.textContent = stats.todayClasses != null ? stats.todayClasses : "-";
-        if (attendanceEl) attendanceEl.textContent = stats.attendanceRate != null ? stats.attendanceRate + "%" : "-";
+        if (avgEl)
+          avgEl.textContent =
+            stats.averageGrade != null ? stats.averageGrade : "-";
+        if (sessionsEl)
+          sessionsEl.textContent =
+            stats.todayClasses != null ? stats.todayClasses : "-";
+        if (attendanceEl)
+          attendanceEl.textContent =
+            stats.attendanceRate != null ? stats.attendanceRate + "%" : "-";
 
         // Populate classes list
         if (classesList) {
           classesList.innerHTML = "";
           classes.forEach((c) => {
             const li = document.createElement("li");
-            li.textContent = `${c.className || c.classId || "-"} - Giáo viên: ${c.teacherName || "-"}`;
+            li.textContent = `${c.className || c.classId || "-"} - Giáo viên: ${
+              c.teacherName || "-"
+            }`;
             classesList.appendChild(li);
           });
-          if (classes.length === 0) classesList.innerHTML = "<li>Không có lớp nào</li>";
+          if (classes.length === 0)
+            classesList.innerHTML = "<li>Không có lớp nào</li>";
         }
 
         // Populate assignments
@@ -1104,10 +1123,13 @@ class TutorDashboard {
           const assignments = dashboard.assignments || [];
           assignments.forEach((a) => {
             const li = document.createElement("li");
-            li.textContent = `${a.title || '-'} (${a.className || '-'}) - ${a.status || ''} ${a.grade ? ' - Điểm: ' + a.grade : ''}`;
+            li.textContent = `${a.title || "-"} (${a.className || "-"}) - ${
+              a.status || ""
+            } ${a.grade ? " - Điểm: " + a.grade : ""}`;
             assignmentsList.appendChild(li);
           });
-          if (assignments.length === 0) assignmentsList.innerHTML = "<li>Không có bài tập</li>";
+          if (assignments.length === 0)
+            assignmentsList.innerHTML = "<li>Không có bài tập</li>";
         }
 
         // Populate grades
@@ -1116,16 +1138,22 @@ class TutorDashboard {
           const grades = dashboard.grades || [];
           grades.forEach((g) => {
             const li = document.createElement("li");
-            li.textContent = `${g.gradeType || g.subject || 'Kết quả'} - ${g.className || '-'}: ${g.score || '-'} ${g.feedback ? '('+g.feedback+')' : ''}`;
+            li.textContent = `${g.gradeType || g.subject || "Kết quả"} - ${
+              g.className || "-"
+            }: ${g.score || "-"} ${g.feedback ? "(" + g.feedback + ")" : ""}`;
             gradesList.appendChild(li);
           });
-          if (grades.length === 0) gradesList.innerHTML = "<li>Không có kết quả</li>";
+          if (grades.length === 0)
+            gradesList.innerHTML = "<li>Không có kết quả</li>";
         }
       })
       .catch((err) => {
         console.error("Error loading student dashboard:", err);
         window.tutorAPI.handleError(err);
-        showNotification("Không thể tải chi tiết học sinh. Vui lòng thử lại.", "error");
+        showNotification(
+          "Không thể tải chi tiết học sinh. Vui lòng thử lại.",
+          "error"
+        );
         if (modal) modal.classList.remove("active");
       });
   }
@@ -4160,9 +4188,35 @@ async function saveConsultationReview(consultationId) {
 
 // Initialize the dashboard when DOM is loaded
 let tutorDashboardInstance;
-document.addEventListener("DOMContentLoaded", () => {
+
+function bootstrapTutorDashboard() {
+  if (tutorDashboardInstance) {
+    return tutorDashboardInstance;
+  }
+
   tutorDashboardInstance = new TutorDashboard();
   window.tutorDashboard = tutorDashboardInstance;
+  return tutorDashboardInstance;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const startDashboard = () => {
+    try {
+      bootstrapTutorDashboard();
+    } catch (error) {
+      console.error("Failed to initialize TutorDashboard:", error);
+    }
+  };
+
+  const sectionsReady = window.tutorSectionsReady;
+  if (sectionsReady && typeof sectionsReady.then === "function") {
+    sectionsReady.then(startDashboard).catch((error) => {
+      console.error("Tutor sections failed to load:", error);
+      startDashboard();
+    });
+  } else {
+    startDashboard();
+  }
 });
 
 // Export for potential module usage

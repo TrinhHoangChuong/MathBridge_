@@ -63,17 +63,21 @@ public class TuAssignedStudentService {
 
     /**
      * Kiểm tra cố vấn (idNv) có đang phụ trách học sinh (idHs) hay không
-     * Trả về true nếu tồn tại phân công với trạng thái đang phụ trách và chưa kết thúc
+     * Trả về true nếu tồn tại phân công với trạng thái đang phụ trách và chưa kết
+     * thúc
      */
     public boolean isTutorAssignedToStudent(String idNv, String idHs) {
-        if (idNv == null || idHs == null) return false;
+        if (idNv == null || idHs == null)
+            return false;
         List<CoVanHocSinh> list = coVanHocSinhRepository.findByTutorIdAndStudentId(idNv, idHs);
-        if (list == null || list.isEmpty()) return false;
+        if (list == null || list.isEmpty())
+            return false;
 
         LocalDateTime now = LocalDateTime.now();
         return list.stream().anyMatch(cv -> {
             String tt = cv.getTrangThai();
-            boolean statusOk = (tt == null) || tt.contains("Dang phu trach") || tt.contains("Đang") || tt.toLowerCase().contains("dang");
+            boolean statusOk = (tt == null) || tt.contains("Dang phu trach") || tt.contains("Đang")
+                    || tt.toLowerCase().contains("dang");
             boolean notEnded = cv.getNgayKetThuc() == null || cv.getNgayKetThuc().isAfter(now);
             return statusOk && notEnded;
         });

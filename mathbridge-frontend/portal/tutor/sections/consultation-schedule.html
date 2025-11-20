@@ -1,0 +1,257 @@
+<section class="content-section" id="consultation-schedule">
+    <div class="section-header">
+        <h2>Lịch tư vấn</h2>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="exportConsultationSchedule()">
+                <i class="fas fa-download"></i>
+                Xuất lịch
+            </button>
+            <button class="btn btn-primary" onclick="addConsultationSchedule()">
+                <i class="fas fa-plus"></i>
+                Thêm lịch tư vấn
+            </button>
+        </div>
+    </div>
+
+    <div class="schedule-calendar">
+        <div class="calendar-header">
+            <button class="btn-icon" id="prevMonth" onclick="changeConsultationMonth(-1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h3 id="currentMonth">Tháng 10, 2025</h3>
+            <button class="btn-icon" id="nextMonth" onclick="changeConsultationMonth(1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="calendar-grid" id="consultationCalendarGrid">
+            <div class="calendar-day-header">CN</div>
+            <div class="calendar-day-header">T2</div>
+            <div class="calendar-day-header">T3</div>
+            <div class="calendar-day-header">T4</div>
+            <div class="calendar-day-header">T5</div>
+            <div class="calendar-day-header">T6</div>
+            <div class="calendar-day-header">T7</div>
+
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">25</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">26</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">27</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">28</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">29</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">30</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">1</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">2</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">3</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">4</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">5</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">6</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">7</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">8</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">9</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">10</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">11</span>
+            </div>
+            <div class="calendar-day today">
+                <span class="calendar-day-number">12</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">13</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">14</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">15</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">16</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">17</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">18</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">19</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">20</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">21</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">22</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">23</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">24</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">25</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">26</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">27</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">28</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">29</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">30</span>
+            </div>
+            <div class="calendar-day">
+                <span class="calendar-day-number">31</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">1</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">2</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">3</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">4</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">5</span>
+            </div>
+            <div class="calendar-day other-month">
+                <span class="calendar-day-number">6</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="today-schedule">
+        <h3><i class="fas fa-calendar-day"></i> Lịch tư vấn hôm nay (17/12/2024)</h3>
+        <div class="schedule-list">
+            <div class="schedule-item">
+                <div class="schedule-time">
+                    <span class="time">9:00 - 10:00</span>
+                    <span class="duration">60 phút</span>
+                </div>
+                <div class="schedule-details">
+                    <h4>Tư vấn Trần Văn C - Định hướng học tập</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> Phòng tư vấn A201</p>
+                    <p><i class="fas fa-user-graduate"></i> Lớp 10A1 • Cambridge IGCSE</p>
+                    <span class="status-badge active">Đang tư vấn</span>
+                </div>
+                <div class="schedule-actions">
+                    <button class="btn btn-sm btn-primary" onclick="startConsultation(1)">
+                        <i class="fas fa-play"></i> Bắt đầu
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="viewConsultationDetails(1)">
+                        <i class="fas fa-info"></i> Chi tiết
+                    </button>
+                </div>
+            </div>
+
+            <div class="schedule-item">
+                <div class="schedule-time">
+                    <span class="time">14:00 - 15:00</span>
+                    <span class="duration">60 phút</span>
+                </div>
+                <div class="schedule-details">
+                    <h4>Tư vấn Lê Thị D - Chuẩn bị thi IB</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> Phòng tư vấn B205</p>
+                    <p><i class="fas fa-user-graduate"></i> Lớp 11B2 • IB Math HL</p>
+                    <span class="status-badge upcoming">Sắp tới</span>
+                </div>
+                <div class="schedule-actions">
+                    <button class="btn btn-sm btn-primary" onclick="startConsultation(2)">
+                        <i class="fas fa-play"></i> Bắt đầu
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="viewConsultationDetails(2)">
+                        <i class="fas fa-info"></i> Chi tiết
+                    </button>
+                </div>
+            </div>
+
+            <div class="schedule-item">
+                <div class="schedule-time">
+                    <span class="time">16:00 - 17:00</span>
+                    <span class="duration">60 phút</span>
+                </div>
+                <div class="schedule-details">
+                    <h4>Tư vấn Phạm Văn E - Chọn lớp nâng cao</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> Phòng tư vấn C301</p>
+                    <p><i class="fas fa-user-graduate"></i> Lớp 12C1 • AP Calculus</p>
+                    <span class="status-badge completed">Đã hoàn thành</span>
+                </div>
+                <div class="schedule-actions">
+                    <button class="btn btn-sm btn-success" onclick="viewConsultationDetails(3)">
+                        <i class="fas fa-check"></i> Xem kết quả
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="reviewConsultation(3)">
+                        <i class="fas fa-eye"></i> Đánh giá
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="weekly-overview">
+        <h3><i class="fas fa-calendar-week"></i> Tổng quan tuần</h3>
+        <div class="week-stats">
+            <div class="week-stat">
+                <span class="stat-number">12</span>
+                <span class="stat-label">Buổi tư vấn</span>
+            </div>
+            <div class="week-stat">
+                <span class="stat-number">12</span>
+                <span class="stat-label">Giờ tư vấn</span>
+            </div>
+            <div class="week-stat">
+                <span class="stat-number">15</span>
+                <span class="stat-label">Học sinh</span>
+            </div>
+            <div class="week-stat">
+                <span class="stat-number">4</span>
+                <span class="stat-label">Loại tư vấn</span>
+            </div>
+        </div>
+    </div>
+</section>
+

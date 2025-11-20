@@ -600,7 +600,9 @@ class TutorAPI {
   }
 
   async getStudentDashboardForTutor(idNv, studentId) {
-    const endpoint = `/students/${encodeURIComponent(studentId)}/dashboard?idNv=${encodeURIComponent(idNv)}`;
+    const endpoint = `/students/${encodeURIComponent(
+      studentId
+    )}/dashboard?idNv=${encodeURIComponent(idNv)}`;
     return await this.request(endpoint);
   }
 
