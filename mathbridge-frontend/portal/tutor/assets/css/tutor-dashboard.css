@@ -1374,6 +1374,355 @@ body {
     animation: pulse 2s infinite;
 }
 
+/* === Weekly consultation schedule === */
+.consultation-header {
+    align-items: flex-start;
+}
+
+.consultation-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.section-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+.consultation-toolbar {
+    margin: 1rem 0 1.5rem;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: space-between;
+}
+
+.week-picker label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+    display: block;
+}
+
+.picker-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border-color);
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--border-radius);
+    background: #fff;
+}
+
+.picker-field input[type="date"] {
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    background: transparent;
+}
+
+.week-navigation {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.consultation-toolbar .btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: #fff;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.consultation-toolbar .btn-icon:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+.week-range {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 200px;
+    text-align: center;
+}
+
+.consultation-analytics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.analytics-card {
+    background: #fff;
+    padding: 1rem 1.25rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-color);
+    box-shadow: var(--shadow);
+}
+
+.analytics-card .label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.analytics-card strong {
+    display: block;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-top: 0.35rem;
+}
+
+.consultation-week-wrapper {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    gap: 1.5rem;
+}
+
+.week-legend {
+    background: #fff;
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.week-legend h4 {
+    margin-bottom: 0.75rem;
+}
+
+.week-legend ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.legend-color.online {
+    background: #22c55e;
+}
+
+.legend-color.onsite {
+    background: #2563eb;
+}
+
+.legend-color.today {
+    background: #f97316;
+}
+
+.consultation-week {
+    position: relative;
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.consultation-week .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(150px, 1fr));
+    min-height: 520px;
+}
+
+.consultation-week .week-day {
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.consultation-week .week-day:last-child {
+    border-right: none;
+}
+
+.consultation-week .week-day-header {
+    padding: 0.9rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    background: #f8fafc;
+    font-weight: 600;
+}
+
+.consultation-week .week-day-header span {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.15rem;
+}
+
+.consultation-week .week-day.is-today .week-day-header {
+    background: rgba(249, 115, 22, 0.15);
+    color: #c2410c;
+}
+
+.consultation-week .consultation-slots {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.consultation-week .consultation-slot {
+    flex: 1;
+    border-bottom: 1px dashed var(--border-color);
+    padding: 0.75rem;
+    min-height: 120px;
+}
+
+.consultation-week .consultation-slot:last-child {
+    border-bottom: none;
+}
+
+.consultation-week .slot-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.05em;
+}
+
+.consultation-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    box-shadow: 0 12px 20px rgba(15, 23, 42, 0.08);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.consultation-card + .consultation-card {
+    margin-top: 0.75rem;
+}
+
+.consultation-card.online {
+    border-left: 4px solid #22c55e;
+}
+
+.consultation-card.onsite {
+    border-left: 4px solid #2563eb;
+}
+
+.consultation-card h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.35rem;
+}
+
+.consultation-card .code {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.consultation-card .time-range {
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+
+.consultation-card .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    color: var(--text-secondary);
+}
+
+.consultation-card .badges {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.consultation-card .badge {
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge.lms {
+    background: rgba(34, 197, 94, 0.15);
+    color: #15803d;
+}
+
+.badge.center {
+    background: rgba(37, 99, 235, 0.15);
+    color: #1d4ed8;
+}
+
+.schedule-state {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.schedule-state.error {
+    color: var(--error-color);
+}
+
+@media (max-width: 1200px) {
+    .consultation-week-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .consultation-week .week-grid {
+        grid-template-columns: repeat(4, minmax(180px, 1fr));
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .consultation-toolbar {
+        flex-direction: column;
+    }
+
+    .week-navigation {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .consultation-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .consultation-week .week-grid {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+}
+
 /* Consultations */
 .consultations-container {
     background: var(--card-bg);

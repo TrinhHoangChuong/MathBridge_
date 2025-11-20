@@ -3,6 +3,10 @@ class TutorDashboard {
   constructor() {
     this.currentSection = "dashboard";
     this.tutorInfo = null;
+    this.consultationWeekStart = this.getStartOfWeek(new Date());
+    this.consultationWeekData = [];
+    this.consultationSlotConfig = this.getConsultationSlotConfig();
+    this.consultationControlsReady = false;
     this.init();
   }
 
@@ -19,6 +23,7 @@ class TutorDashboard {
     this.setupSidebar();
     this.setupModals();
     this.updateTutorAvatar();
+    this.initializeConsultationSchedule();
   }
 
   checkAuthentication() {
@@ -193,22 +198,6 @@ class TutorDashboard {
       });
     }
 
-    // Calendar navigation
-    const prevWeekBtn = document.getElementById("prevWeek");
-    const nextWeekBtn = document.getElementById("nextWeek");
-
-    if (prevWeekBtn) {
-      prevWeekBtn.addEventListener("click", () => {
-        this.navigateWeek(-1);
-      });
-    }
-
-    if (nextWeekBtn) {
-      nextWeekBtn.addEventListener("click", () => {
-        this.navigateWeek(1);
-      });
-    }
-
     // Search functionality
     document.querySelectorAll(".search-box input").forEach((input) => {
       input.addEventListener("input", (e) => {
@@ -326,6 +315,82 @@ class TutorDashboard {
         }
       });
     }
+  }
+
+  initializeConsultationSchedule() {
+    const grid = document.getElementById("consultationWeekGrid");
+    if (!grid) {
+      // Sections might not be injected yet
+      setTimeout(() => this.initializeConsultationSchedule(), 300);
+      return;
+    }
+
+    this.setupConsultationWeekControls();
+    this.updateWeekPickerValue();
+    this.updateWeekRangeLabel(
+      this.consultationWeekStart,
+      this.getWeekEndDate(this.consultationWeekStart)
+    );
+    this.loadConsultationSchedule();
+  }
+
+  setupConsultationWeekControls() {
+    if (this.consultationControlsReady) {
+      return;
+    }
+
+    const prevWeekBtn = document.getElementById("consultationPrevWeek");
+    const nextWeekBtn = document.getElementById("consultationNextWeek");
+    const todayBtn = document.getElementById("consultationTodayBtn");
+    const weekPicker = document.getElementById("consultationWeekPicker");
+
+    if (prevWeekBtn) {
+      prevWeekBtn.addEventListener("click", () => {
+        this.navigateWeek(-1);
+      });
+    }
+
+    if (nextWeekBtn) {
+      nextWeekBtn.addEventListener("click", () => {
+        this.navigateWeek(1);
+      });
+    }
+
+    if (todayBtn) {
+      todayBtn.addEventListener("click", () => {
+        this.consultationWeekStart = this.getStartOfWeek(new Date());
+        this.updateWeekPickerValue();
+        this.loadConsultationSchedule();
+      });
+    }
+
+    if (weekPicker) {
+      weekPicker.addEventListener("change", (event) => {
+        const selected = event.target.value ? new Date(event.target.value) : null;
+        if (selected && !isNaN(selected.getTime())) {
+          this.consultationWeekStart = this.getStartOfWeek(selected);
+          this.updateWeekPickerValue();
+          this.loadConsultationSchedule();
+        }
+      });
+    }
+
+    this.consultationControlsReady = true;
+  }
+
+  updateWeekPickerValue() {
+    const weekPicker = document.getElementById("consultationWeekPicker");
+    if (weekPicker) {
+      weekPicker.value = this.formatDateISO(this.consultationWeekStart);
+    }
+  }
+
+  updateWeekRangeLabel(start, end) {
+    const label = document.getElementById("consultationWeekRange");
+    if (!label) return;
+    label.textContent = `${this.formatDisplayDate(start)} - ${this.formatDisplayDate(
+      end
+    )}`;
   }
 
   setupButtonActions() {
@@ -3152,8 +3217,257 @@ class TutorDashboard {
   }
 
   navigateWeek(direction) {
-    console.log(`Navigate week: ${direction}`);
-    // Implement week navigation
+    if (!direction) return;
+    const nextWeek = new Date(this.consultationWeekStart);
+    nextWeek.setDate(nextWeek.getDate() + direction * 7);
+    this.consultationWeekStart = this.getStartOfWeek(nextWeek);
+    this.updateWeekPickerValue();
+    this.loadConsultationSchedule();
+  }
+
+  async loadConsultationSchedule() {
+    const loadingState = document.getElementById("consultationScheduleLoading");
+    const errorState = document.getElementById("consultationScheduleError");
+
+    if (loadingState) {
+      loadingState.style.display = "flex";
+    }
+    if (errorState) {
+      errorState.style.display = "none";
+    }
+
+    try {
+      const response = await window.tutorAPI.getWeeklySchedule({
+        startDate: this.formatDateISO(this.consultationWeekStart),
+      });
+
+      const weekStart = response?.weekStart
+        ? this.getStartOfWeek(new Date(response.weekStart))
+        : this.consultationWeekStart;
+      const weekEnd = response?.weekEnd
+        ? new Date(response.weekEnd)
+        : this.getWeekEndDate(weekStart);
+
+      this.consultationWeekStart = weekStart;
+      this.consultationWeekData = response?.items || [];
+
+      this.renderConsultationWeek(weekStart, weekEnd, this.consultationWeekData);
+      this.updateConsultationStats(this.consultationWeekData);
+      this.updateWeekPickerValue();
+      this.updateWeekRangeLabel(weekStart, weekEnd);
+    } catch (error) {
+      console.error("Error loading consultation schedule:", error);
+      if (errorState) {
+        errorState.style.display = "flex";
+        const message = errorState.querySelector("p");
+        if (message) {
+          message.textContent =
+            "Không thể tải lịch tư vấn. Vui lòng thử lại sau.";
+        }
+      }
+      this.updateWeekRangeLabel(
+        this.consultationWeekStart,
+        this.getWeekEndDate(this.consultationWeekStart)
+      );
+    } finally {
+      if (loadingState) {
+        loadingState.style.display = "none";
+      }
+    }
+  }
+
+  renderConsultationWeek(weekStart, weekEnd, items = []) {
+    const grid = document.getElementById("consultationWeekGrid");
+    if (!grid) return;
+
+    grid.innerHTML = "";
+    const slotsPerDay = {};
+
+    for (let i = 0; i < 7; i++) {
+      const current = new Date(weekStart);
+      current.setDate(weekStart.getDate() + i);
+      const dayKey = this.formatDateISO(current);
+
+      const dayColumn = document.createElement("div");
+      dayColumn.className = "week-day";
+      if (this.isSameDate(current, new Date())) {
+        dayColumn.classList.add("is-today");
+      }
+
+      const header = document.createElement("div");
+      header.className = "week-day-header";
+      header.innerHTML = `${this.getVietnameseDayName(i)}<span>${this.formatDisplayDate(
+        current
+      )}</span>`;
+      dayColumn.appendChild(header);
+
+      const slotContainer = document.createElement("div");
+      slotContainer.className = "consultation-slots";
+      slotsPerDay[dayKey] = {};
+
+      this.consultationSlotConfig.forEach((slot) => {
+        const slotEl = document.createElement("div");
+        slotEl.className = "consultation-slot";
+        const label = document.createElement("div");
+        label.className = "slot-label";
+        label.textContent = slot.label;
+        slotEl.appendChild(label);
+        slotContainer.appendChild(slotEl);
+        slotsPerDay[dayKey][slot.id] = slotEl;
+      });
+
+      dayColumn.appendChild(slotContainer);
+      grid.appendChild(dayColumn);
+    }
+
+    items.forEach((item) => {
+      if (!item.startTime) return;
+      const startDate = new Date(item.startTime);
+      const dayKey = this.formatDateISO(startDate);
+      const slotId = this.getSlotIdForDate(startDate);
+      const targetSlot = slotsPerDay[dayKey]?.[slotId];
+      if (!targetSlot) return;
+      targetSlot.appendChild(this.buildConsultationCard(item));
+    });
+  }
+
+  buildConsultationCard(item) {
+    const card = document.createElement("div");
+    card.className = `consultation-card ${item.online ? "online" : "onsite"}`;
+    const timeRange = this.formatTimeRange(item.startTime, item.endTime);
+    const student = item.studentName || "Học viên";
+    const location = item.location || "Trung tâm MathBridge";
+    const channel = item.channel || "Chưa xác định";
+    const status = item.status || "Đang chờ";
+
+    card.innerHTML = `
+      <h4>${item.title || "Tư vấn cá nhân"}</h4>
+      <div class="code">${item.referenceCode || item.id || ""}</div>
+      <div class="time-range"><i class="fas fa-clock"></i> ${timeRange}</div>
+      <div class="meta">
+        <span><i class="fas fa-user-graduate"></i> ${student}</span>
+        <span><i class="fas fa-location-dot"></i> ${location}</span>
+        <span><i class="fas fa-headset"></i> ${channel}</span>
+      </div>
+      <div class="badges">
+        <span class="badge ${item.online ? "lms" : "center"}">${
+      item.online ? "LMS" : "Trực tiếp"
+    }</span>
+        <span class="badge">${status}</span>
+      </div>
+    `;
+
+    return card;
+  }
+
+  updateConsultationStats(items = []) {
+    const totalSessions = items.length;
+    const totalMinutes = items.reduce((total, session) => {
+      if (!session.startTime) return total;
+      const start = new Date(session.startTime);
+      const end = session.endTime ? new Date(session.endTime) : new Date(start.getTime() + 60 * 60000);
+      return total + (end - start) / 60000;
+    }, 0);
+
+    const onlineSessions = items.filter((session) => session.online).length;
+    const onsiteSessions = totalSessions - onlineSessions;
+
+    const statsMap = {
+      consultationTotalSessions: totalSessions,
+      consultationTotalHours: `${Math.max(totalMinutes / 60, 0).toFixed(1)}h`,
+      consultationOnlineSessions: onlineSessions,
+      consultationOnsiteSessions: onsiteSessions,
+    };
+
+    Object.entries(statsMap).forEach(([elementId, value]) => {
+      const el = document.getElementById(elementId);
+      if (el) {
+        el.textContent = value;
+      }
+    });
+  }
+
+  getConsultationSlotConfig() {
+    return [
+      { id: "morning", label: "Ca sáng (05:00 - 11:00)", start: 5, end: 11 },
+      { id: "midday", label: "Ca 3 (11:00 - 14:00)", start: 11, end: 14 },
+      { id: "afternoon", label: "Chiều (14:00 - 17:30)", start: 14, end: 17.5 },
+      { id: "evening", label: "Ca 4 (17:30 - 22:00)", start: 17.5, end: 22 },
+    ];
+  }
+
+  getSlotIdForDate(date) {
+    const hour = date.getHours() + date.getMinutes() / 60;
+    const fallback =
+      this.consultationSlotConfig[this.consultationSlotConfig.length - 1].id;
+
+    for (const slot of this.consultationSlotConfig) {
+      if (hour >= slot.start && hour < slot.end) {
+        return slot.id;
+      }
+    }
+    return fallback;
+  }
+
+  getStartOfWeek(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setHours(0, 0, 0, 0);
+    return new Date(d.setDate(diff));
+  }
+
+  getWeekEndDate(startDate) {
+    const end = new Date(startDate);
+    end.setDate(end.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return end;
+  }
+
+  formatDateISO(date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  formatDisplayDate(date) {
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  }
+
+  formatTimeRange(start, end) {
+    const startDate = new Date(start);
+    const endDate = end ? new Date(end) : new Date(startDate.getTime() + 60 * 60000);
+    return `${this.formatTime(startDate)} - ${this.formatTime(endDate)}`;
+  }
+
+  formatTime(date) {
+    return new Intl.DateTimeFormat("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  }
+
+  isSameDate(first, second) {
+    return (
+      first.getFullYear() === second.getFullYear() &&
+      first.getMonth() === second.getMonth() &&
+      first.getDate() === second.getDate()
+    );
+  }
+
+  getVietnameseDayName(index) {
+    const days = [
+      "Thứ 2",
+      "Thứ 3",
+      "Thứ 4",
+      "Thứ 5",
+      "Thứ 6",
+      "Thứ 7",
+      "Chủ nhật",
+    ];
+    return days[index] || "";
   }
 
   showNotifications() {
@@ -3547,6 +3861,15 @@ async function reviewConsultation(consultationId) {
   } catch (error) {
     console.error("Error fetching consultation for review:", error);
     window.tutorAPI.handleError(error);
+  }
+}
+
+function loadConsultationSchedule() {
+  if (
+    window.tutorDashboard &&
+    typeof window.tutorDashboard.loadConsultationSchedule === "function"
+  ) {
+    window.tutorDashboard.loadConsultationSchedule();
   }
 }
 

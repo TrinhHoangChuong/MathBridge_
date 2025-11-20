@@ -103,8 +103,18 @@ class TutorAPI {
     return await this.request("/payments/recent");
   }
 
-  async getWeeklySchedule() {
-    return await this.request("/schedule/weekly");
+  async getWeeklySchedule(params = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.startDate) {
+      searchParams.append("startDate", params.startDate);
+    }
+    if (params.idNv) {
+      searchParams.append("idNv", params.idNv);
+    }
+
+    const query = searchParams.toString();
+    const endpoint = query ? `/schedule/weekly?${query}` : "/schedule/weekly";
+    return await this.request(endpoint);
   }
 
   // Student Management API Methods
