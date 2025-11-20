@@ -1,81 +1,219 @@
 <section class="content-section" id="messages">
     <div class="section-header">
         <h2>Nhắn tin trực tiếp</h2>
-        <div class="header-actions">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Tìm kiếm tin nhắn...">
-            </div>
-            <button class="btn btn-primary">
-                <i class="fas fa-plus"></i>
-                Tin nhắn mới
-            </button>
-        </div>
     </div>
 
-    <div class="messages-container">
-        <div class="message-item unread">
-            <div class="message-avatar">
-                <i class="fas fa-user-graduate"></i>
-            </div>
-            <div class="message-content">
-                <div class="message-header">
-                    <h4>Trần Văn C</h4>
-                    <span class="message-time">14:30</span>
-                </div>
-                <div class="message-subject">Cần hỗ trợ bài tập</div>
-                <div class="message-preview">Em không hiểu cách giải bài tập số 15 trong sách...</div>
-                <div class="message-actions">
-                    <button class="btn btn-sm btn-primary">Trả lời</button>
-                    <button class="btn btn-sm btn-secondary">Xem chi tiết</button>
+    <div class="construction-container">
+        <div class="construction-content">
+            <div class="construction-icon">
+                <i class="fas fa-hard-hat"></i>
+                <div class="construction-sign">
+                    <span class="sign-text">🚧</span>
                 </div>
             </div>
-            <div class="message-status">
-                <div class="status-dot unread"></div>
-            </div>
-        </div>
-
-        <div class="message-item">
-            <div class="message-avatar">
-                <i class="fas fa-chalkboard-teacher"></i>
-            </div>
-            <div class="message-content">
-                <div class="message-header">
-                    <h4>Nguyễn Văn A</h4>
-                    <span class="message-time">13:45</span>
+            <h3 class="construction-title">Tính năng đang phát triển</h3>
+            <p class="construction-message">
+                Chức năng nhắn tin trực tiếp đang được phát triển và sẽ sớm có mặt.
+                Chúng tôi đang nỗ lực để mang đến trải nghiệm tốt nhất cho bạn.
+            </p>
+            <div class="construction-features">
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Nhắn tin trực tiếp với học sinh</span>
                 </div>
-                <div class="message-subject">Báo cáo lớp học</div>
-                <div class="message-preview">Lớp Toán 10A1 hôm nay có 2 học sinh vắng mặt...</div>
-                <div class="message-actions">
-                    <button class="btn btn-sm btn-primary">Trả lời</button>
-                    <button class="btn btn-sm btn-secondary">Xem chi tiết</button>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Nhắn tin nhóm</span>
                 </div>
-            </div>
-            <div class="message-status">
-                <div class="status-dot"></div>
-            </div>
-        </div>
-
-        <div class="message-item">
-            <div class="message-avatar">
-                <i class="fas fa-user-friends"></i>
-            </div>
-            <div class="message-content">
-                <div class="message-header">
-                    <h4>Phụ huynh Lê Thị D</h4>
-                    <span class="message-time">12:20</span>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Thông báo real-time</span>
                 </div>
-                <div class="message-subject">Thắc mắc về học phí</div>
-                <div class="message-preview">Tôi muốn hỏi về cách tính học phí cho con...</div>
-                <div class="message-actions">
-                    <button class="btn btn-sm btn-primary">Trả lời</button>
-                    <button class="btn btn-sm btn-secondary">Xem chi tiết</button>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Lịch sử tin nhắn</span>
                 </div>
             </div>
-            <div class="message-status">
-                <div class="status-dot"></div>
+            <div class="construction-footer">
+                <p class="construction-note">
+                    <i class="fas fa-info-circle"></i>
+                    Vui lòng quay lại sau để sử dụng tính năng này.
+                </p>
             </div>
         </div>
     </div>
 </section>
 
+<style>
+.construction-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.construction-content {
+    text-align: center;
+    max-width: 600px;
+    background: var(--card-bg);
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.construction-icon {
+    position: relative;
+    margin-bottom: 2rem;
+    display: inline-block;
+}
+
+.construction-icon i {
+    font-size: 5rem;
+    color: var(--warning-color);
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.construction-sign {
+    position: absolute;
+    top: -10px;
+    right: -20px;
+    background: var(--warning-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    transform: rotate(15deg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: wiggle 3s infinite;
+}
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotate(15deg);
+    }
+    25% {
+        transform: rotate(20deg);
+    }
+    75% {
+        transform: rotate(10deg);
+    }
+}
+
+.sign-text {
+    display: block;
+    font-size: 1.2rem;
+}
+
+.construction-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.construction-message {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.construction-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.feature-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.feature-item i {
+    color: var(--success-color);
+    font-size: 1.25rem;
+}
+
+.feature-item span {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.construction-footer {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.construction-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.construction-note i {
+    color: var(--info-color);
+}
+
+@media (max-width: 768px) {
+    .construction-content {
+        padding: 2rem 1.5rem;
+    }
+
+    .construction-icon i {
+        font-size: 4rem;
+    }
+
+    .construction-title {
+        font-size: 1.5rem;
+    }
+
+    .construction-message {
+        font-size: 1rem;
+    }
+
+    .construction-features {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
