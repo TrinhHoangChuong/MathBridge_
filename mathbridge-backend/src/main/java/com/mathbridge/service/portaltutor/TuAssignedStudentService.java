@@ -9,19 +9,20 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Comparator;
 
 @Service
 public class TuAssignedStudentService {
-    
+
     private final TuCoVanHocSinhRepository coVanHocSinhRepository;
-    
+
     public TuAssignedStudentService(TuCoVanHocSinhRepository coVanHocSinhRepository) {
         this.coVanHocSinhRepository = coVanHocSinhRepository;
     }
-    
+
     /**
      * Lấy danh sách học sinh đang được phân công cho cố vấn
-     * Chỉ lấy những học sinh có TrangThai = "Dang phu trach" 
+     * Chỉ lấy những học sinh có TrangThai = "Dang phu trach"
      * và chưa kết thúc (NgayKetThuc IS NULL hoặc > hiện tại)
      */
     public List<TuAssignedStudentResponseDTO> getActiveAssignedStudents(String idNv) {
@@ -31,7 +32,7 @@ public class TuAssignedStudentService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Lấy tất cả học sinh được phân công (bao gồm cả đã kết thúc)
      */
@@ -41,7 +42,7 @@ public class TuAssignedStudentService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Lấy học sinh được phân công theo trạng thái
      */
@@ -51,7 +52,7 @@ public class TuAssignedStudentService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Đếm số học sinh đang được phân công
      */
@@ -59,7 +60,50 @@ public class TuAssignedStudentService {
         LocalDateTime now = LocalDateTime.now();
         return coVanHocSinhRepository.countActiveStudentsByTutorId(idNv, now);
     }
-    
+
+    /**
+     * Kiểm tra cố vấn (idNv) có đang phụ trách học sinh (idHs) hay không
+     * Trả về true nếu tồn tại phân công với trạng thái đang phụ trách và chưa kết thúc
+     */
+    public boolean isTutorAssignedToStudent(String idNv, String idHs) {
+        if (idNv == null || idHs == null) return false;
+        List<CoVanHocSinh> list = coVanHocSinhRepository.findByTutorIdAndStudentId(idNv, idHs);
+        if (list == null || list.isEmpty()) return false;
+
+        LocalDateTime now = LocalDateTime.now();
+        return list.stream().anyMatch(cv -> {
+            String tt = cv.getTrangThai();
+            boolean statusOk = (tt == null) || tt.contains("Dang phu trach") || tt.contains("Đang") || tt.toLowerCase().contains("dang");
+            boolean notEnded = cv.getNgayKetThuc() == null || cv.getNgayKetThuc().isAfter(now);
+            return statusOk && notEnded;
+        });
+    }
+
+    /**
+     * Kết thúc phân công của cố vấn cho một học sinh (đặt trạng thái = 'Ket thuc'
+     * và đặt ngayKetThuc = now)
+     */
+    public TuAssignedStudentResponseDTO finishAssignedStudent(String idNv, String idHs) {
+        List<CoVanHocSinh> list = coVanHocSinhRepository.findByTutorIdAndStudentId(idNv, idHs);
+        if (list == null || list.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy phân công cho cố vấn: " + idNv + " và học sinh: " + idHs);
+        }
+
+        // Lấy phân công mới nhất (theo ngayBatDau)
+        CoVanHocSinh assignment = list.stream()
+                .max(Comparator.comparing(
+                        a -> a.getId() != null && a.getId().getNgayBatDau() != null ? a.getId().getNgayBatDau()
+                                : LocalDateTime.MIN))
+                .orElse(list.get(0));
+
+        LocalDateTime now = LocalDateTime.now();
+        assignment.setNgayKetThuc(now);
+        assignment.setTrangThai("Ket thuc");
+
+        CoVanHocSinh saved = coVanHocSinhRepository.save(assignment);
+        return convertToDTO(saved);
+    }
+
     /**
      * Convert CoVanHocSinh entity to DTO
      */
@@ -67,9 +111,9 @@ public class TuAssignedStudentService {
         if (entity == null) {
             return null;
         }
-        
+
         TuAssignedStudentResponseDTO dto = new TuAssignedStudentResponseDTO();
-        
+
         // Thông tin phân công
         if (entity.getId() != null) {
             dto.setIdNv(entity.getId().getIdNv());
@@ -78,12 +122,12 @@ public class TuAssignedStudentService {
         dto.setNgayKetThuc(entity.getNgayKetThuc());
         dto.setTrangThai(entity.getTrangThai() != null ? entity.getTrangThai() : "Dang phu trach");
         dto.setGhiChu(entity.getGhiChu());
-        
+
         // Thông tin học sinh
         HocSinh hocSinh = entity.getHocSinh();
         if (hocSinh != null) {
             dto.setIdHs(hocSinh.getIdHs());
-            
+
             // Xây dựng họ tên đầy đủ
             String hoTen = hocSinh.getHo() != null ? hocSinh.getHo() : "";
             if (hocSinh.getTenDem() != null && !hocSinh.getTenDem().trim().isEmpty()) {
@@ -93,7 +137,7 @@ public class TuAssignedStudentService {
                 hoTen += " " + hocSinh.getTen();
             }
             dto.setHoTen(hoTen.trim());
-            
+
             dto.setEmail(hocSinh.getEmail());
             dto.setSdt(hocSinh.getSdt());
             dto.setDiaChi(hocSinh.getDiaChi());
@@ -101,11 +145,21 @@ public class TuAssignedStudentService {
             dto.setTrangThaiHoatDong(hocSinh.getTrangThaiHoatDong());
             dto.setThoiGianTao(hocSinh.getThoiGianTao());
             dto.setThoiGianCapNhat(hocSinh.getThoiGianCapNhat());
+
+            // Lấy thông tin lớp học (nếu có) từ các đăng ký lớp của học sinh
+            if (hocSinh.getDangKyLhs() != null && !hocSinh.getDangKyLhs().isEmpty()) {
+                // Lấy một lớp hiện tại (chọn bất kỳ đăng ký có lớp) - không cố gắng quá nhiều
+                // logic ở đây
+                hocSinh.getDangKyLhs().stream()
+                        .filter(dk -> dk.getLopHoc() != null)
+                        .findFirst()
+                        .ifPresent(dk -> {
+                            dto.setClassId(dk.getLopHoc().getIdLh());
+                            dto.setClassName(dk.getLopHoc().getTenLop());
+                        });
+            }
         }
-        
+
         return dto;
     }
 }
-
-
-

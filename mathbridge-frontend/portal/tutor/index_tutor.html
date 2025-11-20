@@ -327,6 +327,9 @@
                                 <option value="Tam dung">Tạm dừng</option>
                                 <option value="Ket thuc">Kết thúc</option>
                             </select>
+                            <select class="form-select" id="classFilter" onchange="tutorDashboard.filterStudents()">
+                                <option value="">-- Lọc theo lớp (tất cả) --</option>
+                            </select>
                         </div>
                         <button class="btn btn-primary" id="exportBtn" onclick="tutorDashboard.exportStudents()">
                             <i class="fas fa-download"></i>
@@ -337,15 +340,6 @@
 
                 <!-- Stats Cards -->
                 <div class="assigned-students-stats" id="assignedStudentsStats" style="display: none;">
-                    <div class="stat-card-mini">
-                        <div class="stat-icon-mini">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-content-mini">
-                            <h3 id="totalStudentsCount">0</h3>
-                            <p>Tổng số học sinh</p>
-                        </div>
-                    </div>
                     <div class="stat-card-mini">
                         <div class="stat-icon-mini">
                             <i class="fas fa-user-check"></i>
@@ -377,6 +371,7 @@
                     <div class="table-header">
                         <div>Học sinh</div>
                         <div>Thông tin liên hệ</div>
+                        <div>Lớp học</div>
                         <div>Ngày bắt đầu</div>
                         <div>Ngày kết thúc</div>
                         <div>Trạng thái phân công</div>
@@ -1053,31 +1048,42 @@
                             <i class="fas fa-user-graduate"></i>
                         </div>
                         <div class="student-info-content">
-                            <h4>Trần Văn C</h4>
-                            <p>Lớp: Toán 10A1</p>
-                            <p>Email: tranvanc@email.com</p>
-                            <p>SĐT: 0123456789</p>
+                            <h4 id="studentModalName">-</h4>
+                            <p id="studentModalPrimaryClass">Lớp: -</p>
+                            <p>Email: <span id="studentModalEmail">-</span></p>
+                            <p>SĐT: <span id="studentModalPhone">-</span></p>
+                            <p>Địa chỉ: <span id="studentModalAddress">-</span></p>
                         </div>
                     </div>
                     <div class="student-stats">
                         <div class="stat-item">
-                            <span class="stat-number">85</span>
+                            <span class="stat-number" id="studentStatAvg">-</span>
                             <span class="stat-label">Điểm TB</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-number">12</span>
+                            <span class="stat-number" id="studentStatSessions">-</span>
                             <span class="stat-label">Buổi học</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-number">95%</span>
+                            <span class="stat-number" id="studentStatAttendance">-</span>
                             <span class="stat-label">Tham gia</span>
                         </div>
                     </div>
                 </div>
+
+                <div class="student-detail-sections">
+                    <h4>Danh sách lớp</h4>
+                    <ul id="studentModalClasses" class="student-detail-list"> </ul>
+
+                    <h4>Tiến trình & Bài tập</h4>
+                    <ul id="studentModalAssignments" class="student-detail-list"> </ul>
+
+                    <h4>Kết quả học tập</h4>
+                    <ul id="studentModalGrades" class="student-detail-list"> </ul>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="closeStudentModalBtn">Đóng</button>
-                <button class="btn btn-primary">Chỉnh sửa</button>
             </div>
         </div>
     </div>

@@ -1,535 +1,596 @@
 // Tutor Dashboard JavaScript
 class TutorDashboard {
-    constructor() {
-        this.currentSection = 'dashboard';
-        this.tutorInfo = null;
-        this.init();
+  constructor() {
+    this.currentSection = "dashboard";
+    this.tutorInfo = null;
+    this.init();
+  }
+
+  init() {
+    // Kiểm tra đăng nhập trước
+    if (!this.checkAuthentication()) {
+      return;
     }
 
-    init() {
-        // Kiểm tra đăng nhập trước
-        if (!this.checkAuthentication()) {
-            return;
-        }
-        
-        this.loadTutorInfo();
-        this.setupEventListeners();
-        this.updateDateTime();
-        this.loadDashboardData();
-        this.setupSidebar();
-        this.setupModals();
-        this.updateTutorAvatar();
+    this.loadTutorInfo();
+    this.setupEventListeners();
+    this.updateDateTime();
+    this.loadDashboardData();
+    this.setupSidebar();
+    this.setupModals();
+    this.updateTutorAvatar();
+  }
+
+  checkAuthentication() {
+    // Kiểm tra xem có thông tin đăng nhập không
+    const authData = localStorage.getItem("mb_auth");
+    const token = localStorage.getItem("mb_token");
+
+    if (!authData && !token) {
+      // Chưa đăng nhập, redirect về trang login
+      window.location.href = "../LoginPortal.html";
+      return false;
     }
 
-    checkAuthentication() {
-        // Kiểm tra xem có thông tin đăng nhập không
-        const authData = localStorage.getItem('mb_auth');
-        const token = localStorage.getItem('mb_token');
-        
-        if (!authData && !token) {
-            // Chưa đăng nhập, redirect về trang login
-            window.location.href = '../LoginPortal.html';
-            return false;
+    // Kiểm tra role
+    if (authData) {
+      try {
+        const data = JSON.parse(authData);
+        const user = data.user || data.account || {};
+        const roles = user.roles || [];
+
+        if (!roles.includes("R003")) {
+          // Không phải cố vấn, redirect về login
+          alert("Bạn không có quyền truy cập trang này.");
+          window.location.href = "../LoginPortal.html";
+          return false;
         }
-        
-        // Kiểm tra role
-        if (authData) {
-            try {
-                const data = JSON.parse(authData);
-                const user = data.user || data.account || {};
-                const roles = user.roles || [];
-                
-                if (!roles.includes('R003')) {
-                    // Không phải cố vấn, redirect về login
-                    alert('Bạn không có quyền truy cập trang này.');
-                    window.location.href = '../LoginPortal.html';
-                    return false;
-                }
-            } catch (e) {
-                console.error('Error parsing auth data:', e);
-            }
-        }
-        
-        return true;
+      } catch (e) {
+        console.error("Error parsing auth data:", e);
+      }
     }
 
-    loadTutorInfo() {
-        // Đọc thông tin từ localStorage
-        const authData = localStorage.getItem('mb_auth');
-        let user = null;
-        
-        if (authData) {
-            try {
-                const data = JSON.parse(authData);
-                user = data.user || data.account || {};
-            } catch (e) {
-                console.error('Error parsing auth data:', e);
-            }
-        }
-        
-        // Fallback về các keys cũ
-        const name = user?.hoTen || user?.ten || user?.fullName || 
-                    localStorage.getItem('mb_user_name') || 
-                    user?.email || 'Cố vấn';
-        const email = user?.email || localStorage.getItem('mb_user_email') || '';
-        const roles = user?.roles || [];
-        
-        this.tutorInfo = {
-            name: name,
-            email: email,
-            roles: roles,
-            id: user?.idTk || user?.id || localStorage.getItem('mb_user_id') || '',
-            avatar: user?.avatar || null
-        };
+    return true;
+  }
+
+  loadTutorInfo() {
+    // Đọc thông tin từ localStorage
+    const authData = localStorage.getItem("mb_auth");
+    let user = null;
+
+    if (authData) {
+      try {
+        const data = JSON.parse(authData);
+        user = data.user || data.account || {};
+      } catch (e) {
+        console.error("Error parsing auth data:", e);
+      }
     }
 
-    updateTutorAvatar() {
-        if (!this.tutorInfo) return;
-        
-        const { name, email } = this.tutorInfo;
-        
-        // Cập nhật sidebar avatar
-        const sidebarUserName = document.querySelector('.sidebar-footer .user-name');
-        const sidebarUserRole = document.querySelector('.sidebar-footer .user-role');
-        const sidebarAvatar = document.querySelector('.sidebar-footer .user-avatar');
-        
-        if (sidebarUserName) {
-            sidebarUserName.textContent = name;
-        }
-        if (sidebarUserRole) {
-            sidebarUserRole.textContent = 'Cố vấn học tập';
-        }
-        if (sidebarAvatar) {
-            // Tạo avatar initials từ tên
-            const initials = this.getInitials(name);
-            sidebarAvatar.innerHTML = `<span class="avatar-initials">${initials}</span>`;
-        }
-        
-        // Cập nhật header avatar
-        const headerUserName = document.querySelector('.header .user-menu-btn span');
-        const headerAvatar = document.querySelector('.header .user-avatar-small');
-        
-        if (headerUserName) {
-            headerUserName.textContent = name;
-        }
-        if (headerAvatar) {
-            const initials = this.getInitials(name);
-            headerAvatar.innerHTML = `<span class="avatar-initials">${initials}</span>`;
-        }
+    // Fallback về các keys cũ
+    const name =
+      user?.hoTen ||
+      user?.ten ||
+      user?.fullName ||
+      localStorage.getItem("mb_user_name") ||
+      user?.email ||
+      "Cố vấn";
+    const email = user?.email || localStorage.getItem("mb_user_email") || "";
+    const roles = user?.roles || [];
+
+    this.tutorInfo = {
+      name: name,
+      email: email,
+      roles: roles,
+      id: user?.idTk || user?.id || localStorage.getItem("mb_user_id") || "",
+      avatar: user?.avatar || null,
+    };
+  }
+
+  updateTutorAvatar() {
+    if (!this.tutorInfo) return;
+
+    const { name, email } = this.tutorInfo;
+
+    // Cập nhật sidebar avatar
+    const sidebarUserName = document.querySelector(
+      ".sidebar-footer .user-name"
+    );
+    const sidebarUserRole = document.querySelector(
+      ".sidebar-footer .user-role"
+    );
+    const sidebarAvatar = document.querySelector(
+      ".sidebar-footer .user-avatar"
+    );
+
+    if (sidebarUserName) {
+      sidebarUserName.textContent = name;
+    }
+    if (sidebarUserRole) {
+      sidebarUserRole.textContent = "Cố vấn học tập";
+    }
+    if (sidebarAvatar) {
+      // Tạo avatar initials từ tên
+      const initials = this.getInitials(name);
+      sidebarAvatar.innerHTML = `<span class="avatar-initials">${initials}</span>`;
     }
 
-    getInitials(name) {
-        if (!name) return 'CV';
-        
-        // Tách tên thành các từ
-        const words = name.trim().split(/\s+/);
-        
-        if (words.length === 1) {
-            // Chỉ có 1 từ, lấy 2 ký tự đầu
-            return words[0].substring(0, 2).toUpperCase();
-        } else {
-            // Lấy chữ cái đầu của từ đầu và từ cuối
-            return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
-        }
+    // Cập nhật header avatar
+    const headerUserName = document.querySelector(
+      ".header .user-menu-btn span"
+    );
+    const headerAvatar = document.querySelector(".header .user-avatar-small");
+
+    if (headerUserName) {
+      headerUserName.textContent = name;
+    }
+    if (headerAvatar) {
+      const initials = this.getInitials(name);
+      headerAvatar.innerHTML = `<span class="avatar-initials">${initials}</span>`;
+    }
+  }
+
+  getInitials(name) {
+    if (!name) return "CV";
+
+    // Tách tên thành các từ
+    const words = name.trim().split(/\s+/);
+
+    if (words.length === 1) {
+      // Chỉ có 1 từ, lấy 2 ký tự đầu
+      return words[0].substring(0, 2).toUpperCase();
+    } else {
+      // Lấy chữ cái đầu của từ đầu và từ cuối
+      return (
+        words[0].charAt(0) + words[words.length - 1].charAt(0)
+      ).toUpperCase();
+    }
+  }
+
+  setupEventListeners() {
+    // Sidebar navigation
+    document.querySelectorAll(".nav-item").forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        const section = item.dataset.section;
+        this.switchSection(section);
+      });
+    });
+
+    // Sidebar toggle
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const sidebar = document.getElementById("sidebar");
+    const mainContent = document.getElementById("mainContent");
+
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+        mainContent.classList.toggle("sidebar-collapsed");
+      });
     }
 
-    setupEventListeners() {
-        // Sidebar navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const section = item.dataset.section;
-                this.switchSection(section);
-            });
-        });
-
-        // Sidebar toggle
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('sidebar-collapsed');
-            });
-        }
-
-        // Mobile menu toggle
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('mobile-open');
-            });
-        }
-
-        // Logout button
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                this.logout();
-            });
-        }
-
-        // Notification button
-        const notificationBtn = document.getElementById('notificationBtn');
-        if (notificationBtn) {
-            notificationBtn.addEventListener('click', () => {
-                this.showNotifications();
-            });
-        }
-
-        // Calendar navigation
-        const prevWeekBtn = document.getElementById('prevWeek');
-        const nextWeekBtn = document.getElementById('nextWeek');
-        
-        if (prevWeekBtn) {
-            prevWeekBtn.addEventListener('click', () => {
-                this.navigateWeek(-1);
-            });
-        }
-        
-        if (nextWeekBtn) {
-            nextWeekBtn.addEventListener('click', () => {
-                this.navigateWeek(1);
-            });
-        }
-
-        // Search functionality
-        document.querySelectorAll('.search-box input').forEach(input => {
-            input.addEventListener('input', (e) => {
-                this.handleSearch(e.target.value, e.target.closest('.content-section').id);
-            });
-        });
-
-        // Button actions
-        this.setupButtonActions();
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener("click", () => {
+        sidebar.classList.toggle("mobile-open");
+      });
     }
 
-    setupSidebar() {
-        // Highlight current section
-        this.updateActiveNavItem();
+    // Logout button
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        this.logout();
+      });
     }
 
-    setupModals() {
-        // Student modal
-        const studentModal = document.getElementById('studentModal');
-        const closeStudentModal = document.getElementById('closeStudentModal');
-        const closeStudentModalBtn = document.getElementById('closeStudentModalBtn');
+    // Notification button
+    const notificationBtn = document.getElementById("notificationBtn");
+    if (notificationBtn) {
+      notificationBtn.addEventListener("click", () => {
+        this.showNotifications();
+      });
+    }
 
-        if (closeStudentModal) {
-            closeStudentModal.addEventListener('click', () => {
-                studentModal.classList.remove('active');
-            });
+    // Calendar navigation
+    const prevWeekBtn = document.getElementById("prevWeek");
+    const nextWeekBtn = document.getElementById("nextWeek");
+
+    if (prevWeekBtn) {
+      prevWeekBtn.addEventListener("click", () => {
+        this.navigateWeek(-1);
+      });
+    }
+
+    if (nextWeekBtn) {
+      nextWeekBtn.addEventListener("click", () => {
+        this.navigateWeek(1);
+      });
+    }
+
+    // Search functionality
+    document.querySelectorAll(".search-box input").forEach((input) => {
+      input.addEventListener("input", (e) => {
+        this.handleSearch(
+          e.target.value,
+          e.target.closest(".content-section").id
+        );
+      });
+    });
+
+    // Button actions
+    this.setupButtonActions();
+  }
+
+  setupSidebar() {
+    // Highlight current section
+    this.updateActiveNavItem();
+  }
+
+  setupModals() {
+    // Student modal
+    const studentModal = document.getElementById("studentModal");
+    const closeStudentModal = document.getElementById("closeStudentModal");
+    const closeStudentModalBtn = document.getElementById(
+      "closeStudentModalBtn"
+    );
+
+    if (closeStudentModal) {
+      closeStudentModal.addEventListener("click", () => {
+        studentModal.classList.remove("active");
+      });
+    }
+
+    if (closeStudentModalBtn) {
+      closeStudentModalBtn.addEventListener("click", () => {
+        studentModal.classList.remove("active");
+      });
+    }
+
+    // Teacher modal
+    const teacherModal = document.getElementById("teacherModal");
+    const closeTeacherModal = document.getElementById("closeTeacherModal");
+    const closeTeacherModalBtn = document.getElementById(
+      "closeTeacherModalBtn"
+    );
+
+    if (closeTeacherModal) {
+      closeTeacherModal.addEventListener("click", () => {
+        teacherModal.classList.remove("active");
+      });
+    }
+
+    if (closeTeacherModalBtn) {
+      closeTeacherModalBtn.addEventListener("click", () => {
+        teacherModal.classList.remove("active");
+      });
+    }
+
+    // Close modal when clicking outside
+    document.querySelectorAll(".modal").forEach((modal) => {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.classList.remove("active");
         }
+      });
+    });
 
-        if (closeStudentModalBtn) {
-            closeStudentModalBtn.addEventListener('click', () => {
-                studentModal.classList.remove('active');
-            });
-        }
+    // Support Details Modal
+    const supportModal = document.getElementById("supportDetailsModal");
+    const closeSupportModal = document.getElementById("closeSupportModal");
 
-        // Teacher modal
-        const teacherModal = document.getElementById('teacherModal');
-        const closeTeacherModal = document.getElementById('closeTeacherModal');
-        const closeTeacherModalBtn = document.getElementById('closeTeacherModalBtn');
-
-        if (closeTeacherModal) {
-            closeTeacherModal.addEventListener('click', () => {
-                teacherModal.classList.remove('active');
-            });
-        }
-
-        if (closeTeacherModalBtn) {
-            closeTeacherModalBtn.addEventListener('click', () => {
-                teacherModal.classList.remove('active');
-            });
-        }
-
-        // Close modal when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('active');
-                }
-            });
-        });
-
-        // Support Details Modal
-        const supportModal = document.getElementById('supportDetailsModal');
-        const closeSupportModal = document.getElementById('closeSupportModal');
-        
-        if (closeSupportModal) {
-            closeSupportModal.addEventListener('click', () => {
-                if (supportModal) {
-                    supportModal.style.display = 'none';
-                }
-            });
-        }
-
-        // Close support modal when clicking outside
+    if (closeSupportModal) {
+      closeSupportModal.addEventListener("click", () => {
         if (supportModal) {
-            supportModal.addEventListener('click', (e) => {
-                if (e.target === supportModal) {
-                    supportModal.style.display = 'none';
-                }
-            });
+          supportModal.style.display = "none";
         }
+      });
+    }
 
-        // Update Status Modal
-        const statusModal = document.getElementById('updateStatusModal');
-        const closeStatusModal = document.getElementById('closeStatusModal');
-        const closeStatusModalBtn = document.getElementById('closeStatusModalBtn');
-        
-        if (closeStatusModal) {
-            closeStatusModal.addEventListener('click', () => {
-                if (statusModal) {
-                    statusModal.style.display = 'none';
-                }
-            });
+    // Close support modal when clicking outside
+    if (supportModal) {
+      supportModal.addEventListener("click", (e) => {
+        if (e.target === supportModal) {
+          supportModal.style.display = "none";
         }
+      });
+    }
 
-        if (closeStatusModalBtn) {
-            closeStatusModalBtn.addEventListener('click', () => {
-                if (statusModal) {
-                    statusModal.style.display = 'none';
-                }
-            });
-        }
+    // Update Status Modal
+    const statusModal = document.getElementById("updateStatusModal");
+    const closeStatusModal = document.getElementById("closeStatusModal");
+    const closeStatusModalBtn = document.getElementById("closeStatusModalBtn");
 
-        // Close status modal when clicking outside
+    if (closeStatusModal) {
+      closeStatusModal.addEventListener("click", () => {
         if (statusModal) {
-            statusModal.addEventListener('click', (e) => {
-                if (e.target === statusModal) {
-                    statusModal.style.display = 'none';
-                }
-            });
+          statusModal.style.display = "none";
         }
+      });
     }
 
-    setupButtonActions() {
-        // Student management buttons
-        document.querySelectorAll('#students .btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = btn.textContent.trim();
-                if (action === 'Xem') {
-                    this.showStudentDetails();
-                } else if (action === 'Sửa') {
-                    this.editStudent();
-                } else if (action === 'Thêm học sinh') {
-                    this.addStudent();
-                }
-            });
-        });
-
-        // Teacher management buttons
-        document.querySelectorAll('#teachers .btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = btn.textContent.trim();
-                if (action === 'Xem chi tiết') {
-                    this.showTeacherDetails();
-                } else if (action === 'Chỉnh sửa') {
-                    this.editTeacher();
-                } else if (action === 'Thêm gia sư') {
-                    this.addTeacher();
-                }
-            });
-        });
-
-        // Class management buttons
-        document.querySelectorAll('#classes .btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = btn.textContent.trim();
-                if (action === 'Xem') {
-                    this.showClassDetails();
-                } else if (action === 'Sửa') {
-                    this.editClass();
-                } else if (action === 'Tạo lớp học') {
-                    this.createClass();
-                }
-            });
-        });
-
-        // Payment management buttons
-        document.querySelectorAll('#payments .btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = btn.textContent.trim();
-                if (action === 'Xem') {
-                    this.viewPayment();
-                } else if (action === 'Xử lý') {
-                    this.processPayment();
-                } else if (action === 'In hóa đơn') {
-                    this.printInvoice();
-                } else if (action === 'Thêm thanh toán') {
-                    this.addPayment();
-                }
-            });
-        });
-
-        // Support buttons
-        document.querySelectorAll('#support .btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = btn.textContent.trim();
-                if (action === 'Xử lý') {
-                    this.processSupportRequest();
-                } else if (action === 'Chi tiết') {
-                    this.viewSupportDetails();
-                } else if (action === 'Tạo yêu cầu hỗ trợ') {
-                    this.createSupportRequest();
-                }
-            });
-        });
-
-        // Message buttons
-        document.querySelectorAll('#messages .btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = btn.textContent.trim();
-                if (action === 'Trả lời') {
-                    this.replyMessage();
-                } else if (action === 'Xem chi tiết') {
-                    this.viewMessageDetails();
-                } else if (action === 'Tin nhắn mới') {
-                    this.createNewMessage();
-                }
-            });
-        });
-    }
-
-    switchSection(sectionId) {
-        // Hide all sections
-        document.querySelectorAll('.content-section').forEach(section => {
-            section.classList.remove('active');
-        });
-
-        // Show selected section
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) {
-            targetSection.classList.add('active');
-            this.currentSection = sectionId;
-            this.updatePageTitle(sectionId);
-            this.updateActiveNavItem();
-            this.loadSectionData(sectionId);
+    if (closeStatusModalBtn) {
+      closeStatusModalBtn.addEventListener("click", () => {
+        if (statusModal) {
+          statusModal.style.display = "none";
         }
+      });
     }
 
-    updatePageTitle(sectionId) {
-        const pageTitle = document.getElementById('pageTitle');
-        const titles = {
-            'dashboard': 'Dashboard',
-            'students': 'Quản lý học sinh',
-            'teachers': 'Quản lý gia sư',
-            'classes': 'Quản lý lớp học',
-            'payments': 'Thanh toán',
-            'support': 'Hỗ trợ',
-            'messages': 'Nhắn tin trực tiếp'
-        };
-        
-        if (pageTitle && titles[sectionId]) {
-            pageTitle.textContent = titles[sectionId];
+    // Close status modal when clicking outside
+    if (statusModal) {
+      statusModal.addEventListener("click", (e) => {
+        if (e.target === statusModal) {
+          statusModal.style.display = "none";
         }
+      });
     }
+  }
 
-    updateActiveNavItem() {
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
+  setupButtonActions() {
+    // Student management buttons
+    document.querySelectorAll("#students .btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const action = btn.textContent.trim();
+        if (action === "Xem") {
+          this.showStudentDetails();
+        } else if (action === "Sửa") {
+          this.editStudent();
+        } else if (action === "Thêm học sinh") {
+          this.addStudent();
+        }
+      });
+    });
+
+    // Teacher management buttons
+    document.querySelectorAll("#teachers .btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const action = btn.textContent.trim();
+        if (action === "Xem chi tiết") {
+          this.showTeacherDetails();
+        } else if (action === "Chỉnh sửa") {
+          this.editTeacher();
+        } else if (action === "Thêm gia sư") {
+          this.addTeacher();
+        }
+      });
+    });
+
+    // Class management buttons
+    document.querySelectorAll("#classes .btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const action = btn.textContent.trim();
+        if (action === "Xem") {
+          this.showClassDetails();
+        } else if (action === "Sửa") {
+          this.editClass();
+        } else if (action === "Tạo lớp học") {
+          this.createClass();
+        }
+      });
+    });
+
+    // Payment management buttons
+    document.querySelectorAll("#payments .btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const action = btn.textContent.trim();
+        if (action === "Xem") {
+          this.viewPayment();
+        } else if (action === "Xử lý") {
+          this.processPayment();
+        } else if (action === "In hóa đơn") {
+          this.printInvoice();
+        } else if (action === "Thêm thanh toán") {
+          this.addPayment();
+        }
+      });
+    });
+
+    // Support buttons
+    document.querySelectorAll("#support .btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const action = btn.textContent.trim();
+        if (action === "Xử lý") {
+          this.processSupportRequest();
+        } else if (action === "Chi tiết") {
+          this.viewSupportDetails();
+        } else if (action === "Tạo yêu cầu hỗ trợ") {
+          this.createSupportRequest();
+        }
+      });
+    });
+
+    // Message buttons
+    document.querySelectorAll("#messages .btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const action = btn.textContent.trim();
+        if (action === "Trả lời") {
+          this.replyMessage();
+        } else if (action === "Xem chi tiết") {
+          this.viewMessageDetails();
+        } else if (action === "Tin nhắn mới") {
+          this.createNewMessage();
+        }
+      });
+    });
+  }
+
+  switchSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll(".content-section").forEach((section) => {
+      section.classList.remove("active");
+    });
+
+    // Show selected section
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+      targetSection.classList.add("active");
+      this.currentSection = sectionId;
+      this.updatePageTitle(sectionId);
+      this.updateActiveNavItem();
+      this.loadSectionData(sectionId);
+    }
+  }
+
+  updatePageTitle(sectionId) {
+    const pageTitle = document.getElementById("pageTitle");
+    const titles = {
+      dashboard: "Dashboard",
+      students: "Quản lý học sinh",
+      teachers: "Quản lý gia sư",
+      classes: "Quản lý lớp học",
+      payments: "Thanh toán",
+      support: "Hỗ trợ",
+      messages: "Nhắn tin trực tiếp",
+    };
+
+    if (pageTitle && titles[sectionId]) {
+      pageTitle.textContent = titles[sectionId];
+    }
+  }
+
+  updateActiveNavItem() {
+    document.querySelectorAll(".nav-item").forEach((item) => {
+      item.classList.remove("active");
+    });
+
+    const activeItem = document.querySelector(
+      `[data-section="${this.currentSection}"]`
+    );
+    if (activeItem) {
+      activeItem.classList.add("active");
+    }
+  }
+
+  updateDateTime() {
+    const updateTime = () => {
+      const now = new Date();
+      const dateElement = document.getElementById("currentDate");
+      const timeElement = document.getElementById("currentTime");
+
+      if (dateElement) {
+        dateElement.textContent = now.toLocaleDateString("vi-VN", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
         });
+      }
 
-        const activeItem = document.querySelector(`[data-section="${this.currentSection}"]`);
-        if (activeItem) {
-            activeItem.classList.add('active');
-        }
+      if (timeElement) {
+        timeElement.textContent = now.toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      }
+    };
+
+    updateTime();
+    setInterval(updateTime, 1000);
+  }
+
+  loadDashboardData() {
+    // Load dashboard statistics
+    this.loadDashboardStats();
+    this.loadRecentStudents();
+    this.loadRecentPayments();
+    this.loadWeeklySchedule();
+  }
+
+  loadDashboardStats() {
+    // Simulate API call
+    const stats = {
+      students: 156,
+      teachers: 12,
+      classes: 8,
+      payments: 25,
+    };
+
+    // Update stat cards
+    const statCards = document.querySelectorAll(".stat-card .stat-content h3");
+    if (statCards.length >= 4) {
+      statCards[0].textContent = stats.students;
+      statCards[1].textContent = stats.teachers;
+      statCards[2].textContent = stats.classes;
+      statCards[3].textContent = stats.payments;
     }
+  }
 
-    updateDateTime() {
-        const updateTime = () => {
-            const now = new Date();
-            const dateElement = document.getElementById('currentDate');
-            const timeElement = document.getElementById('currentTime');
+  loadRecentStudents() {
+    // Simulate loading recent students needing support
+    const students = [
+      {
+        name: "Trần Văn C",
+        class: "Lớp 10A1",
+        issue: "Cần hỗ trợ Toán",
+        priority: "urgent",
+      },
+      {
+        name: "Lê Thị D",
+        class: "Lớp 11B2",
+        issue: "Cần tư vấn học tập",
+        priority: "high",
+      },
+      {
+        name: "Phạm Văn E",
+        class: "Lớp 12C1",
+        issue: "Cần hỗ trợ đăng ký",
+        priority: "normal",
+      },
+    ];
 
-            if (dateElement) {
-                dateElement.textContent = now.toLocaleDateString('vi-VN', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-            }
-
-            if (timeElement) {
-                timeElement.textContent = now.toLocaleTimeString('vi-VN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-            }
-        };
-
-        updateTime();
-        setInterval(updateTime, 1000);
-    }
-
-    loadDashboardData() {
-        // Load dashboard statistics
-        this.loadDashboardStats();
-        this.loadRecentStudents();
-        this.loadRecentPayments();
-        this.loadWeeklySchedule();
-    }
-
-    loadDashboardStats() {
-        // Simulate API call
-        const stats = {
-            students: 156,
-            teachers: 12,
-            classes: 8,
-            payments: 25
-        };
-
-        // Update stat cards
-        const statCards = document.querySelectorAll('.stat-card .stat-content h3');
-        if (statCards.length >= 4) {
-            statCards[0].textContent = stats.students;
-            statCards[1].textContent = stats.teachers;
-            statCards[2].textContent = stats.classes;
-            statCards[3].textContent = stats.payments;
-        }
-    }
-
-    loadRecentStudents() {
-        // Simulate loading recent students needing support
-        const students = [
-            { name: 'Trần Văn C', class: 'Lớp 10A1', issue: 'Cần hỗ trợ Toán', priority: 'urgent' },
-            { name: 'Lê Thị D', class: 'Lớp 11B2', issue: 'Cần tư vấn học tập', priority: 'high' },
-            { name: 'Phạm Văn E', class: 'Lớp 12C1', issue: 'Cần hỗ trợ đăng ký', priority: 'normal' }
-        ];
-
-        const studentList = document.querySelector('.student-list');
-        if (studentList) {
-            studentList.innerHTML = students.map(student => `
+    const studentList = document.querySelector(".student-list");
+    if (studentList) {
+      studentList.innerHTML = students
+        .map(
+          (student) => `
                 <div class="student-item">
                     <div class="student-info">
                         <h4>${student.name}</h4>
                         <p>${student.class} • ${student.issue}</p>
                     </div>
                     <div class="student-status">
-                        <span class="status-badge ${student.priority}">${this.getPriorityText(student.priority)}</span>
+                        <span class="status-badge ${
+                          student.priority
+                        }">${this.getPriorityText(student.priority)}</span>
                     </div>
                 </div>
-            `).join('');
-        }
+            `
+        )
+        .join("");
     }
+  }
 
-    loadRecentPayments() {
-        // Simulate loading recent payments
-        const payments = [
-            { name: 'Nguyễn Văn F', type: 'Thanh toán học phí tháng 12', amount: '2,500,000đ', status: 'success' },
-            { name: 'Trần Thị G', type: 'Thanh toán học phí tháng 12', amount: '1,800,000đ', status: 'pending' },
-            { name: 'Lê Văn H', type: 'Phí đăng ký khóa học', amount: '500,000đ', status: 'success' }
-        ];
+  loadRecentPayments() {
+    // Simulate loading recent payments
+    const payments = [
+      {
+        name: "Nguyễn Văn F",
+        type: "Thanh toán học phí tháng 12",
+        amount: "2,500,000đ",
+        status: "success",
+      },
+      {
+        name: "Trần Thị G",
+        type: "Thanh toán học phí tháng 12",
+        amount: "1,800,000đ",
+        status: "pending",
+      },
+      {
+        name: "Lê Văn H",
+        type: "Phí đăng ký khóa học",
+        amount: "500,000đ",
+        status: "success",
+      },
+    ];
 
-        const paymentList = document.querySelector('.payment-list');
-        if (paymentList) {
-            paymentList.innerHTML = payments.map(payment => `
+    const paymentList = document.querySelector(".payment-list");
+    if (paymentList) {
+      paymentList.innerHTML = payments
+        .map(
+          (payment) => `
                 <div class="payment-item">
                     <div class="payment-info">
                         <h4>${payment.name}</h4>
@@ -537,246 +598,301 @@ class TutorDashboard {
                     </div>
                     <div class="payment-amount">
                         <span class="amount">${payment.amount}</span>
-                        <span class="status-badge ${payment.status}">${this.getStatusText(payment.status)}</span>
+                        <span class="status-badge ${
+                          payment.status
+                        }">${this.getStatusText(payment.status)}</span>
                     </div>
                 </div>
-            `).join('');
+            `
+        )
+        .join("");
+    }
+  }
+
+  loadWeeklySchedule() {
+    // Load weekly schedule data
+    const scheduleData = [
+      { day: "16", event: "Hỗ trợ học sinh" },
+      { day: "17", event: "Tư vấn phụ huynh" },
+      { day: "18", event: "Xử lý thanh toán", today: true },
+      { day: "19", event: "Họp với gia sư" },
+      { day: "20", event: "Kiểm tra lớp học" },
+      { day: "21", event: "Báo cáo tuần" },
+      { day: "22", event: "" },
+    ];
+
+    const calendarGrid = document.querySelector(".calendar-grid");
+    if (calendarGrid) {
+      const dayElements = calendarGrid.querySelectorAll(".calendar-day");
+      dayElements.forEach((dayElement, index) => {
+        if (scheduleData[index]) {
+          const dayNumber = dayElement.querySelector(".calendar-day-number");
+          const event = dayElement.querySelector(".calendar-event");
+
+          if (dayNumber) {
+            dayNumber.textContent = scheduleData[index].day;
+          }
+
+          if (event && scheduleData[index].event) {
+            event.textContent = scheduleData[index].event;
+          } else if (event && !scheduleData[index].event) {
+            event.style.display = "none";
+          }
+
+          if (scheduleData[index].today) {
+            dayElement.classList.add("today");
+          }
         }
+      });
     }
+  }
 
-    loadWeeklySchedule() {
-        // Load weekly schedule data
-        const scheduleData = [
-            { day: '16', event: 'Hỗ trợ học sinh' },
-            { day: '17', event: 'Tư vấn phụ huynh' },
-            { day: '18', event: 'Xử lý thanh toán', today: true },
-            { day: '19', event: 'Họp với gia sư' },
-            { day: '20', event: 'Kiểm tra lớp học' },
-            { day: '21', event: 'Báo cáo tuần' },
-            { day: '22', event: '' }
-        ];
-
-        const calendarGrid = document.querySelector('.calendar-grid');
-        if (calendarGrid) {
-            const dayElements = calendarGrid.querySelectorAll('.calendar-day');
-            dayElements.forEach((dayElement, index) => {
-                if (scheduleData[index]) {
-                    const dayNumber = dayElement.querySelector('.calendar-day-number');
-                    const event = dayElement.querySelector('.calendar-event');
-                    
-                    if (dayNumber) {
-                        dayNumber.textContent = scheduleData[index].day;
-                    }
-                    
-                    if (event && scheduleData[index].event) {
-                        event.textContent = scheduleData[index].event;
-                    } else if (event && !scheduleData[index].event) {
-                        event.style.display = 'none';
-                    }
-                    
-                    if (scheduleData[index].today) {
-                        dayElement.classList.add('today');
-                    }
-                }
-            });
-        }
+  loadSectionData(sectionId) {
+    switch (sectionId) {
+      case "students":
+        this.loadStudentsData();
+        break;
+      case "assigned-students":
+        this.loadAssignedStudentsData();
+        break;
+      case "teachers":
+        this.loadTeachersData();
+        break;
+      case "classes":
+        this.loadClassesData();
+        break;
+      case "payments":
+        this.loadPaymentsData();
+        break;
+      case "support":
+        this.loadSupportData();
+        break;
+      case "consultations":
+        this.loadConsultationsData();
+        break;
+      case "messages":
+        this.loadMessagesData();
+        break;
     }
+  }
 
-    loadSectionData(sectionId) {
-        switch (sectionId) {
-            case 'students':
-                this.loadStudentsData();
-                break;
-            case 'assigned-students':
-                this.loadAssignedStudentsData();
-                break;
-            case 'teachers':
-                this.loadTeachersData();
-                break;
-            case 'classes':
-                this.loadClassesData();
-                break;
-            case 'payments':
-                this.loadPaymentsData();
-                break;
-            case 'support':
-                this.loadSupportData();
-                break;
-            case 'consultations':
-                this.loadConsultationsData();
-                break;
-            case 'messages':
-                this.loadMessagesData();
-                break;
-        }
-    }
+  loadStudentsData() {
+    // Simulate loading students data
+    console.log("Loading students data...");
+  }
 
-    loadStudentsData() {
-        // Simulate loading students data
-        console.log('Loading students data...');
-    }
+  // Load assigned students data
+  async loadAssignedStudentsData() {
+    const loadingEl = document.getElementById("assignedStudentsLoading");
+    const emptyEl = document.getElementById("assignedStudentsEmpty");
+    const tableEl = document.getElementById("assignedStudentsTable");
+    const tableBodyEl = document.getElementById("assignedStudentsTableBody");
+    const statsEl = document.getElementById("assignedStudentsStats");
 
-    // Load assigned students data
-    async loadAssignedStudentsData() {
-        const loadingEl = document.getElementById('assignedStudentsLoading');
-        const emptyEl = document.getElementById('assignedStudentsEmpty');
-        const tableEl = document.getElementById('assignedStudentsTable');
-        const tableBodyEl = document.getElementById('assignedStudentsTableBody');
-        const statsEl = document.getElementById('assignedStudentsStats');
-        
-        // Show loading
-        if (loadingEl) loadingEl.style.display = 'flex';
-        if (emptyEl) emptyEl.style.display = 'none';
-        if (tableEl) tableEl.style.display = 'none';
-        if (statsEl) statsEl.style.display = 'none';
-        
+    // Show loading
+    if (loadingEl) loadingEl.style.display = "flex";
+    if (emptyEl) emptyEl.style.display = "none";
+    if (tableEl) tableEl.style.display = "none";
+    if (statsEl) statsEl.style.display = "none";
+
+    try {
+      // Get tutor ID from auth data
+      const authData = localStorage.getItem("mb_auth");
+      let idNv = null;
+      let idTk = null;
+
+      if (authData) {
         try {
-            // Get tutor ID from auth data
-            const authData = localStorage.getItem('mb_auth');
-            let idNv = null;
-            let idTk = null;
-            
-            if (authData) {
-                try {
-                    const data = JSON.parse(authData);
-                    const user = data.user || data.account || {};
-                    idNv = user.idNv || null;
-                    idTk = user.idTk || user.id || localStorage.getItem('mb_user_id') || null;
-                } catch (e) {
-                    console.error('Error parsing auth data:', e);
-                }
-            }
-            
-            // If idNv not found in auth data, try to get it from idTk
-            if (!idNv && idTk) {
-                try {
-                    const tutorIdResponse = await window.tutorAPI.getTutorIdFromAccountId(idTk);
-                    if (tutorIdResponse && tutorIdResponse.idNv) {
-                        idNv = tutorIdResponse.idNv;
-                        // Cache it in auth data for next time
-                        if (authData) {
-                            try {
-                                const data = JSON.parse(authData);
-                                if (data.user) {
-                                    data.user.idNv = idNv;
-                                } else if (data.account) {
-                                    data.account.idNv = idNv;
-                                }
-                                localStorage.setItem('mb_auth', JSON.stringify(data));
-                            } catch (e) {
-                                console.error('Error updating auth data:', e);
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error getting tutor ID from account ID:', error);
-                }
-            }
-            
-            if (!idNv) {
-                // If no ID_NV, show empty state
-                if (loadingEl) loadingEl.style.display = 'none';
-                if (emptyEl) emptyEl.style.display = 'flex';
-                showNotification('Không tìm thấy thông tin cố vấn. Vui lòng đăng nhập lại.', 'warning');
-                return;
-            }
-            
-            // Get filter value
-            const filterSelect = document.getElementById('assignmentStatusFilter');
-            const filter = filterSelect ? filterSelect.value : 'active';
-            
-            // Load students
-            const students = await window.tutorAPI.getAssignedStudents(idNv, filter);
-            this.assignedStudents = students || [];
-            
-            // Load count
-            const activeCount = await window.tutorAPI.getAssignedStudentsCount(idNv);
-            
-            // Hide loading
-            if (loadingEl) loadingEl.style.display = 'none';
-            
-            // Update stats
-            if (statsEl) {
-                const totalCountEl = document.getElementById('totalStudentsCount');
-                const activeCountEl = document.getElementById('activeStudentsCount');
-                if (totalCountEl) totalCountEl.textContent = this.assignedStudents.length;
-                if (activeCountEl) activeCountEl.textContent = activeCount || 0;
-                statsEl.style.display = 'grid';
-            }
-            
-            // Render students
-            if (this.assignedStudents.length === 0) {
-                if (emptyEl) emptyEl.style.display = 'flex';
-                if (tableEl) tableEl.style.display = 'none';
-            } else {
-                if (emptyEl) emptyEl.style.display = 'none';
-                if (tableEl) tableEl.style.display = 'block';
-                this.renderAssignedStudents(this.assignedStudents);
-            }
-            
-        } catch (error) {
-            console.error('Error loading assigned students:', error);
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (emptyEl) emptyEl.style.display = 'flex';
-            showNotification('Không thể tải danh sách học sinh. Vui lòng thử lại.', 'error');
-            window.tutorAPI.handleError(error);
+          const data = JSON.parse(authData);
+          const user = data.user || data.account || {};
+          idNv = user.idNv || null;
+          idTk =
+            user.idTk || user.id || localStorage.getItem("mb_user_id") || null;
+        } catch (e) {
+          console.error("Error parsing auth data:", e);
         }
-    }
+      }
 
-    // Render assigned students table
-    renderAssignedStudents(students) {
-        const tableBodyEl = document.getElementById('assignedStudentsTableBody');
-        if (!tableBodyEl) return;
-        
-        if (!students || students.length === 0) {
-            tableBodyEl.innerHTML = `
+      // If idNv not found in auth data, try to get it from idTk
+      if (!idNv && idTk) {
+        try {
+          const tutorIdResponse = await window.tutorAPI.getTutorIdFromAccountId(
+            idTk
+          );
+          if (tutorIdResponse && tutorIdResponse.idNv) {
+            idNv = tutorIdResponse.idNv;
+            // Cache it in auth data for next time
+            if (authData) {
+              try {
+                const data = JSON.parse(authData);
+                if (data.user) {
+                  data.user.idNv = idNv;
+                } else if (data.account) {
+                  data.account.idNv = idNv;
+                }
+                localStorage.setItem("mb_auth", JSON.stringify(data));
+              } catch (e) {
+                console.error("Error updating auth data:", e);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error getting tutor ID from account ID:", error);
+        }
+      }
+
+      if (!idNv) {
+        // If no ID_NV, show empty state
+        if (loadingEl) loadingEl.style.display = "none";
+        if (emptyEl) emptyEl.style.display = "flex";
+        showNotification(
+          "Không tìm thấy thông tin cố vấn. Vui lòng đăng nhập lại.",
+          "warning"
+        );
+        return;
+      }
+
+      // Get filter value
+      const filterSelect = document.getElementById("assignmentStatusFilter");
+      const filter = filterSelect ? filterSelect.value : "active";
+
+      // Load students
+      const students = await window.tutorAPI.getAssignedStudents(idNv, filter);
+      this.assignedStudents = students || [];
+      // Cache current tutor id for actions
+      this.currentTutorId = idNv;
+
+      // Load count
+      const activeCount = await window.tutorAPI.getAssignedStudentsCount(idNv);
+
+      // Hide loading
+      if (loadingEl) loadingEl.style.display = "none";
+
+      // Update stats (only active count)
+      if (statsEl) {
+        const activeCountEl = document.getElementById("activeStudentsCount");
+        if (activeCountEl) activeCountEl.textContent = activeCount || 0;
+        statsEl.style.display = "grid";
+      }
+
+      // Populate class filter options (based on assigned students)
+      const classFilter = document.getElementById("classFilter");
+      if (classFilter) {
+        // Collect distinct classes
+        const classes = [];
+        (this.assignedStudents || []).forEach((s) => {
+          if (s.classId && s.className) {
+            if (!classes.find((c) => c.id === s.classId)) {
+              classes.push({ id: s.classId, name: s.className });
+            }
+          }
+        });
+
+        // Clear existing options (keep first)
+        const selected = classFilter.value || "";
+        classFilter.innerHTML =
+          '<option value="">-- Lọc theo lớp (tất cả) --</option>';
+        classes.forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c.id;
+          opt.textContent = c.name;
+          classFilter.appendChild(opt);
+        });
+
+        // Restore previous selection if still available
+        if (selected) {
+          classFilter.value = selected;
+        }
+      }
+
+      // Render students
+      if (this.assignedStudents.length === 0) {
+        if (emptyEl) emptyEl.style.display = "flex";
+        if (tableEl) tableEl.style.display = "none";
+      } else {
+        if (emptyEl) emptyEl.style.display = "none";
+        if (tableEl) tableEl.style.display = "block";
+        this.renderAssignedStudents(this.assignedStudents);
+      }
+    } catch (error) {
+      console.error("Error loading assigned students:", error);
+      if (loadingEl) loadingEl.style.display = "none";
+      if (emptyEl) emptyEl.style.display = "flex";
+      showNotification(
+        "Không thể tải danh sách học sinh. Vui lòng thử lại.",
+        "error"
+      );
+      window.tutorAPI.handleError(error);
+    }
+  }
+
+  // Render assigned students table
+  renderAssignedStudents(students) {
+    const tableBodyEl = document.getElementById("assignedStudentsTableBody");
+    if (!tableBodyEl) return;
+
+    if (!students || students.length === 0) {
+      tableBodyEl.innerHTML = `
                 <div class="table-row">
                     <div colspan="7" style="text-align: center; padding: 2rem; grid-column: 1 / -1;">
                         Không có học sinh nào
                     </div>
                 </div>
             `;
-            return;
-        }
-        
-        tableBodyEl.innerHTML = students.map(student => {
-            const initials = this.getStudentInitials(student.hoTen || '');
-            const ngayBatDau = student.ngayBatDau ? 
-                new Date(student.ngayBatDau).toLocaleDateString('vi-VN') : '-';
-            const ngayKetThuc = student.ngayKetThuc ? 
-                new Date(student.ngayKetThuc).toLocaleDateString('vi-VN') : 'Đang phụ trách';
-            const trangThai = student.trangThai || 'Dang phu trach';
-            const trangThaiClass = this.getStatusClass(trangThai);
-            const trangThaiText = this.getStatusText(trangThai);
-            const ghiChu = student.ghiChu || 'Không có ghi chú';
-            const gioiTinhIcon = student.gioiTinh ? 'fa-venus' : 'fa-mars';
-            const gioiTinhText = student.gioiTinh ? 'Nữ' : 'Nam';
-            
-            return `
-                <div class="table-row student-row" data-student-id="${student.idHs}">
+      return;
+    }
+
+    tableBodyEl.innerHTML = students
+      .map((student) => {
+        const initials = this.getStudentInitials(student.hoTen || "");
+        const ngayBatDau = student.ngayBatDau
+          ? new Date(student.ngayBatDau).toLocaleDateString("vi-VN")
+          : "-";
+        const ngayKetThuc = student.ngayKetThuc
+          ? new Date(student.ngayKetThuc).toLocaleDateString("vi-VN")
+          : "Đang phụ trách";
+        const trangThai = student.trangThai || "Dang phu trach";
+        const trangThaiClass = this.getStatusClass(trangThai);
+        const trangThaiText = this.getStatusText(trangThai);
+        const ghiChu = student.ghiChu || "Không có ghi chú";
+        const gioiTinhIcon = student.gioiTinh ? "fa-venus" : "fa-mars";
+        const gioiTinhText = student.gioiTinh ? "Nữ" : "Nam";
+
+        return `
+                <div class="table-row student-row" data-student-id="${
+                  student.idHs
+                }">
                     <div class="col-name">
                         <div class="student-avatar">${initials}</div>
                         <div class="student-info">
                             <div class="student-name">
-                                ${student.hoTen || 'N/A'}
+                                ${student.hoTen || "N/A"}
                                 <i class="fas ${gioiTinhIcon}" title="${gioiTinhText}"></i>
                             </div>
-                            <div class="student-id">${student.idHs || ''}</div>
+                            <div class="student-id">${student.idHs || ""}</div>
                         </div>
                     </div>
                     <div class="contact-info">
                         <div class="contact-item">
                             <i class="fas fa-envelope"></i>
-                            <a href="mailto:${student.email || ''}">${student.email || 'N/A'}</a>
+                            <a href="mailto:${student.email || ""}">${
+          student.email || "N/A"
+        }</a>
                         </div>
                         <div class="contact-item">
                             <i class="fas fa-phone"></i>
-                            <a href="tel:${student.sdt || ''}">${student.sdt || 'N/A'}</a>
+                            <a href="tel:${student.sdt || ""}">${
+          student.sdt || "N/A"
+        }</a>
                         </div>
                         <div class="contact-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>${student.diaChi || 'N/A'}</span>
+                            <span>${student.diaChi || "N/A"}</span>
                         </div>
+                    </div>
+                    <div class="class-info">
+                        <i class="fas fa-school"></i>
+                        <span>${student.className || "-"}</span>
                     </div>
                     <div class="date-info">
                         <i class="fas fa-calendar-check"></i>
@@ -790,233 +906,426 @@ class TutorDashboard {
                         <span class="status-badge ${trangThaiClass}">${trangThaiText}</span>
                     </div>
                     <div class="notes-info">
-                        <span class="notes-preview" title="${ghiChu}">${ghiChu.length > 50 ? ghiChu.substring(0, 50) + '...' : ghiChu}</span>
+                        <span class="notes-preview" title="${ghiChu}">${
+          ghiChu.length > 50 ? ghiChu.substring(0, 50) + "..." : ghiChu
+        }</span>
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-sm btn-primary" onclick="tutorDashboard.viewStudentDetails('${student.idHs}')" title="Xem chi tiết">
+                        <button class="btn btn-sm btn-primary" onclick="tutorDashboard.viewStudentDetails('${
+                          student.idHs
+                        }')" title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-info" onclick="tutorDashboard.viewSupportRequests('${student.idHs}')" title="Xem yêu cầu hỗ trợ">
-                            <i class="fas fa-headset"></i>
+                        <button class="btn btn-sm btn-danger" onclick="tutorDashboard.finishAdvising('${
+                          student.idHs
+                        }')" title="Kết thúc cố vấn">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
             `;
-        }).join('');
+      })
+      .join("");
+  }
+
+  // Get student initials
+  getStudentInitials(name) {
+    if (!name) return "??";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      return (
+        parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+      ).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  // Get status class
+  getStatusClass(status) {
+    if (!status) return "default";
+    const statusLower = status.toLowerCase();
+    if (
+      statusLower.includes("dang phu trach") ||
+      statusLower.includes("đang")
+    ) {
+      return "success";
+    } else if (
+      statusLower.includes("tam dung") ||
+      statusLower.includes("tạm")
+    ) {
+      return "warning";
+    } else if (
+      statusLower.includes("ket thuc") ||
+      statusLower.includes("kết")
+    ) {
+      return "secondary";
+    }
+    return "default";
+  }
+
+  // Get status text
+  getStatusText(status) {
+    if (!status) return "Chưa xác định";
+    if (status.includes("Dang phu trach")) return "Đang phụ trách";
+    if (status.includes("Tam dung")) return "Tạm dừng";
+    if (status.includes("Ket thuc")) return "Kết thúc";
+    return status;
+  }
+
+  // Filter students
+  filterStudents() {
+    const searchInput = document.getElementById("studentSearchInput");
+    const filterSelect = document.getElementById("assignmentStatusFilter");
+    const classFilter = document.getElementById("classFilter");
+
+    if (!this.assignedStudents) {
+      this.loadAssignedStudentsData();
+      return;
     }
 
-    // Get student initials
-    getStudentInitials(name) {
-        if (!name) return '??';
-        const parts = name.trim().split(' ');
-        if (parts.length >= 2) {
-            return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-        }
-        return name.substring(0, 2).toUpperCase();
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+    const filter = filterSelect ? filterSelect.value : "active";
+
+    // If status filter changed to a specific status (not active/all), reload from API
+    if (filter !== "active" && filter !== "all") {
+      this.loadAssignedStudentsData();
+      return;
     }
 
-    // Get status class
-    getStatusClass(status) {
-        if (!status) return 'default';
-        const statusLower = status.toLowerCase();
-        if (statusLower.includes('dang phu trach') || statusLower.includes('đang')) {
-            return 'success';
-        } else if (statusLower.includes('tam dung') || statusLower.includes('tạm')) {
-            return 'warning';
-        } else if (statusLower.includes('ket thuc') || statusLower.includes('kết')) {
-            return 'secondary';
-        }
-        return 'default';
+    // Filter by search term
+    let filtered = this.assignedStudents;
+    if (searchTerm) {
+      filtered = this.assignedStudents.filter((student) => {
+        const name = (student.hoTen || "").toLowerCase();
+        const email = (student.email || "").toLowerCase();
+        const idHs = (student.idHs || "").toLowerCase();
+        return (
+          name.includes(searchTerm) ||
+          email.includes(searchTerm) ||
+          idHs.includes(searchTerm)
+        );
+      });
     }
 
-    // Get status text
-    getStatusText(status) {
-        if (!status) return 'Chưa xác định';
-        if (status.includes('Dang phu trach')) return 'Đang phụ trách';
-        if (status.includes('Tam dung')) return 'Tạm dừng';
-        if (status.includes('Ket thuc')) return 'Kết thúc';
-        return status;
+    // Filter by class if selected
+    const selectedClass = classFilter ? classFilter.value : "";
+    if (selectedClass) {
+      filtered = filtered.filter((s) => (s.classId || "") === selectedClass);
     }
 
-    // Filter students
-    filterStudents() {
-        const searchInput = document.getElementById('studentSearchInput');
-        const filterSelect = document.getElementById('assignmentStatusFilter');
-        
-        if (!this.assignedStudents) {
-            this.loadAssignedStudentsData();
-            return;
-        }
-        
-        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-        const filter = filterSelect ? filterSelect.value : 'active';
-        
-        // If filter changed, reload from API
-        if (filter !== 'active' && filter !== 'all') {
-            this.loadAssignedStudentsData();
-            return;
-        }
-        
-        // Filter by search term
-        let filtered = this.assignedStudents;
-        if (searchTerm) {
-            filtered = this.assignedStudents.filter(student => {
-                const name = (student.hoTen || '').toLowerCase();
-                const email = (student.email || '').toLowerCase();
-                const idHs = (student.idHs || '').toLowerCase();
-                return name.includes(searchTerm) || email.includes(searchTerm) || idHs.includes(searchTerm);
-            });
-        }
-        
-        this.renderAssignedStudents(filtered);
+    this.renderAssignedStudents(filtered);
+  }
+
+  // View student details
+  viewStudentDetails(idHs) {
+    const idNv =
+      this.currentTutorId ||
+      (this.tutorInfo && this.tutorInfo.idNv) ||
+      this.tutorInfo?.id;
+
+    if (!idNv) {
+      showNotification("Không xác định được ID cố vấn. Vui lòng thử lại.", "error");
+      return;
     }
 
-    // View student details
-    viewStudentDetails(idHs) {
-        // Navigate to support section and filter by student
-        const supportNav = document.querySelector('[data-section="support"]');
-        if (supportNav) {
-            supportNav.click();
-            // After navigation, filter support requests by student
-            setTimeout(() => {
-                // This will be handled in support section
-                showNotification(`Đang tải yêu cầu hỗ trợ của học sinh ${idHs}`, 'info');
-            }, 500);
-        }
-    }
+    // Show loading state in modal
+    const modal = document.getElementById("studentModal");
+    const nameEl = document.getElementById("studentModalName");
+    const emailEl = document.getElementById("studentModalEmail");
+    const phoneEl = document.getElementById("studentModalPhone");
+    const addressEl = document.getElementById("studentModalAddress");
+    const primaryClassEl = document.getElementById("studentModalPrimaryClass");
+    const avgEl = document.getElementById("studentStatAvg");
+    const sessionsEl = document.getElementById("studentStatSessions");
+    const attendanceEl = document.getElementById("studentStatAttendance");
+    const classesList = document.getElementById("studentModalClasses");
+    const assignmentsList = document.getElementById("studentModalAssignments");
+    const gradesList = document.getElementById("studentModalGrades");
 
-    // View support requests for student
-    viewSupportRequests(idHs) {
-        // Navigate to support section
-        const supportNav = document.querySelector('[data-section="support"]');
-        if (supportNav) {
-            supportNav.click();
-            // Filter by student ID
-            setTimeout(() => {
-                // This will be handled in support section
-                showNotification(`Đang tải yêu cầu hỗ trợ của học sinh ${idHs}`, 'info');
-            }, 500);
-        }
-    }
+    if (nameEl) nameEl.textContent = "Đang tải...";
+    if (emailEl) emailEl.textContent = "-";
+    if (phoneEl) phoneEl.textContent = "-";
+    if (addressEl) addressEl.textContent = "-";
+    if (primaryClassEl) primaryClassEl.textContent = "Lớp: -";
+    if (avgEl) avgEl.textContent = "-";
+    if (sessionsEl) sessionsEl.textContent = "-";
+    if (attendanceEl) attendanceEl.textContent = "-";
+    if (classesList) classesList.innerHTML = "<li>Đang tải...</li>";
+    if (assignmentsList) assignmentsList.innerHTML = "<li>Đang tải...</li>";
+    if (gradesList) gradesList.innerHTML = "<li>Đang tải...</li>";
 
-    // Export students
-    exportStudents() {
-        if (!this.assignedStudents || this.assignedStudents.length === 0) {
-            showNotification('Không có dữ liệu để xuất', 'warning');
-            return;
-        }
-        
-        // Simple CSV export
-        const headers = ['ID_HS', 'Họ tên', 'Email', 'SĐT', 'Địa chỉ', 'Ngày bắt đầu', 'Ngày kết thúc', 'Trạng thái', 'Ghi chú'];
-        const rows = this.assignedStudents.map(s => [
-            s.idHs || '',
-            s.hoTen || '',
-            s.email || '',
-            s.sdt || '',
-            s.diaChi || '',
-            s.ngayBatDau ? new Date(s.ngayBatDau).toLocaleDateString('vi-VN') : '',
-            s.ngayKetThuc ? new Date(s.ngayKetThuc).toLocaleDateString('vi-VN') : '',
-            s.trangThai || '',
-            (s.ghiChu || '').replace(/,/g, ';')
-        ]);
-        
-        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `Danh_sach_hoc_sinh_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-        
-        showNotification('Đã xuất danh sách học sinh thành công', 'success');
-    }
+    // Open modal
+    if (modal) modal.classList.add("active");
 
-    loadTeachersData() {
-        // Simulate loading teachers data
-        console.log('Loading teachers data...');
-    }
-
-    loadClassesData() {
-        // Simulate loading classes data
-        console.log('Loading classes data...');
-    }
-
-    loadPaymentsData() {
-        // Load unpaid invoices and payment methods
-        this.loadUnpaidInvoices();
-        this.loadPaymentMethods();
-        this.loadAllInvoices();
-        
-        // Set current date as payment date
-        this.setPaymentDate();
-        
-        // Setup payment form handler
-        this.setupPaymentForm();
-    }
-
-    setPaymentDate() {
-        const today = new Date();
-        const paymentDateInput = document.getElementById('paymentDate');
-        if (paymentDateInput) {
-            paymentDateInput.value = today.toLocaleDateString('vi-VN');
-        }
-    }
-
-    async loadAllInvoices() {
-        try {
-            const invoices = await window.tutorAPI.getAllInvoices();
-            this.allInvoices = invoices; // Store for filtering and sorting
-            this.currentSortField = null;
-            this.currentSortDirection = 'asc';
-            this.filterAndDisplayInvoicesList('');
-        } catch (error) {
-            console.error('Error loading invoices:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
-
-    filterAndDisplayInvoicesList(searchTerm = '') {
-        const tableBody = document.getElementById('invoicesTableBody');
-        if (!tableBody) return;
-
-        if (!this.allInvoices) return;
-
-        // Filter invoices by student name
-        let filteredInvoices = this.allInvoices.filter(invoice => {
-            if (!searchTerm) return true;
-            const studentName = invoice.studentName || '';
-            return studentName.toLowerCase().includes(searchTerm.toLowerCase());
-        });
-
-        // Apply sorting if exists
-        if (this.currentSortField) {
-            filteredInvoices = this.sortInvoices(filteredInvoices, this.currentSortField, this.currentSortDirection);
+    // Fetch dashboard for this student as tutor
+    window.tutorAPI
+      .getStudentDashboardForTutor(idNv, idHs)
+      .then((dashboard) => {
+        if (!dashboard) {
+          showNotification("Không có dữ liệu chi tiết cho học sinh.", "warning");
+          return;
         }
 
-        if (filteredInvoices.length === 0) {
-            tableBody.innerHTML = '<div class="table-row"><div colspan="8" style="text-align: center; padding: 2rem; grid-column: 1 / -1;">Không có hóa đơn nào</div></div>';
-            return;
+        // Basic info
+        if (nameEl) nameEl.textContent = dashboard.fullName || dashboard.studentId || "-";
+        if (emailEl) emailEl.textContent = dashboard.email || "-";
+        if (phoneEl) phoneEl.textContent = dashboard.phone || "-";
+        if (addressEl) addressEl.textContent = dashboard.address || "-";
+
+        // Primary class - use first class in list
+        const classes = dashboard.classes || [];
+        if (classes.length > 0) {
+          const first = classes[0];
+          if (primaryClassEl) primaryClassEl.textContent = `Lớp: ${first.className || first.classId || "-"}`;
+        } else {
+          if (primaryClassEl) primaryClassEl.textContent = "Lớp: -";
         }
 
-        tableBody.innerHTML = filteredInvoices.map(invoice => {
-            const ngayDangKy = invoice.ngayDangKy ? 
-                new Date(invoice.ngayDangKy).toLocaleDateString('vi-VN') : '-';
-            const ngayThanhToan = invoice.ngayThanhToan ? 
-                new Date(invoice.ngayThanhToan).toLocaleDateString('vi-VN') : '-';
-            const amount = invoice.tongTien ? 
-                invoice.tongTien.toLocaleString('vi-VN') + ' VNĐ' : '-';
-            const statusClass = invoice.trangThai === 'Da Thanh Toan' ? 'success' : 'pending';
-            const statusText = invoice.trangThai === 'Da Thanh Toan' ? 'Đã thanh toán' : 'Chưa thanh toán';
+        // Stats
+        const stats = dashboard.stats || {};
+        if (avgEl) avgEl.textContent = stats.averageGrade != null ? stats.averageGrade : "-";
+        if (sessionsEl) sessionsEl.textContent = stats.todayClasses != null ? stats.todayClasses : "-";
+        if (attendanceEl) attendanceEl.textContent = stats.attendanceRate != null ? stats.attendanceRate + "%" : "-";
 
-            return `
-                <div class="table-row invoice-row" data-invoice-id="${invoice.idHoaDon}">
-                    <div>${invoice.idHoaDon || '-'}</div>
+        // Populate classes list
+        if (classesList) {
+          classesList.innerHTML = "";
+          classes.forEach((c) => {
+            const li = document.createElement("li");
+            li.textContent = `${c.className || c.classId || "-"} - Giáo viên: ${c.teacherName || "-"}`;
+            classesList.appendChild(li);
+          });
+          if (classes.length === 0) classesList.innerHTML = "<li>Không có lớp nào</li>";
+        }
+
+        // Populate assignments
+        if (assignmentsList) {
+          assignmentsList.innerHTML = "";
+          const assignments = dashboard.assignments || [];
+          assignments.forEach((a) => {
+            const li = document.createElement("li");
+            li.textContent = `${a.title || '-'} (${a.className || '-'}) - ${a.status || ''} ${a.grade ? ' - Điểm: ' + a.grade : ''}`;
+            assignmentsList.appendChild(li);
+          });
+          if (assignments.length === 0) assignmentsList.innerHTML = "<li>Không có bài tập</li>";
+        }
+
+        // Populate grades
+        if (gradesList) {
+          gradesList.innerHTML = "";
+          const grades = dashboard.grades || [];
+          grades.forEach((g) => {
+            const li = document.createElement("li");
+            li.textContent = `${g.gradeType || g.subject || 'Kết quả'} - ${g.className || '-'}: ${g.score || '-'} ${g.feedback ? '('+g.feedback+')' : ''}`;
+            gradesList.appendChild(li);
+          });
+          if (grades.length === 0) gradesList.innerHTML = "<li>Không có kết quả</li>";
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading student dashboard:", err);
+        window.tutorAPI.handleError(err);
+        showNotification("Không thể tải chi tiết học sinh. Vui lòng thử lại.", "error");
+        if (modal) modal.classList.remove("active");
+      });
+  }
+
+  // View support requests for student
+  viewSupportRequests(idHs) {
+    // Navigate to support section
+    const supportNav = document.querySelector('[data-section="support"]');
+    if (supportNav) {
+      supportNav.click();
+      // Filter by student ID
+      setTimeout(() => {
+        // This will be handled in support section
+        showNotification(
+          `Đang tải yêu cầu hỗ trợ của học sinh ${idHs}`,
+          "info"
+        );
+      }, 500);
+    }
+  }
+
+  // Finish advising a student (kết thúc cố vấn)
+  async finishAdvising(idHs) {
+    if (!confirm("Bạn có chắc muốn kết thúc cố vấn cho học sinh này?")) return;
+
+    const idNv =
+      this.currentTutorId ||
+      (this.tutorInfo && this.tutorInfo.idNv) ||
+      this.tutorInfo?.id;
+    if (!idNv) {
+      showNotification(
+        "Không xác định được ID cố vấn. Vui lòng thử lại.",
+        "error"
+      );
+      return;
+    }
+
+    try {
+      await window.tutorAPI.finishAssignedStudent(idNv, idHs);
+      showNotification("Đã kết thúc cố vấn cho học sinh.", "success");
+      // Reload assigned students list
+      await this.loadAssignedStudentsData();
+    } catch (error) {
+      console.error("Error finishing advising:", error);
+      window.tutorAPI.handleError(error);
+      showNotification("Không thể kết thúc cố vấn. Vui lòng thử lại.", "error");
+    }
+  }
+
+  // Export students
+  exportStudents() {
+    if (!this.assignedStudents || this.assignedStudents.length === 0) {
+      showNotification("Không có dữ liệu để xuất", "warning");
+      return;
+    }
+
+    // Simple CSV export
+    const headers = [
+      "ID_HS",
+      "Họ tên",
+      "Email",
+      "SĐT",
+      "Địa chỉ",
+      "Ngày bắt đầu",
+      "Ngày kết thúc",
+      "Trạng thái",
+      "Ghi chú",
+    ];
+    const rows = this.assignedStudents.map((s) => [
+      s.idHs || "",
+      s.hoTen || "",
+      s.email || "",
+      s.sdt || "",
+      s.diaChi || "",
+      s.ngayBatDau ? new Date(s.ngayBatDau).toLocaleDateString("vi-VN") : "",
+      s.ngayKetThuc ? new Date(s.ngayKetThuc).toLocaleDateString("vi-VN") : "",
+      s.trangThai || "",
+      (s.ghiChu || "").replace(/,/g, ";"),
+    ]);
+
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob(["\ufeff" + csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Danh_sach_hoc_sinh_${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
+    link.click();
+
+    showNotification("Đã xuất danh sách học sinh thành công", "success");
+  }
+
+  loadTeachersData() {
+    // Simulate loading teachers data
+    console.log("Loading teachers data...");
+  }
+
+  loadClassesData() {
+    // Simulate loading classes data
+    console.log("Loading classes data...");
+  }
+
+  loadPaymentsData() {
+    // Load unpaid invoices and payment methods
+    this.loadUnpaidInvoices();
+    this.loadPaymentMethods();
+    this.loadAllInvoices();
+
+    // Set current date as payment date
+    this.setPaymentDate();
+
+    // Setup payment form handler
+    this.setupPaymentForm();
+  }
+
+  setPaymentDate() {
+    const today = new Date();
+    const paymentDateInput = document.getElementById("paymentDate");
+    if (paymentDateInput) {
+      paymentDateInput.value = today.toLocaleDateString("vi-VN");
+    }
+  }
+
+  async loadAllInvoices() {
+    try {
+      const invoices = await window.tutorAPI.getAllInvoices();
+      this.allInvoices = invoices; // Store for filtering and sorting
+      this.currentSortField = null;
+      this.currentSortDirection = "asc";
+      this.filterAndDisplayInvoicesList("");
+    } catch (error) {
+      console.error("Error loading invoices:", error);
+      window.tutorAPI.handleError(error);
+    }
+  }
+
+  filterAndDisplayInvoicesList(searchTerm = "") {
+    const tableBody = document.getElementById("invoicesTableBody");
+    if (!tableBody) return;
+
+    if (!this.allInvoices) return;
+
+    // Filter invoices by student name
+    let filteredInvoices = this.allInvoices.filter((invoice) => {
+      if (!searchTerm) return true;
+      const studentName = invoice.studentName || "";
+      return studentName.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+
+    // Apply sorting if exists
+    if (this.currentSortField) {
+      filteredInvoices = this.sortInvoices(
+        filteredInvoices,
+        this.currentSortField,
+        this.currentSortDirection
+      );
+    }
+
+    if (filteredInvoices.length === 0) {
+      tableBody.innerHTML =
+        '<div class="table-row"><div colspan="8" style="text-align: center; padding: 2rem; grid-column: 1 / -1;">Không có hóa đơn nào</div></div>';
+      return;
+    }
+
+    tableBody.innerHTML = filteredInvoices
+      .map((invoice) => {
+        const ngayDangKy = invoice.ngayDangKy
+          ? new Date(invoice.ngayDangKy).toLocaleDateString("vi-VN")
+          : "-";
+        const ngayThanhToan = invoice.ngayThanhToan
+          ? new Date(invoice.ngayThanhToan).toLocaleDateString("vi-VN")
+          : "-";
+        const amount = invoice.tongTien
+          ? invoice.tongTien.toLocaleString("vi-VN") + " VNĐ"
+          : "-";
+        const statusClass =
+          invoice.trangThai === "Da Thanh Toan" ? "success" : "pending";
+        const statusText =
+          invoice.trangThai === "Da Thanh Toan"
+            ? "Đã thanh toán"
+            : "Chưa thanh toán";
+
+        return `
+                <div class="table-row invoice-row" data-invoice-id="${
+                  invoice.idHoaDon
+                }">
+                    <div>${invoice.idHoaDon || "-"}</div>
                     <div class="col-name">
-                        <div class="student-avatar">${this.getInitials(invoice.studentName)}</div>
+                        <div class="student-avatar">${this.getInitials(
+                          invoice.studentName
+                        )}</div>
                         <div class="student-info">
-                            <div class="student-name">${invoice.studentName || '-'}</div>
+                            <div class="student-name">${
+                              invoice.studentName || "-"
+                            }</div>
                         </div>
                     </div>
-                    <div>${invoice.tenLop || '-'}</div>
+                    <div>${invoice.tenLop || "-"}</div>
                     <div class="amount-info">
                         <span class="amount-value">${amount}</span>
                     </div>
@@ -1026,777 +1335,848 @@ class TutorDashboard {
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-sm btn-primary" onclick="window.tutorDashboard.viewInvoiceDetails('${invoice.idHoaDon}')">
+                        <button class="btn btn-sm btn-primary" onclick="window.tutorDashboard.viewInvoiceDetails('${
+                          invoice.idHoaDon
+                        }')">
                             <i class="fas fa-eye"></i> Xem chi tiết
                         </button>
                     </div>
                 </div>
             `;
-        }).join('');
+      })
+      .join("");
+  }
+
+  async viewInvoiceDetails(idHoaDon) {
+    try {
+      const invoice = await window.tutorAPI.getInvoiceDetails(idHoaDon);
+      this.displayInvoiceDetails(invoice);
+
+      // Open modal
+      this.openInvoiceModal();
+    } catch (error) {
+      console.error("Error loading invoice details:", error);
+      window.tutorAPI.handleError(error);
+    }
+  }
+
+  openInvoiceModal() {
+    const modal = document.getElementById("invoiceDetailsModal");
+    if (modal) {
+      modal.style.display = "flex";
+      document.body.style.overflow = "hidden"; // Prevent background scrolling
+    }
+  }
+
+  closeInvoiceModal() {
+    const modal = document.getElementById("invoiceDetailsModal");
+    if (modal) {
+      modal.style.display = "none";
+      document.body.style.overflow = ""; // Restore scrolling
+    }
+  }
+
+  async loadUnpaidInvoices() {
+    try {
+      const invoices = await window.tutorAPI.getUnpaidInvoices();
+      this.allUnpaidInvoices = invoices; // Store for filtering
+      this.filterAndDisplayUnpaidInvoices("");
+    } catch (error) {
+      console.error("Error loading unpaid invoices:", error);
+      window.tutorAPI.handleError(error);
+    }
+  }
+
+  filterAndDisplayUnpaidInvoices(searchTerm = "") {
+    const invoiceSelectList = document.getElementById("invoiceSelectList");
+    if (!invoiceSelectList) return;
+
+    if (!this.allUnpaidInvoices) {
+      invoiceSelectList.innerHTML =
+        '<div class="custom-select-option disabled">Đang tải...</div>';
+      return;
     }
 
-    async viewInvoiceDetails(idHoaDon) {
-        try {
-            const invoice = await window.tutorAPI.getInvoiceDetails(idHoaDon);
-            this.displayInvoiceDetails(invoice);
-            
-            // Open modal
-            this.openInvoiceModal();
-        } catch (error) {
-            console.error('Error loading invoice details:', error);
-            window.tutorAPI.handleError(error);
-        }
+    // Filter invoices by student name or class
+    const filteredInvoices = this.allUnpaidInvoices.filter((invoice) => {
+      if (!searchTerm) return true;
+      const studentName = (invoice.studentName || "").toLowerCase();
+      const tenLop = (invoice.tenLop || "").toLowerCase();
+      const searchLower = searchTerm.toLowerCase();
+      return studentName.includes(searchLower) || tenLop.includes(searchLower);
+    });
+
+    if (filteredInvoices.length === 0) {
+      invoiceSelectList.innerHTML =
+        '<div class="custom-select-option disabled">Không tìm thấy hóa đơn nào</div>';
+      return;
     }
 
-    openInvoiceModal() {
-        const modal = document.getElementById('invoiceDetailsModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    // Clear and add filtered unpaid invoices - show student name and class
+    invoiceSelectList.innerHTML = "";
+    filteredInvoices.forEach((invoice) => {
+      const option = document.createElement("div");
+      option.className = "custom-select-option";
+      option.dataset.value = invoice.idHoaDon;
+      option.setAttribute("tabindex", "0");
+
+      // Display format: "Tên học sinh - Lớp học"
+      const displayText = invoice.tenLop
+        ? `${invoice.studentName || "-"} - ${invoice.tenLop}`
+        : invoice.studentName || "-";
+      option.textContent = displayText;
+
+      option.addEventListener("click", () => {
+        this.selectInvoice(
+          invoice.idHoaDon,
+          invoice.studentName,
+          invoice.tenLop
+        );
+      });
+      option.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.selectInvoice(
+            invoice.idHoaDon,
+            invoice.studentName,
+            invoice.tenLop
+          );
         }
+      });
+      invoiceSelectList.appendChild(option);
+    });
+  }
+
+  selectInvoice(idHoaDon, studentName, tenLop = null) {
+    const hiddenInput = document.getElementById("invoiceSelect");
+    const triggerText = document.getElementById("invoiceSelectText");
+    const wrapper = document.getElementById("invoiceSelectWrapper");
+
+    if (hiddenInput) {
+      hiddenInput.value = idHoaDon;
+    }
+    if (triggerText) {
+      // Display format: "Tên học sinh - Lớp học"
+      const displayText = tenLop
+        ? `${studentName || "-"} - ${tenLop}`
+        : studentName || "Chọn hóa đơn...";
+      triggerText.textContent = displayText;
+    }
+    if (wrapper) {
+      wrapper.classList.remove("open");
     }
 
-    closeInvoiceModal() {
-        const modal = document.getElementById('invoiceDetailsModal');
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = ''; // Restore scrolling
-        }
+    // Load payment details
+    if (idHoaDon) {
+      this.loadPaymentDetails(idHoaDon);
+    } else {
+      this.hideStudentInfo();
     }
+  }
 
-    async loadUnpaidInvoices() {
-        try {
-            const invoices = await window.tutorAPI.getUnpaidInvoices();
-            this.allUnpaidInvoices = invoices; // Store for filtering
-            this.filterAndDisplayUnpaidInvoices('');
-        } catch (error) {
-            console.error('Error loading unpaid invoices:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+  async loadPaymentMethods() {
+    try {
+      const methods = await window.tutorAPI.getPaymentMethods();
+      const paymentMethodSelect = document.getElementById("paymentMethod");
+      if (paymentMethodSelect) {
+        // Clear existing options except the first one
+        paymentMethodSelect.innerHTML =
+          '<option value="">Chọn phương thức thanh toán...</option>';
 
-    filterAndDisplayUnpaidInvoices(searchTerm = '') {
-        const invoiceSelectList = document.getElementById('invoiceSelectList');
-        if (!invoiceSelectList) return;
-
-        if (!this.allUnpaidInvoices) {
-            invoiceSelectList.innerHTML = '<div class="custom-select-option disabled">Đang tải...</div>';
-            return;
-        }
-
-        // Filter invoices by student name or class
-        const filteredInvoices = this.allUnpaidInvoices.filter(invoice => {
-            if (!searchTerm) return true;
-            const studentName = (invoice.studentName || '').toLowerCase();
-            const tenLop = (invoice.tenLop || '').toLowerCase();
-            const searchLower = searchTerm.toLowerCase();
-            return studentName.includes(searchLower) || tenLop.includes(searchLower);
+        // Add payment methods
+        methods.forEach((method) => {
+          const option = document.createElement("option");
+          option.value = method.idPt;
+          option.textContent = `${method.tenPt} (${method.hinhThucTt})`;
+          paymentMethodSelect.appendChild(option);
         });
-
-        if (filteredInvoices.length === 0) {
-            invoiceSelectList.innerHTML = '<div class="custom-select-option disabled">Không tìm thấy hóa đơn nào</div>';
-            return;
-        }
-
-        // Clear and add filtered unpaid invoices - show student name and class
-        invoiceSelectList.innerHTML = '';
-        filteredInvoices.forEach(invoice => {
-            const option = document.createElement('div');
-            option.className = 'custom-select-option';
-            option.dataset.value = invoice.idHoaDon;
-            option.setAttribute('tabindex', '0');
-            
-            // Display format: "Tên học sinh - Lớp học"
-            const displayText = invoice.tenLop 
-                ? `${invoice.studentName || '-'} - ${invoice.tenLop}`
-                : invoice.studentName || '-';
-            option.textContent = displayText;
-            
-            option.addEventListener('click', () => {
-                this.selectInvoice(invoice.idHoaDon, invoice.studentName, invoice.tenLop);
-            });
-            option.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    this.selectInvoice(invoice.idHoaDon, invoice.studentName, invoice.tenLop);
-                }
-            });
-            invoiceSelectList.appendChild(option);
-        });
+      }
+    } catch (error) {
+      console.error("Error loading payment methods:", error);
+      window.tutorAPI.handleError(error);
     }
+  }
 
-    selectInvoice(idHoaDon, studentName, tenLop = null) {
-        const hiddenInput = document.getElementById('invoiceSelect');
-        const triggerText = document.getElementById('invoiceSelectText');
-        const wrapper = document.getElementById('invoiceSelectWrapper');
+  setupPaymentForm() {
+    const invoiceSelect = document.getElementById("invoiceSelect");
+    const paymentForm = document.getElementById("paymentForm");
+    const resetBtn = document.getElementById("resetPaymentForm");
 
-        if (hiddenInput) {
-            hiddenInput.value = idHoaDon;
-        }
-        if (triggerText) {
-            // Display format: "Tên học sinh - Lớp học"
-            const displayText = tenLop 
-                ? `${studentName || '-'} - ${tenLop}`
-                : studentName || 'Chọn hóa đơn...';
-            triggerText.textContent = displayText;
-        }
-        if (wrapper) {
-            wrapper.classList.remove('open');
-        }
+    console.log("Setting up payment form...", {
+      paymentForm: !!paymentForm,
+      invoiceSelect: !!invoiceSelect,
+      resetBtn: !!resetBtn,
+    });
 
-        // Load payment details
-        if (idHoaDon) {
-            this.loadPaymentDetails(idHoaDon);
-        } else {
-            this.hideStudentInfo();
-        }
-    }
+    // Setup custom select dropdown
+    this.setupCustomSelect();
 
-    async loadPaymentMethods() {
-        try {
-            const methods = await window.tutorAPI.getPaymentMethods();
-            const paymentMethodSelect = document.getElementById('paymentMethod');
-            if (paymentMethodSelect) {
-                // Clear existing options except the first one
-                paymentMethodSelect.innerHTML = '<option value="">Chọn phương thức thanh toán...</option>';
-                
-                // Add payment methods
-                methods.forEach(method => {
-                    const option = document.createElement('option');
-                    option.value = method.idPt;
-                    option.textContent = `${method.tenPt} (${method.hinhThucTt})`;
-                    paymentMethodSelect.appendChild(option);
-                });
-            }
-        } catch (error) {
-            console.error('Error loading payment methods:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+    // Setup modal close buttons
+    const closeModalBtn = document.getElementById("closeInvoiceModal");
+    const closeModalBtnFooter = document.getElementById("closeInvoiceModalBtn");
+    const modalOverlay = document.getElementById("invoiceDetailsModal");
 
-    setupPaymentForm() {
-        const invoiceSelect = document.getElementById('invoiceSelect');
-        const paymentForm = document.getElementById('paymentForm');
-        const resetBtn = document.getElementById('resetPaymentForm');
-
-        console.log('Setting up payment form...', {
-            paymentForm: !!paymentForm,
-            invoiceSelect: !!invoiceSelect,
-            resetBtn: !!resetBtn
-        });
-
-        // Setup custom select dropdown
-        this.setupCustomSelect();
-
-        // Setup modal close buttons
-        const closeModalBtn = document.getElementById('closeInvoiceModal');
-        const closeModalBtnFooter = document.getElementById('closeInvoiceModalBtn');
-        const modalOverlay = document.getElementById('invoiceDetailsModal');
-
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', () => {
-                this.closeInvoiceModal();
-            });
-        }
-
-        if (closeModalBtnFooter) {
-            closeModalBtnFooter.addEventListener('click', () => {
-                this.closeInvoiceModal();
-            });
-        }
-
-        // Close modal when clicking outside
-        if (modalOverlay) {
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) {
-                    this.closeInvoiceModal();
-                }
-            });
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const modal = document.getElementById('invoiceDetailsModal');
-                if (modal && modal.style.display === 'flex') {
-                    this.closeInvoiceModal();
-                }
-            }
-        });
-
-        // Handle form submission
-        if (paymentForm) {
-            // Handle form submit event
-            paymentForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                console.log('Form submit event triggered');
-                await this.handlePaymentSubmit();
-                return false;
-            });
-            
-            // Also handle button click directly as backup
-            const submitButton = paymentForm.querySelector('button[type="submit"]');
-            if (submitButton) {
-                submitButton.addEventListener('click', async (e) => {
-                    // Only handle if form validation passes
-                    if (paymentForm.checkValidity()) {
-                        e.preventDefault();
-                        console.log('Submit button clicked');
-                        await this.handlePaymentSubmit();
-                    }
-                });
-            }
-        }
-
-        // Handle reset
-        if (resetBtn) {
-            resetBtn.addEventListener('click', () => {
-                this.resetPaymentForm();
-            });
-        }
-
-        // Handle refresh invoice list
-        const refreshBtn = document.getElementById('refreshInvoiceList');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', async () => {
-                await this.loadAllInvoices();
-                showNotification('Danh sách hóa đơn đã được làm mới!', 'success');
-            });
-        }
-
-        // Handle invoice list search
-        const invoiceListSearch = document.getElementById('invoiceListSearch');
-        if (invoiceListSearch) {
-            invoiceListSearch.addEventListener('input', (e) => {
-                const searchTerm = e.target.value;
-                this.filterAndDisplayInvoicesList(searchTerm);
-            });
-        }
-
-        // Handle sortable headers - use event delegation for dynamically loaded content
-        const invoicesTableContainer = document.querySelector('.invoices-table-container');
-        if (invoicesTableContainer) {
-            invoicesTableContainer.addEventListener('click', (e) => {
-                // Handle click on sortable header or its children (icon, text)
-                let sortable = e.target.closest('.sortable');
-                
-                // If clicked on icon, get parent sortable
-                if (!sortable && e.target.tagName === 'I') {
-                    sortable = e.target.parentElement;
-                }
-                
-                // If clicked on text node, get parent sortable
-                if (!sortable && e.target.parentElement) {
-                    sortable = e.target.parentElement.closest('.sortable');
-                }
-                
-                if (sortable && sortable.classList.contains('sortable')) {
-                    const sortField = sortable.dataset.sort;
-                    if (sortField) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Sorting by:', sortField);
-                        this.sortInvoicesList(sortField);
-                    }
-                }
-            });
-        }
-    }
-
-    async handlePaymentSubmit() {
-        // Validate custom select
-        const hiddenInput = document.getElementById('invoiceSelect');
-        if (!hiddenInput || !hiddenInput.value) {
-            showNotification('Vui lòng chọn hóa đơn!', 'error');
-            const wrapper = document.getElementById('invoiceSelectWrapper');
-            if (wrapper) {
-                wrapper.classList.add('open');
-            }
-            return;
-        }
-        
-        // Validate payment method
-        const paymentMethodSelect = document.getElementById('paymentMethod');
-        if (!paymentMethodSelect || !paymentMethodSelect.value) {
-            showNotification('Vui lòng chọn phương thức thanh toán!', 'error');
-            return;
-        }
-        
-        try {
-            await this.processPayment();
-        } catch (error) {
-            console.error('Error in payment submit handler:', error);
-        }
-    }
-
-    sortInvoicesList(field) {
-        // Toggle sort direction if same field
-        if (this.currentSortField === field) {
-            this.currentSortDirection = this.currentSortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            this.currentSortField = field;
-            this.currentSortDirection = 'asc';
-        }
-
-        // Update sort icons
-        document.querySelectorAll('.sortable i').forEach(icon => {
-            icon.className = 'fas fa-sort';
-        });
-
-        const activeHeader = document.querySelector(`[data-sort="${field}"] i`);
-        if (activeHeader) {
-            activeHeader.className = this.currentSortDirection === 'asc' 
-                ? 'fas fa-sort-up' 
-                : 'fas fa-sort-down';
-        }
-
-        // Get current search term
-        const searchInput = document.getElementById('invoiceListSearch');
-        const searchTerm = searchInput ? searchInput.value : '';
-        
-        // Re-display with new sort
-        this.filterAndDisplayInvoicesList(searchTerm);
-    }
-
-    sortInvoices(invoices, field, direction) {
-        const sorted = [...invoices].sort((a, b) => {
-            let aVal, bVal;
-
-            switch (field) {
-                case 'idHoaDon':
-                    aVal = a.idHoaDon || '';
-                    bVal = b.idHoaDon || '';
-                    break;
-                case 'studentName':
-                    aVal = a.studentName || '';
-                    bVal = b.studentName || '';
-                    break;
-                case 'tenLop':
-                    aVal = a.tenLop || '';
-                    bVal = b.tenLop || '';
-                    break;
-                case 'tongTien':
-                    aVal = a.tongTien ? parseFloat(a.tongTien) : 0;
-                    bVal = b.tongTien ? parseFloat(b.tongTien) : 0;
-                    break;
-                case 'ngayDangKy':
-                    aVal = a.ngayDangKy ? new Date(a.ngayDangKy).getTime() : 0;
-                    bVal = b.ngayDangKy ? new Date(b.ngayDangKy).getTime() : 0;
-                    break;
-                case 'ngayThanhToan':
-                    aVal = a.ngayThanhToan ? new Date(a.ngayThanhToan).getTime() : 0;
-                    bVal = b.ngayThanhToan ? new Date(b.ngayThanhToan).getTime() : 0;
-                    break;
-                case 'trangThai':
-                    aVal = a.trangThai || '';
-                    bVal = b.trangThai || '';
-                    break;
-                default:
-                    return 0;
-            }
-
-            if (typeof aVal === 'string') {
-                return direction === 'asc' 
-                    ? aVal.localeCompare(bVal, 'vi')
-                    : bVal.localeCompare(aVal, 'vi');
-            } else {
-                return direction === 'asc' ? aVal - bVal : bVal - aVal;
-            }
-        });
-
-        return sorted;
-    }
-
-    async loadPaymentDetails(idHoaDon) {
-        try {
-            const details = await window.tutorAPI.getPaymentDetails(idHoaDon);
-            this.displayStudentInfo(details);
-        } catch (error) {
-            console.error('Error loading payment details:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
-
-    displayStudentInfo(details) {
-        // Show student info section
-        const studentInfoSection = document.getElementById('studentInfoSection');
-        if (studentInfoSection) {
-            studentInfoSection.style.display = 'block';
-        }
-
-        // Update student information
-        document.getElementById('studentName').textContent = details.studentName || '-';
-        document.getElementById('studentEmail').textContent = details.studentEmail || '-';
-        document.getElementById('studentPhone').textContent = details.studentPhone || '-';
-        document.getElementById('studentAddress').textContent = details.studentAddress || '-';
-        
-        // Display class information
-        const classInfo = details.tenLop || '-';
-        if (details.chuongTrinh) {
-            document.getElementById('studentClass').textContent = `${classInfo} (${details.chuongTrinh})`;
-        } else {
-            document.getElementById('studentClass').textContent = classInfo;
-        }
-        
-        // Show and display payment amount section
-        const paymentAmountSection = document.getElementById('paymentAmountSection');
-        if (paymentAmountSection) {
-            paymentAmountSection.style.display = 'block';
-        }
-        
-        // Format and display amount
-        const amount = details.tongTien ? details.tongTien.toLocaleString('vi-VN') + ' VNĐ' : '-';
-        document.getElementById('paymentAmount').textContent = amount;
-
-        // Display payment date (always today - auto)
-        this.setPaymentDate();
-
-        // Display payment deadline
-        const paymentDeadlineInput = document.getElementById('paymentDeadline');
-        if (paymentDeadlineInput && details.hanThanhToan) {
-            const deadlineDate = new Date(details.hanThanhToan);
-            paymentDeadlineInput.value = deadlineDate.toLocaleDateString('vi-VN');
-        } else if (paymentDeadlineInput) {
-            paymentDeadlineInput.value = '-';
-        }
-    }
-
-    hideStudentInfo() {
-        const studentInfoSection = document.getElementById('studentInfoSection');
-        if (studentInfoSection) {
-            studentInfoSection.style.display = 'none';
-        }
-
-        // Hide payment amount section
-        const paymentAmountSection = document.getElementById('paymentAmountSection');
-        if (paymentAmountSection) {
-            paymentAmountSection.style.display = 'none';
-        }
-
-        // Clear payment deadline, but keep payment date as today
-        const paymentDeadlineInput = document.getElementById('paymentDeadline');
-        if (paymentDeadlineInput) {
-            paymentDeadlineInput.value = '';
-        }
-        
-        // Reset payment date to today
-        this.setPaymentDate();
-    }
-
-    async processPayment() {
-        const hiddenInput = document.getElementById('invoiceSelect');
-        const paymentMethodSelect = document.getElementById('paymentMethod');
-        const notesTextarea = document.getElementById('notes');
-
-        console.log('Processing payment...', {
-            invoiceId: hiddenInput?.value,
-            paymentMethod: paymentMethodSelect?.value,
-            notes: notesTextarea?.value
-        });
-
-        if (!hiddenInput || !hiddenInput.value) {
-            showNotification('Vui lòng chọn hóa đơn!', 'error');
-            const wrapper = document.getElementById('invoiceSelectWrapper');
-            if (wrapper) {
-                wrapper.classList.add('open');
-            }
-            return;
-        }
-
-        if (!paymentMethodSelect || !paymentMethodSelect.value) {
-            showNotification('Vui lòng chọn phương thức thanh toán!', 'error');
-            return;
-        }
-
-        const paymentData = {
-            idHoaDon: hiddenInput.value,
-            idPt: paymentMethodSelect.value,
-            ghiChu: notesTextarea ? notesTextarea.value : null
-        };
-
-        console.log('Sending payment data:', paymentData);
-
-        try {
-            const result = await window.tutorAPI.processPayment(paymentData);
-            console.log('Payment result:', result);
-            
-            // Show success message
-            showNotification('Thanh toán thành công!', 'success');
-            
-            // Display invoice details in modal
-            this.displayInvoiceDetails(result);
-            this.openInvoiceModal();
-            
-            // Reset form and reload unpaid invoices and all invoices
-            this.resetPaymentForm();
-            await this.loadUnpaidInvoices();
-            await this.loadAllInvoices();
-        } catch (error) {
-            console.error('Error processing payment:', error);
-            
-            // Show user-friendly error message
-            let errorMessage = 'Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.';
-            
-            if (error.message) {
-                errorMessage = error.message;
-            } else if (error.status === 400) {
-                errorMessage = 'Dữ liệu thanh toán không hợp lệ. Vui lòng kiểm tra lại.';
-            } else if (error.status === 500) {
-                errorMessage = 'Lỗi máy chủ. Vui lòng thử lại sau.';
-            } else if (error.status === 401 || error.status === 403) {
-                errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
-            }
-            
-            showNotification(errorMessage, 'error');
-            window.tutorAPI.handleError(error);
-        }
-    }
-
-    displayInvoiceDetails(invoice) {
-        // Check if invoice is paid
-        const isPaid = invoice.trangThai === 'Da Thanh Toan' || 
-                      (invoice.ngayThanhToan !== null && invoice.ngayThanhToan !== undefined) ||
-                      (invoice.idLs !== null && invoice.idLs !== undefined && invoice.idLs !== '');
-
-        // Format date
-        const paymentDate = invoice.ngayThanhToan ? 
-            new Date(invoice.ngayThanhToan).toLocaleDateString('vi-VN') : '-';
-
-        // Helper function to set text with unpaid class
-        const setInvoiceField = (elementId, value, isUnpaid = false) => {
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.textContent = value;
-                if (isUnpaid) {
-                    element.classList.add('invoice-unpaid');
-                } else {
-                    element.classList.remove('invoice-unpaid');
-                }
-            }
-        };
-
-        // Update invoice information
-        // Receipt number - show "Chưa thanh toán" if unpaid
-        setInvoiceField('invoiceReceiptNumber', isPaid ? (invoice.idLs || '-') : 'Chưa thanh toán', !isPaid);
-        
-        document.getElementById('invoiceId').textContent = invoice.idHoaDon || '-';
-        document.getElementById('invoiceStudentName').textContent = invoice.studentName || '-';
-        document.getElementById('invoiceStudentEmail').textContent = invoice.studentEmail || '-';
-        document.getElementById('invoiceStudentPhone').textContent = invoice.studentPhone || '-';
-        document.getElementById('invoiceStudentAddress').textContent = invoice.studentAddress || '-';
-        
-        // Display class information
-        const classInfo = invoice.tenLop || '-';
-        if (invoice.chuongTrinh) {
-            document.getElementById('invoiceClass').textContent = `${classInfo} (${invoice.chuongTrinh})`;
-        } else {
-            document.getElementById('invoiceClass').textContent = classInfo;
-        }
-        document.getElementById('invoiceProgram').textContent = invoice.chuongTrinh || '-';
-        
-        const amount = invoice.tongTien ? invoice.tongTien.toLocaleString('vi-VN') + ' VNĐ' : '-';
-        document.getElementById('invoiceAmount').textContent = amount;
-        
-        // Payment method - show "Chưa thanh toán" if unpaid
-        setInvoiceField('invoicePaymentMethod', isPaid ? (invoice.paymentMethodName || '-') : 'Chưa thanh toán', !isPaid);
-        
-        // Payment date - show "Chưa thanh toán" if unpaid
-        setInvoiceField('invoicePaymentDate', isPaid ? paymentDate : 'Chưa thanh toán', !isPaid);
-        
-        // Notes - show "-" if unpaid, otherwise show ghiChu
-        document.getElementById('invoiceNotes').textContent = isPaid ? (invoice.ghiChu || '-') : '-';
-    }
-
-    setupCustomSelect() {
-        const wrapper = document.getElementById('invoiceSelectWrapper');
-        const trigger = document.getElementById('invoiceSelectTrigger');
-        const options = document.getElementById('invoiceSelectOptions');
-        const searchInput = document.getElementById('invoiceSelectSearch');
-
-        if (!wrapper || !trigger || !options) return;
-
-        // Toggle dropdown
-        trigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isOpening = !wrapper.classList.contains('open');
-            wrapper.classList.toggle('open');
-            
-            if (isOpening) {
-                // Load invoices if not loaded yet
-                if (!this.allUnpaidInvoices) {
-                    this.loadUnpaidInvoices();
-                } else {
-                    // Reset search and show all invoices
-                    if (searchInput) {
-                        searchInput.value = '';
-                    }
-                    this.filterAndDisplayUnpaidInvoices('');
-                }
-                
-                // Focus search input
-                if (searchInput) {
-                    setTimeout(() => searchInput.focus(), 100);
-                }
-            }
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!wrapper.contains(e.target)) {
-                wrapper.classList.remove('open');
-            }
-        });
-
-        // Handle search in dropdown
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                e.stopPropagation();
-                const searchTerm = e.target.value;
-                this.filterAndDisplayUnpaidInvoices(searchTerm);
-            });
-
-            // Prevent dropdown from closing when clicking in search box
-            searchInput.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-
-            // Handle keyboard navigation
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    wrapper.classList.remove('open');
-                    trigger.focus();
-                } else if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    const firstOption = document.querySelector('.custom-select-option:not(.disabled)');
-                    if (firstOption) {
-                        firstOption.focus();
-                    }
-                }
-            });
-        }
-
-        // Prevent dropdown from closing when clicking in options list
-        const optionsList = document.getElementById('invoiceSelectList');
-        if (optionsList) {
-            optionsList.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-
-            // Keyboard navigation in options
-            optionsList.addEventListener('keydown', (e) => {
-                const options = Array.from(optionsList.querySelectorAll('.custom-select-option:not(.disabled)'));
-                const currentIndex = options.findIndex(opt => opt === document.activeElement);
-
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    const nextIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0;
-                    options[nextIndex].focus();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1;
-                    options[prevIndex].focus();
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (document.activeElement.classList.contains('custom-select-option')) {
-                        document.activeElement.click();
-                    }
-                } else if (e.key === 'Escape') {
-                    wrapper.classList.remove('open');
-                    trigger.focus();
-                }
-            });
-        }
-
-        // Make options focusable
-        this.makeOptionsFocusable = () => {
-            const options = document.querySelectorAll('.custom-select-option:not(.disabled)');
-            options.forEach(option => {
-                option.setAttribute('tabindex', '0');
-            });
-        };
-    }
-
-    resetPaymentForm() {
-        const paymentForm = document.getElementById('paymentForm');
-        if (paymentForm) {
-            paymentForm.reset();
-        }
-        
-        // Reset custom select
-        const hiddenInput = document.getElementById('invoiceSelect');
-        const triggerText = document.getElementById('invoiceSelectText');
-        const wrapper = document.getElementById('invoiceSelectWrapper');
-        const searchInput = document.getElementById('invoiceSelectSearch');
-
-        if (hiddenInput) {
-            hiddenInput.value = '';
-        }
-        if (triggerText) {
-            triggerText.textContent = 'Chọn hóa đơn...';
-        }
-        if (wrapper) {
-            wrapper.classList.remove('open');
-        }
-        if (searchInput) {
-            searchInput.value = '';
-        }
-        
-        this.filterAndDisplayUnpaidInvoices('');
-        this.hideStudentInfo();
-        
-        // Reset payment date to today and clear deadline
-        this.setPaymentDate();
-        const paymentDeadlineInput = document.getElementById('paymentDeadline');
-        if (paymentDeadlineInput) {
-            paymentDeadlineInput.value = '';
-        }
-        
-        // Close invoice modal if open
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener("click", () => {
         this.closeInvoiceModal();
+      });
     }
 
-    async loadSupportData() {
-        await this.loadSupportRequests();
+    if (closeModalBtnFooter) {
+      closeModalBtnFooter.addEventListener("click", () => {
+        this.closeInvoiceModal();
+      });
     }
 
-    async loadSupportRequests() {
-        const supportGrid = document.getElementById('supportGrid');
-        const supportLoading = document.getElementById('supportLoading');
-        const supportEmpty = document.getElementById('supportEmpty');
-        
-        if (!supportGrid) return;
-        
-        // Show loading state
-        if (supportLoading) supportLoading.style.display = 'block';
-        supportGrid.innerHTML = '';
-        if (supportEmpty) supportEmpty.style.display = 'none';
-        
-        try {
-            const requests = await window.tutorAPI.getAllSupportRequests();
-            
-            // Hide loading state
-            if (supportLoading) supportLoading.style.display = 'none';
-            
-            if (!requests || requests.length === 0) {
-                if (supportEmpty) supportEmpty.style.display = 'block';
-                return;
-            }
-            
-            // Store requests for filtering
-            this.allSupportRequests = requests || [];
-            
-            // Setup filters
-            this.setupSupportFilters();
-            
-            // Render support requests
-            this.renderSupportRequests(this.allSupportRequests);
-        } catch (error) {
-            console.error('Error loading support requests:', error);
-            if (supportLoading) supportLoading.style.display = 'none';
-            if (supportEmpty) supportEmpty.style.display = 'block';
-            supportGrid.innerHTML = `
+    // Close modal when clicking outside
+    if (modalOverlay) {
+      modalOverlay.addEventListener("click", (e) => {
+        if (e.target === modalOverlay) {
+          this.closeInvoiceModal();
+        }
+      });
+    }
+
+    // Close modal with Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const modal = document.getElementById("invoiceDetailsModal");
+        if (modal && modal.style.display === "flex") {
+          this.closeInvoiceModal();
+        }
+      }
+    });
+
+    // Handle form submission
+    if (paymentForm) {
+      // Handle form submit event
+      paymentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        console.log("Form submit event triggered");
+        await this.handlePaymentSubmit();
+        return false;
+      });
+
+      // Also handle button click directly as backup
+      const submitButton = paymentForm.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.addEventListener("click", async (e) => {
+          // Only handle if form validation passes
+          if (paymentForm.checkValidity()) {
+            e.preventDefault();
+            console.log("Submit button clicked");
+            await this.handlePaymentSubmit();
+          }
+        });
+      }
+    }
+
+    // Handle reset
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        this.resetPaymentForm();
+      });
+    }
+
+    // Handle refresh invoice list
+    const refreshBtn = document.getElementById("refreshInvoiceList");
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", async () => {
+        await this.loadAllInvoices();
+        showNotification("Danh sách hóa đơn đã được làm mới!", "success");
+      });
+    }
+
+    // Handle invoice list search
+    const invoiceListSearch = document.getElementById("invoiceListSearch");
+    if (invoiceListSearch) {
+      invoiceListSearch.addEventListener("input", (e) => {
+        const searchTerm = e.target.value;
+        this.filterAndDisplayInvoicesList(searchTerm);
+      });
+    }
+
+    // Handle sortable headers - use event delegation for dynamically loaded content
+    const invoicesTableContainer = document.querySelector(
+      ".invoices-table-container"
+    );
+    if (invoicesTableContainer) {
+      invoicesTableContainer.addEventListener("click", (e) => {
+        // Handle click on sortable header or its children (icon, text)
+        let sortable = e.target.closest(".sortable");
+
+        // If clicked on icon, get parent sortable
+        if (!sortable && e.target.tagName === "I") {
+          sortable = e.target.parentElement;
+        }
+
+        // If clicked on text node, get parent sortable
+        if (!sortable && e.target.parentElement) {
+          sortable = e.target.parentElement.closest(".sortable");
+        }
+
+        if (sortable && sortable.classList.contains("sortable")) {
+          const sortField = sortable.dataset.sort;
+          if (sortField) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("Sorting by:", sortField);
+            this.sortInvoicesList(sortField);
+          }
+        }
+      });
+    }
+  }
+
+  async handlePaymentSubmit() {
+    // Validate custom select
+    const hiddenInput = document.getElementById("invoiceSelect");
+    if (!hiddenInput || !hiddenInput.value) {
+      showNotification("Vui lòng chọn hóa đơn!", "error");
+      const wrapper = document.getElementById("invoiceSelectWrapper");
+      if (wrapper) {
+        wrapper.classList.add("open");
+      }
+      return;
+    }
+
+    // Validate payment method
+    const paymentMethodSelect = document.getElementById("paymentMethod");
+    if (!paymentMethodSelect || !paymentMethodSelect.value) {
+      showNotification("Vui lòng chọn phương thức thanh toán!", "error");
+      return;
+    }
+
+    try {
+      await this.processPayment();
+    } catch (error) {
+      console.error("Error in payment submit handler:", error);
+    }
+  }
+
+  sortInvoicesList(field) {
+    // Toggle sort direction if same field
+    if (this.currentSortField === field) {
+      this.currentSortDirection =
+        this.currentSortDirection === "asc" ? "desc" : "asc";
+    } else {
+      this.currentSortField = field;
+      this.currentSortDirection = "asc";
+    }
+
+    // Update sort icons
+    document.querySelectorAll(".sortable i").forEach((icon) => {
+      icon.className = "fas fa-sort";
+    });
+
+    const activeHeader = document.querySelector(`[data-sort="${field}"] i`);
+    if (activeHeader) {
+      activeHeader.className =
+        this.currentSortDirection === "asc"
+          ? "fas fa-sort-up"
+          : "fas fa-sort-down";
+    }
+
+    // Get current search term
+    const searchInput = document.getElementById("invoiceListSearch");
+    const searchTerm = searchInput ? searchInput.value : "";
+
+    // Re-display with new sort
+    this.filterAndDisplayInvoicesList(searchTerm);
+  }
+
+  sortInvoices(invoices, field, direction) {
+    const sorted = [...invoices].sort((a, b) => {
+      let aVal, bVal;
+
+      switch (field) {
+        case "idHoaDon":
+          aVal = a.idHoaDon || "";
+          bVal = b.idHoaDon || "";
+          break;
+        case "studentName":
+          aVal = a.studentName || "";
+          bVal = b.studentName || "";
+          break;
+        case "tenLop":
+          aVal = a.tenLop || "";
+          bVal = b.tenLop || "";
+          break;
+        case "tongTien":
+          aVal = a.tongTien ? parseFloat(a.tongTien) : 0;
+          bVal = b.tongTien ? parseFloat(b.tongTien) : 0;
+          break;
+        case "ngayDangKy":
+          aVal = a.ngayDangKy ? new Date(a.ngayDangKy).getTime() : 0;
+          bVal = b.ngayDangKy ? new Date(b.ngayDangKy).getTime() : 0;
+          break;
+        case "ngayThanhToan":
+          aVal = a.ngayThanhToan ? new Date(a.ngayThanhToan).getTime() : 0;
+          bVal = b.ngayThanhToan ? new Date(b.ngayThanhToan).getTime() : 0;
+          break;
+        case "trangThai":
+          aVal = a.trangThai || "";
+          bVal = b.trangThai || "";
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aVal === "string") {
+        return direction === "asc"
+          ? aVal.localeCompare(bVal, "vi")
+          : bVal.localeCompare(aVal, "vi");
+      } else {
+        return direction === "asc" ? aVal - bVal : bVal - aVal;
+      }
+    });
+
+    return sorted;
+  }
+
+  async loadPaymentDetails(idHoaDon) {
+    try {
+      const details = await window.tutorAPI.getPaymentDetails(idHoaDon);
+      this.displayStudentInfo(details);
+    } catch (error) {
+      console.error("Error loading payment details:", error);
+      window.tutorAPI.handleError(error);
+    }
+  }
+
+  displayStudentInfo(details) {
+    // Show student info section
+    const studentInfoSection = document.getElementById("studentInfoSection");
+    if (studentInfoSection) {
+      studentInfoSection.style.display = "block";
+    }
+
+    // Update student information
+    document.getElementById("studentName").textContent =
+      details.studentName || "-";
+    document.getElementById("studentEmail").textContent =
+      details.studentEmail || "-";
+    document.getElementById("studentPhone").textContent =
+      details.studentPhone || "-";
+    document.getElementById("studentAddress").textContent =
+      details.studentAddress || "-";
+
+    // Display class information
+    const classInfo = details.tenLop || "-";
+    if (details.chuongTrinh) {
+      document.getElementById(
+        "studentClass"
+      ).textContent = `${classInfo} (${details.chuongTrinh})`;
+    } else {
+      document.getElementById("studentClass").textContent = classInfo;
+    }
+
+    // Show and display payment amount section
+    const paymentAmountSection = document.getElementById(
+      "paymentAmountSection"
+    );
+    if (paymentAmountSection) {
+      paymentAmountSection.style.display = "block";
+    }
+
+    // Format and display amount
+    const amount = details.tongTien
+      ? details.tongTien.toLocaleString("vi-VN") + " VNĐ"
+      : "-";
+    document.getElementById("paymentAmount").textContent = amount;
+
+    // Display payment date (always today - auto)
+    this.setPaymentDate();
+
+    // Display payment deadline
+    const paymentDeadlineInput = document.getElementById("paymentDeadline");
+    if (paymentDeadlineInput && details.hanThanhToan) {
+      const deadlineDate = new Date(details.hanThanhToan);
+      paymentDeadlineInput.value = deadlineDate.toLocaleDateString("vi-VN");
+    } else if (paymentDeadlineInput) {
+      paymentDeadlineInput.value = "-";
+    }
+  }
+
+  hideStudentInfo() {
+    const studentInfoSection = document.getElementById("studentInfoSection");
+    if (studentInfoSection) {
+      studentInfoSection.style.display = "none";
+    }
+
+    // Hide payment amount section
+    const paymentAmountSection = document.getElementById(
+      "paymentAmountSection"
+    );
+    if (paymentAmountSection) {
+      paymentAmountSection.style.display = "none";
+    }
+
+    // Clear payment deadline, but keep payment date as today
+    const paymentDeadlineInput = document.getElementById("paymentDeadline");
+    if (paymentDeadlineInput) {
+      paymentDeadlineInput.value = "";
+    }
+
+    // Reset payment date to today
+    this.setPaymentDate();
+  }
+
+  async processPayment() {
+    const hiddenInput = document.getElementById("invoiceSelect");
+    const paymentMethodSelect = document.getElementById("paymentMethod");
+    const notesTextarea = document.getElementById("notes");
+
+    console.log("Processing payment...", {
+      invoiceId: hiddenInput?.value,
+      paymentMethod: paymentMethodSelect?.value,
+      notes: notesTextarea?.value,
+    });
+
+    if (!hiddenInput || !hiddenInput.value) {
+      showNotification("Vui lòng chọn hóa đơn!", "error");
+      const wrapper = document.getElementById("invoiceSelectWrapper");
+      if (wrapper) {
+        wrapper.classList.add("open");
+      }
+      return;
+    }
+
+    if (!paymentMethodSelect || !paymentMethodSelect.value) {
+      showNotification("Vui lòng chọn phương thức thanh toán!", "error");
+      return;
+    }
+
+    const paymentData = {
+      idHoaDon: hiddenInput.value,
+      idPt: paymentMethodSelect.value,
+      ghiChu: notesTextarea ? notesTextarea.value : null,
+    };
+
+    console.log("Sending payment data:", paymentData);
+
+    try {
+      const result = await window.tutorAPI.processPayment(paymentData);
+      console.log("Payment result:", result);
+
+      // Show success message
+      showNotification("Thanh toán thành công!", "success");
+
+      // Display invoice details in modal
+      this.displayInvoiceDetails(result);
+      this.openInvoiceModal();
+
+      // Reset form and reload unpaid invoices and all invoices
+      this.resetPaymentForm();
+      await this.loadUnpaidInvoices();
+      await this.loadAllInvoices();
+    } catch (error) {
+      console.error("Error processing payment:", error);
+
+      // Show user-friendly error message
+      let errorMessage =
+        "Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.";
+
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.status === 400) {
+        errorMessage =
+          "Dữ liệu thanh toán không hợp lệ. Vui lòng kiểm tra lại.";
+      } else if (error.status === 500) {
+        errorMessage = "Lỗi máy chủ. Vui lòng thử lại sau.";
+      } else if (error.status === 401 || error.status === 403) {
+        errorMessage = "Bạn không có quyền thực hiện thao tác này.";
+      }
+
+      showNotification(errorMessage, "error");
+      window.tutorAPI.handleError(error);
+    }
+  }
+
+  displayInvoiceDetails(invoice) {
+    // Check if invoice is paid
+    const isPaid =
+      invoice.trangThai === "Da Thanh Toan" ||
+      (invoice.ngayThanhToan !== null && invoice.ngayThanhToan !== undefined) ||
+      (invoice.idLs !== null &&
+        invoice.idLs !== undefined &&
+        invoice.idLs !== "");
+
+    // Format date
+    const paymentDate = invoice.ngayThanhToan
+      ? new Date(invoice.ngayThanhToan).toLocaleDateString("vi-VN")
+      : "-";
+
+    // Helper function to set text with unpaid class
+    const setInvoiceField = (elementId, value, isUnpaid = false) => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = value;
+        if (isUnpaid) {
+          element.classList.add("invoice-unpaid");
+        } else {
+          element.classList.remove("invoice-unpaid");
+        }
+      }
+    };
+
+    // Update invoice information
+    // Receipt number - show "Chưa thanh toán" if unpaid
+    setInvoiceField(
+      "invoiceReceiptNumber",
+      isPaid ? invoice.idLs || "-" : "Chưa thanh toán",
+      !isPaid
+    );
+
+    document.getElementById("invoiceId").textContent = invoice.idHoaDon || "-";
+    document.getElementById("invoiceStudentName").textContent =
+      invoice.studentName || "-";
+    document.getElementById("invoiceStudentEmail").textContent =
+      invoice.studentEmail || "-";
+    document.getElementById("invoiceStudentPhone").textContent =
+      invoice.studentPhone || "-";
+    document.getElementById("invoiceStudentAddress").textContent =
+      invoice.studentAddress || "-";
+
+    // Display class information
+    const classInfo = invoice.tenLop || "-";
+    if (invoice.chuongTrinh) {
+      document.getElementById(
+        "invoiceClass"
+      ).textContent = `${classInfo} (${invoice.chuongTrinh})`;
+    } else {
+      document.getElementById("invoiceClass").textContent = classInfo;
+    }
+    document.getElementById("invoiceProgram").textContent =
+      invoice.chuongTrinh || "-";
+
+    const amount = invoice.tongTien
+      ? invoice.tongTien.toLocaleString("vi-VN") + " VNĐ"
+      : "-";
+    document.getElementById("invoiceAmount").textContent = amount;
+
+    // Payment method - show "Chưa thanh toán" if unpaid
+    setInvoiceField(
+      "invoicePaymentMethod",
+      isPaid ? invoice.paymentMethodName || "-" : "Chưa thanh toán",
+      !isPaid
+    );
+
+    // Payment date - show "Chưa thanh toán" if unpaid
+    setInvoiceField(
+      "invoicePaymentDate",
+      isPaid ? paymentDate : "Chưa thanh toán",
+      !isPaid
+    );
+
+    // Notes - show "-" if unpaid, otherwise show ghiChu
+    document.getElementById("invoiceNotes").textContent = isPaid
+      ? invoice.ghiChu || "-"
+      : "-";
+  }
+
+  setupCustomSelect() {
+    const wrapper = document.getElementById("invoiceSelectWrapper");
+    const trigger = document.getElementById("invoiceSelectTrigger");
+    const options = document.getElementById("invoiceSelectOptions");
+    const searchInput = document.getElementById("invoiceSelectSearch");
+
+    if (!wrapper || !trigger || !options) return;
+
+    // Toggle dropdown
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpening = !wrapper.classList.contains("open");
+      wrapper.classList.toggle("open");
+
+      if (isOpening) {
+        // Load invoices if not loaded yet
+        if (!this.allUnpaidInvoices) {
+          this.loadUnpaidInvoices();
+        } else {
+          // Reset search and show all invoices
+          if (searchInput) {
+            searchInput.value = "";
+          }
+          this.filterAndDisplayUnpaidInvoices("");
+        }
+
+        // Focus search input
+        if (searchInput) {
+          setTimeout(() => searchInput.focus(), 100);
+        }
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!wrapper.contains(e.target)) {
+        wrapper.classList.remove("open");
+      }
+    });
+
+    // Handle search in dropdown
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        e.stopPropagation();
+        const searchTerm = e.target.value;
+        this.filterAndDisplayUnpaidInvoices(searchTerm);
+      });
+
+      // Prevent dropdown from closing when clicking in search box
+      searchInput.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      // Handle keyboard navigation
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          wrapper.classList.remove("open");
+          trigger.focus();
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          const firstOption = document.querySelector(
+            ".custom-select-option:not(.disabled)"
+          );
+          if (firstOption) {
+            firstOption.focus();
+          }
+        }
+      });
+    }
+
+    // Prevent dropdown from closing when clicking in options list
+    const optionsList = document.getElementById("invoiceSelectList");
+    if (optionsList) {
+      optionsList.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      // Keyboard navigation in options
+      optionsList.addEventListener("keydown", (e) => {
+        const options = Array.from(
+          optionsList.querySelectorAll(".custom-select-option:not(.disabled)")
+        );
+        const currentIndex = options.findIndex(
+          (opt) => opt === document.activeElement
+        );
+
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          const nextIndex =
+            currentIndex < options.length - 1 ? currentIndex + 1 : 0;
+          options[nextIndex].focus();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          const prevIndex =
+            currentIndex > 0 ? currentIndex - 1 : options.length - 1;
+          options[prevIndex].focus();
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          if (
+            document.activeElement.classList.contains("custom-select-option")
+          ) {
+            document.activeElement.click();
+          }
+        } else if (e.key === "Escape") {
+          wrapper.classList.remove("open");
+          trigger.focus();
+        }
+      });
+    }
+
+    // Make options focusable
+    this.makeOptionsFocusable = () => {
+      const options = document.querySelectorAll(
+        ".custom-select-option:not(.disabled)"
+      );
+      options.forEach((option) => {
+        option.setAttribute("tabindex", "0");
+      });
+    };
+  }
+
+  resetPaymentForm() {
+    const paymentForm = document.getElementById("paymentForm");
+    if (paymentForm) {
+      paymentForm.reset();
+    }
+
+    // Reset custom select
+    const hiddenInput = document.getElementById("invoiceSelect");
+    const triggerText = document.getElementById("invoiceSelectText");
+    const wrapper = document.getElementById("invoiceSelectWrapper");
+    const searchInput = document.getElementById("invoiceSelectSearch");
+
+    if (hiddenInput) {
+      hiddenInput.value = "";
+    }
+    if (triggerText) {
+      triggerText.textContent = "Chọn hóa đơn...";
+    }
+    if (wrapper) {
+      wrapper.classList.remove("open");
+    }
+    if (searchInput) {
+      searchInput.value = "";
+    }
+
+    this.filterAndDisplayUnpaidInvoices("");
+    this.hideStudentInfo();
+
+    // Reset payment date to today and clear deadline
+    this.setPaymentDate();
+    const paymentDeadlineInput = document.getElementById("paymentDeadline");
+    if (paymentDeadlineInput) {
+      paymentDeadlineInput.value = "";
+    }
+
+    // Close invoice modal if open
+    this.closeInvoiceModal();
+  }
+
+  async loadSupportData() {
+    await this.loadSupportRequests();
+  }
+
+  async loadSupportRequests() {
+    const supportGrid = document.getElementById("supportGrid");
+    const supportLoading = document.getElementById("supportLoading");
+    const supportEmpty = document.getElementById("supportEmpty");
+
+    if (!supportGrid) return;
+
+    // Show loading state
+    if (supportLoading) supportLoading.style.display = "block";
+    supportGrid.innerHTML = "";
+    if (supportEmpty) supportEmpty.style.display = "none";
+
+    try {
+      const requests = await window.tutorAPI.getAllSupportRequests();
+
+      // Hide loading state
+      if (supportLoading) supportLoading.style.display = "none";
+
+      if (!requests || requests.length === 0) {
+        if (supportEmpty) supportEmpty.style.display = "block";
+        return;
+      }
+
+      // Store requests for filtering
+      this.allSupportRequests = requests || [];
+
+      // Setup filters
+      this.setupSupportFilters();
+
+      // Render support requests
+      this.renderSupportRequests(this.allSupportRequests);
+    } catch (error) {
+      console.error("Error loading support requests:", error);
+      if (supportLoading) supportLoading.style.display = "none";
+      if (supportEmpty) supportEmpty.style.display = "block";
+      supportGrid.innerHTML = `
                 <div class="error-state">
                     <i class="fas fa-exclamation-triangle"></i>
                     <h3>Không thể tải dữ liệu</h3>
@@ -1806,100 +2186,109 @@ class TutorDashboard {
                     </button>
                 </div>
             `;
-            showNotification('Không thể tải danh sách yêu cầu hỗ trợ', 'error');
-        }
+      showNotification("Không thể tải danh sách yêu cầu hỗ trợ", "error");
     }
-    
-    setupSupportFilters() {
-        const searchInput = document.getElementById('supportSearchInput');
-        const statusFilter = document.getElementById('supportStatusFilter');
-        const refreshBtn = document.getElementById('refreshSupportBtn');
-        
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.filterSupportRequests(e.target.value, statusFilter?.value || '');
-            });
-        }
-        
-        if (statusFilter) {
-            statusFilter.addEventListener('change', (e) => {
-                this.filterSupportRequests(searchInput?.value || '', e.target.value);
-            });
-        }
-        
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                this.loadSupportRequests();
-            });
-        }
-    }
-    
-    filterSupportRequests(searchTerm = '', statusFilter = '') {
-        if (!this.allSupportRequests) return;
-        
-        let filtered = [...this.allSupportRequests];
-        
-        // Filter by status
-        if (statusFilter) {
-            filtered = filtered.filter(request => 
-                request.trangThai && request.trangThai === statusFilter
-            );
-        }
-        
-        // Filter by search term
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(request => 
-                (request.tieuDe && request.tieuDe.toLowerCase().includes(term)) ||
-                (request.studentName && request.studentName.toLowerCase().includes(term)) ||
-                (request.studentEmail && request.studentEmail.toLowerCase().includes(term)) ||
-                (request.studentPhone && request.studentPhone.includes(term)) ||
-                (request.tenLop && request.tenLop.toLowerCase().includes(term)) ||
-                (request.noiDung && request.noiDung.toLowerCase().includes(term)) ||
-                (request.loaiYeuCau && request.loaiYeuCau.toLowerCase().includes(term))
-            );
-        }
-        
-        // Re-render filtered results
-        this.renderSupportRequests(filtered);
+  }
+
+  setupSupportFilters() {
+    const searchInput = document.getElementById("supportSearchInput");
+    const statusFilter = document.getElementById("supportStatusFilter");
+    const refreshBtn = document.getElementById("refreshSupportBtn");
+
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        this.filterSupportRequests(e.target.value, statusFilter?.value || "");
+      });
     }
 
-    renderSupportRequests(requests) {
-        const supportGrid = document.getElementById('supportGrid');
-        const supportEmpty = document.getElementById('supportEmpty');
-        
-        if (!supportGrid) return;
-        
-        if (!requests || requests.length === 0) {
-            supportGrid.innerHTML = '';
-            if (supportEmpty) supportEmpty.style.display = 'block';
-            return;
-        }
-        
-        if (supportEmpty) supportEmpty.style.display = 'none';
-        supportGrid.innerHTML = requests.map(request => this.createSupportCard(request)).join('');
+    if (statusFilter) {
+      statusFilter.addEventListener("change", (e) => {
+        this.filterSupportRequests(searchInput?.value || "", e.target.value);
+      });
     }
 
-    createSupportCard(request) {
-        const statusClass = this.getStatusClass(request.trangThai);
-        const statusText = request.trangThai || 'Chưa xử lý';
-        const formattedDate = this.formatDateTime(request.thoiDiemTao);
-        const studentName = request.studentName || 'Chưa có thông tin';
-        const tenLop = request.tenLop || 'Chưa có lớp';
-        const chuongTrinh = request.chuongTrinh ? ` • ${request.chuongTrinh}` : '';
-        const loaiYeuCau = request.loaiYeuCau || 'Không xác định';
-        const noiDung = request.noiDung || 'Không có mô tả';
-        const noiDungShort = noiDung.length > 150 ? noiDung.substring(0, 150) + '...' : noiDung;
-        const isClosed = request.thoiDiemDong != null;
-        const timeAgo = this.getTimeAgo(request.thoiDiemTao);
-        
-        return `
-            <div class="support-card ${isClosed ? 'closed' : ''}" data-id="${request.idYc}" data-status="${statusText}">
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", () => {
+        this.loadSupportRequests();
+      });
+    }
+  }
+
+  filterSupportRequests(searchTerm = "", statusFilter = "") {
+    if (!this.allSupportRequests) return;
+
+    let filtered = [...this.allSupportRequests];
+
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter(
+        (request) => request.trangThai && request.trangThai === statusFilter
+      );
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (request) =>
+          (request.tieuDe && request.tieuDe.toLowerCase().includes(term)) ||
+          (request.studentName &&
+            request.studentName.toLowerCase().includes(term)) ||
+          (request.studentEmail &&
+            request.studentEmail.toLowerCase().includes(term)) ||
+          (request.studentPhone && request.studentPhone.includes(term)) ||
+          (request.tenLop && request.tenLop.toLowerCase().includes(term)) ||
+          (request.noiDung && request.noiDung.toLowerCase().includes(term)) ||
+          (request.loaiYeuCau &&
+            request.loaiYeuCau.toLowerCase().includes(term))
+      );
+    }
+
+    // Re-render filtered results
+    this.renderSupportRequests(filtered);
+  }
+
+  renderSupportRequests(requests) {
+    const supportGrid = document.getElementById("supportGrid");
+    const supportEmpty = document.getElementById("supportEmpty");
+
+    if (!supportGrid) return;
+
+    if (!requests || requests.length === 0) {
+      supportGrid.innerHTML = "";
+      if (supportEmpty) supportEmpty.style.display = "block";
+      return;
+    }
+
+    if (supportEmpty) supportEmpty.style.display = "none";
+    supportGrid.innerHTML = requests
+      .map((request) => this.createSupportCard(request))
+      .join("");
+  }
+
+  createSupportCard(request) {
+    const statusClass = this.getStatusClass(request.trangThai);
+    const statusText = request.trangThai || "Chưa xử lý";
+    const formattedDate = this.formatDateTime(request.thoiDiemTao);
+    const studentName = request.studentName || "Chưa có thông tin";
+    const tenLop = request.tenLop || "Chưa có lớp";
+    const chuongTrinh = request.chuongTrinh ? ` • ${request.chuongTrinh}` : "";
+    const loaiYeuCau = request.loaiYeuCau || "Không xác định";
+    const noiDung = request.noiDung || "Không có mô tả";
+    const noiDungShort =
+      noiDung.length > 150 ? noiDung.substring(0, 150) + "..." : noiDung;
+    const isClosed = request.thoiDiemDong != null;
+    const timeAgo = this.getTimeAgo(request.thoiDiemTao);
+
+    return `
+            <div class="support-card ${isClosed ? "closed" : ""}" data-id="${
+      request.idYc
+    }" data-status="${statusText}">
                 <div class="support-card-header">
                     <div class="support-title-section">
                         <h3 class="support-title">
                             <i class="fas fa-question-circle"></i>
-                            ${request.tieuDe || 'Yêu cầu hỗ trợ'}
+                            ${request.tieuDe || "Yêu cầu hỗ trợ"}
                         </h3>
                         <span class="support-time-ago">${timeAgo}</span>
                     </div>
@@ -1917,18 +2306,26 @@ class TutorDashboard {
                         <div class="student-details">
                             <h4 class="student-name">${studentName}</h4>
                             <div class="student-contact">
-                                ${request.studentEmail ? `
+                                ${
+                                  request.studentEmail
+                                    ? `
                                     <span class="contact-item">
                                         <i class="fas fa-envelope"></i>
                                         ${request.studentEmail}
                                     </span>
-                                ` : ''}
-                                ${request.studentPhone ? `
+                                `
+                                    : ""
+                                }
+                                ${
+                                  request.studentPhone
+                                    ? `
                                     <span class="contact-item">
                                         <i class="fas fa-phone"></i>
                                         ${request.studentPhone}
                                     </span>
-                                ` : ''}
+                                `
+                                    : ""
+                                }
                             </div>
                         </div>
                     </div>
@@ -1946,7 +2343,9 @@ class TutorDashboard {
                         <p class="support-description">${noiDungShort}</p>
                     </div>
                     
-                    ${request.fileUrl ? `
+                    ${
+                      request.fileUrl
+                        ? `
                         <div class="support-attachment">
                             <i class="fas fa-paperclip"></i>
                             <a href="${request.fileUrl}" target="_blank" class="attachment-link">
@@ -1954,99 +2353,115 @@ class TutorDashboard {
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
                         </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                     
                     <div class="support-meta">
                         <span class="meta-item">
                             <i class="fas fa-clock"></i>
                             ${formattedDate}
                         </span>
-                        ${isClosed ? `
+                        ${
+                          isClosed
+                            ? `
                             <span class="meta-item closed-time">
                                 <i class="fas fa-check-circle"></i>
-                                Đã đóng: ${this.formatDateTime(request.thoiDiemDong)}
+                                Đã đóng: ${this.formatDateTime(
+                                  request.thoiDiemDong
+                                )}
                             </span>
-                        ` : ''}
+                        `
+                            : ""
+                        }
                     </div>
                 </div>
                 
                 <div class="support-card-footer">
-                    <button class="btn btn-sm btn-outline-primary" onclick="tutorDashboard.viewSupportDetails('${request.idYc}')">
+                    <button class="btn btn-sm btn-outline-primary" onclick="tutorDashboard.viewSupportDetails('${
+                      request.idYc
+                    }')">
                         <i class="fas fa-eye"></i>
                         Chi tiết
                     </button>
-                    ${!isClosed ? `
+                    ${
+                      !isClosed
+                        ? `
                         <button class="btn btn-sm btn-success" onclick="tutorDashboard.markSupportAsProcessed('${request.idYc}')">
                             <i class="fas fa-check"></i>
                             Đánh dấu đã xử lý
                         </button>
-                    ` : `
+                    `
+                        : `
                         <span class="closed-badge">
                             <i class="fas fa-lock"></i>
                             Đã đóng
                         </span>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
-    }
-    
-    getTimeAgo(dateTime) {
-        if (!dateTime) return '';
-        const now = new Date();
-        const date = new Date(dateTime);
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
-        
-        if (diffMins < 1) return 'Vừa xong';
-        if (diffMins < 60) return `${diffMins} phút trước`;
-        if (diffHours < 24) return `${diffHours} giờ trước`;
-        if (diffDays < 7) return `${diffDays} ngày trước`;
-        return this.formatDateTime(dateTime);
-    }
-    
-    async viewSupportDetails(idYc) {
-        const modal = document.getElementById('supportDetailsModal');
-        const modalBody = document.getElementById('supportModalBody');
-        const modalFooter = document.getElementById('supportModalFooter');
-        
-        if (!modal) return;
-        
-        // Show modal with loading state
-        modal.style.display = 'flex';
-        modalBody.innerHTML = `
+  }
+
+  getTimeAgo(dateTime) {
+    if (!dateTime) return "";
+    const now = new Date();
+    const date = new Date(dateTime);
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Vừa xong";
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    return this.formatDateTime(dateTime);
+  }
+
+  async viewSupportDetails(idYc) {
+    const modal = document.getElementById("supportDetailsModal");
+    const modalBody = document.getElementById("supportModalBody");
+    const modalFooter = document.getElementById("supportModalFooter");
+
+    if (!modal) return;
+
+    // Show modal with loading state
+    modal.style.display = "flex";
+    modalBody.innerHTML = `
             <div class="loading-state">
                 <div class="spinner"></div>
                 <p>Đang tải thông tin...</p>
             </div>
         `;
-        
-        try {
-            const request = await window.tutorAPI.getSupportRequestById(idYc);
-            
-            if (!request) {
-                throw new Error('Không tìm thấy yêu cầu hỗ trợ');
-            }
-            
-            // Render support details
-            const statusClass = this.getStatusClass(request.trangThai);
-            const formattedDate = this.formatDateTime(request.thoiDiemTao);
-            const closedDate = request.thoiDiemDong ? this.formatDateTime(request.thoiDiemDong) : null;
-            const isClosed = request.thoiDiemDong != null;
-            
-            modalBody.innerHTML = `
+
+    try {
+      const request = await window.tutorAPI.getSupportRequestById(idYc);
+
+      if (!request) {
+        throw new Error("Không tìm thấy yêu cầu hỗ trợ");
+      }
+
+      // Render support details
+      const statusClass = this.getStatusClass(request.trangThai);
+      const formattedDate = this.formatDateTime(request.thoiDiemTao);
+      const closedDate = request.thoiDiemDong
+        ? this.formatDateTime(request.thoiDiemDong)
+        : null;
+      const isClosed = request.thoiDiemDong != null;
+
+      modalBody.innerHTML = `
                 <div class="support-detail-content">
                     <div class="detail-header">
                         <div class="detail-title-section">
                             <h4 class="detail-title">
                                 <i class="fas fa-question-circle"></i>
-                                ${request.tieuDe || 'Yêu cầu hỗ trợ'}
+                                ${request.tieuDe || "Yêu cầu hỗ trợ"}
                             </h4>
                             <span class="status-badge ${statusClass}">
                                 <i class="fas fa-circle"></i>
-                                ${request.trangThai || 'Chưa xử lý'}
+                                ${request.trangThai || "Chưa xử lý"}
                             </span>
                         </div>
                     </div>
@@ -2059,34 +2474,50 @@ class TutorDashboard {
                         <div class="detail-info-grid">
                             <div class="info-item">
                                 <span class="info-label">Họ tên:</span>
-                                <span class="info-value">${request.studentName || 'Chưa có thông tin'}</span>
+                                <span class="info-value">${
+                                  request.studentName || "Chưa có thông tin"
+                                }</span>
                             </div>
-                            ${request.studentEmail ? `
+                            ${
+                              request.studentEmail
+                                ? `
                                 <div class="info-item">
                                     <span class="info-label">Email:</span>
                                     <span class="info-value">
                                         <a href="mailto:${request.studentEmail}">${request.studentEmail}</a>
                                     </span>
                                 </div>
-                            ` : ''}
-                            ${request.studentPhone ? `
+                            `
+                                : ""
+                            }
+                            ${
+                              request.studentPhone
+                                ? `
                                 <div class="info-item">
                                     <span class="info-label">Số điện thoại:</span>
                                     <span class="info-value">
                                         <a href="tel:${request.studentPhone}">${request.studentPhone}</a>
                                     </span>
                                 </div>
-                            ` : ''}
-                            ${request.idHs ? `
+                            `
+                                : ""
+                            }
+                            ${
+                              request.idHs
+                                ? `
                                 <div class="info-item">
                                     <span class="info-label">Mã học sinh:</span>
                                     <span class="info-value">${request.idHs}</span>
                                 </div>
-                            ` : ''}
+                            `
+                                : ""
+                            }
                         </div>
                     </div>
                     
-                    ${request.tenLop ? `
+                    ${
+                      request.tenLop
+                        ? `
                         <div class="detail-section">
                             <h5 class="section-title">
                                 <i class="fas fa-book-open"></i>
@@ -2095,23 +2526,35 @@ class TutorDashboard {
                             <div class="detail-info-grid">
                                 <div class="info-item">
                                     <span class="info-label">Tên lớp:</span>
-                                    <span class="info-value">${request.tenLop}</span>
+                                    <span class="info-value">${
+                                      request.tenLop
+                                    }</span>
                                 </div>
-                                ${request.chuongTrinh ? `
+                                ${
+                                  request.chuongTrinh
+                                    ? `
                                     <div class="info-item">
                                         <span class="info-label">Chương trình:</span>
                                         <span class="info-value">${request.chuongTrinh}</span>
                                     </div>
-                                ` : ''}
-                                ${request.idLh ? `
+                                `
+                                    : ""
+                                }
+                                ${
+                                  request.idLh
+                                    ? `
                                     <div class="info-item">
                                         <span class="info-label">Mã lớp:</span>
                                         <span class="info-value">${request.idLh}</span>
                                     </div>
-                                ` : ''}
+                                `
+                                    : ""
+                                }
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                     
                     <div class="detail-section">
                         <h5 class="section-title">
@@ -2122,17 +2565,23 @@ class TutorDashboard {
                             <div class="info-item full-width">
                                 <span class="info-label">Loại yêu cầu:</span>
                                 <span class="info-value">
-                                    <span class="support-type-badge">${request.loaiYeuCau || 'Không xác định'}</span>
+                                    <span class="support-type-badge">${
+                                      request.loaiYeuCau || "Không xác định"
+                                    }</span>
                                 </span>
                             </div>
                             <div class="info-item full-width">
                                 <span class="info-label">Nội dung:</span>
-                                <div class="info-value content-text">${request.noiDung || 'Không có mô tả'}</div>
+                                <div class="info-value content-text">${
+                                  request.noiDung || "Không có mô tả"
+                                }</div>
                             </div>
                         </div>
                     </div>
                     
-                    ${request.fileUrl ? `
+                    ${
+                      request.fileUrl
+                        ? `
                         <div class="detail-section">
                             <h5 class="section-title">
                                 <i class="fas fa-paperclip"></i>
@@ -2146,7 +2595,9 @@ class TutorDashboard {
                                 </a>
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                     
                     <div class="detail-section">
                         <h5 class="section-title">
@@ -2158,24 +2609,32 @@ class TutorDashboard {
                                 <span class="info-label">Thời điểm tạo:</span>
                                 <span class="info-value">${formattedDate}</span>
                             </div>
-                            ${closedDate ? `
+                            ${
+                              closedDate
+                                ? `
                                 <div class="info-item">
                                     <span class="info-label">Thời điểm đóng:</span>
                                     <span class="info-value">${closedDate}</span>
                                 </div>
-                            ` : ''}
+                            `
+                                : ""
+                            }
                             <div class="info-item">
                                 <span class="info-label">Mã yêu cầu:</span>
-                                <span class="info-value code-value">${request.idYc}</span>
+                                <span class="info-value code-value">${
+                                  request.idYc
+                                }</span>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
-            
-            // Update footer with action buttons
-            modalFooter.innerHTML = `
-                ${!isClosed ? `
+
+      // Update footer with action buttons
+      modalFooter.innerHTML = `
+                ${
+                  !isClosed
+                    ? `
                     <button class="btn btn-success" onclick="tutorDashboard.openUpdateStatusModal('${request.idYc}', 'Đã xử lý')">
                         <i class="fas fa-check-circle"></i>
                         Đánh dấu đã xử lý
@@ -2184,204 +2643,220 @@ class TutorDashboard {
                         <i class="fas fa-spinner"></i>
                         Đang xử lý
                     </button>
-                ` : ''}
+                `
+                    : ""
+                }
                 <button class="btn btn-secondary" id="closeSupportModalBtn">
                     <i class="fas fa-times"></i>
                     Đóng
                 </button>
             `;
-            
-            // Setup close button
-            const closeBtn = document.getElementById('closeSupportModalBtn');
-            if (closeBtn) {
-                closeBtn.onclick = () => this.closeSupportModal();
-            }
-            
-        } catch (error) {
-            console.error('Error loading support details:', error);
-            modalBody.innerHTML = `
+
+      // Setup close button
+      const closeBtn = document.getElementById("closeSupportModalBtn");
+      if (closeBtn) {
+        closeBtn.onclick = () => this.closeSupportModal();
+      }
+    } catch (error) {
+      console.error("Error loading support details:", error);
+      modalBody.innerHTML = `
                 <div class="error-state">
                     <i class="fas fa-exclamation-triangle"></i>
                     <h3>Không thể tải thông tin</h3>
-                    <p>${error.message || 'Có lỗi xảy ra khi tải chi tiết yêu cầu hỗ trợ'}</p>
+                    <p>${
+                      error.message ||
+                      "Có lỗi xảy ra khi tải chi tiết yêu cầu hỗ trợ"
+                    }</p>
                     <button class="btn btn-primary" onclick="tutorDashboard.viewSupportDetails('${idYc}')">
                         <i class="fas fa-redo"></i> Thử lại
                     </button>
                 </div>
             `;
-            showNotification('Không thể tải chi tiết yêu cầu hỗ trợ', 'error');
-        }
+      showNotification("Không thể tải chi tiết yêu cầu hỗ trợ", "error");
     }
-    
-    closeSupportModal() {
-        const modal = document.getElementById('supportDetailsModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
+  }
+
+  closeSupportModal() {
+    const modal = document.getElementById("supportDetailsModal");
+    if (modal) {
+      modal.style.display = "none";
     }
-    
-    openUpdateStatusModal(idYc, defaultStatus = '') {
-        const modal = document.getElementById('updateStatusModal');
-        const form = document.getElementById('updateStatusForm');
-        const statusSelect = document.getElementById('statusSelect');
-        const requestIdInput = document.getElementById('statusRequestId');
-        
-        if (!modal || !form) return;
-        
-        // Set request ID
-        if (requestIdInput) {
-            requestIdInput.value = idYc;
-        }
-        
-        // Set default status if provided
-        if (statusSelect && defaultStatus) {
-            statusSelect.value = defaultStatus;
-        } else if (statusSelect) {
-            statusSelect.value = '';
-        }
-        
-        // Clear note
-        const noteTextarea = document.getElementById('statusNote');
-        if (noteTextarea) {
-            noteTextarea.value = '';
-        }
-        
-        // Show modal
-        modal.style.display = 'flex';
-        
-        // Setup save button
-        const saveBtn = document.getElementById('saveStatusBtn');
-        if (saveBtn) {
-            saveBtn.onclick = () => this.saveSupportStatus();
-        }
-    }
-    
-    closeStatusModal() {
-        const modal = document.getElementById('updateStatusModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    }
-    
-    async saveSupportStatus() {
-        const form = document.getElementById('updateStatusForm');
-        const requestIdInput = document.getElementById('statusRequestId');
-        const statusSelect = document.getElementById('statusSelect');
-        const noteTextarea = document.getElementById('statusNote');
-        const saveBtn = document.getElementById('saveStatusBtn');
-        
-        if (!form || !requestIdInput || !statusSelect) return;
-        
-        const idYc = requestIdInput.value;
-        const trangThai = statusSelect.value;
-        const ghiChu = noteTextarea ? noteTextarea.value.trim() : null;
-        
-        if (!trangThai) {
-            showNotification('Vui lòng chọn trạng thái', 'warning');
-            return;
-        }
-        
-        // Disable save button
-        if (saveBtn) {
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
-        }
-        
-        try {
-            await window.tutorAPI.updateSupportStatus(idYc, trangThai, ghiChu);
-            
-            showNotification('Đã cập nhật trạng thái thành công', 'success');
-            
-            // Close modal
-            this.closeStatusModal();
-            
-            // Reload support requests
-            await this.loadSupportRequests();
-            
-        } catch (error) {
-            console.error('Error updating support status:', error);
-            showNotification('Có lỗi xảy ra khi cập nhật trạng thái', 'error');
-        } finally {
-            // Re-enable save button
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu thay đổi';
-            }
-        }
-    }
-    
-    async markSupportAsProcessed(idYc) {
-        // Quick action: mark as processed
-        await this.openUpdateStatusModal(idYc, 'Đã xử lý');
+  }
+
+  openUpdateStatusModal(idYc, defaultStatus = "") {
+    const modal = document.getElementById("updateStatusModal");
+    const form = document.getElementById("updateStatusForm");
+    const statusSelect = document.getElementById("statusSelect");
+    const requestIdInput = document.getElementById("statusRequestId");
+
+    if (!modal || !form) return;
+
+    // Set request ID
+    if (requestIdInput) {
+      requestIdInput.value = idYc;
     }
 
-    getStatusClass(status) {
-        if (!status) return 'normal';
-        const statusLower = status.toLowerCase();
-        if (statusLower.includes('khẩn') || statusLower.includes('urgent')) return 'urgent';
-        if (statusLower.includes('ưu tiên') || statusLower.includes('high')) return 'high';
-        if (statusLower.includes('đã') && (statusLower.includes('xử lý') || statusLower.includes('đóng'))) return 'completed';
-        if (statusLower.includes('đang')) return 'processing';
-        return 'normal';
+    // Set default status if provided
+    if (statusSelect && defaultStatus) {
+      statusSelect.value = defaultStatus;
+    } else if (statusSelect) {
+      statusSelect.value = "";
     }
 
-    formatDateTime(dateTime) {
-        if (!dateTime) return 'Chưa có thông tin';
-        const date = new Date(dateTime);
-        return date.toLocaleString('vi-VN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+    // Clear note
+    const noteTextarea = document.getElementById("statusNote");
+    if (noteTextarea) {
+      noteTextarea.value = "";
     }
 
-    async loadConsultationsData() {
-        const container = document.getElementById('consultationsContainer');
-        const loadingState = document.getElementById('consultationsLoading');
-        
-        if (!container) return;
+    // Show modal
+    modal.style.display = "flex";
 
-        try {
-            if (loadingState) loadingState.style.display = 'block';
-            
-            const consultations = await window.tutorAPI.getConsultations();
-            
-            if (loadingState) loadingState.style.display = 'none';
-            
-            if (!consultations || consultations.length === 0) {
-                container.innerHTML = `
+    // Setup save button
+    const saveBtn = document.getElementById("saveStatusBtn");
+    if (saveBtn) {
+      saveBtn.onclick = () => this.saveSupportStatus();
+    }
+  }
+
+  closeStatusModal() {
+    const modal = document.getElementById("updateStatusModal");
+    if (modal) {
+      modal.style.display = "none";
+    }
+  }
+
+  async saveSupportStatus() {
+    const form = document.getElementById("updateStatusForm");
+    const requestIdInput = document.getElementById("statusRequestId");
+    const statusSelect = document.getElementById("statusSelect");
+    const noteTextarea = document.getElementById("statusNote");
+    const saveBtn = document.getElementById("saveStatusBtn");
+
+    if (!form || !requestIdInput || !statusSelect) return;
+
+    const idYc = requestIdInput.value;
+    const trangThai = statusSelect.value;
+    const ghiChu = noteTextarea ? noteTextarea.value.trim() : null;
+
+    if (!trangThai) {
+      showNotification("Vui lòng chọn trạng thái", "warning");
+      return;
+    }
+
+    // Disable save button
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+    }
+
+    try {
+      await window.tutorAPI.updateSupportStatus(idYc, trangThai, ghiChu);
+
+      showNotification("Đã cập nhật trạng thái thành công", "success");
+
+      // Close modal
+      this.closeStatusModal();
+
+      // Reload support requests
+      await this.loadSupportRequests();
+    } catch (error) {
+      console.error("Error updating support status:", error);
+      showNotification("Có lỗi xảy ra khi cập nhật trạng thái", "error");
+    } finally {
+      // Re-enable save button
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu thay đổi';
+      }
+    }
+  }
+
+  async markSupportAsProcessed(idYc) {
+    // Quick action: mark as processed
+    await this.openUpdateStatusModal(idYc, "Đã xử lý");
+  }
+
+  getStatusClass(status) {
+    if (!status) return "normal";
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes("khẩn") || statusLower.includes("urgent"))
+      return "urgent";
+    if (statusLower.includes("ưu tiên") || statusLower.includes("high"))
+      return "high";
+    if (
+      statusLower.includes("đã") &&
+      (statusLower.includes("xử lý") || statusLower.includes("đóng"))
+    )
+      return "completed";
+    if (statusLower.includes("đang")) return "processing";
+    return "normal";
+  }
+
+  formatDateTime(dateTime) {
+    if (!dateTime) return "Chưa có thông tin";
+    const date = new Date(dateTime);
+    return date.toLocaleString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  async loadConsultationsData() {
+    const container = document.getElementById("consultationsContainer");
+    const loadingState = document.getElementById("consultationsLoading");
+
+    if (!container) return;
+
+    try {
+      if (loadingState) loadingState.style.display = "block";
+
+      const consultations = await window.tutorAPI.getConsultations();
+
+      if (loadingState) loadingState.style.display = "none";
+
+      if (!consultations || consultations.length === 0) {
+        container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-inbox"></i>
                         <p>Chưa có yêu cầu tư vấn nào</p>
                     </div>
                 `;
-                return;
-            }
+        return;
+      }
 
-            // Sort by date (newest first)
-            consultations.sort((a, b) => {
-                const dateA = new Date(a.thoiDiemTao);
-                const dateB = new Date(b.thoiDiemTao);
-                return dateB - dateA;
-            });
+      // Sort by date (newest first)
+      consultations.sort((a, b) => {
+        const dateA = new Date(a.thoiDiemTao);
+        const dateB = new Date(b.thoiDiemTao);
+        return dateB - dateA;
+      });
 
-            container.innerHTML = consultations.map(consultation => {
-                const date = new Date(consultation.thoiDiemTao);
-                const formattedDate = date.toLocaleDateString('vi-VN', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+      container.innerHTML = consultations
+        .map((consultation) => {
+          const date = new Date(consultation.thoiDiemTao);
+          const formattedDate = date.toLocaleDateString("vi-VN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
 
-                const statusClass = consultation.trangThai === 'Chưa xử lý' ? 'urgent' :
-                                   consultation.trangThai === 'Đang xử lý' ? 'high' : 'normal';
+          const statusClass =
+            consultation.trangThai === "Chưa xử lý"
+              ? "urgent"
+              : consultation.trangThai === "Đang xử lý"
+              ? "high"
+              : "normal";
 
-                return `
-                    <div class="consultation-item ${consultation.trangThai === 'Chưa xử lý' ? 'unread' : ''}">
+          return `
+                    <div class="consultation-item ${
+                      consultation.trangThai === "Chưa xử lý" ? "unread" : ""
+                    }">
                         <div class="consultation-avatar">
                             <i class="fas fa-user"></i>
                         </div>
@@ -2394,41 +2869,61 @@ class TutorDashboard {
                                 <strong>Tiêu đề:</strong> ${consultation.tieuDe}
                             </div>
                             <div class="consultation-type">
-                                <i class="fas fa-tag"></i> ${consultation.hinhThucTuVan}
+                                <i class="fas fa-tag"></i> ${
+                                  consultation.hinhThucTuVan
+                                }
                             </div>
                             <div class="consultation-details">
-                                <p><strong>Email:</strong> ${consultation.email || 'N/A'}</p>
-                                <p><strong>SĐT:</strong> ${consultation.sdt || 'N/A'}</p>
-                                ${consultation.noiDung ? `<p><strong>Nội dung:</strong> ${consultation.noiDung}</p>` : ''}
+                                <p><strong>Email:</strong> ${
+                                  consultation.email || "N/A"
+                                }</p>
+                                <p><strong>SĐT:</strong> ${
+                                  consultation.sdt || "N/A"
+                                }</p>
+                                ${
+                                  consultation.noiDung
+                                    ? `<p><strong>Nội dung:</strong> ${consultation.noiDung}</p>`
+                                    : ""
+                                }
                             </div>
                             <div class="consultation-actions">
-                                ${consultation.trangThai === 'Chưa xử lý' ? 
-                                    `<button class="btn btn-sm btn-primary" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đang xử lý')">
+                                ${
+                                  consultation.trangThai === "Chưa xử lý"
+                                    ? `<button class="btn btn-sm btn-primary" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đang xử lý')">
                                         <i class="fas fa-check"></i> Bắt đầu xử lý
-                                    </button>` : ''}
-                                ${consultation.trangThai === 'Đang xử lý' ? 
-                                    `<button class="btn btn-sm btn-success" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đã xử lý')">
+                                    </button>`
+                                    : ""
+                                }
+                                ${
+                                  consultation.trangThai === "Đang xử lý"
+                                    ? `<button class="btn btn-sm btn-success" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đã xử lý')">
                                         <i class="fas fa-check-circle"></i> Hoàn thành
-                                    </button>` : ''}
-                                <button class="btn btn-sm btn-secondary" onclick="tutorDashboard.viewConsultationDetails('${consultation.idTv}')">
+                                    </button>`
+                                    : ""
+                                }
+                                <button class="btn btn-sm btn-secondary" onclick="tutorDashboard.viewConsultationDetails('${
+                                  consultation.idTv
+                                }')">
                                     <i class="fas fa-info-circle"></i> Chi tiết
                                 </button>
                             </div>
                         </div>
                         <div class="consultation-status">
-                            <span class="status-badge ${statusClass}">${consultation.trangThai}</span>
+                            <span class="status-badge ${statusClass}">${
+            consultation.trangThai
+          }</span>
                         </div>
                     </div>
                 `;
-            }).join('');
+        })
+        .join("");
 
-            // Setup search and filter
-            this.setupConsultationFilters(consultations);
-
-        } catch (error) {
-            console.error('Error loading consultations:', error);
-            if (loadingState) loadingState.style.display = 'none';
-            container.innerHTML = `
+      // Setup search and filter
+      this.setupConsultationFilters(consultations);
+    } catch (error) {
+      console.error("Error loading consultations:", error);
+      if (loadingState) loadingState.style.display = "none";
+      container.innerHTML = `
                 <div class="error-state">
                     <i class="fas fa-exclamation-triangle"></i>
                     <p>Có lỗi xảy ra khi tải yêu cầu tư vấn</p>
@@ -2437,90 +2932,106 @@ class TutorDashboard {
                     </button>
                 </div>
             `;
-        }
+    }
+  }
+
+  setupConsultationFilters(allConsultations) {
+    const searchInput = document.getElementById("consultationSearch");
+    const statusFilter = document.getElementById("consultationStatusFilter");
+    const refreshBtn = document.getElementById("refreshConsultations");
+    const container = document.getElementById("consultationsContainer");
+
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        this.filterConsultations(
+          allConsultations,
+          e.target.value,
+          statusFilter?.value
+        );
+      });
     }
 
-    setupConsultationFilters(allConsultations) {
-        const searchInput = document.getElementById('consultationSearch');
-        const statusFilter = document.getElementById('consultationStatusFilter');
-        const refreshBtn = document.getElementById('refreshConsultations');
-        const container = document.getElementById('consultationsContainer');
-
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.filterConsultations(allConsultations, e.target.value, statusFilter?.value);
-            });
-        }
-
-        if (statusFilter) {
-            statusFilter.addEventListener('change', (e) => {
-                this.filterConsultations(allConsultations, searchInput?.value || '', e.target.value);
-            });
-        }
-
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                this.loadConsultationsData();
-            });
-        }
+    if (statusFilter) {
+      statusFilter.addEventListener("change", (e) => {
+        this.filterConsultations(
+          allConsultations,
+          searchInput?.value || "",
+          e.target.value
+        );
+      });
     }
 
-    filterConsultations(allConsultations, searchTerm, statusFilter) {
-        const container = document.getElementById('consultationsContainer');
-        if (!container) return;
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", () => {
+        this.loadConsultationsData();
+      });
+    }
+  }
 
-        let filtered = [...allConsultations];
+  filterConsultations(allConsultations, searchTerm, statusFilter) {
+    const container = document.getElementById("consultationsContainer");
+    if (!container) return;
 
-        // Filter by status
-        if (statusFilter) {
-            filtered = filtered.filter(c => c.trangThai === statusFilter);
-        }
+    let filtered = [...allConsultations];
 
-        // Filter by search term
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(c => 
-                c.hoTen.toLowerCase().includes(term) ||
-                c.email?.toLowerCase().includes(term) ||
-                c.sdt?.includes(term) ||
-                c.tieuDe.toLowerCase().includes(term) ||
-                c.noiDung?.toLowerCase().includes(term)
-            );
-        }
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter((c) => c.trangThai === statusFilter);
+    }
 
-        // Re-render filtered results
-        if (filtered.length === 0) {
-            container.innerHTML = `
+    // Filter by search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (c) =>
+          c.hoTen.toLowerCase().includes(term) ||
+          c.email?.toLowerCase().includes(term) ||
+          c.sdt?.includes(term) ||
+          c.tieuDe.toLowerCase().includes(term) ||
+          c.noiDung?.toLowerCase().includes(term)
+      );
+    }
+
+    // Re-render filtered results
+    if (filtered.length === 0) {
+      container.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-search"></i>
                     <p>Không tìm thấy yêu cầu tư vấn nào</p>
                 </div>
             `;
-            return;
-        }
+      return;
+    }
 
-        // Sort by date (newest first)
-        filtered.sort((a, b) => {
-            const dateA = new Date(a.thoiDiemTao);
-            const dateB = new Date(b.thoiDiemTao);
-            return dateB - dateA;
+    // Sort by date (newest first)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.thoiDiemTao);
+      const dateB = new Date(b.thoiDiemTao);
+      return dateB - dateA;
+    });
+
+    container.innerHTML = filtered
+      .map((consultation) => {
+        const date = new Date(consultation.thoiDiemTao);
+        const formattedDate = date.toLocaleDateString("vi-VN", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         });
 
-        container.innerHTML = filtered.map(consultation => {
-            const date = new Date(consultation.thoiDiemTao);
-            const formattedDate = date.toLocaleDateString('vi-VN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+        const statusClass =
+          consultation.trangThai === "Chưa xử lý"
+            ? "urgent"
+            : consultation.trangThai === "Đang xử lý"
+            ? "high"
+            : "normal";
 
-            const statusClass = consultation.trangThai === 'Chưa xử lý' ? 'urgent' :
-                               consultation.trangThai === 'Đang xử lý' ? 'high' : 'normal';
-
-            return `
-                <div class="consultation-item ${consultation.trangThai === 'Chưa xử lý' ? 'unread' : ''}">
+        return `
+                <div class="consultation-item ${
+                  consultation.trangThai === "Chưa xử lý" ? "unread" : ""
+                }">
                     <div class="consultation-avatar">
                         <i class="fas fa-user"></i>
                     </div>
@@ -2533,541 +3044,581 @@ class TutorDashboard {
                             <strong>Tiêu đề:</strong> ${consultation.tieuDe}
                         </div>
                         <div class="consultation-type">
-                            <i class="fas fa-tag"></i> ${consultation.hinhThucTuVan}
+                            <i class="fas fa-tag"></i> ${
+                              consultation.hinhThucTuVan
+                            }
                         </div>
                         <div class="consultation-details">
-                            <p><strong>Email:</strong> ${consultation.email || 'N/A'}</p>
-                            <p><strong>SĐT:</strong> ${consultation.sdt || 'N/A'}</p>
-                            ${consultation.noiDung ? `<p><strong>Nội dung:</strong> ${consultation.noiDung}</p>` : ''}
+                            <p><strong>Email:</strong> ${
+                              consultation.email || "N/A"
+                            }</p>
+                            <p><strong>SĐT:</strong> ${
+                              consultation.sdt || "N/A"
+                            }</p>
+                            ${
+                              consultation.noiDung
+                                ? `<p><strong>Nội dung:</strong> ${consultation.noiDung}</p>`
+                                : ""
+                            }
                         </div>
                         <div class="consultation-actions">
-                            ${consultation.trangThai === 'Chưa xử lý' ? 
-                                `<button class="btn btn-sm btn-primary" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đang xử lý')">
+                            ${
+                              consultation.trangThai === "Chưa xử lý"
+                                ? `<button class="btn btn-sm btn-primary" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đang xử lý')">
                                     <i class="fas fa-check"></i> Bắt đầu xử lý
-                                </button>` : ''}
-                            ${consultation.trangThai === 'Đang xử lý' ? 
-                                `<button class="btn btn-sm btn-success" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đã xử lý')">
+                                </button>`
+                                : ""
+                            }
+                            ${
+                              consultation.trangThai === "Đang xử lý"
+                                ? `<button class="btn btn-sm btn-success" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đã xử lý')">
                                     <i class="fas fa-check-circle"></i> Hoàn thành
-                                </button>` : ''}
-                            <button class="btn btn-sm btn-secondary" onclick="tutorDashboard.viewConsultationDetails('${consultation.idTv}')">
+                                </button>`
+                                : ""
+                            }
+                            <button class="btn btn-sm btn-secondary" onclick="tutorDashboard.viewConsultationDetails('${
+                              consultation.idTv
+                            }')">
                                 <i class="fas fa-info-circle"></i> Chi tiết
                             </button>
                         </div>
                     </div>
                     <div class="consultation-status">
-                        <span class="status-badge ${statusClass}">${consultation.trangThai}</span>
+                        <span class="status-badge ${statusClass}">${
+          consultation.trangThai
+        }</span>
                     </div>
                 </div>
             `;
-        }).join('');
-    }
+      })
+      .join("");
+  }
 
-    async updateConsultationStatus(idTv, trangThai) {
-        try {
-            await window.tutorAPI.updateConsultationStatus(idTv, trangThai);
-            showNotification(`Đã cập nhật trạng thái thành "${trangThai}"`, 'success');
-            await this.loadConsultationsData();
-        } catch (error) {
-            console.error('Error updating consultation status:', error);
-            showNotification('Có lỗi xảy ra khi cập nhật trạng thái', 'error');
-        }
+  async updateConsultationStatus(idTv, trangThai) {
+    try {
+      await window.tutorAPI.updateConsultationStatus(idTv, trangThai);
+      showNotification(
+        `Đã cập nhật trạng thái thành "${trangThai}"`,
+        "success"
+      );
+      await this.loadConsultationsData();
+    } catch (error) {
+      console.error("Error updating consultation status:", error);
+      showNotification("Có lỗi xảy ra khi cập nhật trạng thái", "error");
     }
+  }
 
-    viewConsultationDetails(idTv) {
-        // TODO: Implement modal for viewing consultation details
-        alert('Chi tiết yêu cầu tư vấn sẽ được hiển thị ở đây');
+  viewConsultationDetails(idTv) {
+    // TODO: Implement modal for viewing consultation details
+    alert("Chi tiết yêu cầu tư vấn sẽ được hiển thị ở đây");
+  }
+
+  loadMessagesData() {
+    // Simulate loading messages data
+    console.log("Loading messages data...");
+  }
+
+  handleSearch(query, sectionId) {
+    console.log(`Searching "${query}" in ${sectionId}`);
+    // Implement search functionality for each section
+  }
+
+  navigateWeek(direction) {
+    console.log(`Navigate week: ${direction}`);
+    // Implement week navigation
+  }
+
+  showNotifications() {
+    console.log("Showing notifications");
+    // Implement notifications display
+  }
+
+  // Student Management Methods
+  showStudentDetails() {
+    const studentModal = document.getElementById("studentModal");
+    if (studentModal) {
+      studentModal.classList.add("active");
     }
+  }
 
-    loadMessagesData() {
-        // Simulate loading messages data
-        console.log('Loading messages data...');
+  editStudent() {
+    console.log("Edit student");
+    // Implement edit student functionality
+  }
+
+  addStudent() {
+    console.log("Add new student");
+    // Implement add student functionality
+  }
+
+  // Teacher Management Methods
+  showTeacherDetails() {
+    const teacherModal = document.getElementById("teacherModal");
+    if (teacherModal) {
+      teacherModal.classList.add("active");
     }
+  }
 
-    handleSearch(query, sectionId) {
-        console.log(`Searching "${query}" in ${sectionId}`);
-        // Implement search functionality for each section
+  editTeacher() {
+    console.log("Edit teacher");
+    // Implement edit teacher functionality
+  }
+
+  addTeacher() {
+    console.log("Add new teacher");
+    // Implement add teacher functionality
+  }
+
+  // Class Management Methods
+  showClassDetails() {
+    console.log("Show class details");
+    // Implement show class details functionality
+  }
+
+  editClass() {
+    console.log("Edit class");
+    // Implement edit class functionality
+  }
+
+  createClass() {
+    console.log("Create new class");
+    // Implement create class functionality
+  }
+
+  // Payment Management Methods
+  viewPayment() {
+    console.log("View payment details");
+    // Implement view payment functionality
+  }
+
+  // Note: processPayment() is defined earlier as async method for payment processing
+  // This method is kept for backward compatibility but should not be used
+
+  printInvoice() {
+    console.log("Print invoice");
+    // Implement print invoice functionality
+  }
+
+  addPayment() {
+    console.log("Add new payment");
+    // Implement add payment functionality
+  }
+
+  // Support Methods
+  processSupportRequest() {
+    console.log("Process support request");
+    // Implement process support request functionality
+  }
+
+  viewSupportDetails() {
+    console.log("View support details");
+    // Implement view support details functionality
+  }
+
+  createSupportRequest() {
+    console.log("Create support request");
+    // Implement create support request functionality
+  }
+
+  // Message Methods
+  replyMessage() {
+    console.log("Reply to message");
+    // Implement reply message functionality
+  }
+
+  viewMessageDetails() {
+    console.log("View message details");
+    // Implement view message details functionality
+  }
+
+  createNewMessage() {
+    console.log("Create new message");
+    // Implement create new message functionality
+  }
+
+  // Utility Methods
+  getPriorityText(priority) {
+    const priorityTexts = {
+      urgent: "Khẩn cấp",
+      high: "Ưu tiên cao",
+      normal: "Bình thường",
+    };
+    return priorityTexts[priority] || "Bình thường";
+  }
+
+  getStatusText(status) {
+    const statusTexts = {
+      success: "Đã thanh toán",
+      pending: "Chờ xử lý",
+      active: "Đang học",
+      inactive: "Tạm nghỉ",
+    };
+    return statusTexts[status] || status;
+  }
+
+  logout() {
+    if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
+      // Xóa thông tin đăng nhập
+      localStorage.removeItem("mb_auth");
+      localStorage.removeItem("mb_token");
+      localStorage.removeItem("mb_token_type");
+      localStorage.removeItem("mb_user_id");
+      localStorage.removeItem("mb_user_email");
+      localStorage.removeItem("mb_user_name");
+      localStorage.removeItem("mb_user_roles");
+      localStorage.removeItem("authToken");
+
+      // Gọi API logout nếu có
+      if (window.tutorAPI) {
+        window.tutorAPI.logout().catch((err) => {
+          console.error("Logout API error:", err);
+        });
+      }
+
+      // Redirect to login page
+      window.location.href = "../LoginPortal.html";
     }
+  }
 
-    navigateWeek(direction) {
-        console.log(`Navigate week: ${direction}`);
-        // Implement week navigation
+  // API Methods using TutorAPI
+  async fetchStudents() {
+    try {
+      return await window.tutorAPI.getStudents();
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
+  }
 
-    showNotifications() {
-        console.log('Showing notifications');
-        // Implement notifications display
+  async fetchTeachers() {
+    try {
+      return await window.tutorAPI.getTeachers();
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
+  }
 
-    // Student Management Methods
-    showStudentDetails() {
-        const studentModal = document.getElementById('studentModal');
-        if (studentModal) {
-            studentModal.classList.add('active');
-        }
+  async fetchClasses() {
+    try {
+      return await window.tutorAPI.getClasses();
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
+  }
 
-    editStudent() {
-        console.log('Edit student');
-        // Implement edit student functionality
+  async fetchPayments() {
+    try {
+      return await window.tutorAPI.getPayments();
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
+  }
 
-    addStudent() {
-        console.log('Add new student');
-        // Implement add student functionality
+  async fetchSupportRequests() {
+    try {
+      return await window.tutorAPI.getAllSupportRequests();
+    } catch (error) {
+      console.error("Error fetching support requests:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
+  }
 
-    // Teacher Management Methods
-    showTeacherDetails() {
-        const teacherModal = document.getElementById('teacherModal');
-        if (teacherModal) {
-            teacherModal.classList.add('active');
-        }
+  async fetchMessages() {
+    try {
+      return await window.tutorAPI.getMessages();
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
+  }
 
-    editTeacher() {
-        console.log('Edit teacher');
-        // Implement edit teacher functionality
+  async fetchDashboardStats() {
+    try {
+      return await window.tutorAPI.getDashboardStats();
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      window.tutorAPI.handleError(error);
+      return {};
     }
+  }
 
-    addTeacher() {
-        console.log('Add new teacher');
-        // Implement add teacher functionality
+  async fetchRecentStudents() {
+    try {
+      return await window.tutorAPI.getRecentStudents();
+    } catch (error) {
+      console.error("Error fetching recent students:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
+  }
 
-    // Class Management Methods
-    showClassDetails() {
-        console.log('Show class details');
-        // Implement show class details functionality
+  async fetchRecentPayments() {
+    try {
+      return await window.tutorAPI.getRecentPayments();
+    } catch (error) {
+      console.error("Error fetching recent payments:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
+  }
 
-    editClass() {
-        console.log('Edit class');
-        // Implement edit class functionality
+  async fetchWeeklySchedule() {
+    try {
+      return await window.tutorAPI.getWeeklySchedule();
+    } catch (error) {
+      console.error("Error fetching weekly schedule:", error);
+      window.tutorAPI.handleError(error);
+      return [];
     }
-
-    createClass() {
-        console.log('Create new class');
-        // Implement create class functionality
-    }
-
-    // Payment Management Methods
-    viewPayment() {
-        console.log('View payment details');
-        // Implement view payment functionality
-    }
-
-    // Note: processPayment() is defined earlier as async method for payment processing
-    // This method is kept for backward compatibility but should not be used
-
-    printInvoice() {
-        console.log('Print invoice');
-        // Implement print invoice functionality
-    }
-
-    addPayment() {
-        console.log('Add new payment');
-        // Implement add payment functionality
-    }
-
-    // Support Methods
-    processSupportRequest() {
-        console.log('Process support request');
-        // Implement process support request functionality
-    }
-
-    viewSupportDetails() {
-        console.log('View support details');
-        // Implement view support details functionality
-    }
-
-    createSupportRequest() {
-        console.log('Create support request');
-        // Implement create support request functionality
-    }
-
-    // Message Methods
-    replyMessage() {
-        console.log('Reply to message');
-        // Implement reply message functionality
-    }
-
-    viewMessageDetails() {
-        console.log('View message details');
-        // Implement view message details functionality
-    }
-
-    createNewMessage() {
-        console.log('Create new message');
-        // Implement create new message functionality
-    }
-
-    // Utility Methods
-    getPriorityText(priority) {
-        const priorityTexts = {
-            'urgent': 'Khẩn cấp',
-            'high': 'Ưu tiên cao',
-            'normal': 'Bình thường'
-        };
-        return priorityTexts[priority] || 'Bình thường';
-    }
-
-    getStatusText(status) {
-        const statusTexts = {
-            'success': 'Đã thanh toán',
-            'pending': 'Chờ xử lý',
-            'active': 'Đang học',
-            'inactive': 'Tạm nghỉ'
-        };
-        return statusTexts[status] || status;
-    }
-
-    logout() {
-        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-            // Xóa thông tin đăng nhập
-            localStorage.removeItem('mb_auth');
-            localStorage.removeItem('mb_token');
-            localStorage.removeItem('mb_token_type');
-            localStorage.removeItem('mb_user_id');
-            localStorage.removeItem('mb_user_email');
-            localStorage.removeItem('mb_user_name');
-            localStorage.removeItem('mb_user_roles');
-            localStorage.removeItem('authToken');
-            
-            // Gọi API logout nếu có
-            if (window.tutorAPI) {
-                window.tutorAPI.logout().catch(err => {
-                    console.error('Logout API error:', err);
-                });
-            }
-            
-            // Redirect to login page
-            window.location.href = '../LoginPortal.html';
-        }
-    }
-
-    // API Methods using TutorAPI
-    async fetchStudents() {
-        try {
-            return await window.tutorAPI.getStudents();
-        } catch (error) {
-            console.error('Error fetching students:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
-
-    async fetchTeachers() {
-        try {
-            return await window.tutorAPI.getTeachers();
-        } catch (error) {
-            console.error('Error fetching teachers:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
-
-    async fetchClasses() {
-        try {
-            return await window.tutorAPI.getClasses();
-        } catch (error) {
-            console.error('Error fetching classes:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
-
-    async fetchPayments() {
-        try {
-            return await window.tutorAPI.getPayments();
-        } catch (error) {
-            console.error('Error fetching payments:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
-
-    async fetchSupportRequests() {
-        try {
-            return await window.tutorAPI.getAllSupportRequests();
-        } catch (error) {
-            console.error('Error fetching support requests:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
-
-    async fetchMessages() {
-        try {
-            return await window.tutorAPI.getMessages();
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
-
-    async fetchDashboardStats() {
-        try {
-            return await window.tutorAPI.getDashboardStats();
-        } catch (error) {
-            console.error('Error fetching dashboard stats:', error);
-            window.tutorAPI.handleError(error);
-            return {};
-        }
-    }
-
-    async fetchRecentStudents() {
-        try {
-            return await window.tutorAPI.getRecentStudents();
-        } catch (error) {
-            console.error('Error fetching recent students:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
-
-    async fetchRecentPayments() {
-        try {
-            return await window.tutorAPI.getRecentPayments();
-        } catch (error) {
-            console.error('Error fetching recent payments:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
-
-    async fetchWeeklySchedule() {
-        try {
-            return await window.tutorAPI.getWeeklySchedule();
-        } catch (error) {
-            console.error('Error fetching weekly schedule:', error);
-            window.tutorAPI.handleError(error);
-            return [];
-        }
-    }
+  }
 }
 
-    // Assigned Students functions
-    async function viewStudentDetails(studentId) {
-        try {
-            const student = await window.tutorAPI.getStudentDetails(studentId);
-            showStudentDetailsModal(student);
-        } catch (error) {
-            console.error('Error fetching student details:', error);
-            window.tutorAPI.handleError(error);
-        }
+// Assigned Students functions
+async function viewStudentDetails(studentId) {
+  try {
+    const student = await window.tutorAPI.getStudentDetails(studentId);
+    showStudentDetailsModal(student);
+  } catch (error) {
+    console.error("Error fetching student details:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
+
+async function addNote(studentId) {
+  const note = prompt("Nhập ghi chú cho học sinh:");
+  if (note) {
+    try {
+      await window.tutorAPI.addStudentNote(studentId, note);
+      showNotification("Ghi chú đã được thêm thành công!", "success");
+      loadAssignedStudents();
+    } catch (error) {
+      console.error("Error adding note:", error);
+      window.tutorAPI.handleError(error);
     }
+  }
+}
 
-    async function addNote(studentId) {
-        const note = prompt('Nhập ghi chú cho học sinh:');
-        if (note) {
-            try {
-                await window.tutorAPI.addStudentNote(studentId, note);
-                showNotification('Ghi chú đã được thêm thành công!', 'success');
-                loadAssignedStudents();
-            } catch (error) {
-                console.error('Error adding note:', error);
-                window.tutorAPI.handleError(error);
-            }
-        }
+async function generateReport(studentId) {
+  try {
+    const report = await window.tutorAPI.generateStudentReport(studentId);
+    showReportModal(report);
+  } catch (error) {
+    console.error("Error generating report:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
+
+// Consultation Schedule functions
+async function addConsultation() {
+  const form = document.getElementById("consultationForm");
+  if (form) {
+    const formData = new FormData(form);
+    try {
+      await window.tutorAPI.createConsultation(formData);
+      showNotification("Buổi tư vấn đã được tạo thành công!", "success");
+      loadConsultationSchedule();
+    } catch (error) {
+      console.error("Error creating consultation:", error);
+      window.tutorAPI.handleError(error);
     }
+  }
+}
 
-    async function generateReport(studentId) {
-        try {
-            const report = await window.tutorAPI.generateStudentReport(studentId);
-            showReportModal(report);
-        } catch (error) {
-            console.error('Error generating report:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function updateConsultationContent(consultationId, content) {
+  try {
+    await window.tutorAPI.updateConsultationContent(consultationId, content);
+    showNotification("Nội dung tư vấn đã được cập nhật!", "success");
+    loadConsultationSchedule();
+  } catch (error) {
+    console.error("Error updating consultation:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    // Consultation Schedule functions
-    async function addConsultation() {
-        const form = document.getElementById('consultationForm');
-        if (form) {
-            const formData = new FormData(form);
-            try {
-                await window.tutorAPI.createConsultation(formData);
-                showNotification('Buổi tư vấn đã được tạo thành công!', 'success');
-                loadConsultationSchedule();
-            } catch (error) {
-                console.error('Error creating consultation:', error);
-                window.tutorAPI.handleError(error);
-            }
-        }
-    }
+// Enhanced Consultation Schedule functions
+async function addConsultationSchedule() {
+  showAddConsultationModal();
+}
 
-    async function updateConsultationContent(consultationId, content) {
-        try {
-            await window.tutorAPI.updateConsultationContent(consultationId, content);
-            showNotification('Nội dung tư vấn đã được cập nhật!', 'success');
-            loadConsultationSchedule();
-        } catch (error) {
-            console.error('Error updating consultation:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function exportConsultationSchedule() {
+  try {
+    const schedule = await window.tutorAPI.exportConsultationSchedule();
+    downloadSchedule(schedule);
+    showNotification("Lịch tư vấn đã được xuất thành công!", "success");
+  } catch (error) {
+    console.error("Error exporting consultation schedule:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    // Enhanced Consultation Schedule functions
-    async function addConsultationSchedule() {
-        showAddConsultationModal();
-    }
+function changeConsultationMonth(direction) {
+  // This would typically update the calendar view
+  const currentMonthElement = document.getElementById("currentMonth");
+  const months = [
+    "Tháng 1",
+    "Tháng 2",
+    "Tháng 3",
+    "Tháng 4",
+    "Tháng 5",
+    "Tháng 6",
+    "Tháng 7",
+    "Tháng 8",
+    "Tháng 9",
+    "Tháng 10",
+    "Tháng 11",
+    "Tháng 12",
+  ];
+  const currentText = currentMonthElement.textContent;
+  const currentMonth = months.indexOf(currentText.split(",")[0]);
+  const newMonth = (currentMonth + direction + 12) % 12;
+  const currentYear = new Date().getFullYear();
+  currentMonthElement.textContent = `${months[newMonth]}, ${currentYear}`;
 
-    async function exportConsultationSchedule() {
-        try {
-            const schedule = await window.tutorAPI.exportConsultationSchedule();
-            downloadSchedule(schedule);
-            showNotification('Lịch tư vấn đã được xuất thành công!', 'success');
-        } catch (error) {
-            console.error('Error exporting consultation schedule:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+  // Load consultation data for the new month
+  loadConsultationSchedule();
+}
 
-    function changeConsultationMonth(direction) {
-        // This would typically update the calendar view
-        const currentMonthElement = document.getElementById('currentMonth');
-        const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-                       'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-        const currentText = currentMonthElement.textContent;
-        const currentMonth = months.indexOf(currentText.split(',')[0]);
-        const newMonth = (currentMonth + direction + 12) % 12;
-        const currentYear = new Date().getFullYear();
-        currentMonthElement.textContent = `${months[newMonth]}, ${currentYear}`;
-        
-        // Load consultation data for the new month
-        loadConsultationSchedule();
-    }
+async function startConsultation(consultationId) {
+  try {
+    await window.tutorAPI.startConsultation(consultationId);
+    showNotification("Buổi tư vấn đã được bắt đầu!", "success");
+    loadConsultationSchedule();
+  } catch (error) {
+    console.error("Error starting consultation:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    async function startConsultation(consultationId) {
-        try {
-            await window.tutorAPI.startConsultation(consultationId);
-            showNotification('Buổi tư vấn đã được bắt đầu!', 'success');
-            loadConsultationSchedule();
-        } catch (error) {
-            console.error('Error starting consultation:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function viewConsultationDetails(consultationId) {
+  try {
+    const consultation = await window.tutorAPI.getConsultationById(
+      consultationId
+    );
+    showConsultationDetailsModal(consultation);
+  } catch (error) {
+    console.error("Error fetching consultation details:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    async function viewConsultationDetails(consultationId) {
-        try {
-            const consultation = await window.tutorAPI.getConsultationById(consultationId);
-            showConsultationDetailsModal(consultation);
-        } catch (error) {
-            console.error('Error fetching consultation details:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function reviewConsultation(consultationId) {
+  try {
+    const consultation = await window.tutorAPI.getConsultationById(
+      consultationId
+    );
+    showConsultationReviewModal(consultation);
+  } catch (error) {
+    console.error("Error fetching consultation for review:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    async function reviewConsultation(consultationId) {
-        try {
-            const consultation = await window.tutorAPI.getConsultationById(consultationId);
-            showConsultationReviewModal(consultation);
-        } catch (error) {
-            console.error('Error fetching consultation for review:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+function downloadSchedule(schedule) {
+  const blob = new Blob([schedule.content], { type: "application/pdf" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `lich_tu_van_${new Date().toISOString().split("T")[0]}.pdf`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
 
-    function downloadSchedule(schedule) {
-        const blob = new Blob([schedule.content], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `lich_tu_van_${new Date().toISOString().split('T')[0]}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
+// Payment Processing functions
+async function addPayment() {
+  // This function is now handled by the TutorDashboard class
+  console.log("Payment processing handled by TutorDashboard");
+}
 
-    // Payment Processing functions
-    async function addPayment() {
-        // This function is now handled by the TutorDashboard class
-        console.log('Payment processing handled by TutorDashboard');
-    }
+async function updatePaymentStatus(paymentId, status) {
+  try {
+    await window.tutorAPI.updatePaymentStatus(paymentId, status);
+    showNotification("Trạng thái thanh toán đã được cập nhật!", "success");
+    loadPayments();
+    updatePaymentSummary();
+  } catch (error) {
+    console.error("Error updating payment status:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    async function updatePaymentStatus(paymentId, status) {
-        try {
-            await window.tutorAPI.updatePaymentStatus(paymentId, status);
-            showNotification('Trạng thái thanh toán đã được cập nhật!', 'success');
-            loadPayments();
-            updatePaymentSummary();
-        } catch (error) {
-            console.error('Error updating payment status:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function viewPaymentDetails(paymentId) {
+  try {
+    const payment = await window.tutorAPI.getPaymentById(paymentId);
+    showPaymentDetailsModal(payment);
+  } catch (error) {
+    console.error("Error fetching payment details:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    async function viewPaymentDetails(paymentId) {
-        try {
-            const payment = await window.tutorAPI.getPaymentById(paymentId);
-            showPaymentDetailsModal(payment);
-        } catch (error) {
-            console.error('Error fetching payment details:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function editPayment(paymentId) {
+  try {
+    const payment = await window.tutorAPI.getPaymentById(paymentId);
+    showEditPaymentModal(payment);
+  } catch (error) {
+    console.error("Error fetching payment details:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    async function editPayment(paymentId) {
-        try {
-            const payment = await window.tutorAPI.getPaymentById(paymentId);
-            showEditPaymentModal(payment);
-        } catch (error) {
-            console.error('Error fetching payment details:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function printReceipt(paymentId) {
+  try {
+    const receipt = await window.tutorAPI.generateReceipt(paymentId);
+    showReceiptModal(receipt);
+  } catch (error) {
+    console.error("Error generating receipt:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    async function printReceipt(paymentId) {
-        try {
-            const receipt = await window.tutorAPI.generateReceipt(paymentId);
-            showReceiptModal(receipt);
-        } catch (error) {
-            console.error('Error generating receipt:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+// Removed syncWithFinanceSystem, exportPaymentReport, viewFinanceSystem,
+// updatePaymentSummary, and updateVerificationStatus functions as they are no longer needed
 
-    // Removed syncWithFinanceSystem, exportPaymentReport, viewFinanceSystem, 
-    // updatePaymentSummary, and updateVerificationStatus functions as they are no longer needed
+function downloadReport(report) {
+  const blob = new Blob([report.content], { type: "application/pdf" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `payment_report_${new Date().toISOString().split("T")[0]}.pdf`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
 
-    function downloadReport(report) {
-        const blob = new Blob([report.content], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `payment_report_${new Date().toISOString().split('T')[0]}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
+// Message functions
+async function sendMessage(studentId, message) {
+  try {
+    await window.tutorAPI.sendMessage(studentId, message);
+    loadMessages();
+  } catch (error) {
+    console.error("Error sending message:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
-    // Message functions
-    async function sendMessage(studentId, message) {
-        try {
-            await window.tutorAPI.sendMessage(studentId, message);
-            loadMessages();
-        } catch (error) {
-            console.error('Error sending message:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function getQuickResponse(type) {
+  try {
+    const response = await window.tutorAPI.getQuickResponse(type);
+    return response;
+  } catch (error) {
+    console.error("Error getting quick response:", error);
+    return null;
+  }
+}
 
-    async function getQuickResponse(type) {
-        try {
-            const response = await window.tutorAPI.getQuickResponse(type);
-            return response;
-        } catch (error) {
-            console.error('Error getting quick response:', error);
-            return null;
-        }
-    }
-
-    // Modal functions
-    function showStudentDetailsModal(student) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+// Modal functions
+function showStudentDetailsModal(student) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Chi tiết học sinh</h3>
@@ -3078,26 +3629,34 @@ class TutorDashboard {
                         <h4>${student.name}</h4>
                         <p><strong>Lớp:</strong> ${student.class}</p>
                         <p><strong>Chương trình:</strong> ${student.program}</p>
-                        <p><strong>Tiến độ học tập:</strong> ${student.progress}%</p>
-                        <p><strong>Điểm trung bình:</strong> ${student.averageGrade}</p>
+                        <p><strong>Tiến độ học tập:</strong> ${
+                          student.progress
+                        }%</p>
+                        <p><strong>Điểm trung bình:</strong> ${
+                          student.averageGrade
+                        }</p>
                         <p><strong>Trạng thái:</strong> ${student.status}</p>
-                        <p><strong>Ghi chú:</strong> ${student.notes || 'Chưa có ghi chú'}</p>
+                        <p><strong>Ghi chú:</strong> ${
+                          student.notes || "Chưa có ghi chú"
+                        }</p>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
-                    <button class="btn btn-primary" onclick="addNote('${student.id}')">Thêm ghi chú</button>
+                    <button class="btn btn-primary" onclick="addNote('${
+                      student.id
+                    }')">Thêm ghi chú</button>
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
+  document.body.appendChild(modal);
+  modal.style.display = "block";
+}
 
-    function showReportModal(report) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+function showReportModal(report) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Báo cáo học sinh</h3>
@@ -3120,33 +3679,33 @@ class TutorDashboard {
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
+  document.body.appendChild(modal);
+  modal.style.display = "block";
+}
 
-    function closeModal() {
-        const modal = document.querySelector('.modal');
-        if (modal) {
-            modal.remove();
-        }
-    }
+function closeModal() {
+  const modal = document.querySelector(".modal");
+  if (modal) {
+    modal.remove();
+  }
+}
 
-    function printReport() {
-        window.print();
-    }
+function printReport() {
+  window.print();
+}
 
-    // Notification function
-    function showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        
-        // Add styles if not already present
-        if (!document.getElementById('notification-styles')) {
-            const style = document.createElement('style');
-            style.id = 'notification-styles';
-            style.textContent = `
+// Notification function
+function showNotification(message, type = "info") {
+  // Create notification element
+  const notification = document.createElement("div");
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+
+  // Add styles if not already present
+  if (!document.getElementById("notification-styles")) {
+    const style = document.createElement("style");
+    style.id = "notification-styles";
+    style.textContent = `
                 .notification {
                     position: fixed;
                     top: 20px;
@@ -3168,41 +3727,42 @@ class TutorDashboard {
                     to { transform: translateX(0); opacity: 1; }
                 }
             `;
-            document.head.appendChild(style);
-        }
-        
-        document.body.appendChild(notification);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideIn 0.3s ease-out reverse';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 3000);
-    }
+    document.head.appendChild(style);
+  }
 
-    function exportStudentList() {
-        // Create CSV content
-        const csvContent = "Học sinh,Lớp/Chương trình,Tiến độ,Điểm TB,Trạng thái,Ghi chú\n" +
-            "Trần Văn C,Toán 10A1 • Cambridge IGCSE,75%,8.5,Tốt,Học tập tích cực\n" +
-            "Lê Thị D,Toán 11B2 • IB Math HL,45%,6.2,Cần hỗ trợ,Cần hỗ trợ thêm\n" +
-            "Phạm Văn E,Toán 12C1 • AP Calculus,30%,4.8,Nguy cơ thấp điểm,Cần can thiệp";
-        
-        // Create and download file
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'danh_sach_hoc_sinh.csv';
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
+  document.body.appendChild(notification);
 
-    function showAddConsultationModal() {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.animation = "slideIn 0.3s ease-out reverse";
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 3000);
+}
+
+function exportStudentList() {
+  // Create CSV content
+  const csvContent =
+    "Học sinh,Lớp/Chương trình,Tiến độ,Điểm TB,Trạng thái,Ghi chú\n" +
+    "Trần Văn C,Toán 10A1 • Cambridge IGCSE,75%,8.5,Tốt,Học tập tích cực\n" +
+    "Lê Thị D,Toán 11B2 • IB Math HL,45%,6.2,Cần hỗ trợ,Cần hỗ trợ thêm\n" +
+    "Phạm Văn E,Toán 12C1 • AP Calculus,30%,4.8,Nguy cơ thấp điểm,Cần can thiệp";
+
+  // Create and download file
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "danh_sach_hoc_sinh.csv";
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+function showAddConsultationModal() {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Thêm buổi tư vấn</h3>
@@ -3249,14 +3809,14 @@ class TutorDashboard {
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
+  document.body.appendChild(modal);
+  modal.style.display = "block";
+}
 
-    function showPaymentDetailsModal(payment) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+function showPaymentDetailsModal(payment) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Chi tiết giao dịch</h3>
@@ -3274,33 +3834,41 @@ class TutorDashboard {
                             <strong>Loại thanh toán:</strong> ${payment.type}
                         </div>
                         <div class="detail-row">
-                            <strong>Ngày/Giờ:</strong> ${payment.date} ${payment.time}
+                            <strong>Ngày/Giờ:</strong> ${payment.date} ${
+    payment.time
+  }
                         </div>
                         <div class="detail-row">
-                            <strong>Số biên lai:</strong> ${payment.receiptNumber}
+                            <strong>Số biên lai:</strong> ${
+                              payment.receiptNumber
+                            }
                         </div>
                         <div class="detail-row">
                             <strong>Trạng thái:</strong> ${payment.status}
                         </div>
                         <div class="detail-row">
-                            <strong>Ghi chú:</strong> ${payment.notes || 'Không có ghi chú'}
+                            <strong>Ghi chú:</strong> ${
+                              payment.notes || "Không có ghi chú"
+                            }
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
-                    <button class="btn btn-primary" onclick="printReceipt('${payment.id}')">In biên lai</button>
+                    <button class="btn btn-primary" onclick="printReceipt('${
+                      payment.id
+                    }')">In biên lai</button>
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
+  document.body.appendChild(modal);
+  modal.style.display = "block";
+}
 
-    function showEditPaymentModal(payment) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+function showEditPaymentModal(payment) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Chỉnh sửa giao dịch</h3>
@@ -3310,38 +3878,56 @@ class TutorDashboard {
                     <form id="editPaymentForm">
                         <div class="form-group">
                             <label for="editAmount">Số tiền (VNĐ)</label>
-                            <input type="number" class="form-control" id="editAmount" value="${payment.amount}" required>
+                            <input type="number" class="form-control" id="editAmount" value="${
+                              payment.amount
+                            }" required>
                         </div>
                         <div class="form-group">
                             <label for="editPaymentType">Loại thanh toán</label>
                             <select class="form-select" id="editPaymentType" required>
-                                <option value="tuition" ${payment.type === 'tuition' ? 'selected' : ''}>Học phí tháng</option>
-                                <option value="registration" ${payment.type === 'registration' ? 'selected' : ''}>Phí đăng ký</option>
-                                <option value="exam" ${payment.type === 'exam' ? 'selected' : ''}>Phí thi</option>
-                                <option value="material" ${payment.type === 'material' ? 'selected' : ''}>Phí tài liệu</option>
-                                <option value="other" ${payment.type === 'other' ? 'selected' : ''}>Khác</option>
+                                <option value="tuition" ${
+                                  payment.type === "tuition" ? "selected" : ""
+                                }>Học phí tháng</option>
+                                <option value="registration" ${
+                                  payment.type === "registration"
+                                    ? "selected"
+                                    : ""
+                                }>Phí đăng ký</option>
+                                <option value="exam" ${
+                                  payment.type === "exam" ? "selected" : ""
+                                }>Phí thi</option>
+                                <option value="material" ${
+                                  payment.type === "material" ? "selected" : ""
+                                }>Phí tài liệu</option>
+                                <option value="other" ${
+                                  payment.type === "other" ? "selected" : ""
+                                }>Khác</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="editNotes">Ghi chú</label>
-                            <textarea class="form-control" id="editNotes" rows="3">${payment.notes || ''}</textarea>
+                            <textarea class="form-control" id="editNotes" rows="3">${
+                              payment.notes || ""
+                            }</textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
-                    <button class="btn btn-primary" onclick="savePaymentEdit('${payment.id}')">Lưu thay đổi</button>
+                    <button class="btn btn-primary" onclick="savePaymentEdit('${
+                      payment.id
+                    }')">Lưu thay đổi</button>
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
+  document.body.appendChild(modal);
+  modal.style.display = "block";
+}
 
-    function showReceiptModal(receipt) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+function showReceiptModal(receipt) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Biên lai thanh toán</h3>
@@ -3376,7 +3962,7 @@ class TutorDashboard {
                             </div>
                             <div class="receipt-item">
                                 <span>Ghi chú:</span>
-                                <span>${receipt.notes || 'Không có'}</span>
+                                <span>${receipt.notes || "Không có"}</span>
                             </div>
                         </div>
                         <div class="receipt-footer">
@@ -3390,35 +3976,35 @@ class TutorDashboard {
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
+  document.body.appendChild(modal);
+  modal.style.display = "block";
+}
 
-    async function savePaymentEdit(paymentId) {
-        const form = document.getElementById('editPaymentForm');
-        if (form) {
-            const formData = new FormData(form);
-            try {
-                await window.tutorAPI.updatePayment(paymentId, formData);
-                showNotification('Giao dịch đã được cập nhật thành công!', 'success');
-                closeModal();
-                loadPayments();
-                updatePaymentSummary();
-            } catch (error) {
-                console.error('Error updating payment:', error);
-                window.tutorAPI.handleError(error);
-            }
-        }
+async function savePaymentEdit(paymentId) {
+  const form = document.getElementById("editPaymentForm");
+  if (form) {
+    const formData = new FormData(form);
+    try {
+      await window.tutorAPI.updatePayment(paymentId, formData);
+      showNotification("Giao dịch đã được cập nhật thành công!", "success");
+      closeModal();
+      loadPayments();
+      updatePaymentSummary();
+    } catch (error) {
+      console.error("Error updating payment:", error);
+      window.tutorAPI.handleError(error);
     }
+  }
+}
 
-    function printReceiptContent() {
-        window.print();
-    }
+function printReceiptContent() {
+  window.print();
+}
 
-    function showConsultationDetailsModal(consultation) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+function showConsultationDetailsModal(consultation) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Chi tiết buổi tư vấn</h3>
@@ -3427,13 +4013,17 @@ class TutorDashboard {
                 <div class="modal-body">
                     <div class="consultation-details">
                         <div class="detail-row">
-                            <strong>Học sinh:</strong> ${consultation.studentName}
+                            <strong>Học sinh:</strong> ${
+                              consultation.studentName
+                            }
                         </div>
                         <div class="detail-row">
                             <strong>Lớp:</strong> ${consultation.class}
                         </div>
                         <div class="detail-row">
-                            <strong>Chương trình:</strong> ${consultation.program}
+                            <strong>Chương trình:</strong> ${
+                              consultation.program
+                            }
                         </div>
                         <div class="detail-row">
                             <strong>Loại tư vấn:</strong> ${consultation.type}
@@ -3448,27 +4038,33 @@ class TutorDashboard {
                             <strong>Trạng thái:</strong> ${consultation.status}
                         </div>
                         <div class="detail-row">
-                            <strong>Nội dung:</strong> ${consultation.content || 'Chưa có nội dung'}
+                            <strong>Nội dung:</strong> ${
+                              consultation.content || "Chưa có nội dung"
+                            }
                         </div>
                         <div class="detail-row">
-                            <strong>Ghi chú:</strong> ${consultation.notes || 'Không có ghi chú'}
+                            <strong>Ghi chú:</strong> ${
+                              consultation.notes || "Không có ghi chú"
+                            }
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
-                    <button class="btn btn-primary" onclick="editConsultationContent('${consultation.id}')">Cập nhật nội dung</button>
+                    <button class="btn btn-primary" onclick="editConsultationContent('${
+                      consultation.id
+                    }')">Cập nhật nội dung</button>
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
+  document.body.appendChild(modal);
+  modal.style.display = "block";
+}
 
-    function showConsultationReviewModal(consultation) {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+function showConsultationReviewModal(consultation) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Đánh giá buổi tư vấn</h3>
@@ -3476,11 +4072,13 @@ class TutorDashboard {
                 </div>
                 <div class="modal-body">
                     <div class="consultation-review">
-                        <h4>${consultation.studentName} - ${consultation.type}</h4>
+                        <h4>${consultation.studentName} - ${
+    consultation.type
+  }</h4>
                         <p><strong>Thời gian:</strong> ${consultation.time}</p>
                         <p><strong>Nội dung đã tư vấn:</strong></p>
                         <div class="review-content">
-                            ${consultation.content || 'Chưa có nội dung'}
+                            ${consultation.content || "Chưa có nội dung"}
                         </div>
                         <div class="review-form">
                             <h5>Đánh giá kết quả:</h5>
@@ -3510,62 +4108,64 @@ class TutorDashboard {
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
-                    <button class="btn btn-primary" onclick="saveConsultationReview('${consultation.id}')">Lưu đánh giá</button>
+                    <button class="btn btn-primary" onclick="saveConsultationReview('${
+                      consultation.id
+                    }')">Lưu đánh giá</button>
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
-        modal.style.display = 'block';
-    }
+  document.body.appendChild(modal);
+  modal.style.display = "block";
+}
 
-    async function editConsultationContent(consultationId) {
-        const content = prompt('Nhập nội dung tư vấn mới:');
-        if (content) {
-            try {
-                await window.tutorAPI.updateConsultationContent(consultationId, content);
-                showNotification('Nội dung tư vấn đã được cập nhật!', 'success');
-                closeModal();
-                loadConsultationSchedule();
-            } catch (error) {
-                console.error('Error updating consultation content:', error);
-                window.tutorAPI.handleError(error);
-            }
-        }
+async function editConsultationContent(consultationId) {
+  const content = prompt("Nhập nội dung tư vấn mới:");
+  if (content) {
+    try {
+      await window.tutorAPI.updateConsultationContent(consultationId, content);
+      showNotification("Nội dung tư vấn đã được cập nhật!", "success");
+      closeModal();
+      loadConsultationSchedule();
+    } catch (error) {
+      console.error("Error updating consultation content:", error);
+      window.tutorAPI.handleError(error);
     }
+  }
+}
 
-    async function saveConsultationReview(consultationId) {
-        const rating = document.getElementById('reviewRating').value;
-        const notes = document.getElementById('reviewNotes').value;
-        const followUpRequired = document.getElementById('followUpRequired').value;
-        
-        if (!rating) {
-            showNotification('Vui lòng chọn mức độ hài lòng!', 'error');
-            return;
-        }
-        
-        try {
-            await window.tutorAPI.saveConsultationReview(consultationId, {
-                rating,
-                notes,
-                followUpRequired
-            });
-            showNotification('Đánh giá đã được lưu thành công!', 'success');
-            closeModal();
-            loadConsultationSchedule();
-        } catch (error) {
-            console.error('Error saving consultation review:', error);
-            window.tutorAPI.handleError(error);
-        }
-    }
+async function saveConsultationReview(consultationId) {
+  const rating = document.getElementById("reviewRating").value;
+  const notes = document.getElementById("reviewNotes").value;
+  const followUpRequired = document.getElementById("followUpRequired").value;
+
+  if (!rating) {
+    showNotification("Vui lòng chọn mức độ hài lòng!", "error");
+    return;
+  }
+
+  try {
+    await window.tutorAPI.saveConsultationReview(consultationId, {
+      rating,
+      notes,
+      followUpRequired,
+    });
+    showNotification("Đánh giá đã được lưu thành công!", "success");
+    closeModal();
+    loadConsultationSchedule();
+  } catch (error) {
+    console.error("Error saving consultation review:", error);
+    window.tutorAPI.handleError(error);
+  }
+}
 
 // Initialize the dashboard when DOM is loaded
 let tutorDashboardInstance;
-document.addEventListener('DOMContentLoaded', () => {
-    tutorDashboardInstance = new TutorDashboard();
-    window.tutorDashboard = tutorDashboardInstance;
+document.addEventListener("DOMContentLoaded", () => {
+  tutorDashboardInstance = new TutorDashboard();
+  window.tutorDashboard = tutorDashboardInstance;
 });
 
 // Export for potential module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = TutorDashboard;
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = TutorDashboard;
 }

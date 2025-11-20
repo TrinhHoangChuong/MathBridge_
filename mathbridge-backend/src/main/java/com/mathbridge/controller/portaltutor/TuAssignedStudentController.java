@@ -7,6 +7,8 @@ import com.mathbridge.service.portaltutor.TuAssignedStudentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +27,7 @@ public class TuAssignedStudentController {
     private final NhanVienRepository nhanVienRepository;
 
     public TuAssignedStudentController(TuAssignedStudentService assignedStudentService,
-                                       NhanVienRepository nhanVienRepository) {
+            NhanVienRepository nhanVienRepository) {
         this.assignedStudentService = assignedStudentService;
         this.nhanVienRepository = nhanVienRepository;
     }
@@ -101,6 +103,22 @@ public class TuAssignedStudentController {
 
             Long count = assignedStudentService.countActiveAssignedStudents(idNv);
             return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Kết thúc phân công cho một học sinh bởi cố vấn
+     * PUT /api/portal/tutor/assigned-students/{idHs}/finish?idNv=...
+     */
+    @PutMapping("/{idHs}/finish")
+    public ResponseEntity<?> finishAssignedStudent(@PathVariable String idHs, @RequestParam String idNv) {
+        try {
+            TuAssignedStudentResponseDTO updated = assignedStudentService.finishAssignedStudent(idNv, idHs);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
