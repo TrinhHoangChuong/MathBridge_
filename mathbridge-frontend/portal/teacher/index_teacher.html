@@ -267,20 +267,6 @@
             </ul>
         </nav>
         
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="user-details">
-                    <span class="user-name">Nguyễn Văn A</span>
-                    <span class="user-role">Giáo viên</span>
-                </div>
-            </div>
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
-        </div>
     </div>
 
     <!-- Main Content -->
@@ -313,13 +299,9 @@
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="user-dropdown" id="userDropdown">
-                        <div class="profile-summary">
-                            <div class="avatar-lg" id="dropdownAvatar">GV</div>
-                            <div class="info">
-                                <span class="name" id="dropdownName">Giáo viên MathBridge</span>
-                                <span class="role" id="dropdownRole">Giáo viên</span>
-                                <span class="email" id="dropdownEmail">teacher@mathbridge.vn</span>
-                            </div>
+                        <div class="dropdown-header">
+                            <span class="dropdown-name" id="dropdownName">Giáo viên MathBridge</span>
+                            <span class="dropdown-email" id="dropdownEmail">teacher@mathbridge.vn</span>
                         </div>
                         <div class="actions">
                             <button type="button" id="openProfileModal">
@@ -419,22 +401,14 @@
                 <div class="section-header">
                     <h2>Quản lý lớp học</h2>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addClass()">
+                        <button class="btn btn-primary" onclick="openSuggestClassModal()">
                             <i class="fas fa-plus"></i>
-                            Thêm lớp học
+                            Đề xuất lớp học
                         </button>
                         <!-- <button class="btn btn-success" onclick="manageClassStudents()">
                             <i class="fas fa-users"></i>
                             Quản lý học sinh
                         </button> -->
-                        <button class="btn btn-info" onclick="classSettings()">
-                            <i class="fas fa-cog"></i>
-                            Cài đặt lớp
-                        </button>
-                        <button class="btn btn-warning" onclick="bulkImportStudents()">
-                            <i class="fas fa-upload"></i>
-                            Import học sinh
-                        </button>
                     </div>
                 </div>
                 
@@ -455,18 +429,6 @@
                             <i class="fas fa-plus"></i>
                             Tạo bài tập mới
                         </button>
-                        <button class="btn btn-success" onclick="assignToStudents()">
-                            <i class="fas fa-user-plus"></i>
-                            Giao cho học sinh
-                        </button>
-                        <button class="btn btn-info" onclick="bulkGradeAssignments()">
-                            <i class="fas fa-check-double"></i>
-                            Chấm điểm hàng loạt
-                        </button>
-                        <button class="btn btn-warning" onclick="assignmentTemplates()">
-                            <i class="fas fa-file-alt"></i>
-                            Mẫu bài tập
-                        </button>
                     </div>
                 </div>
                 
@@ -485,10 +447,6 @@
                         <select class="form-select" id="classFilter" onchange="filterGradesByClass(this.value)">
                             <option value="">Tất cả lớp</option>
                         </select>
-                        <button class="btn btn-secondary" onclick="importGrades()">
-                            <i class="fas fa-upload"></i>
-                            Nhập điểm
-                        </button>
                         <button class="btn btn-primary" onclick="exportGrades()">
                             <i class="fas fa-download"></i>
                             Xuất báo cáo
@@ -538,16 +496,6 @@
                         <div class="stat-content">
                             <h3 id="gradeNeedsSupportCount">--</h3>
                             <p>Cần hỗ trợ</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Grade Chart Placeholder -->
-                <div class="grades-chart">
-                    <h3>Biểu đồ phân bố điểm số</h3>
-                    <div class="chart-placeholder" id="gradeDistribution">
-                        <div class="empty-state">
-                            <p>Chưa có dữ liệu điểm để hiển thị.</p>
                         </div>
                     </div>
                 </div>
@@ -3824,27 +3772,6 @@ Lớp 12C1: 38 học sinh, ĐTB: 8.1, Tỷ lệ tham gia: 90%`;
             if (averageGradeElement) {
                 averageGradeElement.textContent = `${averageGrade} ĐIỂM TB`;
             }
-        };
-        
-        // Additional functions that might be missing
-        window.gradeAssignment = function(assignmentId) {
-            console.log('gradeAssignment called with:', assignmentId);
-            showNotification(`Chấm điểm bài tập ${assignmentId}`, 'info');
-        };
-        
-        window.viewAssignmentDetails = function(assignmentId) {
-            console.log('viewAssignmentDetails called with:', assignmentId);
-            showNotification(`Xem chi tiết bài tập ${assignmentId}`, 'info');
-        };
-        
-        window.editAssignment = function(assignmentId) {
-            console.log('editAssignment called with:', assignmentId);
-            showNotification(`Chỉnh sửa bài tập ${assignmentId}`, 'info');
-        };
-        
-        window.deleteAssignment = function(assignmentId) {
-            console.log('deleteAssignment called with:', assignmentId);
-            showNotification(`Xóa bài tập ${assignmentId}`, 'info');
         };
         
         window.viewStudentDetails = function(studentId) {
