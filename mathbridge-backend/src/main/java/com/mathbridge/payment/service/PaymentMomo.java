@@ -174,6 +174,9 @@ public class PaymentMomo {
             // 14. Lưu HoaDon với status PENDING
             HoaDon hoaDon = new HoaDon();
             hoaDon.setIdHoaDon(idHoaDon); // Dùng ID_HoaDon ngắn (HD###)
+            // set khóa ngoại thô để mapping khớp với DB (ID_LH, ID_HS NOT NULL)
+            hoaDon.setIdLh(lopHoc.getIdLh());
+            hoaDon.setIdHs(hocSinh.getIdHs());
             hoaDon.setLopHoc(lopHoc);
             hoaDon.setHocSinh(hocSinh);
             hoaDon.setNgayDangKy(LocalDate.now());
