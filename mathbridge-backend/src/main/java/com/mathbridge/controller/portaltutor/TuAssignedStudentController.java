@@ -2,7 +2,6 @@
 
 import com.mathbridge.dto.portaltutor.TuAssignedStudentResponseDTO;
 import com.mathbridge.entity.NhanVien;
-import com.mathbridge.repository.NhanVienRepository;
 import com.mathbridge.service.portaltutor.TuAssignedStudentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.mathbridge.repository.portaltutor.TuNhanVienRepository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +24,10 @@ import java.util.Optional;
 public class TuAssignedStudentController {
 
     private final TuAssignedStudentService assignedStudentService;
-    private final NhanVienRepository nhanVienRepository;
+    private final TuNhanVienRepository nhanVienRepository;
 
     public TuAssignedStudentController(TuAssignedStudentService assignedStudentService,
-            NhanVienRepository nhanVienRepository) {
+            TuNhanVienRepository nhanVienRepository) {
         this.assignedStudentService = assignedStudentService;
         this.nhanVienRepository = nhanVienRepository;
     }
@@ -105,6 +105,28 @@ public class TuAssignedStudentController {
             return ResponseEntity.ok(count);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Lấy chi tiết một học sinh được phân công cho cố vấn
+     * GET /api/portal/tutor/assigned-students/{idHs}?idNv=...
+     */
+    @GetMapping("/{idHs}")
+    public ResponseEntity<?> getAssignedStudentDetail(
+            @PathVariable String idHs,
+            @RequestParam(required = false) String idNv) {
+        try {
+            if (idNv == null || idNv.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("ID cố vấn (idNv) là bắt buộc");
+            }
+
+            TuAssignedStudentResponseDTO student = assignedStudentService.getAssignedStudentDetail(idNv, idHs);
+            return ResponseEntity.ok(student);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Lỗi hệ thống: " + e.getMessage());
         }
     }
 

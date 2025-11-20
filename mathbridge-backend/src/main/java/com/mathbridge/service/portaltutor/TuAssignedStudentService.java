@@ -62,6 +62,29 @@ public class TuAssignedStudentService {
     }
 
     /**
+     * Lấy chi tiết một học sinh được phân công cho cố vấn
+     */
+    public TuAssignedStudentResponseDTO getAssignedStudentDetail(String idNv, String idHs) {
+        if (idNv == null || idHs == null) {
+            throw new RuntimeException("ID cố vấn và ID học sinh không được để trống");
+        }
+        
+        List<CoVanHocSinh> list = coVanHocSinhRepository.findByTutorIdAndStudentId(idNv, idHs);
+        if (list == null || list.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy phân công cho cố vấn: " + idNv + " và học sinh: " + idHs);
+        }
+
+        // Lấy phân công mới nhất (theo ngayBatDau)
+        CoVanHocSinh assignment = list.stream()
+                .max(Comparator.comparing(
+                        a -> a.getId() != null && a.getId().getNgayBatDau() != null ? a.getId().getNgayBatDau()
+                                : LocalDateTime.MIN))
+                .orElse(list.get(0));
+
+        return convertToDTO(assignment);
+    }
+
+    /**
      * Kiểm tra cố vấn (idNv) có đang phụ trách học sinh (idHs) hay không
      * Trả về true nếu tồn tại phân công với trạng thái đang phụ trách và chưa kết
      * thúc
@@ -151,15 +174,26 @@ public class TuAssignedStudentService {
             dto.setThoiGianCapNhat(hocSinh.getThoiGianCapNhat());
 
             // Lấy thông tin lớp học (nếu có) từ các đăng ký lớp của học sinh
+            // Ưu tiên lấy lớp học có trạng thái đang hoạt động
             if (hocSinh.getDangKyLhs() != null && !hocSinh.getDangKyLhs().isEmpty()) {
-                // Lấy một lớp hiện tại (chọn bất kỳ đăng ký có lớp) - không cố gắng quá nhiều
-                // logic ở đây
                 hocSinh.getDangKyLhs().stream()
                         .filter(dk -> dk.getLopHoc() != null)
+                        .filter(dk -> {
+                            String trangThai = dk.getLopHoc().getTrangThai();
+                            return trangThai != null && 
+                                   (trangThai.equals("Đang mở") || 
+                                    trangThai.equals("Dang mo") ||
+                                    trangThai.equals("Dự Kiến") ||
+                                    trangThai.equals("Du Kien"));
+                        })
                         .findFirst()
+                        .or(() -> hocSinh.getDangKyLhs().stream()
+                                .filter(dk -> dk.getLopHoc() != null)
+                                .findFirst())
                         .ifPresent(dk -> {
                             dto.setClassId(dk.getLopHoc().getIdLh());
-                            dto.setClassName(dk.getLopHoc().getTenLop());
+                            dto.setClassName(dk.getLopHoc().getTenLop() != null ? 
+                                           dk.getLopHoc().getTenLop() : "");
                         });
             }
         }

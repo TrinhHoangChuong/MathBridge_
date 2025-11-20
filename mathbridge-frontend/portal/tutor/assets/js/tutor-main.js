@@ -1125,10 +1125,37 @@ class TutorDashboard {
     // Open modal
     if (modal) modal.classList.add("active");
 
-    // Fetch dashboard for this student as tutor
+    // First, fetch basic student details
     window.tutorAPI
-      .getStudentDashboardForTutor(idNv, idHs)
-      .then((dashboard) => {
+      .getStudentDetails(idHs, idNv)
+      .then((student) => {
+        if (!student) {
+          showNotification(
+            "Không tìm thấy thông tin học sinh.",
+            "warning"
+          );
+          if (modal) modal.classList.remove("active");
+          return;
+        }
+
+        // Fill basic info from student details
+        if (nameEl) nameEl.textContent = student.hoTen || student.name || "-";
+        if (emailEl) emailEl.textContent = student.email || "-";
+        if (phoneEl) phoneEl.textContent = student.sdt || student.phone || "-";
+        if (addressEl) addressEl.textContent = student.diaChi || student.address || "-";
+        if (primaryClassEl) {
+          const className = student.className || student.class || "-";
+          primaryClassEl.textContent = `Lớp: ${className}`;
+        }
+
+        // Then try to fetch full dashboard for additional details
+        return window.tutorAPI
+          .getStudentDashboardForTutor(idNv, idHs)
+          .then((dashboard) => {
+            if (!dashboard) {
+              // If dashboard fails, at least we have basic info
+              return;
+            }
         if (!dashboard) {
           showNotification(
             "Không có dữ liệu chi tiết cho học sinh.",
@@ -1137,80 +1164,86 @@ class TutorDashboard {
           return;
         }
 
-        // Basic info
-        if (nameEl)
-          nameEl.textContent = dashboard.fullName || dashboard.studentId || "-";
-        if (emailEl) emailEl.textContent = dashboard.email || "-";
-        if (phoneEl) phoneEl.textContent = dashboard.phone || "-";
-        if (addressEl) addressEl.textContent = dashboard.address || "-";
+            // Update basic info from dashboard if available (may override student details)
+            if (nameEl && dashboard.fullName)
+              nameEl.textContent = dashboard.fullName;
+            if (emailEl && dashboard.email) emailEl.textContent = dashboard.email;
+            if (phoneEl && dashboard.phone) phoneEl.textContent = dashboard.phone;
+            if (addressEl && dashboard.address) addressEl.textContent = dashboard.address;
 
-        // Primary class - use first class in list
-        const classes = dashboard.classes || [];
-        if (classes.length > 0) {
-          const first = classes[0];
-          if (primaryClassEl)
-            primaryClassEl.textContent = `Lớp: ${
-              first.className || first.classId || "-"
-            }`;
-        } else {
-          if (primaryClassEl) primaryClassEl.textContent = "Lớp: -";
-        }
+            // Primary class - use first class in list
+            const classes = dashboard.classes || [];
+            if (classes.length > 0) {
+              const first = classes[0];
+              if (primaryClassEl)
+                primaryClassEl.textContent = `Lớp: ${
+                  first.className || first.classId || "-"
+                }`;
+            }
 
-        // Stats
-        const stats = dashboard.stats || {};
-        if (avgEl)
-          avgEl.textContent =
-            stats.averageGrade != null ? stats.averageGrade : "-";
-        if (sessionsEl)
-          sessionsEl.textContent =
-            stats.todayClasses != null ? stats.todayClasses : "-";
-        if (attendanceEl)
-          attendanceEl.textContent =
-            stats.attendanceRate != null ? stats.attendanceRate + "%" : "-";
+            // Stats
+            const stats = dashboard.stats || {};
+            if (avgEl)
+              avgEl.textContent =
+                stats.averageGrade != null ? stats.averageGrade : "-";
+            if (sessionsEl)
+              sessionsEl.textContent =
+                stats.todayClasses != null ? stats.todayClasses : "-";
+            if (attendanceEl)
+              attendanceEl.textContent =
+                stats.attendanceRate != null ? stats.attendanceRate + "%" : "-";
 
-        // Populate classes list
-        if (classesList) {
-          classesList.innerHTML = "";
-          classes.forEach((c) => {
-            const li = document.createElement("li");
-            li.textContent = `${c.className || c.classId || "-"} - Giáo viên: ${
-              c.teacherName || "-"
-            }`;
-            classesList.appendChild(li);
+            // Populate classes list
+            if (classesList) {
+              classesList.innerHTML = "";
+              classes.forEach((c) => {
+                const li = document.createElement("li");
+                li.textContent = `${c.className || c.classId || "-"} - Giáo viên: ${
+                  c.teacherName || "-"
+                }`;
+                classesList.appendChild(li);
+              });
+              if (classes.length === 0)
+                classesList.innerHTML = "<li>Không có lớp nào</li>";
+            }
+
+            // Populate assignments
+            if (assignmentsList) {
+              assignmentsList.innerHTML = "";
+              const assignments = dashboard.assignments || [];
+              assignments.forEach((a) => {
+                const li = document.createElement("li");
+                li.textContent = `${a.title || "-"} (${a.className || "-"}) - ${
+                  a.status || ""
+                } ${a.grade ? " - Điểm: " + a.grade : ""}`;
+                assignmentsList.appendChild(li);
+              });
+              if (assignments.length === 0)
+                assignmentsList.innerHTML = "<li>Không có bài tập</li>";
+            }
+
+            // Populate grades
+            if (gradesList) {
+              gradesList.innerHTML = "";
+              const grades = dashboard.grades || [];
+              grades.forEach((g) => {
+                const li = document.createElement("li");
+                li.textContent = `${g.gradeType || g.subject || "Kết quả"} - ${
+                  g.className || "-"
+                }: ${g.score || "-"} ${g.feedback ? "(" + g.feedback + ")" : ""}`;
+                gradesList.appendChild(li);
+              });
+              if (grades.length === 0)
+                gradesList.innerHTML = "<li>Không có kết quả</li>";
+            }
+          })
+          .catch((dashboardErr) => {
+            // Dashboard fetch failed, but we already have basic info
+            console.warn("Could not load full dashboard, using basic info only:", dashboardErr);
+            if (classesList) classesList.innerHTML = "<li>Không thể tải danh sách lớp</li>";
+            if (assignmentsList) assignmentsList.innerHTML = "<li>Không thể tải bài tập</li>";
+            if (gradesList) gradesList.innerHTML = "<li>Không thể tải kết quả</li>";
           });
-          if (classes.length === 0)
-            classesList.innerHTML = "<li>Không có lớp nào</li>";
-        }
-
-        // Populate assignments
-        if (assignmentsList) {
-          assignmentsList.innerHTML = "";
-          const assignments = dashboard.assignments || [];
-          assignments.forEach((a) => {
-            const li = document.createElement("li");
-            li.textContent = `${a.title || "-"} (${a.className || "-"}) - ${
-              a.status || ""
-            } ${a.grade ? " - Điểm: " + a.grade : ""}`;
-            assignmentsList.appendChild(li);
-          });
-          if (assignments.length === 0)
-            assignmentsList.innerHTML = "<li>Không có bài tập</li>";
-        }
-
-        // Populate grades
-        if (gradesList) {
-          gradesList.innerHTML = "";
-          const grades = dashboard.grades || [];
-          grades.forEach((g) => {
-            const li = document.createElement("li");
-            li.textContent = `${g.gradeType || g.subject || "Kết quả"} - ${
-              g.className || "-"
-            }: ${g.score || "-"} ${g.feedback ? "(" + g.feedback + ")" : ""}`;
-            gradesList.appendChild(li);
-          });
-          if (grades.length === 0)
-            gradesList.innerHTML = "<li>Không có kết quả</li>";
-        }
       })
       .catch((err) => {
         console.error("Error loading student dashboard:", err);
@@ -3727,7 +3760,18 @@ class TutorDashboard {
 // Assigned Students functions
 async function viewStudentDetails(studentId) {
   try {
-    const student = await window.tutorAPI.getStudentDetails(studentId);
+    // Lấy idNv từ tutorInfo hoặc currentTutorId
+    const tutorDashboard = window.tutorDashboard;
+    const idNv = tutorDashboard?.currentTutorId || 
+                 tutorDashboard?.tutorInfo?.idNv || 
+                 tutorDashboard?.tutorInfo?.id;
+    
+    if (!idNv) {
+      showNotification("Không xác định được ID cố vấn. Vui lòng thử lại.", "error");
+      return;
+    }
+    
+    const student = await window.tutorAPI.getStudentDetails(studentId, idNv);
     showStudentDetailsModal(student);
   } catch (error) {
     console.error("Error fetching student details:", error);
@@ -3969,39 +4013,57 @@ async function getQuickResponse(type) {
 function showStudentDetailsModal(student) {
   const modal = document.createElement("div");
   modal.className = "modal";
+  
+  // Map dữ liệu từ DTO backend
+  const studentName = student.hoTen || student.name || "N/A";
+  const className = student.className || student.class || "Chưa có lớp";
+  const email = student.email || "N/A";
+  const phone = student.sdt || student.phone || "N/A";
+  const address = student.diaChi || student.address || "N/A";
+  const gender = student.gioiTinh ? (student.gioiTinh === true ? "Nam" : "Nữ") : "N/A";
+  const status = student.trangThai || student.status || "N/A";
+  const note = student.ghiChu || student.notes || "Chưa có ghi chú";
+  const studentId = student.idHs || student.id || "";
+  
   modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Chi tiết học sinh</h3>
-                    <span class="close">&times;</span>
+                    <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
                 </div>
                 <div class="modal-body">
                     <div class="student-details">
-                        <h4>${student.name}</h4>
-                        <p><strong>Lớp:</strong> ${student.class}</p>
-                        <p><strong>Chương trình:</strong> ${student.program}</p>
-                        <p><strong>Tiến độ học tập:</strong> ${
-                          student.progress
-                        }%</p>
-                        <p><strong>Điểm trung bình:</strong> ${
-                          student.averageGrade
-                        }</p>
-                        <p><strong>Trạng thái:</strong> ${student.status}</p>
-                        <p><strong>Ghi chú:</strong> ${
-                          student.notes || "Chưa có ghi chú"
-                        }</p>
+                        <h4>${studentName}</h4>
+                        <div class="detail-section">
+                            <h5>Thông tin liên hệ</h5>
+                            <p><strong>Email:</strong> ${email}</p>
+                            <p><strong>Số điện thoại:</strong> ${phone}</p>
+                            <p><strong>Địa chỉ:</strong> ${address}</p>
+                            <p><strong>Giới tính:</strong> ${gender}</p>
+                        </div>
+                        <div class="detail-section">
+                            <h5>Thông tin học tập</h5>
+                            <p><strong>Lớp:</strong> ${className}</p>
+                            <p><strong>Trạng thái phân công:</strong> ${status}</p>
+                            <p><strong>Ghi chú:</strong> ${note}</p>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
-                    <button class="btn btn-primary" onclick="addNote('${
-                      student.id
-                    }')">Thêm ghi chú</button>
+                    <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Đóng</button>
+                    ${studentId ? `<button class="btn btn-primary" onclick="addNote('${studentId}')">Thêm ghi chú</button>` : ''}
                 </div>
             </div>
         `;
   document.body.appendChild(modal);
   modal.style.display = "block";
+  
+  // Đóng modal khi click bên ngoài
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
 }
 
 function showReportModal(report) {

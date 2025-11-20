@@ -18,9 +18,12 @@ public interface TuCoVanHocSinhRepository extends JpaRepository<CoVanHocSinh, Co
      * Chỉ lấy những học sinh đang được phân công (TrangThai = "Dang phu trach" 
      * và (NgayKetThuc IS NULL hoặc NgayKetThuc > hiện tại))
      */
-    @Query("SELECT cvhs FROM CoVanHocSinh cvhs " +
+    @Query("SELECT DISTINCT cvhs FROM CoVanHocSinh cvhs " +
            "LEFT JOIN FETCH cvhs.hocSinh hs " +
            "LEFT JOIN FETCH hs.taiKhoan " +
+           "LEFT JOIN FETCH hs.dangKyLhs dk " +
+           "LEFT JOIN FETCH dk.lopHoc lh " +
+           "LEFT JOIN FETCH lh.chuongTrinh " +
            "WHERE cvhs.id.idNv = :idNv " +
            "AND (cvhs.trangThai = 'Dang phu trach' OR cvhs.trangThai IS NULL) " +
            "AND (cvhs.ngayKetThuc IS NULL OR cvhs.ngayKetThuc > :currentTime) " +
@@ -31,9 +34,12 @@ public interface TuCoVanHocSinhRepository extends JpaRepository<CoVanHocSinh, Co
     /**
      * Lấy tất cả học sinh được phân công (bao gồm cả đã kết thúc)
      */
-    @Query("SELECT cvhs FROM CoVanHocSinh cvhs " +
+    @Query("SELECT DISTINCT cvhs FROM CoVanHocSinh cvhs " +
            "LEFT JOIN FETCH cvhs.hocSinh hs " +
            "LEFT JOIN FETCH hs.taiKhoan " +
+           "LEFT JOIN FETCH hs.dangKyLhs dk " +
+           "LEFT JOIN FETCH dk.lopHoc lh " +
+           "LEFT JOIN FETCH lh.chuongTrinh " +
            "WHERE cvhs.id.idNv = :idNv " +
            "ORDER BY cvhs.id.ngayBatDau DESC")
     List<CoVanHocSinh> findAllStudentsByTutorId(@Param("idNv") String idNv);
@@ -41,9 +47,12 @@ public interface TuCoVanHocSinhRepository extends JpaRepository<CoVanHocSinh, Co
     /**
      * Lấy học sinh được phân công theo trạng thái
      */
-    @Query("SELECT cvhs FROM CoVanHocSinh cvhs " +
+    @Query("SELECT DISTINCT cvhs FROM CoVanHocSinh cvhs " +
            "LEFT JOIN FETCH cvhs.hocSinh hs " +
            "LEFT JOIN FETCH hs.taiKhoan " +
+           "LEFT JOIN FETCH hs.dangKyLhs dk " +
+           "LEFT JOIN FETCH dk.lopHoc lh " +
+           "LEFT JOIN FETCH lh.chuongTrinh " +
            "WHERE cvhs.id.idNv = :idNv " +
            "AND cvhs.trangThai = :trangThai " +
            "ORDER BY cvhs.id.ngayBatDau DESC")
@@ -53,9 +62,12 @@ public interface TuCoVanHocSinhRepository extends JpaRepository<CoVanHocSinh, Co
     /**
      * Lấy thông tin phân công cụ thể của một học sinh và cố vấn
      */
-    @Query("SELECT cvhs FROM CoVanHocSinh cvhs " +
+    @Query("SELECT DISTINCT cvhs FROM CoVanHocSinh cvhs " +
            "LEFT JOIN FETCH cvhs.hocSinh hs " +
            "LEFT JOIN FETCH hs.taiKhoan " +
+           "LEFT JOIN FETCH hs.dangKyLhs dk " +
+           "LEFT JOIN FETCH dk.lopHoc lh " +
+           "LEFT JOIN FETCH lh.chuongTrinh " +
            "LEFT JOIN FETCH cvhs.nhanVien nv " +
            "WHERE cvhs.id.idNv = :idNv " +
            "AND cvhs.id.idHs = :idHs " +

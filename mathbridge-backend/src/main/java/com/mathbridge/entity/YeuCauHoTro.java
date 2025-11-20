@@ -21,6 +21,9 @@ public class YeuCauHoTro {
     @Column(name = "ID_LH", length = 10)
     private String idLh;
 
+    @Column(name = "ID_HS", length = 10)
+    private String idHs;
+
     @Column(name = "TieuDe", length = 100, nullable = false)
     private String tieuDe;
 
@@ -45,4 +48,8 @@ public class YeuCauHoTro {
     @ManyToOne
     @JoinColumn(name = "ID_LH", insertable = false, updatable = false)
     private LopHoc lopHoc;
+
+    @ManyToOne
+    @JoinColumn(name = "ID_HS", insertable = false, updatable = false)
+    private HocSinh hocSinh;
 }

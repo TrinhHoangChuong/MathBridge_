@@ -605,8 +605,12 @@ class TutorAPI {
     return await this.request(endpoint);
   }
 
-  async getStudentDetails(studentId) {
-    return await this.request(`/assigned-students/${studentId}`);
+  async getStudentDetails(studentId, idNv = null) {
+    let endpoint = `/assigned-students/${studentId}`;
+    if (idNv) {
+      endpoint += `?idNv=${encodeURIComponent(idNv)}`;
+    }
+    return await this.request(endpoint);
   }
 
   async getStudentDashboardForTutor(idNv, studentId) {
