@@ -14,10 +14,13 @@ public interface BaiNopStudentRepository extends JpaRepository<BaiNop, String> {
     
     List<BaiNop> findByHocSinh_IdHs(String idHS);
     
-    @Query("SELECT bn FROM BaiNop bn WHERE bn.baiTap.idBt = :idBT AND bn.hocSinh.idHs = :idHS")
-    Optional<BaiNop> findByBaiTapAndHocSinh(@Param("idBT") String idBT, @Param("idHS") String idHS);
-    
     @Query("SELECT bn FROM BaiNop bn WHERE bn.hocSinh.idHs = :idHS")
     List<BaiNop> findAllByHocSinhId(@Param("idHS") String idHS);
+
+    Optional<BaiNop> findFirstByIdBnAndHocSinh_IdHs(String idBn, String idHs);
+
+    Optional<BaiNop> findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByThoiGianBatDauDesc(String idBT, String idHS);
+
+    long countByBaiTap_IdBtAndHocSinh_IdHs(String idBT, String idHS);
 }
 

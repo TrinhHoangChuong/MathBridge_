@@ -1,3 +1,389 @@
+/*
+    renderAssignmentWorkspace(detail) {
+        const questions = detail.questions || [];
+        if (!questions.length) {
+            this.renderAssignmentPreview(detail);
+            return;
+        }
+
+        const questionsHtml = questions.map((question, index) => {
+            const stored = this.assignmentAnswers[question.questionId] || {};
+            return `
+                <div class="assignment-question-card" data-question-id="${question.questionId}" data-question-type="${question.type || 'ESSAY'}">
+                    <div class="question-header">
+                        <span>Câu ${index + 1}</span>
+                        ${question.points ? `<span class="question-points">${question.points} điểm</span>` : ''}
+                    </div>
+                    <p class="question-content">${question.content || ''}</p>
+                    ${this.renderQuestionInput(question, stored)}
+                </div>
+            `;
+        }).join('');
+
+        const warning = detail.warningMessage || 'Thời gian bắt đầu tính khi bạn vào bài. Hết giờ hệ thống sẽ tự động nộp.';
+        const warningHtml = warning.replace(/\n/g, '<br>');
+
+        const content = `
+            <div class="assignment-live-header">
+                <div>
+                    <p class="assignment-class">${detail.className || ''}</p>
+                    <p class="assignment-warning">${warningHtml}</p>
+                </div>
+                <div class="assignment-countdown-container">
+                    <span><i class="fas fa-clock"></i> Thời gian còn lại</span>
+                    <strong id="assignmentCountdown">--:--</strong>
+                </div>
+            </div>
+            <div class="assignment-question-wrapper">
+                ${questionsHtml}
+            </div>
+            <div class="assignment-modal-actions">
+                <button class="btn btn-secondary" id="assignmentSaveDraft">
+                    <i class="fas fa-save"></i> Lưu nháp
+                </button>
+                <button class="btn btn-warning" id="assignmentClose">
+                    <i class="fas fa-door-open"></i> Thoát
+                </button>
+                <button class="btn btn-success" id="assignmentSubmit">
+                    <i class="fas fa-paper-plane"></i> Nộp bài
+                </button>
+            </div>
+        `;
+
+        this.showModal(`Làm bài: ${detail.title}`, content, 'assignment-modal');
+        this.bindAssignmentEvents(detail);
+    }
+
+    renderQuestionInput(question, storedAnswer = {}) {
+        const type = (question.type || '').toUpperCase();
+        if (type === 'MULTIPLE_CHOICE' && Array.isArray(question.options)) {
+            return `
+                <div class="assignment-options">
+                    ${question.options.map((option, idx) => {
+                        const optionId = `q_${question.questionId}_${idx}`;
+                        const checked = storedAnswer.answer === option ? 'checked' : '';
+                        return `
+                            <label class="assignment-option" for="${optionId}">
+                                <input type="radio" name="q_${question.questionId}" id="${optionId}" value="${option}" ${checked}>
+                                <span>${option}</span>
+                            </label>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        return `
+            <textarea class="assignment-answer-textarea" rows="4" data-question-text="${question.questionId}"
+                placeholder="Nhập câu trả lời...">${storedAnswer.answerText || ''}</textarea>
+        `;
+    }
+
+    bindAssignmentEvents(detail) {
+        const modal = document.querySelector('.modal.assignment-modal');
+        if (!modal) return;
+
+        // Prevent closing modal by clicking overlay when assignment is active
+        const overlay = modal.querySelector('.modal-overlay');
+        if (overlay) {
+            overlay.style.pointerEvents = 'none';
+        }
+
+        // Add beforeunload warning when assignment is active (for closing tab/window)
+        const beforeUnloadHandler = (e) => {
+            if (this.activeAssignmentSession) {
+                e.preventDefault();
+                e.returnValue = 'Bạn đang làm bài tập. Nếu rời trang, thời gian vẫn tiếp tục chạy và bài làm có thể bị mất. Bạn có chắc chắn muốn rời trang?';
+                return e.returnValue;
+            }
+        };
+        window.addEventListener('beforeunload', beforeUnloadHandler);
+        
+        // Add visibilitychange warning when switching tabs
+        const visibilityChangeHandler = () => {
+            if (this.activeAssignmentSession && document.hidden) {
+                // Show notification when tab becomes hidden
+                this.showNotification('⚠️ Bạn đã chuyển sang tab khác. Thời gian làm bài vẫn tiếp tục chạy!', 'warning', 5000);
+            }
+        };
+        document.addEventListener('visibilitychange', visibilityChangeHandler);
+        
+        // Store handler references for cleanup
+        modal.dataset.beforeUnloadHandler = 'active';
+        modal._beforeUnloadHandler = beforeUnloadHandler;
+        modal._visibilityChangeHandler = visibilityChangeHandler;
+
+        modal.querySelectorAll('.assignment-option input').forEach(input => {
+            input.addEventListener('change', (event) => {
+                const card = event.target.closest('.assignment-question-card');
+                const questionId = card.dataset.questionId;
+                this.assignmentAnswers[questionId] = {
+                    questionId,
+                    answer: event.target.value
+                };
+                this.persistAssignmentSession();
+            });
+        });
+
+        modal.querySelectorAll('.assignment-answer-textarea').forEach(textarea => {
+            textarea.addEventListener('input', (event) => {
+                const questionId = event.target.getAttribute('data-question-text');
+                this.assignmentAnswers[questionId] = {
+                    questionId,
+                    answerText: event.target.value
+                };
+                this.persistAssignmentSession();
+            });
+        });
+
+        const saveDraftBtn = modal.querySelector('#assignmentSaveDraft');
+        if (saveDraftBtn) {
+            saveDraftBtn.addEventListener('click', () => this.saveDraft());
+        }
+
+        const submitBtn = modal.querySelector('#assignmentSubmit');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => this.submitAssignment());
+        }
+
+        const closeBtn = modal.querySelector('#assignmentClose');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (this.activeAssignmentSession) {
+                    const confirmed = window.confirm('Bạn đang làm bài tập. Nếu thoát, thời gian vẫn tiếp tục chạy. Bạn có chắc chắn muốn thoát?');
+                    if (!confirmed) {
+                        return;
+                    }
+                }
+                // Remove beforeunload and visibilitychange handlers when closing
+                const beforeUnloadHandler = modal._beforeUnloadHandler;
+                if (beforeUnloadHandler) {
+                    window.removeEventListener('beforeunload', beforeUnloadHandler);
+                    delete modal._beforeUnloadHandler;
+                }
+                const visibilityChangeHandler = modal._visibilityChangeHandler;
+                if (visibilityChangeHandler) {
+                    document.removeEventListener('visibilitychange', visibilityChangeHandler);
+                    delete modal._visibilityChangeHandler;
+                }
+                this.persistAssignmentSession();
+                this.closeModal();
+            });
+        }
+    }
+
+    startAssignmentCountdown(expiresAt) {
+        this.stopAssignmentCountdown();
+        if (!expiresAt) return;
+        const endTime = new Date(expiresAt).getTime();
+        if (Number.isNaN(endTime)) return;
+
+        this.assignmentCountdownInterval = setInterval(() => {
+            const now = Date.now();
+            const diff = Math.max(0, endTime - now);
+            const countdownEl = document.getElementById('assignmentCountdown');
+            if (countdownEl) {
+                const minutes = String(Math.floor(diff / 60000)).padStart(2, '0');
+                const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+                countdownEl.textContent = `${minutes}:${seconds}`;
+                countdownEl.classList.toggle('urgent', diff < 60000);
+            }
+
+            if (diff <= 0) {
+                this.stopAssignmentCountdown();
+                this.autoSubmitAssignment();
+            }
+        }, 1000);
+    }
+
+    stopAssignmentCountdown() {
+        if (this.assignmentCountdownInterval) {
+            clearInterval(this.assignmentCountdownInterval);
+            this.assignmentCountdownInterval = null;
+        }
+    }
+
+    async autoSubmitAssignment() {
+        if (!this.activeAssignmentSession) {
+            return;
+        }
+        this.showNotification('Đã hết giờ, hệ thống đang tự động nộp bài...', 'warning');
+        await this.submitAssignment(true);
+    }
+
+    async submitAssignment(autoSubmit = false) {
+        if (!this.activeAssignmentSession) {
+            this.showNotification('Không tìm thấy phiên làm bài.', 'warning');
+            return;
+        }
+
+        const answersPayload = Object.values(this.assignmentAnswers || {});
+        if (!answersPayload.length && !autoSubmit) {
+            this.showNotification('Vui lòng trả lời ít nhất một câu hỏi.', 'warning');
+            return;
+        }
+
+        try {
+            this.showLoading();
+            const session = this.activeAssignmentSession;
+            const response = await this.apiCall(`/api/portal/student/assignments/${session.assignmentId}/submit`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    submissionId: session.submissionId,
+                    answers: answersPayload
+                })
+            });
+            const detail = response.data || response;
+            this.showNotification(autoSubmit ? 'Hệ thống đã tự động nộp bài.' : 'Đã nộp bài thành công!', 'success');
+            this.clearAssignmentSession(session.assignmentId);
+            
+            // Remove beforeunload and visibilitychange handlers after submission
+            const modal = document.querySelector('.modal.assignment-modal');
+            if (modal) {
+                if (modal._beforeUnloadHandler) {
+                    window.removeEventListener('beforeunload', modal._beforeUnloadHandler);
+                    delete modal._beforeUnloadHandler;
+                }
+                if (modal._visibilityChangeHandler) {
+                    document.removeEventListener('visibilitychange', modal._visibilityChangeHandler);
+                    delete modal._visibilityChangeHandler;
+                }
+            }
+            
+            this.closeModal();
+            this.stopAssignmentCountdown();
+            this.renderAssignmentPreview(detail);
+            this.loadDashboardData();
+        } catch (error) {
+            console.error('Submit assignment error:', error);
+            this.showNotification(error.message || 'Không thể nộp bài', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    saveDraft() {
+        this.persistAssignmentSession();
+        this.showNotification('Đã lưu nháp bài làm!', 'success');
+    }
+
+    persistAssignmentSession() {
+        if (!this.activeAssignmentSession) return;
+        this.activeAssignmentSession.answers = this.assignmentAnswers;
+        this.saveAssignmentSession();
+    }
+
+    saveAssignmentSession() {
+        if (!this.activeAssignmentSession) return;
+        const key = `mb_assignment_session_${this.activeAssignmentSession.assignmentId}`;
+        localStorage.setItem(key, JSON.stringify(this.activeAssignmentSession));
+    }
+
+    loadAssignmentSession(assignmentId) {
+        const key = `mb_assignment_session_${assignmentId}`;
+        try {
+            const raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : null;
+        } catch (error) {
+            console.warn('Failed to parse assignment session:', error);
+            return null;
+        }
+    }
+
+    clearAssignmentSession(assignmentId) {
+        const key = `mb_assignment_session_${assignmentId}`;
+        localStorage.removeItem(key);
+        if (this.activeAssignmentSession && this.activeAssignmentSession.assignmentId === assignmentId) {
+            this.activeAssignmentSession = null;
+            this.assignmentAnswers = {};
+        }
+    }
+
+    resumeStoredAssignmentSession() {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('mb_assignment_session_'));
+        if (!keys.length) return;
+        try {
+            const session = JSON.parse(localStorage.getItem(keys[0]));
+            if (session && session.assignmentId) {
+                const expiresAt = new Date(session.expiresAt || '');
+                if (expiresAt && expiresAt > new Date()) {
+                    this.assignmentAnswers = session.answers || {};
+                    this.activeAssignmentSession = session;
+                    this.fetchAssignmentDetail(session.assignmentId, { resume: true });
+                } else {
+                    localStorage.removeItem(keys[0]);
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to restore assignment session:', error);
+        }
+    }
+
+    restoreAssignmentSession() {
+        if (this.activeAssignmentSession) {
+            return;
+        }
+        this.resumeStoredAssignmentSession();
+    }
+
+    renderAssignmentPreview(assignment) {
+        const statusBadge = `<span class="status-badge ${assignment.status}">${this.getAssignmentStatusText(assignment.status)}</span>`;
+        const content = `
+            <div class="assignment-detail-modal">
+                <h3>${assignment.title}</h3>
+                <div class="assignment-detail-content">
+                    <div class="detail-section">
+                        <h4>Thông tin bài tập</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <label>Lớp:</label>
+                                <span>${assignment.className || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Hạn nộp:</label>
+                                <span>${this.formatDate(assignment.dueDate)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Trạng thái:</label>
+                                ${statusBadge}
+                            </div>
+                            <div class="detail-item">
+                                <label>Thời lượng:</label>
+                                <span>${assignment.durationMinutes ? `${assignment.durationMinutes} phút` : 'Không giới hạn'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Mô tả</h4>
+                        <p>${assignment.description || 'Không có mô tả.'}</p>
+                    </div>
+                    ${assignment.warningMessage ? `
+                        <div class="detail-section">
+                            <h4>Cảnh báo</h4>
+                            <p>${assignment.warningMessage.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    ` : ''}
+                    ${assignment.grade ? `
+                        <div class="detail-section">
+                            <h4>Điểm số</h4>
+                            <p><strong>${assignment.grade}/10</strong></p>
+                            ${assignment.feedback ? `<p><strong>Nhận xét:</strong> ${assignment.feedback}</p>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        this.showModal('Chi tiết bài tập', content, 'assignment-preview-modal');
+    }
+
+    viewSubmission(assignmentId) {
+        this.fetchAssignmentDetail(assignmentId, { viewOnly: true });
+    }
+
+    viewAssignmentDetails(assignmentId) {
+        this.fetchAssignmentDetail(assignmentId, { viewOnly: true });
+    }
+*/
 // Student Dashboard JavaScript
 import { CONFIG } from '../../assets/js/config.js';
 
@@ -11,6 +397,12 @@ class StudentDashboard {
         this.currentWeek = this.getWeekNumber(new Date());
         this.scheduleView = 'month'; // 'month' or 'week'
         this.selectedDate = null;
+        this.activeAssignmentSession = null;
+        this.assignmentCountdownInterval = null;
+        this.assignmentAnswers = {};
+        // Prefill UI with cached auth profile so header shows name immediately
+        this.prefillUserInfoFromAuth();
+
         // Check authentication before initializing
         this.checkAuthentication();
         this.init();
@@ -258,6 +650,7 @@ class StudentDashboard {
             this.loadMessages();
             this.loadHistory();
             this.loadSupportRequests();
+            this.restoreAssignmentSession();
 
         } catch (error) {
             console.error('Backend data loading failed:', error);
@@ -795,36 +1188,32 @@ class StudentDashboard {
         assignmentsGrid.innerHTML = this.studentData.assignments.map(assignment => {
             const statusClass = this.getAssignmentStatusClass(assignment.status);
             const statusText = this.getAssignmentStatusText(assignment.status);
+            const duration = assignment.durationMinutes ? `${assignment.durationMinutes} phút` : 'Không giới hạn';
 
             return `
                 <div class="assignment-card ${statusClass}">
                     <div class="assignment-header">
                         <h3>${assignment.title}</h3>
                         <div class="assignment-meta">
-                            <span class="assignment-class">${assignment.className}</span>
+                            <span class="assignment-class">${assignment.className || ''}</span>
                             <span class="assignment-due">Hạn nộp: ${this.formatDate(assignment.dueDate)}</span>
                         </div>
                     </div>
                     <div class="assignment-body">
                         <div class="assignment-description">
-                            <p>${assignment.description}</p>
+                            <p>${assignment.description || ''}</p>
                         </div>
                         <div class="assignment-progress">
                             <div class="progress-info">
                                 <span>Trạng thái: ${statusText}</span>
                                 ${assignment.grade ? `<span>Điểm: ${assignment.grade}/10</span>` : '<span>Điểm: Chưa có</span>'}
+                                <span>Thời lượng: ${duration}</span>
+                                ${assignment.allowRetry ? `<span>Cho phép làm lại${assignment.attemptCount ? ` - Đã làm ${assignment.attemptCount} lần` : ''}</span>` : ''}
                             </div>
                         </div>
                     </div>
                     <div class="assignment-actions">
-                        ${assignment.status === 'pending' ?
-                            `<button class="btn btn-primary" onclick="dashboard.startAssignment('${assignment.assignmentId}')">
-                                <i class="fas fa-play"></i> Làm bài
-                            </button>` :
-                            `<button class="btn btn-success" onclick="dashboard.viewSubmission('${assignment.assignmentId}')">
-                                <i class="fas fa-eye"></i> Xem kết quả
-                            </button>`
-                        }
+                        ${this.getAssignmentActionButton(assignment)}
                         <button class="btn btn-info" onclick="dashboard.viewAssignmentDetails('${assignment.assignmentId}')">
                             <i class="fas fa-eye"></i> Xem chi tiết
                         </button>
@@ -832,6 +1221,489 @@ class StudentDashboard {
                 </div>
             `;
         }).join('');
+    }
+
+    getAssignmentActionButton(assignment) {
+        const allowRetry = !!assignment.allowRetry;
+        const canRetry = !!assignment.canRetry;
+        const resultButton = `
+            <button class="btn btn-success" onclick="dashboard.viewSubmission('${assignment.assignmentId}')">
+                <i class="fas fa-eye"></i> Xem kết quả
+            </button>
+        `;
+
+        switch (assignment.status) {
+            case 'pending':
+                return `
+                    <button class="btn btn-primary" onclick="dashboard.startAssignment('${assignment.assignmentId}')">
+                        <i class="fas fa-play"></i> Làm bài
+                    </button>
+                `;
+            case 'in_progress':
+                return `
+                    <button class="btn btn-warning" onclick="dashboard.resumeAssignment('${assignment.assignmentId}')">
+                        <i class="fas fa-forward"></i> Tiếp tục
+                    </button>
+                `;
+            case 'submitted':
+            case 'graded':
+                if (allowRetry && canRetry) {
+                    return `
+                        <button class="btn btn-warning" onclick="dashboard.startAssignment('${assignment.assignmentId}')">
+                            <i class="fas fa-redo"></i> Làm lại
+                        </button>
+                        ${resultButton}
+                    `;
+                }
+                return resultButton;
+            default:
+                return `
+                    <button class="btn btn-secondary" onclick="dashboard.viewAssignmentDetails('${assignment.assignmentId}')">
+                        <i class="fas fa-info-circle"></i> Chi tiết
+                    </button>
+                `;
+        }
+    }
+
+    renderAssignmentWorkspace(detail) {
+        const questions = detail.questions || [];
+        if (!questions.length) {
+            this.renderAssignmentPreview(detail);
+            return;
+        }
+
+        const questionsHtml = questions.map((question, index) => {
+            const stored = this.assignmentAnswers[question.questionId] || {};
+            return `
+                <div class="assignment-question-card" data-question-id="${question.questionId}" data-question-type="${question.type || 'ESSAY'}">
+                    <div class="question-header">
+                        <span>Câu ${index + 1}</span>
+                        ${question.points ? `<span class="question-points">${question.points} điểm</span>` : ''}
+                    </div>
+                    <p class="question-content">${question.content || ''}</p>
+                    ${this.renderQuestionInput(question, stored)}
+                </div>
+            `;
+        }).join('');
+
+        const warning = detail.warningMessage || 'Thời gian bắt đầu tính khi bạn vào bài. Hết giờ hệ thống sẽ tự động nộp.';
+        const warningHtml = warning.replace(/\n/g, '<br>');
+
+        const content = `
+            <div class="assignment-live-header">
+                <div>
+                    <p class="assignment-class">${detail.className || ''}</p>
+                    <p class="assignment-warning">${warningHtml}</p>
+                </div>
+                <div class="assignment-countdown-container">
+                    <span><i class="fas fa-clock"></i> Thời gian còn lại</span>
+                    <strong id="assignmentCountdown">--:--</strong>
+                </div>
+            </div>
+            <div class="assignment-question-wrapper">
+                ${questionsHtml}
+            </div>
+            <div class="assignment-modal-actions">
+                <button class="btn btn-secondary" id="assignmentSaveDraft">
+                    <i class="fas fa-save"></i> Lưu nháp
+                </button>
+                <button class="btn btn-warning" id="assignmentClose">
+                    <i class="fas fa-door-open"></i> Thoát
+                </button>
+                <button class="btn btn-success" id="assignmentSubmit">
+                    <i class="fas fa-paper-plane"></i> Nộp bài
+                </button>
+            </div>
+        `;
+
+        this.showModal(`Làm bài: ${detail.title}`, content, 'assignment-modal');
+        this.bindAssignmentEvents(detail);
+    }
+
+    renderQuestionInput(question, storedAnswer = {}) {
+        const type = (question.type || '').toUpperCase();
+        if (type === 'MULTIPLE_CHOICE' && Array.isArray(question.options)) {
+            return `
+                <div class="assignment-options">
+                    ${question.options.map((option, idx) => {
+                        const optionId = `q_${question.questionId}_${idx}`;
+                        const checked = storedAnswer.answer === option ? 'checked' : '';
+                        return `
+                            <label class="assignment-option" for="${optionId}">
+                                <input type="radio" name="q_${question.questionId}" id="${optionId}" value="${option}" ${checked}>
+                                <span>${option}</span>
+                            </label>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        return `
+            <textarea class="assignment-answer-textarea" rows="4" data-question-text="${question.questionId}"
+                placeholder="Nhập câu trả lời...">${storedAnswer.answerText || ''}</textarea>
+        `;
+    }
+
+    bindAssignmentEvents(detail) {
+        const modal = document.querySelector('.modal.assignment-modal');
+        if (!modal) return;
+
+        // Prevent closing modal by clicking overlay when assignment is active
+        const overlay = modal.querySelector('.modal-overlay');
+        if (overlay) {
+            overlay.style.pointerEvents = 'none';
+        }
+
+        // Add beforeunload warning when assignment is active (for closing tab/window)
+        const beforeUnloadHandler = (e) => {
+            if (this.activeAssignmentSession) {
+                e.preventDefault();
+                e.returnValue = 'Bạn đang làm bài tập. Nếu rời trang, thời gian vẫn tiếp tục chạy và bài làm có thể bị mất. Bạn có chắc chắn muốn rời trang?';
+                return e.returnValue;
+            }
+        };
+        window.addEventListener('beforeunload', beforeUnloadHandler);
+        
+        // Add visibilitychange warning when switching tabs
+        const visibilityChangeHandler = () => {
+            if (this.activeAssignmentSession && document.hidden) {
+                // Show notification when tab becomes hidden
+                this.showNotification('⚠️ Bạn đã chuyển sang tab khác. Thời gian làm bài vẫn tiếp tục chạy!', 'warning', 5000);
+            }
+        };
+        document.addEventListener('visibilitychange', visibilityChangeHandler);
+        
+        // Store handler references for cleanup
+        modal.dataset.beforeUnloadHandler = 'active';
+        modal._beforeUnloadHandler = beforeUnloadHandler;
+        modal._visibilityChangeHandler = visibilityChangeHandler;
+
+        modal.querySelectorAll('.assignment-option input').forEach(input => {
+            input.addEventListener('change', (event) => {
+                const card = event.target.closest('.assignment-question-card');
+                const questionId = card.dataset.questionId;
+                this.assignmentAnswers[questionId] = {
+                    questionId,
+                    answer: event.target.value
+                };
+                this.persistAssignmentSession();
+            });
+        });
+
+        modal.querySelectorAll('.assignment-answer-textarea').forEach(textarea => {
+            textarea.addEventListener('input', (event) => {
+                const questionId = event.target.getAttribute('data-question-text');
+                this.assignmentAnswers[questionId] = {
+                    questionId,
+                    answerText: event.target.value
+                };
+                this.persistAssignmentSession();
+            });
+        });
+
+        const saveDraftBtn = modal.querySelector('#assignmentSaveDraft');
+        if (saveDraftBtn) {
+            saveDraftBtn.addEventListener('click', () => this.saveDraft());
+        }
+
+        const submitBtn = modal.querySelector('#assignmentSubmit');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => this.submitAssignment());
+        }
+
+        const closeBtn = modal.querySelector('#assignmentClose');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (this.activeAssignmentSession) {
+                    const confirmed = window.confirm('Bạn đang làm bài tập. Nếu thoát, thời gian vẫn tiếp tục chạy. Bạn có chắc chắn muốn thoát?');
+                    if (!confirmed) {
+                        return;
+                    }
+                }
+                // Remove beforeunload and visibilitychange handlers when closing
+                const beforeUnloadHandler = modal._beforeUnloadHandler;
+                if (beforeUnloadHandler) {
+                    window.removeEventListener('beforeunload', beforeUnloadHandler);
+                    delete modal._beforeUnloadHandler;
+                }
+                const visibilityChangeHandler = modal._visibilityChangeHandler;
+                if (visibilityChangeHandler) {
+                    document.removeEventListener('visibilitychange', visibilityChangeHandler);
+                    delete modal._visibilityChangeHandler;
+                }
+                this.persistAssignmentSession();
+                this.closeModal();
+            });
+        }
+    }
+
+    startAssignmentCountdown(expiresAt) {
+        this.stopAssignmentCountdown();
+        if (!expiresAt) return;
+        const endTime = new Date(expiresAt).getTime();
+        if (Number.isNaN(endTime)) return;
+
+        this.assignmentCountdownInterval = setInterval(() => {
+            const now = Date.now();
+            const diff = Math.max(0, endTime - now);
+            const countdownEl = document.getElementById('assignmentCountdown');
+            if (countdownEl) {
+                const minutes = String(Math.floor(diff / 60000)).padStart(2, '0');
+                const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+                countdownEl.textContent = `${minutes}:${seconds}`;
+                countdownEl.classList.toggle('urgent', diff < 60000);
+            }
+
+            if (diff <= 0) {
+                this.stopAssignmentCountdown();
+                this.autoSubmitAssignment();
+            }
+        }, 1000);
+    }
+
+    stopAssignmentCountdown() {
+        if (this.assignmentCountdownInterval) {
+            clearInterval(this.assignmentCountdownInterval);
+            this.assignmentCountdownInterval = null;
+        }
+    }
+
+    async autoSubmitAssignment() {
+        if (!this.activeAssignmentSession) {
+            return;
+        }
+        this.showNotification('Đã hết giờ, hệ thống đang tự động nộp bài...', 'warning');
+        await this.submitAssignment(true);
+    }
+
+    async submitAssignment(autoSubmit = false) {
+        if (!this.activeAssignmentSession) {
+            this.showNotification('Không tìm thấy phiên làm bài.', 'warning');
+            return;
+        }
+
+        const answersPayload = Object.values(this.assignmentAnswers || {});
+        if (!answersPayload.length && !autoSubmit) {
+            this.showNotification('Vui lòng trả lời ít nhất một câu hỏi.', 'warning');
+            return;
+        }
+
+        try {
+            this.showLoading();
+            const session = this.activeAssignmentSession;
+            const response = await this.apiCall(`/api/portal/student/assignments/${session.assignmentId}/submit`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    submissionId: session.submissionId,
+                    answers: answersPayload
+                })
+            });
+            const detail = response.data || response;
+            this.showNotification(autoSubmit ? 'Hệ thống đã tự động nộp bài.' : 'Đã nộp bài thành công!', 'success');
+            this.clearAssignmentSession(session.assignmentId);
+            
+            // Remove beforeunload and visibilitychange handlers after submission
+            const modal = document.querySelector('.modal.assignment-modal');
+            if (modal) {
+                if (modal._beforeUnloadHandler) {
+                    window.removeEventListener('beforeunload', modal._beforeUnloadHandler);
+                    delete modal._beforeUnloadHandler;
+                }
+                if (modal._visibilityChangeHandler) {
+                    document.removeEventListener('visibilitychange', modal._visibilityChangeHandler);
+                    delete modal._visibilityChangeHandler;
+                }
+            }
+            
+            this.closeModal();
+            this.stopAssignmentCountdown();
+            this.renderAssignmentPreview(detail);
+            this.loadDashboardData();
+        } catch (error) {
+            console.error('Submit assignment error:', error);
+            this.showNotification(error.message || 'Không thể nộp bài', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    saveDraft() {
+        this.persistAssignmentSession();
+        this.showNotification('Đã lưu nháp bài làm!', 'success');
+    }
+
+    persistAssignmentSession() {
+        if (!this.activeAssignmentSession) return;
+        this.activeAssignmentSession.answers = this.assignmentAnswers;
+        this.saveAssignmentSession();
+    }
+
+    saveAssignmentSession() {
+        if (!this.activeAssignmentSession) return;
+        const key = `mb_assignment_session_${this.activeAssignmentSession.assignmentId}`;
+        localStorage.setItem(key, JSON.stringify(this.activeAssignmentSession));
+    }
+
+    loadAssignmentSession(assignmentId) {
+        const key = `mb_assignment_session_${assignmentId}`;
+        try {
+            const raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : null;
+        } catch (error) {
+            console.warn('Failed to parse assignment session:', error);
+            return null;
+        }
+    }
+
+    clearAssignmentSession(assignmentId) {
+        const key = `mb_assignment_session_${assignmentId}`;
+        localStorage.removeItem(key);
+        if (this.activeAssignmentSession && this.activeAssignmentSession.assignmentId === assignmentId) {
+            this.activeAssignmentSession = null;
+            this.assignmentAnswers = {};
+        }
+    }
+
+    resumeStoredAssignmentSession() {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('mb_assignment_session_'));
+        if (!keys.length) return;
+        try {
+            const session = JSON.parse(localStorage.getItem(keys[0]));
+            if (session && session.assignmentId) {
+                const expiresAt = new Date(session.expiresAt || '');
+                if (expiresAt && expiresAt > new Date()) {
+                    this.assignmentAnswers = session.answers || {};
+                    this.activeAssignmentSession = session;
+                    this.fetchAssignmentDetail(session.assignmentId, { resume: true });
+                } else {
+                    localStorage.removeItem(keys[0]);
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to restore assignment session:', error);
+        }
+    }
+
+    restoreAssignmentSession() {
+        if (this.activeAssignmentSession) {
+            return;
+        }
+        this.resumeStoredAssignmentSession();
+    }
+
+    renderAssignmentPreview(assignment) {
+        const statusBadge = `<span class="status-badge ${assignment.status}">${this.getAssignmentStatusText(assignment.status)}</span>`;
+        const content = `
+            <div class="assignment-detail-modal">
+                <h3>${assignment.title}</h3>
+                <div class="assignment-detail-content">
+                    <div class="detail-section">
+                        <h4>Thông tin bài tập</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <label>Lớp:</label>
+                                <span>${assignment.className || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Hạn nộp:</label>
+                                <span>${this.formatDate(assignment.dueDate)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <label>Trạng thái:</label>
+                                ${statusBadge}
+                            </div>
+                            <div class="detail-item">
+                                <label>Thời lượng:</label>
+                                <span>${assignment.durationMinutes ? `${assignment.durationMinutes} phút` : 'Không giới hạn'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Mô tả</h4>
+                        <p>${assignment.description || 'Không có mô tả.'}</p>
+                    </div>
+                    ${assignment.warningMessage ? `
+                        <div class="detail-section">
+                            <h4>Cảnh báo</h4>
+                            <p>${assignment.warningMessage.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    ` : ''}
+                    ${assignment.grade ? `
+                        <div class="detail-section">
+                            <h4>Điểm số</h4>
+                            <p><strong>${assignment.grade}/10</strong></p>
+                            ${assignment.feedback ? `<p><strong>Nhận xét:</strong> ${assignment.feedback}</p>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        this.showModal('Chi tiết bài tập', content, 'assignment-preview-modal');
+    }
+
+    viewSubmission(assignmentId) {
+        this.fetchAssignmentDetail(assignmentId, { viewOnly: true });
+    }
+
+    viewAssignmentDetails(assignmentId) {
+        this.fetchAssignmentDetail(assignmentId, { viewOnly: true });
+    }
+
+    async startAssignment(assignmentId) {
+        await this.fetchAssignmentDetail(assignmentId, { start: true });
+    }
+
+    async resumeAssignment(assignmentId) {
+        await this.fetchAssignmentDetail(assignmentId, { resume: true });
+    }
+
+    async fetchAssignmentDetail(assignmentId, options = {}) {
+        try {
+            this.showLoading();
+            const endpoint = options.start
+                ? `/api/portal/student/assignments/${assignmentId}/start`
+                : `/api/portal/student/assignments/${assignmentId}`;
+            const method = options.start ? 'POST' : 'GET';
+            const response = await this.apiCall(endpoint, { method });
+            const detail = response.data || response;
+            this.handleAssignmentDetail(detail, options);
+        } catch (error) {
+            console.error('Assignment detail error:', error);
+            this.showNotification(error.message || 'Không thể tải thông tin bài tập', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    handleAssignmentDetail(detail, options = {}) {
+        if (!detail) {
+            this.showNotification('Không tìm thấy bài tập.', 'warning');
+            return;
+        }
+
+        if (detail.status === 'in_progress' && detail.submissionId) {
+            const storedSession = this.loadAssignmentSession(detail.assignmentId);
+            this.assignmentAnswers = storedSession?.answers || {};
+            this.activeAssignmentSession = {
+                assignmentId: detail.assignmentId,
+                submissionId: detail.submissionId,
+                expiresAt: detail.expiresAt,
+                startedAt: detail.startedAt,
+                durationMinutes: detail.durationMinutes,
+                autoSubmit: detail.autoSubmit,
+                warningMessage: detail.warningMessage,
+                answers: this.assignmentAnswers
+            };
+            this.saveAssignmentSession();
+            this.renderAssignmentWorkspace(detail);
+            this.startAssignmentCountdown(detail.expiresAt);
+        } else if (options.start) {
+            this.showNotification('Bài tập này đã được nộp.', 'info');
+            this.renderAssignmentPreview(detail);
+        } else {
+            this.renderAssignmentPreview(detail);
+        }
     }
 
     loadGrades() {
@@ -924,6 +1796,7 @@ class StudentDashboard {
             'pending': '',
             'submitted': 'submitted',
             'graded': 'submitted',
+            'in_progress': 'in-progress',
             'overdue': 'overdue'
         };
         return classes[status] || '';
@@ -934,7 +1807,8 @@ class StudentDashboard {
             'pending': 'Chưa làm',
             'submitted': 'Đã nộp',
             'graded': 'Đã chấm',
-            'overdue': 'Quá hạn'
+            'overdue': 'Quá hạn',
+            'in_progress': 'Đang làm'
         };
         return texts[status] || status;
     }
@@ -1174,256 +2048,6 @@ class StudentDashboard {
         this.showModal('Danh sách bạn học', modalContent, 'large-modal');
     }
 
-    startAssignment(assignmentId) {
-        const assignment = this.studentData?.assignments?.find(a => a.assignmentId === assignmentId);
-        if (!assignment) {
-            this.showError('Không tìm thấy bài tập');
-            return;
-        }
-
-        const modalContent = `
-            <div class="assignment-workspace">
-                <div class="assignment-header-modal">
-                    <h3>${assignment.title}</h3>
-                    <div class="assignment-meta">
-                        <span><i class="fas fa-clock"></i> Hạn nộp: ${this.formatDate(assignment.dueDate)}</span>
-                        <span><i class="fas fa-graduation-cap"></i> ${assignment.className}</span>
-                    </div>
-                </div>
-
-                <div class="assignment-content">
-                    <div class="assignment-description">
-                        <h4>Nội dung bài tập:</h4>
-                        <p>${assignment.description}</p>
-                    </div>
-
-                    <div class="assignment-questions">
-                        <h4>Câu hỏi:</h4>
-                        <div class="question-item">
-                            <p><strong>Câu 1:</strong> Giải phương trình bậc hai: x² - 5x + 6 = 0</p>
-                            <textarea class="answer-input" placeholder="Nhập đáp án của bạn..." rows="3"></textarea>
-                        </div>
-                        <div class="question-item">
-                            <p><strong>Câu 2:</strong> Tìm nghiệm của bất phương trình: x² - 4x - 5 ≤ 0</p>
-                            <textarea class="answer-input" placeholder="Nhập đáp án của bạn..." rows="3"></textarea>
-                        </div>
-                        <div class="question-item">
-                            <p><strong>Câu 3:</strong> Vẽ đồ thị hàm số: y = x² - 2x + 1</p>
-                            <div class="file-upload-area">
-                                <input type="file" id="graphUpload" accept="image/*" style="display: none;">
-                                <label for="graphUpload" class="file-upload-label">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <span>Kéo thả hình ảnh hoặc click để tải lên</span>
-                                </label>
-                                <div id="filePreview" class="file-preview"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="assignment-actions-modal">
-                    <button class="btn btn-success" onclick="dashboard.submitAssignment('${assignmentId}')">
-                        <i class="fas fa-paper-plane"></i> Nộp bài
-                    </button>
-                    <button class="btn btn-warning" onclick="dashboard.saveDraft('${assignmentId}')">
-                        <i class="fas fa-save"></i> Lưu nháp
-                    </button>
-                    <button class="btn btn-secondary" onclick="dashboard.closeModal()">
-                        <i class="fas fa-times"></i> Đóng
-                    </button>
-                </div>
-            </div>
-        `;
-
-        this.showModal('Làm bài tập', modalContent, 'large-modal');
-
-        // Add drag and drop functionality
-        this.initializeFileUpload();
-    }
-
-    initializeFileUpload() {
-        const uploadArea = document.querySelector('.file-upload-area');
-        const fileInput = document.getElementById('graphUpload');
-        const preview = document.getElementById('filePreview');
-
-        if (!uploadArea || !fileInput) return;
-
-        // Drag and drop events
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('drag-over');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('drag-over');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('drag-over');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                this.handleFileUpload(files[0], preview);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                this.handleFileUpload(e.target.files[0], preview);
-            }
-        });
-    }
-
-    handleFileUpload(file, preview) {
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.innerHTML = `
-                    <div class="uploaded-file">
-                        <img src="${e.target.result}" alt="Uploaded image" style="max-width: 200px; max-height: 200px;">
-                        <div class="file-info">
-                            <span>${file.name}</span>
-                            <button class="btn btn-sm btn-danger" onclick="this.parentElement.parentElement.remove()">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            };
-            reader.readAsDataURL(file);
-        } else {
-            this.showError('Chỉ chấp nhận file hình ảnh');
-        }
-    }
-
-    submitAssignment(assignmentId) {
-        // Validate answers
-        const answers = document.querySelectorAll('.answer-input');
-        const hasAnswers = Array.from(answers).some(answer => answer.value.trim() !== '');
-
-        if (!hasAnswers) {
-            this.showError('Vui lòng nhập ít nhất một câu trả lời');
-            return;
-        }
-
-        // Show confirmation
-        if (confirm('Bạn có chắc muốn nộp bài tập này? Sau khi nộp sẽ không thể chỉnh sửa.')) {
-            this.showLoading();
-            setTimeout(() => {
-                this.hideLoading();
-                this.closeModal();
-                this.showNotification('Đã nộp bài tập thành công!', 'success');
-                this.loadAssignments(); // Refresh assignments
-            }, 1500);
-        }
-    }
-
-    saveDraft(assignmentId) {
-        this.showNotification('Đã lưu nháp bài làm!', 'success');
-    }
-
-    viewSubmission(assignmentId) {
-        const assignment = this.studentData?.assignments?.find(a => a.assignmentId === assignmentId);
-        if (!assignment) return;
-
-        const modalContent = `
-            <div class="submission-modal">
-                <div class="submission-header">
-                    <h3>Kết quả bài tập: ${assignment.title}</h3>
-                    <div class="submission-status ${assignment.status}">
-                        ${assignment.status === 'graded' ? 'Đã chấm' : 'Đã nộp'}
-                    </div>
-                </div>
-
-                <div class="submission-details">
-                    <div class="submission-meta">
-                        <div class="meta-item">
-                            <label>Thời gian nộp:</label>
-                            <span>${assignment.submittedAt ? this.formatDate(assignment.submittedAt) : 'N/A'}</span>
-                        </div>
-                        <div class="meta-item">
-                            <label>Thời gian chấm:</label>
-                            <span>${assignment.gradedAt ? this.formatDate(assignment.gradedAt) : 'Chưa chấm'}</span>
-                        </div>
-                        <div class="meta-item">
-                            <label>Điểm số:</label>
-                            <span class="grade-display ${assignment.grade ? 'graded' : 'pending'}">
-                                ${assignment.grade ? `${assignment.grade}/10` : 'Chưa có'}
-                            </span>
-                        </div>
-                    </div>
-
-                    ${assignment.feedback ? `
-                        <div class="submission-feedback">
-                            <h4>Nhận xét của giáo viên:</h4>
-                            <p>${assignment.feedback}</p>
-                        </div>
-                    ` : ''}
-
-                    <div class="submission-actions">
-                        <button class="btn btn-primary" onclick="dashboard.downloadSubmission('${assignmentId}')">
-                            <i class="fas fa-download"></i> Tải xuống bài làm
-                        </button>
-                        <button class="btn btn-info" onclick="dashboard.viewAssignmentDetails('${assignmentId}')">
-                            <i class="fas fa-eye"></i> Xem chi tiết bài tập
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        this.showModal('Kết quả bài nộp', modalContent, 'large-modal');
-    }
-
-    viewAssignmentDetails(assignmentId) {
-        const assignment = this.studentData?.assignments?.find(a => a.assignmentId === assignmentId);
-        if (!assignment) return;
-
-        const modalContent = `
-            <div class="assignment-detail-modal">
-                <h3>${assignment.title}</h3>
-                <div class="assignment-detail-content">
-                    <div class="detail-section">
-                        <h4>Thông tin bài tập</h4>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <label>Môn học:</label>
-                                <span>${assignment.className}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Hạn nộp:</label>
-                                <span>${this.formatDate(assignment.dueDate)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Trạng thái:</label>
-                                <span class="status-badge ${assignment.status}">${this.getAssignmentStatusText(assignment.status)}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="detail-section">
-                        <h4>Nội dung</h4>
-                        <p>${assignment.description}</p>
-                    </div>
-
-                    ${assignment.grade ? `
-                        <div class="detail-section">
-                            <h4>Điểm số</h4>
-                            <div class="grade-summary">
-                                <div class="grade-circle ${this.getGradeBadgeClass(assignment.grade)}">
-                                    ${assignment.grade}/10
-                                </div>
-                                ${assignment.feedback ? `<p><strong>Nhận xét:</strong> ${assignment.feedback}</p>` : ''}
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-
-        this.showModal('Chi tiết bài tập', modalContent, 'large-modal');
-    }
-
     viewGradeDetails(gradeId) {
         const grade = this.studentData?.grades?.find(g => g.gradeId === gradeId);
         if (!grade) return;
@@ -1588,10 +2212,29 @@ class StudentDashboard {
     closeModal() {
         const modal = document.querySelector('.modal.active');
         if (modal) {
+            // Remove beforeunload and visibilitychange handlers if assignment modal
+            if (modal.classList.contains('assignment-modal')) {
+                if (modal._beforeUnloadHandler) {
+                    window.removeEventListener('beforeunload', modal._beforeUnloadHandler);
+                    delete modal._beforeUnloadHandler;
+                }
+                if (modal._visibilityChangeHandler) {
+                    document.removeEventListener('visibilitychange', modal._visibilityChangeHandler);
+                    delete modal._visibilityChangeHandler;
+                }
+            }
+            
             modal.classList.remove('active');
             // Restore body scroll
             document.body.style.overflow = '';
             setTimeout(() => modal.remove(), 300);
+        }
+        // Also close assignment workspace modal if exists
+        const assignmentModal = document.getElementById('assignmentWorkspaceModal');
+        if (assignmentModal) {
+            assignmentModal.classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => assignmentModal.remove(), 300);
         }
     }
 
@@ -2557,6 +3200,55 @@ class StudentDashboard {
         const errorModalEl = document.getElementById('errorModal');
         if (errorMessageEl) errorMessageEl.textContent = message;
         if (errorModalEl) errorModalEl.classList.add('active');
+    }
+
+    prefillUserInfoFromAuth() {
+        const applyProfile = () => {
+            try {
+                const authRaw = localStorage.getItem('mb_auth');
+                if (!authRaw) {
+                    return;
+                }
+
+                const auth = JSON.parse(authRaw);
+                const payloadUser = auth.user || auth.account || auth.profile || {};
+                const nestedUser = (auth.payload && auth.payload.user) ? auth.payload.user : {};
+                const merged = { ...payloadUser, ...nestedUser };
+                const profile = merged.profile || {};
+
+                const ho = merged.ho ?? profile.ho ?? '';
+                const tenDem = merged.tenDem ?? profile.tenDem ?? '';
+                const ten = merged.ten ?? profile.ten ?? '';
+                const computedName = `${ho} ${tenDem} ${ten}`.replace(/\s+/g, ' ').trim();
+                const fullName = merged.fullName || profile.fullName || computedName;
+                const email = merged.email || auth.email || profile.email || localStorage.getItem('mb_email');
+
+                const displayName = fullName || email || 'Học sinh MathBridge';
+
+                const setText = (id, value) => {
+                    if (!value) return;
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.textContent = value;
+                    }
+                };
+
+                setText('headerUserName', displayName);
+                setText('userName', displayName);
+                setText('sidebarUserName', displayName);
+                setText('dropdownUserName', displayName);
+                setText('userEmail', email || '');
+                setText('dropdownUserEmail', email || '');
+            } catch (error) {
+                console.warn('Không thể prefill thông tin người dùng từ localStorage:', error);
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', applyProfile, { once: true });
+        } else {
+            applyProfile();
+        }
     }
 
     updateMessageStats() {

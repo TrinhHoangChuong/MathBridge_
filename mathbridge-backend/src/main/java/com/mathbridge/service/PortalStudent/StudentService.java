@@ -1,5 +1,9 @@
 package com.mathbridge.service.PortalStudent;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mathbridge.dto.AssignmentQuestionDTO;
 import com.mathbridge.dto.PortalStudentDTO.*;
 import com.mathbridge.dto.PortalStudentDTO.UpdateStudentProfileDTO;
 import com.mathbridge.dto.PortalStudentDTO.RateSessionDTO;
@@ -13,13 +17,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,7 +66,20 @@ public class StudentService {
     @Autowired
     private HoaDonRepository hoaDonRepository;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final String DEFAULT_ASSIGNMENT_WARNING = String.join("\n",
+            "⚠️ Lưu ý:",
+            "Thời gian sẽ bắt đầu tính ngay khi bạn vào bài.",
+            "Hết giờ hệ thống tự động nộp bài.",
+            "Thoát trang hoặc tắt máy → đồng hồ vẫn chạy.",
+            "Vui lòng kiểm tra kết nối Internet.");
+    private static final int DEFAULT_DURATION_HOMEWORK = 60;
+    private static final int DEFAULT_DURATION_QUIZ_15 = 15;
+    private static final int DEFAULT_DURATION_QUIZ_45 = 45;
+    private static final int DEFAULT_DURATION_FINAL = 90;
 
     @Transactional(readOnly = true)
     public StudentDashboardDTO getStudentDashboard(String userId) {
@@ -97,6 +118,74 @@ public class StudentService {
         dashboard.setStats(calculateStats(dashboard));
 
         return dashboard;
+    }
+
+    @Transactional(readOnly = true)
+    public StudentAssignmentDetailDTO getAssignmentDetail(String userId, String assignmentId) {
+        HocSinh student = getHocSinhByUserId(userId);
+        BaiTap assignment = getAssignmentById(assignmentId);
+        ensureStudentInAssignment(student, assignment);
+
+        List<AssignmentQuestionDTO> questions = loadQuestions(assignment);
+        int duration = resolveDurationMinutes(assignment);
+
+        Optional<BaiNop> submissionOpt = baiNopStudentRepository
+                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByThoiGianBatDauDesc(assignmentId, student.getIdHs());
+        BaiNop submission = submissionOpt
+                .map(bn -> autoFinalizeIfExpired(assignment, bn, duration))
+                .orElse(null);
+
+        return buildAssignmentDetail(assignment, submission, questions, duration);
+    }
+
+    @Transactional
+    public StudentAssignmentDetailDTO startAssignment(String userId, String assignmentId) {
+        HocSinh student = getHocSinhByUserId(userId);
+        BaiTap assignment = getAssignmentById(assignmentId);
+        ensureAssignmentWindowIsOpen(assignment);
+        ensureStudentInAssignment(student, assignment);
+
+        List<AssignmentQuestionDTO> questions = loadQuestions(assignment);
+        if (questions.isEmpty()) {
+            throw new RuntimeException("Bài tập chưa có nội dung câu hỏi. Vui lòng liên hệ giáo viên.");
+        }
+
+        int duration = resolveDurationMinutes(assignment);
+
+        Optional<BaiNop> submissionOpt = baiNopStudentRepository
+                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByThoiGianBatDauDesc(assignmentId, student.getIdHs());
+        BaiNop submission = ensureSubmissionForStart(assignment, student, submissionOpt.orElse(null),
+                questions, duration);
+
+        return buildAssignmentDetail(assignment, submission, questions, duration);
+    }
+
+    @Transactional
+    public StudentAssignmentDetailDTO submitAssignment(String userId,
+                                                       String assignmentId,
+                                                       StudentAssignmentSubmissionDTO submissionDTO) {
+        if (submissionDTO == null || submissionDTO.getSubmissionId() == null) {
+            throw new RuntimeException("Thiếu mã bài nộp để gửi kết quả.");
+        }
+
+        HocSinh student = getHocSinhByUserId(userId);
+        BaiTap assignment = getAssignmentById(assignmentId);
+        ensureStudentInAssignment(student, assignment);
+
+        List<AssignmentQuestionDTO> questions = loadQuestions(assignment);
+        if (questions.isEmpty()) {
+            throw new RuntimeException("Bài tập chưa có nội dung để nộp.");
+        }
+
+        BaiNop submission = baiNopStudentRepository.findFirstByIdBnAndHocSinh_IdHs(
+                submissionDTO.getSubmissionId(), student.getIdHs())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiên làm bài hợp lệ."));
+
+        int duration = resolveDurationMinutes(assignment);
+        submission = finalizeSubmission(submission, submissionDTO, questions, duration,
+                resolveAutoSubmit(assignment));
+
+        return buildAssignmentDetail(assignment, submission, questions, duration);
     }
 
     private List<StudentClassDTO> getStudentClasses(String studentId) {
@@ -265,40 +354,35 @@ public class StudentService {
             assignmentDTO.setTitle(baiTap.getTieuDe());
             assignmentDTO.setDescription(baiTap.getMoTa());
             
-            // Get class name
             if (baiTap.getBuoiHocChiTiet() != null && 
                 baiTap.getBuoiHocChiTiet().getLopHoc() != null) {
                 assignmentDTO.setClassName(baiTap.getBuoiHocChiTiet().getLopHoc().getTenLop());
             }
             
-            // Format due date
             if (baiTap.getNgayKetThuc() != null) {
                 assignmentDTO.setDueDate(baiTap.getNgayKetThuc().format(DATE_TIME_FORMATTER));
             }
-            
-            // Check if student has submitted (BaiNop)
-            Optional<BaiNop> baiNopOpt = baiNopStudentRepository.findByBaiTapAndHocSinh(
+
+            int durationMinutes = resolveDurationMinutes(baiTap);
+            assignmentDTO.setDurationMinutes(durationMinutes);
+            assignmentDTO.setAutoSubmit(resolveAutoSubmit(baiTap));
+            assignmentDTO.setWarningMessage(resolveWarningMessage(baiTap));
+            assignmentDTO.setRequiresManualReview(hasEssayQuestion(baiTap));
+            boolean allowRetry = Boolean.TRUE.equals(baiTap.getChoPhepLamLai());
+            assignmentDTO.setAllowRetry(allowRetry);
+            long attemptCount = baiNopStudentRepository.countByBaiTap_IdBtAndHocSinh_IdHs(
                 baiTap.getIdBt(), studentId);
+            assignmentDTO.setAttemptCount((int) attemptCount);
             
-            if (baiNopOpt.isPresent()) {
-                BaiNop baiNop = baiNopOpt.get();
-                if (baiNop.getDiemSo() != null) {
-                    assignmentDTO.setStatus("graded");
-                    assignmentDTO.setGrade(baiNop.getDiemSo().doubleValue());
-                    assignmentDTO.setFeedback(baiNop.getNhanXet());
-                } else {
-                    assignmentDTO.setStatus("submitted");
-                }
-            } else {
-                // Check if overdue
-                if (baiTap.getNgayKetThuc() != null && 
-                    baiTap.getNgayKetThuc().isBefore(LocalDateTime.now())) {
-                    assignmentDTO.setStatus("overdue");
-                } else {
-                    assignmentDTO.setStatus("pending");
-                }
-            }
-            
+        Optional<BaiNop> baiNopOpt = baiNopStudentRepository
+                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByThoiGianBatDauDesc(baiTap.getIdBt(), studentId);
+
+            BaiNop submission = baiNopOpt
+                    .map(bn -> autoFinalizeIfExpired(baiTap, bn, durationMinutes))
+                    .orElse(null);
+
+            applySubmissionToAssignmentDTO(assignmentDTO, submission, baiTap, durationMinutes);
+            assignmentDTO.setCanRetry(canRetryAssignment(allowRetry, submission, baiTap));
             assignments.add(assignmentDTO);
         }
         
@@ -336,13 +420,482 @@ public class StudentService {
         for (KetQuaHocTap kq : ketQuaHocTaps) {
             StudentGradeDTO gradeDTO = new StudentGradeDTO();
             gradeDTO.setGradeId(kq.getIdKq());
-            gradeDTO.setScore(kq.getDiemSo().doubleValue());
+            gradeDTO.setScore(calculateKetQuaScore(kq.getDiemSo()));
             gradeDTO.setGradeType("Kết quả học tập");
             gradeDTO.setSubject("Toán học");
+            gradeDTO.setFeedback(kq.getXepLoai());
             grades.add(gradeDTO);
         }
         
         return grades;
+    }
+
+    private void applySubmissionToAssignmentDTO(StudentAssignmentDTO dto, BaiNop submission,
+                                               BaiTap assignment, int durationMinutes) {
+        if (submission == null) {
+            if (assignment.getNgayKetThuc() != null &&
+                assignment.getNgayKetThuc().isBefore(LocalDateTime.now())) {
+                dto.setStatus("overdue");
+            } else {
+                dto.setStatus("pending");
+            }
+            return;
+        }
+
+        dto.setSubmissionId(submission.getIdBn());
+        dto.setStartedAt(formatDateTime(submission.getThoiGianBatDau()));
+        dto.setSubmittedAt(formatDateTime(submission.getThoiGianNop()));
+        dto.setGradedAt(formatDateTime(submission.getThoiGianNop()));
+        dto.setGrade(submission.getDiemSo() != null ? submission.getDiemSo().doubleValue() : null);
+        dto.setFeedback(submission.getNhanXet());
+        dto.setExpiresAt(formatDateTime(calculateExpiresAt(submission, durationMinutes, assignment)));
+        dto.setStatus(mapSubmissionStatus(submission));
+    }
+
+    private String mapSubmissionStatus(BaiNop submission) {
+        String status = submission.getTrangThai() != null ? submission.getTrangThai().toUpperCase() : "";
+        switch (status) {
+            case "IN_PROGRESS":
+                return "in_progress";
+            case "GRADED_AUTO":
+            case "DA_CHAM":
+                return "graded";
+            case "WAITING_REVIEW":
+            case "SUBMITTED":
+            case "AUTO_SUBMITTED":
+                return "submitted";
+            default:
+                return status.isEmpty() ? "submitted" : status.toLowerCase();
+        }
+    }
+
+    private LocalDateTime calculateExpiresAt(BaiNop submission, int durationMinutes, BaiTap assignment) {
+        if (submission != null && submission.getThoiGianBatDau() != null) {
+            return submission.getThoiGianBatDau().plusMinutes(durationMinutes);
+        }
+        return assignment.getNgayKetThuc();
+    }
+
+    private boolean canRetryAssignment(boolean allowRetry, BaiNop submission, BaiTap assignment) {
+        if (!allowRetry) {
+            return false;
+        }
+        boolean withinWindow = assignment.getNgayKetThuc() == null ||
+                assignment.getNgayKetThuc().isAfter(LocalDateTime.now());
+        if (!withinWindow) {
+            return false;
+        }
+        if (submission == null) {
+            return false;
+        }
+        return !"IN_PROGRESS".equalsIgnoreCase(submission.getTrangThai());
+    }
+
+    private String formatDateTime(LocalDateTime dateTime) {
+        return dateTime != null ? DATE_TIME_FORMATTER.format(dateTime) : null;
+    }
+
+    private BaiNop autoFinalizeIfExpired(BaiTap assignment, BaiNop submission, int durationMinutes) {
+        if (submission == null || submission.getThoiGianBatDau() == null) {
+            return submission;
+        }
+        if (!"IN_PROGRESS".equalsIgnoreCase(submission.getTrangThai())) {
+            return submission;
+        }
+
+        LocalDateTime expireAt = submission.getThoiGianBatDau().plusMinutes(durationMinutes);
+        if (LocalDateTime.now().isBefore(expireAt)) {
+            return submission;
+        }
+
+        submission.setTrangThai("AUTO_SUBMITTED");
+        submission.setThoiGianNop(expireAt);
+        submission.setDiemSo(BigDecimal.ZERO);
+        return baiNopStudentRepository.save(submission);
+    }
+
+    private boolean hasEssayQuestion(BaiTap assignment) {
+        return loadQuestions(assignment).stream()
+                .anyMatch(q -> "ESSAY".equalsIgnoreCase(q.getType()) || "WRITING".equalsIgnoreCase(q.getType()));
+    }
+
+    private int resolveDurationMinutes(BaiTap assignment) {
+        if (assignment.getNoiDungChiTiet() != null &&
+            assignment.getNoiDungChiTiet().getThoiLuongPhut() != null &&
+            assignment.getNoiDungChiTiet().getThoiLuongPhut() > 0) {
+            return assignment.getNoiDungChiTiet().getThoiLuongPhut();
+        }
+
+        String type = assignment.getLoaiBt() != null ? assignment.getLoaiBt().toUpperCase() : "";
+        switch (type) {
+            case "KIEM_TRA_15P":
+                return DEFAULT_DURATION_QUIZ_15;
+            case "KIEM_TRA_45P":
+                return DEFAULT_DURATION_QUIZ_45;
+            case "THI_HK":
+                return DEFAULT_DURATION_FINAL;
+            default:
+                return DEFAULT_DURATION_HOMEWORK;
+        }
+    }
+
+    private boolean resolveAutoSubmit(BaiTap assignment) {
+        if (assignment.getNoiDungChiTiet() != null &&
+            assignment.getNoiDungChiTiet().getTuDongNop() != null) {
+            return assignment.getNoiDungChiTiet().getTuDongNop();
+        }
+        return true;
+    }
+
+    private String resolveWarningMessage(BaiTap assignment) {
+        if (assignment.getNoiDungChiTiet() != null) {
+            String warning = assignment.getNoiDungChiTiet().getCanhBao();
+            if (warning != null && !warning.isBlank()) {
+                return warning;
+            }
+        }
+        return DEFAULT_ASSIGNMENT_WARNING;
+    }
+
+    private List<AssignmentQuestionDTO> loadQuestions(BaiTap assignment) {
+        if (assignment.getNoiDungChiTiet() == null) {
+            return Collections.emptyList();
+        }
+        String raw = assignment.getNoiDungChiTiet().getNoiDungJson();
+        if (raw == null || raw.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(raw, new TypeReference<List<AssignmentQuestionDTO>>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể đọc nội dung bài tập: " + e.getMessage(), e);
+        }
+    }
+
+    private StudentAssignmentDetailDTO buildAssignmentDetail(BaiTap assignment,
+                                                             BaiNop submission,
+                                                             List<AssignmentQuestionDTO> questions,
+                                                             int durationMinutes) {
+        StudentAssignmentDetailDTO dto = new StudentAssignmentDetailDTO();
+        dto.setAssignmentId(assignment.getIdBt());
+        dto.setTitle(assignment.getTieuDe());
+        dto.setDescription(assignment.getMoTa());
+        if (assignment.getBuoiHocChiTiet() != null &&
+                assignment.getBuoiHocChiTiet().getLopHoc() != null) {
+            dto.setClassName(assignment.getBuoiHocChiTiet().getLopHoc().getTenLop());
+        }
+        dto.setDueDate(assignment.getNgayKetThuc() != null
+                ? assignment.getNgayKetThuc().format(DATE_TIME_FORMATTER) : null);
+        dto.setDurationMinutes(durationMinutes);
+        dto.setAutoSubmit(resolveAutoSubmit(assignment));
+        dto.setWarningMessage(resolveWarningMessage(assignment));
+        dto.setRequiresManualReview(hasEssayQuestion(assignment));
+        dto.setQuestions(maskQuestionsForStudent(questions));
+
+        if (submission != null) {
+            dto.setSubmissionId(submission.getIdBn());
+            dto.setStartedAt(formatDateTime(submission.getThoiGianBatDau()));
+            dto.setSubmittedAt(formatDateTime(submission.getThoiGianNop()));
+            dto.setGradedAt(formatDateTime(submission.getThoiGianNop()));
+            dto.setExpiresAt(formatDateTime(calculateExpiresAt(submission, durationMinutes, assignment)));
+            dto.setStatus(mapSubmissionStatus(submission));
+            dto.setGrade(submission.getDiemSo() != null ? submission.getDiemSo().doubleValue() : null);
+            dto.setCorrectAnswers(submission.getSoCauDung());
+            dto.setTotalQuestions(submission.getTongSoCau());
+            dto.setFeedback(submission.getNhanXet());
+        } else if (assignment.getNgayKetThuc() != null &&
+                assignment.getNgayKetThuc().isBefore(LocalDateTime.now())) {
+            dto.setStatus("overdue");
+        } else {
+            dto.setStatus("pending");
+        }
+
+        return dto;
+    }
+
+    private List<AssignmentQuestionDTO> maskQuestionsForStudent(List<AssignmentQuestionDTO> questions) {
+        if (questions == null) {
+            return Collections.emptyList();
+        }
+        return questions.stream().map(q -> {
+            AssignmentQuestionDTO masked = new AssignmentQuestionDTO();
+            masked.setQuestionId(q.getQuestionId());
+            masked.setOrderNo(q.getOrderNo());
+            masked.setContent(q.getContent());
+            masked.setType(q.getType());
+            masked.setOptions(q.getOptions());
+            masked.setPoints(q.getPoints());
+            masked.setHint(q.getHint());
+            masked.setCorrectAnswer(null);
+            return masked;
+        }).collect(Collectors.toList());
+    }
+
+    private HocSinh getHocSinhByUserId(String userId) {
+        return hocSinhRepository.findFirstByTaiKhoan_IdTk(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin học sinh"));
+    }
+
+    private BaiTap getAssignmentById(String assignmentId) {
+        return baiTapStudentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài tập với mã " + assignmentId));
+    }
+
+    private void ensureStudentInAssignment(HocSinh student, BaiTap assignment) {
+        String classId = extractClassId(assignment);
+        if (classId == null) {
+            return;
+        }
+        boolean registered = dangKyLHStudentRepository.findByHocSinhId(student.getIdHs()).stream()
+                .anyMatch(dk -> dk.getLopHoc() != null &&
+                        classId.equals(dk.getLopHoc().getIdLh()));
+        if (!registered) {
+            throw new RuntimeException("Bạn không thuộc lớp học này.");
+        }
+    }
+
+    private String extractClassId(BaiTap assignment) {
+        if (assignment.getBuoiHocChiTiet() != null &&
+            assignment.getBuoiHocChiTiet().getLopHoc() != null) {
+            return assignment.getBuoiHocChiTiet().getLopHoc().getIdLh();
+        }
+        return null;
+    }
+
+    private void ensureAssignmentWindowIsOpen(BaiTap assignment) {
+        LocalDateTime now = LocalDateTime.now();
+        if (assignment.getNgayBatDau() != null && now.isBefore(assignment.getNgayBatDau())) {
+            throw new RuntimeException("Bài tập chưa được mở.");
+        }
+        if (assignment.getNgayKetThuc() != null && now.isAfter(assignment.getNgayKetThuc())) {
+            throw new RuntimeException("Bài tập đã hết hạn.");
+        }
+    }
+
+    private BaiNop ensureSubmissionForStart(BaiTap assignment,
+                                            HocSinh student,
+                                            BaiNop submission,
+                                            List<AssignmentQuestionDTO> questions,
+                                            int durationMinutes) {
+        if (submission != null) {
+            if ("IN_PROGRESS".equalsIgnoreCase(submission.getTrangThai())) {
+                return submission;
+            }
+            // Check if assignment allows retake (choPhepLamLai)
+            Boolean choPhepLamLai = assignment.getChoPhepLamLai();
+            if (choPhepLamLai != null && choPhepLamLai) {
+                // Allow retake - create a new submission (this preserves history as each submission is a new BaiNop)
+                // The old submission remains in database as history
+                System.out.println("Assignment allows retake. Creating new submission for student: " + student.getIdHs());
+            } else {
+            throw new RuntimeException("Bạn đã hoàn thành hoặc đã nộp bài tập này.");
+            }
+        }
+
+        // Generate ID FIRST - before creating entity
+        String submissionId = "BN" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        
+        // Validate ID format - ensure it's exactly 10 characters
+        if (submissionId == null || submissionId.trim().isEmpty() || submissionId.length() < 3) {
+            submissionId = "BN" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        }
+        submissionId = submissionId.trim();
+        
+        // Ensure ID is exactly 10 characters (BN + 8 chars = 10)
+        if (submissionId.length() > 10) {
+            submissionId = submissionId.substring(0, 10);
+        } else if (submissionId.length() < 10) {
+            // Pad if needed
+            while (submissionId.length() < 10) {
+                submissionId += "0";
+            }
+        }
+        
+        System.out.println("=== Creating BaiNop ===");
+        System.out.println("Generated ID: '" + submissionId + "' (length: " + submissionId.length() + ")");
+        
+        // Create entity using constructor to avoid Lombok @Builder issues
+        BaiNop newSubmission = new BaiNop();
+        
+        // Set ID IMMEDIATELY - BEFORE any other operations
+        // Set both ID_BN and ID_BaiNop (database has both columns)
+        newSubmission.setIdBn(submissionId);
+        newSubmission.setIdBaiNop(submissionId); // Set same value for both columns
+        
+        // Verify ID is set correctly
+        String verifyId = newSubmission.getIdBn();
+        String verifyIdBaiNop = newSubmission.getIdBaiNop();
+        if (verifyId == null || verifyId.trim().isEmpty()) {
+            throw new RuntimeException("ERROR: ID không được set sau khi gọi setIdBn()");
+        }
+        if (verifyIdBaiNop == null || verifyIdBaiNop.trim().isEmpty()) {
+            throw new RuntimeException("ERROR: ID_BaiNop không được set sau khi gọi setIdBaiNop()");
+        }
+        System.out.println("ID_BN after setIdBn(): '" + verifyId + "' (length: " + verifyId.length() + ")");
+        System.out.println("ID_BaiNop after setIdBaiNop(): '" + verifyIdBaiNop + "' (length: " + verifyIdBaiNop.length() + ")");
+        
+        // Set other required fields
+        newSubmission.setIdBt(assignment.getIdBt());
+        newSubmission.setBaiTap(assignment);
+        newSubmission.setIdHs(student.getIdHs());
+        newSubmission.setHocSinh(student);
+        newSubmission.setTongSoCau(questions.size());
+        newSubmission.setSoCauDung(0);
+        newSubmission.setTrangThai("IN_PROGRESS");
+        newSubmission.setThoiGianBatDau(LocalDateTime.now());
+        
+        // Final check before save - verify BOTH IDs are still set
+        String finalId = newSubmission.getIdBn();
+        String finalIdBaiNop = newSubmission.getIdBaiNop();
+        if (finalId == null || finalId.trim().isEmpty()) {
+            throw new RuntimeException("ERROR: ID_BN bị mất trước khi save! Was: '" + verifyId + "'");
+        }
+        if (finalIdBaiNop == null || finalIdBaiNop.trim().isEmpty()) {
+            throw new RuntimeException("ERROR: ID_BaiNop bị mất trước khi save! Was: '" + verifyIdBaiNop + "'");
+        }
+        System.out.println("ID_BN before save(): '" + finalId + "' (length: " + finalId.length() + ")");
+        System.out.println("ID_BaiNop before save(): '" + finalIdBaiNop + "' (length: " + finalIdBaiNop.length() + ")");
+        System.out.println("Entity state before save - idBn: " + finalId + ", idBaiNop: " + finalIdBaiNop + ", idBt: " + newSubmission.getIdBt() + ", idHs: " + newSubmission.getIdHs());
+        
+        // Save entity
+        try {
+            System.out.println("Calling repository.save()...");
+            BaiNop saved = baiNopStudentRepository.save(newSubmission);
+            System.out.println("Save() completed, returned entity: " + (saved != null ? "NOT NULL" : "NULL"));
+            
+            if (saved == null) {
+                throw new RuntimeException("ERROR: save() trả về null!");
+            }
+            
+            String savedId = saved.getIdBn();
+            System.out.println("ID after save(): '" + (savedId != null ? savedId : "NULL") + "' (length: " + (savedId != null ? savedId.length() : 0) + ")");
+            
+            if (savedId == null || savedId.trim().isEmpty()) {
+                throw new RuntimeException("ERROR: ID bị mất sau khi save()! Original was: '" + finalId + "'");
+            }
+            
+            System.out.println("=== BaiNop created successfully with ID: " + savedId + " ===");
+            return saved;
+        } catch (Exception e) {
+            System.err.println("==========================================");
+            System.err.println("ERROR saving BaiNop:");
+            System.err.println("Message: " + e.getMessage());
+            System.err.println("ID at time of error: '" + newSubmission.getIdBn() + "'");
+            System.err.println("ID length: " + (newSubmission.getIdBn() != null ? newSubmission.getIdBn().length() : 0));
+            System.err.println("Entity toString: " + newSubmission.toString());
+            System.err.println("==========================================");
+            e.printStackTrace();
+            throw new RuntimeException("Không thể lưu bài nộp: " + e.getMessage(), e);
+        }
+    }
+
+    private BaiNop finalizeSubmission(BaiNop submission,
+                                      StudentAssignmentSubmissionDTO submissionDTO,
+                                      List<AssignmentQuestionDTO> questions,
+                                      int durationMinutes,
+                                      boolean autoSubmitEnabled) {
+        if (!"IN_PROGRESS".equalsIgnoreCase(submission.getTrangThai())) {
+            throw new RuntimeException("Bài làm đã được gửi trước đó.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expireAt = submission.getThoiGianBatDau() != null
+                ? submission.getThoiGianBatDau().plusMinutes(durationMinutes)
+                : now;
+
+        if (now.isAfter(expireAt) && !autoSubmitEnabled) {
+            throw new RuntimeException("Bài làm đã quá hạn nộp.");
+        }
+
+        EvaluationResult result = evaluateAnswers(questions, submissionDTO.getAnswers());
+        submission.setThoiGianNop(now.isAfter(expireAt) ? expireAt : now);
+        submission.setNoiDungBaiLam(serializeAnswers(submissionDTO.getAnswers()));
+        submission.setTongSoCau(questions.size());
+        submission.setSoCauDung(result.correctCount);
+        if (result.score != null) {
+            submission.setDiemSo(BigDecimal.valueOf(result.score));
+        }
+        submission.setTrangThai(result.requiresManualReview ? "WAITING_REVIEW" : "GRADED_AUTO");
+        return baiNopStudentRepository.save(submission);
+    }
+
+    private String serializeAnswers(List<StudentAssignmentSubmissionDTO.StudentAnswerDTO> answers) {
+        if (answers == null || answers.isEmpty()) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(answers);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Không thể lưu bài làm: " + e.getOriginalMessage(), e);
+        }
+    }
+
+    private EvaluationResult evaluateAnswers(List<AssignmentQuestionDTO> questions,
+                                             List<StudentAssignmentSubmissionDTO.StudentAnswerDTO> answers) {
+        EvaluationResult result = new EvaluationResult();
+        if (questions == null || questions.isEmpty()) {
+            result.requiresManualReview = true;
+            return result;
+        }
+
+        Map<String, StudentAssignmentSubmissionDTO.StudentAnswerDTO> answerMap = new HashMap<>();
+        if (answers != null) {
+            for (StudentAssignmentSubmissionDTO.StudentAnswerDTO answer : answers) {
+                if (answer.getQuestionId() != null) {
+                    answerMap.put(answer.getQuestionId(), answer);
+                }
+            }
+        }
+
+        double totalPoints = questions.stream()
+                .mapToDouble(q -> q.getPoints() != null ? q.getPoints() : 1d)
+                .sum();
+        double earned = 0;
+        int correct = 0;
+        boolean requiresManual = false;
+
+        for (AssignmentQuestionDTO question : questions) {
+            String type = question.getType() != null ? question.getType().toUpperCase() : "ESSAY";
+            StudentAssignmentSubmissionDTO.StudentAnswerDTO answer = answerMap.get(question.getQuestionId());
+            if ("MULTIPLE_CHOICE".equals(type)) {
+                String submitted = extractAnswerValue(answer);
+                if (submitted != null && question.getCorrectAnswer() != null &&
+                    question.getCorrectAnswer().trim().equalsIgnoreCase(submitted.trim())) {
+                    correct++;
+                    earned += question.getPoints() != null ? question.getPoints() : 1d;
+                }
+            } else {
+                requiresManual = true;
+            }
+        }
+
+        result.correctCount = correct;
+        result.requiresManualReview = requiresManual;
+        result.score = totalPoints > 0 ? (earned / totalPoints) * 10d : null;
+        return result;
+    }
+
+    private String extractAnswerValue(StudentAssignmentSubmissionDTO.StudentAnswerDTO answer) {
+        if (answer == null) {
+            return null;
+        }
+        if (answer.getAnswer() != null) {
+            return answer.getAnswer();
+        }
+        if (answer.getAnswerText() != null) {
+            return answer.getAnswerText();
+        }
+        if (answer.getAnswers() != null && !answer.getAnswers().isEmpty()) {
+            return answer.getAnswers().get(0);
+        }
+        return null;
+    }
+
+
+    private static class EvaluationResult {
+        private Double score;
+        private int correctCount;
+        private boolean requiresManualReview;
     }
 
     private List<StudentMessageDTO> getStudentMessages(String studentId) {
@@ -358,7 +911,6 @@ public class StudentService {
         
         for (DangKyLH dk : registrations) {
             // Lấy ID_HS và ID_LH từ DangKyLH
-            String idHs = dk.getId().getIdHs();
             String idLh = dk.getId().getIdLh();
             
             // Bước 2: Tìm LopHoc theo ID_LH và trích xuất thông tin từ entity LopHoc
@@ -687,6 +1239,30 @@ public class StudentService {
             // Return a conservative estimate
             return 80; // Default for registered students without assignments yet
         }
+    }
+
+    private double calculateKetQuaScore(String diemSoRaw) {
+        if (diemSoRaw == null || diemSoRaw.trim().isEmpty()) {
+            return 0d;
+        }
+        String[] parts = diemSoRaw.split(",");
+        BigDecimal total = BigDecimal.ZERO;
+        int count = 0;
+        for (String part : parts) {
+            if (part == null || part.trim().isEmpty()) {
+                continue;
+            }
+            try {
+                BigDecimal value = new BigDecimal(part.trim());
+                total = total.add(value);
+                count++;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (count == 0) {
+            return 0d;
+        }
+        return total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP).doubleValue();
     }
 
     @Transactional

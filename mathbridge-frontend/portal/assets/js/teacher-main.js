@@ -132,16 +132,6 @@ function applyAuthProfileToUI(authPayload, profileData) {
         dropdownEmail.textContent = email;
     }
 
-    const dropdownRole = document.getElementById('dropdownRole');
-    if (dropdownRole) {
-        dropdownRole.textContent = roleLabel;
-    }
-
-    const dropdownAvatar = document.getElementById('dropdownAvatar');
-    if (dropdownAvatar) {
-        dropdownAvatar.textContent = initials;
-    }
-
     const profileName = document.getElementById('profileModalName');
     if (profileName) {
         profileName.textContent = displayName;
@@ -794,12 +784,15 @@ class TeacherDashboard {
         }
         
         // Preload key sections so dữ liệu thật xuất hiện ngay khi chuyển tab
-        if (typeof loadAssignmentsSection === 'function') {
+        if (typeof window.loadAssignmentsSection === 'function') {
             try {
-                await loadAssignmentsSection();
+                console.log('Preloading assignments section...');
+                await window.loadAssignmentsSection();
             } catch (error) {
                 console.error('Failed to preload assignments section:', error);
             }
+        } else {
+            console.warn('window.loadAssignmentsSection not available during init');
         }
         if (typeof loadScheduleSection === 'function') {
             try {
@@ -1046,8 +1039,25 @@ class TeacherDashboard {
             if (sectionId === 'classes') {
                 this.loadClassesSection();
             } else if (sectionId === 'assignments') {
-                if (typeof loadAssignmentsSection === 'function') {
+                console.log('=== Navigate to assignments section ===');
+                console.log('loadAssignmentsSection type:', typeof loadAssignmentsSection);
+                console.log('window.loadAssignmentsSection type:', typeof window.loadAssignmentsSection);
+                
+                if (typeof window.loadAssignmentsSection === 'function') {
+                    console.log('Calling window.loadAssignmentsSection()');
+                    window.loadAssignmentsSection();
+                } else if (typeof loadAssignmentsSection === 'function') {
+                    console.log('Calling loadAssignmentsSection()');
                     loadAssignmentsSection();
+                } else {
+                    console.error('loadAssignmentsSection function not found!');
+                    // Try to load assignments directly
+                    setTimeout(() => {
+                        if (typeof window.loadAssignmentsSection === 'function') {
+                            console.log('Retrying: Calling window.loadAssignmentsSection()');
+                            window.loadAssignmentsSection();
+                        }
+                    }, 500);
                 }
             } else if (sectionId === 'schedule') {
                 if (typeof loadScheduleSection === 'function') {
@@ -1189,7 +1199,7 @@ class TeacherDashboard {
             this.gradeDataByClass.set(String(selectedClassId), diemSos || []);
 
             this.renderGradeStats(diemSos);
-            this.renderGradeChart(diemSos);
+            // this.renderGradeChart(diemSos); // Removed chart
             this.renderGradeTable(selectedClassId, diemSos);
         } catch (error) {
             console.error('Error loading grades section:', error);
@@ -1444,7 +1454,6 @@ class TeacherDashboard {
         const totalEl = document.getElementById('gradeStudentCount');
         const excellentEl = document.getElementById('gradeExcellentCount');
         const needsSupportEl = document.getElementById('gradeNeedsSupportCount');
-        const chartContainer = document.getElementById('gradeDistribution');
         const gradesTableBody = document.querySelector('.grades-table tbody');
 
         if (avgEl) avgEl.textContent = '--';
@@ -3243,6 +3252,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (targetSection) {
                     targetSection.style.display = 'block';
                     console.log('Showing section:', sectionId);
+                    
+                    // Load data for specific sections
+                    if (sectionId === 'assignments') {
+                        console.log('=== Navigation: Loading assignments section ===');
+                        console.log('window.loadAssignmentsSection type:', typeof window.loadAssignmentsSection);
+                        console.log('window.__teacherFunctionsLoaded:', window.__teacherFunctionsLoaded);
+                        
+                        const loadAssignments = () => {
+                            if (typeof window.loadAssignmentsSection === 'function') {
+                                console.log('✅ Calling window.loadAssignmentsSection() from navigation');
+                                window.loadAssignmentsSection().catch(error => {
+                                    console.error('❌ Error loading assignments from navigation:', error);
+                                    const assignmentsGrid = document.querySelector('.assignments-grid');
+                                    if (assignmentsGrid) {
+                                        assignmentsGrid.innerHTML = '<div class="empty-state"><p style="color: red;">Lỗi khi tải bài tập: ' + error.message + '</p></div>';
+                                    }
+                                });
+                                return true;
+                            }
+                            return false;
+                        };
+                        
+                        if (!loadAssignments()) {
+                            console.warn('⚠️ window.loadAssignmentsSection not available, retrying...');
+                            let retryCount = 0;
+                            const maxRetries = 5;
+                            const retryInterval = setInterval(() => {
+                                retryCount++;
+                                console.log(`Retry ${retryCount}/${maxRetries}: Checking for loadAssignmentsSection...`);
+                                if (loadAssignments()) {
+                                    clearInterval(retryInterval);
+                                } else if (retryCount >= maxRetries) {
+                                    clearInterval(retryInterval);
+                                    console.error('❌ window.loadAssignmentsSection still not available after ' + maxRetries + ' retries');
+                                    const assignmentsGrid = document.querySelector('.assignments-grid');
+                                    if (assignmentsGrid) {
+                                        assignmentsGrid.innerHTML = '<div class="empty-state"><p style="color: red;">Không thể tải danh sách bài tập. Vui lòng reload trang.</p></div>';
+                                    }
+                                }
+                            }, 200);
+                        }
+                    } else if (sectionId === 'classes' && window.teacherDashboard) {
+                        window.teacherDashboard.loadClassesSection();
+                    } else if (sectionId === 'grades' && window.teacherDashboard) {
+                        window.teacherDashboard.loadGradesSection();
+                    }
                 } else {
                     console.error('Section not found:', sectionId);
                 }

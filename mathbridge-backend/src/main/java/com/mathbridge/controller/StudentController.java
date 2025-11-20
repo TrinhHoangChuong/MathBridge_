@@ -1,6 +1,8 @@
 package com.mathbridge.controller;
 
 import com.mathbridge.dto.ApiResponse;
+import com.mathbridge.dto.PortalStudentDTO.StudentAssignmentDetailDTO;
+import com.mathbridge.dto.PortalStudentDTO.StudentAssignmentSubmissionDTO;
 import com.mathbridge.dto.PortalStudentDTO.StudentDashboardDTO;
 import com.mathbridge.dto.PortalStudentDTO.UpdateStudentProfileDTO;
 import com.mathbridge.dto.PortalStudentDTO.RateSessionDTO;
@@ -57,6 +59,61 @@ public class StudentController {
                 "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
                 null
             ));
+        }
+    }
+
+    @GetMapping("/assignments/{assignmentId}")
+    public ResponseEntity<ApiResponse<StudentAssignmentDetailDTO>> getAssignmentDetail(
+            @PathVariable String assignmentId,
+            Authentication authentication) {
+        try {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String userId = jwt.getClaimAsString("uid");
+            StudentAssignmentDetailDTO detail = studentService.getAssignmentDetail(userId, assignmentId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Lấy bài tập thành công", detail));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/assignments/{assignmentId}/start")
+    public ResponseEntity<ApiResponse<StudentAssignmentDetailDTO>> startAssignment(
+            @PathVariable String assignmentId,
+            Authentication authentication) {
+        try {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String userId = jwt.getClaimAsString("uid");
+            StudentAssignmentDetailDTO detail = studentService.startAssignment(userId, assignmentId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Bắt đầu làm bài thành công", detail));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/assignments/{assignmentId}/submit")
+    public ResponseEntity<ApiResponse<StudentAssignmentDetailDTO>> submitAssignment(
+            @PathVariable String assignmentId,
+            @RequestBody StudentAssignmentSubmissionDTO submissionDTO,
+            Authentication authentication) {
+        try {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String userId = jwt.getClaimAsString("uid");
+            StudentAssignmentDetailDTO detail = studentService.submitAssignment(userId, assignmentId, submissionDTO);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Đã nộp bài thành công", detail));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null));
         }
     }
 

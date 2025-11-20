@@ -9,5 +9,5 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, String> {
 
     long countByTrangThaiHoatDong(boolean b);
 
-    Optional<NhanVien> findByTaiKhoan_IdTk(String idTk);
+    Optional<NhanVien> findByIdTk(String idTk);
 }

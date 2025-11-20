@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BuoiHocChiTietRepository extends JpaRepository<BuoiHocChiTiet, String> {
@@ -22,5 +23,7 @@ public interface BuoiHocChiTietRepository extends JpaRepository<BuoiHocChiTiet, 
     List<BuoiHocChiTiet> findByGiaoVienAndDateRange(@Param("idNv") String idNv, 
                                                       @Param("startDate") LocalDateTime startDate,
                                                       @Param("endDate") LocalDateTime endDate);
+
+    Optional<BuoiHocChiTiet> findFirstByLopHoc_IdLhOrderByNgayHocAsc(String idLh);
 }
 
