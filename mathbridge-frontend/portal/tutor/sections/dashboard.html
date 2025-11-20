@@ -1,178 +1,230 @@
 <section class="content-section active" id="dashboard">
+    <!-- Welcome Section -->
+    <div class="dashboard-welcome">
+        <div class="welcome-content">
+            <h1 class="welcome-title">
+                <i class="fas fa-graduation-cap"></i>
+                Chào mừng trở lại, <span id="tutorWelcomeName">Cố vấn</span>!
+            </h1>
+            <p class="welcome-subtitle">Hôm nay là <span id="dashboardCurrentDate"></span></p>
+        </div>
+        <div class="welcome-actions">
+            <button class="btn btn-primary" onclick="tutorDashboard.switchSection('assigned-students')">
+                <i class="fas fa-user-graduate"></i>
+                Xem học sinh
+            </button>
+            <button class="btn btn-outline-primary" onclick="tutorDashboard.switchSection('consultation-schedule')">
+                <i class="fas fa-calendar-check"></i>
+                Lịch tư vấn
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card stat-primary">
             <div class="stat-icon">
                 <i class="fas fa-user-graduate"></i>
             </div>
             <div class="stat-content">
-                <h3>156</h3>
-                <p>Học sinh được phân công</p>
+                <h3 id="statAssignedStudents">0</h3>
+                <p>Học sinh đang phụ trách</p>
+                <div class="stat-trend">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Hoạt động tích cực</span>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-success">
             <div class="stat-icon">
                 <i class="fas fa-calendar-check"></i>
             </div>
             <div class="stat-content">
-                <h3>3</h3>
+                <h3 id="statTodayConsultations">0</h3>
                 <p>Lịch tư vấn hôm nay</p>
+                <div class="stat-trend">
+                    <i class="fas fa-clock"></i>
+                    <span id="statNextConsultation">Chưa có lịch</span>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-warning">
             <div class="stat-icon">
-                <i class="fas fa-hands-helping"></i>
+                <i class="fas fa-headset"></i>
             </div>
             <div class="stat-content">
-                <h3>8</h3>
-                <p>Hỗ trợ</p>
+                <h3 id="statOpenSupport">0</h3>
+                <p>Yêu cầu hỗ trợ mở</p>
+                <div class="stat-trend">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Cần xử lý</span>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-info">
             <div class="stat-icon">
-                <i class="fas fa-money-bill-wave"></i>
+                <i class="fas fa-credit-card"></i>
             </div>
             <div class="stat-content">
-                <h3>25</h3>
+                <h3 id="statPendingPayments">0</h3>
                 <p>Thanh toán chờ xử lý</p>
+                <div class="stat-trend">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span>Đang chờ</span>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Main Dashboard Grid -->
     <div class="dashboard-grid">
+        <!-- Students Needing Support -->
         <div class="dashboard-card">
             <div class="card-header">
-                <h3>Học sinh cần hỗ trợ</h3>
-                <button class="btn btn-primary btn-sm">Xem tất cả</button>
+                <div class="card-header-left">
+                    <h3><i class="fas fa-hands-helping"></i> Học sinh cần hỗ trợ</h3>
+                    <p class="card-subtitle">Danh sách học sinh cần được quan tâm</p>
+                </div>
+                <button class="btn btn-sm btn-primary" onclick="tutorDashboard.switchSection('assigned-students')">
+                    Xem tất cả
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
             <div class="card-content">
-                <div class="student-list">
-                    <div class="student-item">
-                        <div class="student-info">
-                            <h4>Trần Văn C</h4>
-                            <p>Lớp 10A1 • Cần hỗ trợ Toán</p>
-                        </div>
-                        <div class="student-status">
-                            <span class="status-badge urgent">Khẩn cấp</span>
-                        </div>
-                    </div>
-                    <div class="student-item">
-                        <div class="student-info">
-                            <h4>Lê Thị D</h4>
-                            <p>Lớp 11B2 • Cần tư vấn học tập</p>
-                        </div>
-                        <div class="student-status">
-                            <span class="status-badge high">Ưu tiên cao</span>
-                        </div>
-                    </div>
-                    <div class="student-item">
-                        <div class="student-info">
-                            <h4>Phạm Văn E</h4>
-                            <p>Lớp 12C1 • Cần hỗ trợ đăng ký</p>
-                        </div>
-                        <div class="student-status">
-                            <span class="status-badge normal">Bình thường</span>
-                        </div>
+                <div class="student-list" id="dashboardStudentsNeedingSupport">
+                    <div class="loading-state-small">
+                        <div class="spinner-small"></div>
+                        <p>Đang tải...</p>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Recent Support Requests -->
         <div class="dashboard-card">
             <div class="card-header">
-                <h3>Thanh toán gần đây</h3>
-                <button class="btn btn-primary btn-sm">Xem tất cả</button>
+                <div class="card-header-left">
+                    <h3><i class="fas fa-comments"></i> Yêu cầu hỗ trợ gần đây</h3>
+                    <p class="card-subtitle">Các yêu cầu mới nhất</p>
+                </div>
+                <button class="btn btn-sm btn-primary" onclick="tutorDashboard.switchSection('support')">
+                    Xem tất cả
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
             <div class="card-content">
-                <div class="payment-list">
-                    <div class="payment-item">
-                        <div class="payment-info">
-                            <h4>Nguyễn Văn F</h4>
-                            <p>Thanh toán học phí tháng 12</p>
-                        </div>
-                        <div class="payment-amount">
-                            <span class="amount">2,500,000đ</span>
-                            <span class="status-badge success">Đã thanh toán</span>
-                        </div>
-                    </div>
-                    <div class="payment-item">
-                        <div class="payment-info">
-                            <h4>Trần Thị G</h4>
-                            <p>Thanh toán học phí tháng 12</p>
-                        </div>
-                        <div class="payment-amount">
-                            <span class="amount">1,800,000đ</span>
-                            <span class="status-badge pending">Chờ xử lý</span>
-                        </div>
-                    </div>
-                    <div class="payment-item">
-                        <div class="payment-info">
-                            <h4>Lê Văn H</h4>
-                            <p>Phí đăng ký khóa học</p>
-                        </div>
-                        <div class="payment-amount">
-                            <span class="amount">500,000đ</span>
-                            <span class="status-badge success">Đã thanh toán</span>
-                        </div>
+                <div class="support-requests-list" id="dashboardRecentSupport">
+                    <div class="loading-state-small">
+                        <div class="spinner-small"></div>
+                        <p>Đang tải...</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="dashboard-card">
-        <div class="card-header">
-            <h3>Lịch làm việc tuần này</h3>
-            <button class="btn btn-primary btn-sm">Xem lịch đầy đủ</button>
+    <!-- Secondary Grid -->
+    <div class="dashboard-grid-secondary">
+        <!-- Weekly Schedule -->
+        <div class="dashboard-card card-large">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <h3><i class="fas fa-calendar-week"></i> Lịch làm việc tuần này</h3>
+                    <p class="card-subtitle">Tổng quan các hoạt động trong tuần</p>
+                </div>
+                <div class="calendar-controls">
+                    <button class="btn-icon" id="prevWeekBtn" onclick="tutorDashboard.navigateWeek(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn-text" id="currentWeekBtn" onclick="tutorDashboard.goToCurrentWeek()">
+                        Tuần này
+                    </button>
+                    <button class="btn-icon" id="nextWeekBtn" onclick="tutorDashboard.navigateWeek(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="weekly-schedule" id="dashboardWeeklySchedule">
+                    <div class="loading-state-small">
+                        <div class="spinner-small"></div>
+                        <p>Đang tải lịch làm việc...</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-content">
-            <div class="schedule-calendar">
-                <div class="calendar-header">
-                    <h3>Tháng 12, 2024</h3>
-                    <div class="calendar-navigation">
-                        <button class="btn-icon" id="prevWeek">
-                            <i class="fas fa-chevron-left"></i>
+
+        <!-- Quick Actions & Recent Activity -->
+        <div class="dashboard-sidebar">
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bolt"></i> Thao tác nhanh</h3>
+                </div>
+                <div class="card-content">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="tutorDashboard.switchSection('assigned-students')">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <span>Thêm học sinh</span>
                         </button>
-                        <button class="current-btn">Tuần này</button>
-                        <button class="btn-icon" id="nextWeek">
-                            <i class="fas fa-chevron-right"></i>
+                        <button class="quick-action-btn" onclick="tutorDashboard.switchSection('consultation-schedule')">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <span>Tạo lịch tư vấn</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="tutorDashboard.switchSection('support')">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <span>Xem hỗ trợ</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="tutorDashboard.switchSection('payments')">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <span>Xử lý thanh toán</span>
                         </button>
                     </div>
                 </div>
-                <div class="calendar-grid">
-                    <div class="calendar-day-header">T2</div>
-                    <div class="calendar-day-header">T3</div>
-                    <div class="calendar-day-header">T4</div>
-                    <div class="calendar-day-header">T5</div>
-                    <div class="calendar-day-header">T6</div>
-                    <div class="calendar-day-header">T7</div>
-                    <div class="calendar-day-header">CN</div>
+            </div>
 
-                    <div class="calendar-day">
-                        <div class="calendar-day-number">16</div>
-                        <div class="calendar-event">Hỗ trợ học sinh</div>
-                    </div>
-                    <div class="calendar-day">
-                        <div class="calendar-day-number">17</div>
-                        <div class="calendar-event">Tư vấn phụ huynh</div>
-                    </div>
-                    <div class="calendar-day today">
-                        <div class="calendar-day-number">18</div>
-                        <div class="calendar-event">Xử lý thanh toán</div>
-                    </div>
-                    <div class="calendar-day">
-                        <div class="calendar-day-number">19</div>
-                        <div class="calendar-event">Họp với gia sư</div>
-                    </div>
-                    <div class="calendar-day">
-                        <div class="calendar-day-number">20</div>
-                        <div class="calendar-event">Kiểm tra lớp học</div>
-                    </div>
-                    <div class="calendar-day">
-                        <div class="calendar-day-number">21</div>
-                        <div class="calendar-event">Báo cáo tuần</div>
-                    </div>
-                    <div class="calendar-day">
-                        <div class="calendar-day-number">22</div>
+            <!-- Recent Activity -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-history"></i> Hoạt động gần đây</h3>
+                </div>
+                <div class="card-content">
+                    <div class="activity-list" id="dashboardRecentActivity">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>Đã phân công</strong> học sinh mới</p>
+                                <span class="activity-time">2 giờ trước</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>Đã xử lý</strong> yêu cầu hỗ trợ</p>
+                                <span class="activity-time">5 giờ trước</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>Đã tạo</strong> lịch tư vấn</p>
+                                <span class="activity-time">Hôm qua</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -180,3 +232,384 @@
     </div>
 </section>
 
+<style>
+/* Dashboard Welcome Section */
+.dashboard-welcome {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.welcome-content h1.welcome-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.welcome-content h1.welcome-title i {
+    color: var(--primary-color);
+    font-size: 2rem;
+}
+
+.welcome-content h1.welcome-title span {
+    color: var(--primary-color);
+}
+
+.welcome-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.welcome-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Enhanced Stat Cards */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+}
+
+.stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.stat-trend i {
+    font-size: 0.7rem;
+}
+
+.stat-primary .stat-trend i {
+    color: var(--primary-color);
+}
+
+.stat-success .stat-trend i {
+    color: var(--success-color);
+}
+
+.stat-warning .stat-trend i {
+    color: var(--warning-color);
+}
+
+.stat-info .stat-trend i {
+    color: var(--info-color);
+}
+
+/* Card Header Enhancement */
+.card-header-left {
+    flex: 1;
+}
+
+.card-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+/* Dashboard Grid Secondary */
+.dashboard-grid-secondary {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.card-large {
+    min-height: 400px;
+}
+
+.dashboard-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Weekly Schedule */
+.weekly-schedule {
+    min-height: 300px;
+}
+
+.calendar-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-icon:hover {
+    background: var(--background-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-text {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-text:hover {
+    background: var(--background-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.quick-action-btn:hover {
+    background: var(--background-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.quick-action-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.quick-action-btn span {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Activity List */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.activity-item:hover {
+    background: var(--background-color);
+}
+
+.activity-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-content p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.activity-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Support Requests List */
+.support-requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.support-request-item {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: white;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.support-request-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow);
+}
+
+.support-request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.support-request-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.support-request-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.support-request-status.open {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.support-request-status.processing {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info-color);
+}
+
+.support-request-student {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.support-request-time {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+/* Loading States */
+.loading-state-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.spinner-small {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .dashboard-grid-secondary {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-welcome {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .welcome-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .welcome-actions .btn {
+        width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

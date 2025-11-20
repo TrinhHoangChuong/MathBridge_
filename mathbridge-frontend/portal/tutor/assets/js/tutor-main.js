@@ -607,76 +607,252 @@ class TutorDashboard {
     setInterval(updateTime, 1000);
   }
 
-  loadDashboardData() {
+  async loadDashboardData() {
+    // Update welcome name
+    this.updateDashboardWelcome();
+    
     // Load dashboard statistics
-    this.loadDashboardStats();
-    this.loadRecentStudents();
-    this.loadRecentPayments();
-    this.loadWeeklySchedule();
+    await this.loadDashboardStats();
+    await this.loadRecentStudents();
+    await this.loadRecentSupportRequests();
+    await this.loadWeeklySchedule();
+    await this.loadRecentActivity();
   }
 
-  loadDashboardStats() {
-    // Simulate API call
-    const stats = {
-      students: 156,
-      teachers: 12,
-      classes: 8,
-      payments: 25,
-    };
-
-    // Update stat cards
-    const statCards = document.querySelectorAll(".stat-card .stat-content h3");
-    if (statCards.length >= 4) {
-      statCards[0].textContent = stats.students;
-      statCards[1].textContent = stats.teachers;
-      statCards[2].textContent = stats.classes;
-      statCards[3].textContent = stats.payments;
+  updateDashboardWelcome() {
+    const welcomeNameEl = document.getElementById("tutorWelcomeName");
+    const currentDateEl = document.getElementById("dashboardCurrentDate");
+    
+    if (welcomeNameEl && this.tutorInfo) {
+      const name = this.tutorInfo.name || "Cố vấn";
+      // Lấy tên cuối cùng (tên chính)
+      const nameParts = name.trim().split(/\s+/);
+      const lastName = nameParts.length > 0 ? nameParts[nameParts.length - 1] : name;
+      welcomeNameEl.textContent = lastName;
+    }
+    
+    if (currentDateEl) {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      currentDateEl.textContent = now.toLocaleDateString('vi-VN', options);
     }
   }
 
-  loadRecentStudents() {
-    // Simulate loading recent students needing support
-    const students = [
-      {
-        name: "Trần Văn C",
-        class: "Lớp 10A1",
-        issue: "Cần hỗ trợ Toán",
-        priority: "urgent",
-      },
-      {
-        name: "Lê Thị D",
-        class: "Lớp 11B2",
-        issue: "Cần tư vấn học tập",
-        priority: "high",
-      },
-      {
-        name: "Phạm Văn E",
-        class: "Lớp 12C1",
-        issue: "Cần hỗ trợ đăng ký",
-        priority: "normal",
-      },
+  async loadDashboardStats() {
+    try {
+      // Get tutor ID
+      const authData = localStorage.getItem("mb_auth");
+      let idNv = null;
+      
+      if (authData) {
+        try {
+          const data = JSON.parse(authData);
+          const user = data.user || data.account || {};
+          idNv = user.idNv || null;
+        } catch (e) {
+          console.error("Error parsing auth data:", e);
+        }
+      }
+
+      // If no idNv, try to get from idTk
+      if (!idNv) {
+        const idTk = localStorage.getItem("mb_user_id");
+        if (idTk) {
+          try {
+            const tutorIdResponse = await window.tutorAPI.getTutorIdFromAccountId(idTk);
+            if (tutorIdResponse && tutorIdResponse.idNv) {
+              idNv = tutorIdResponse.idNv;
+            }
+          } catch (error) {
+            console.error("Error getting tutor ID:", error);
+          }
+        }
+      }
+
+      if (!idNv) {
+        // Set default values
+        this.updateDashboardStats({ assignedStudents: 0, todayConsultations: 0, openSupport: 0, pendingPayments: 0 });
+        return;
+      }
+
+      // Load stats from APIs
+      const [assignedCount, supportRequests, unpaidInvoices] = await Promise.all([
+        window.tutorAPI.getAssignedStudentsCount(idNv).catch(() => 0),
+        window.tutorAPI.getOpenSupportRequests().catch(() => []),
+        window.tutorAPI.getUnpaidInvoices().catch(() => [])
+      ]);
+
+      // Count today consultations (would need API endpoint)
+      const todayConsultations = 0; // TODO: Add API endpoint for today's consultations
+
+      this.updateDashboardStats({
+        assignedStudents: assignedCount || 0,
+        todayConsultations: todayConsultations,
+        openSupport: supportRequests?.length || 0,
+        pendingPayments: unpaidInvoices?.length || 0
+      });
+
+    } catch (error) {
+      console.error("Error loading dashboard stats:", error);
+      // Set default values on error
+      this.updateDashboardStats({ assignedStudents: 0, todayConsultations: 0, openSupport: 0, pendingPayments: 0 });
+    }
+  }
+
+  updateDashboardStats(stats) {
+    const assignedEl = document.getElementById("statAssignedStudents");
+    const consultationsEl = document.getElementById("statTodayConsultations");
+    const supportEl = document.getElementById("statOpenSupport");
+    const paymentsEl = document.getElementById("statPendingPayments");
+
+    if (assignedEl) assignedEl.textContent = stats.assignedStudents || 0;
+    if (consultationsEl) consultationsEl.textContent = stats.todayConsultations || 0;
+    if (supportEl) supportEl.textContent = stats.openSupport || 0;
+    if (paymentsEl) paymentsEl.textContent = stats.pendingPayments || 0;
+  }
+
+  async loadRecentStudents() {
+    const container = document.getElementById("dashboardStudentsNeedingSupport");
+    if (!container) return;
+
+    try {
+      // Get tutor ID
+      const idNv = this.currentTutorId || (this.tutorInfo && this.tutorInfo.idNv);
+      if (!idNv) {
+        container.innerHTML = '<p class="empty-message">Chưa có thông tin cố vấn</p>';
+        return;
+      }
+
+      // Load assigned students
+      const students = await window.tutorAPI.getAssignedStudents(idNv, "active");
+      
+      if (!students || students.length === 0) {
+        container.innerHTML = '<p class="empty-message">Chưa có học sinh được phân công</p>';
+        return;
+      }
+
+      // Show top 5 students
+      const topStudents = students.slice(0, 5);
+      container.innerHTML = topStudents
+        .map((student) => {
+          const priority = this.determineStudentPriority(student);
+          return `
+            <div class="student-item" onclick="tutorDashboard.viewStudentDetails('${student.idHs}')">
+              <div class="student-info">
+                <h4>${student.hoTen || "N/A"}</h4>
+                <p>${student.className || "Chưa có lớp"} • ${student.trangThai || "Đang phụ trách"}</p>
+              </div>
+              <div class="student-status">
+                <span class="status-badge ${priority.class}">${priority.text}</span>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+    } catch (error) {
+      console.error("Error loading recent students:", error);
+      container.innerHTML = '<p class="empty-message">Không thể tải danh sách học sinh</p>';
+    }
+  }
+
+  determineStudentPriority(student) {
+    // Logic để xác định priority dựa trên thông tin học sinh
+    if (student.trangThai && student.trangThai.includes("Ket thuc")) {
+      return { class: "normal", text: "Đã kết thúc" };
+    }
+    if (student.trangThai && student.trangThai.includes("Tam dung")) {
+      return { class: "high", text: "Tạm dừng" };
+    }
+    return { class: "success", text: "Đang phụ trách" };
+  }
+
+  async loadRecentSupportRequests() {
+    const container = document.getElementById("dashboardRecentSupport");
+    if (!container) return;
+
+    try {
+      const requests = await window.tutorAPI.getOpenSupportRequests();
+      
+      if (!requests || requests.length === 0) {
+        container.innerHTML = '<p class="empty-message">Không có yêu cầu hỗ trợ mở</p>';
+        return;
+      }
+
+      // Show top 5 requests
+      const topRequests = requests.slice(0, 5);
+      container.innerHTML = topRequests
+        .map((request) => {
+          const statusClass = request.trangThai?.toLowerCase().includes("đang") ? "processing" : "open";
+          const timeAgo = this.getTimeAgo(request.thoiDiemTao);
+          return `
+            <div class="support-request-item" onclick="tutorDashboard.viewSupportDetails('${request.idYc}')">
+              <div class="support-request-header">
+                <div class="support-request-title">${request.tieuDe || "Yêu cầu hỗ trợ"}</div>
+                <span class="support-request-status ${statusClass}">${request.trangThai || "Chưa xử lý"}</span>
+              </div>
+              <div class="support-request-student">
+                <i class="fas fa-user"></i> ${request.studentName || "Học sinh"}
+              </div>
+              <div class="support-request-time">
+                <i class="fas fa-clock"></i> ${timeAgo}
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+    } catch (error) {
+      console.error("Error loading recent support requests:", error);
+      container.innerHTML = '<p class="empty-message">Không thể tải yêu cầu hỗ trợ</p>';
+    }
+  }
+
+  getTimeAgo(dateTime) {
+    if (!dateTime) return "Không xác định";
+    
+    try {
+      const date = new Date(dateTime);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return "Vừa xong";
+      if (diffMins < 60) return `${diffMins} phút trước`;
+      if (diffHours < 24) return `${diffHours} giờ trước`;
+      if (diffDays < 7) return `${diffDays} ngày trước`;
+      return date.toLocaleDateString('vi-VN');
+    } catch (e) {
+      return "Không xác định";
+    }
+  }
+
+  async loadRecentActivity() {
+    const container = document.getElementById("dashboardRecentActivity");
+    if (!container) return;
+
+    // For now, show static activity. Can be enhanced with real API later
+    const activities = [
+      { icon: "fa-user-check", text: "Đã phân công học sinh mới", time: "2 giờ trước" },
+      { icon: "fa-check-circle", text: "Đã xử lý yêu cầu hỗ trợ", time: "5 giờ trước" },
+      { icon: "fa-calendar-check", text: "Đã tạo lịch tư vấn", time: "Hôm qua" },
     ];
 
-    const studentList = document.querySelector(".student-list");
-    if (studentList) {
-      studentList.innerHTML = students
-        .map(
-          (student) => `
-                <div class="student-item">
-                    <div class="student-info">
-                        <h4>${student.name}</h4>
-                        <p>${student.class} • ${student.issue}</p>
-                    </div>
-                    <div class="student-status">
-                        <span class="status-badge ${
-                          student.priority
-                        }">${this.getPriorityText(student.priority)}</span>
-                    </div>
-                </div>
-            `
-        )
-        .join("");
-    }
+    container.innerHTML = activities
+      .map((activity) => `
+        <div class="activity-item">
+          <div class="activity-icon">
+            <i class="fas ${activity.icon}"></i>
+          </div>
+          <div class="activity-content">
+            <p><strong>${activity.text}</strong></p>
+            <span class="activity-time">${activity.time}</span>
+          </div>
+        </div>
+      `)
+      .join("");
   }
 
   loadRecentPayments() {
@@ -725,46 +901,116 @@ class TutorDashboard {
     }
   }
 
-  loadWeeklySchedule() {
-    // Load weekly schedule data
-    const scheduleData = [
-      { day: "16", event: "Hỗ trợ học sinh" },
-      { day: "17", event: "Tư vấn phụ huynh" },
-      { day: "18", event: "Xử lý thanh toán", today: true },
-      { day: "19", event: "Họp với gia sư" },
-      { day: "20", event: "Kiểm tra lớp học" },
-      { day: "21", event: "Báo cáo tuần" },
-      { day: "22", event: "" },
-    ];
+  async loadWeeklySchedule() {
+    const container = document.getElementById("dashboardWeeklySchedule");
+    if (!container) return;
 
-    const calendarGrid = document.querySelector(".calendar-grid");
-    if (calendarGrid) {
-      const dayElements = calendarGrid.querySelectorAll(".calendar-day");
-      dayElements.forEach((dayElement, index) => {
-        if (scheduleData[index]) {
-          const dayNumber = dayElement.querySelector(".calendar-day-number");
-          const event = dayElement.querySelector(".calendar-event");
+    try {
+      // Get tutor ID
+      const idNv = this.currentTutorId || (this.tutorInfo && this.tutorInfo.idNv);
+      if (!idNv) {
+        container.innerHTML = '<p class="empty-message">Chưa có thông tin cố vấn</p>';
+        return;
+      }
 
-          if (dayNumber) {
-            dayNumber.textContent = scheduleData[index].day;
-          }
+      // Get current week start
+      const weekStart = this.getStartOfWeek(new Date());
+      const weekStartStr = weekStart.toISOString().split('T')[0];
 
-          if (event && scheduleData[index].event) {
-            event.textContent = scheduleData[index].event;
-          } else if (event && !scheduleData[index].event) {
-            event.style.display = "none";
-          }
-
-          if (scheduleData[index].today) {
-            dayElement.classList.add("today");
-          }
-        }
+      // Load consultation schedule
+      const schedule = await window.tutorAPI.getWeeklySchedule({
+        startDate: weekStartStr,
+        idNv: idNv
       });
+
+      // Render weekly calendar
+      this.renderWeeklyCalendar(container, weekStart, schedule || []);
+
+    } catch (error) {
+      console.error("Error loading weekly schedule:", error);
+      container.innerHTML = '<p class="empty-message">Không thể tải lịch làm việc</p>';
+    }
+  }
+
+  renderWeeklyCalendar(container, weekStart, schedule) {
+    const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let html = '<div class="calendar-grid">';
+    
+    // Day headers
+    days.forEach(day => {
+      html += `<div class="calendar-day-header">${day}</div>`;
+    });
+
+    // Calendar days
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(weekStart);
+      currentDate.setDate(weekStart.getDate() + i);
+      const dayNumber = currentDate.getDate();
+      const isToday = currentDate.getTime() === today.getTime();
+      
+      // Find events for this day
+      const dayEvents = schedule.filter(event => {
+        if (!event.ngay) return false;
+        const eventDate = new Date(event.ngay);
+        eventDate.setHours(0, 0, 0, 0);
+        return eventDate.getTime() === currentDate.getTime();
+      });
+
+      html += `
+        <div class="calendar-day ${isToday ? 'today' : ''}">
+          <div class="calendar-day-number">${dayNumber}</div>
+          ${dayEvents.length > 0 ? `
+            <div class="calendar-events">
+              ${dayEvents.slice(0, 2).map(event => `
+                <div class="calendar-event" title="${event.tenHocSinh || 'Tư vấn'}">
+                  ${event.tenHocSinh || 'Tư vấn'}
+                </div>
+              `).join('')}
+              ${dayEvents.length > 2 ? `<div class="calendar-event-more">+${dayEvents.length - 2}</div>` : ''}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  navigateWeek(direction) {
+    if (!this.dashboardWeekStart) {
+      this.dashboardWeekStart = this.getStartOfWeek(new Date());
+    }
+    this.dashboardWeekStart.setDate(this.dashboardWeekStart.getDate() + (direction * 7));
+    this.loadWeeklySchedule();
+    this.updateWeekButton();
+  }
+
+  goToCurrentWeek() {
+    this.dashboardWeekStart = this.getStartOfWeek(new Date());
+    this.loadWeeklySchedule();
+    this.updateWeekButton();
+  }
+
+  updateWeekButton() {
+    const btn = document.getElementById("currentWeekBtn");
+    if (btn && this.dashboardWeekStart) {
+      const weekEnd = new Date(this.dashboardWeekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      const startStr = this.dashboardWeekStart.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
+      const endStr = weekEnd.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
+      btn.textContent = `${startStr} - ${endStr}`;
     }
   }
 
   loadSectionData(sectionId) {
     switch (sectionId) {
+      case "dashboard":
+        this.loadDashboardData();
+        break;
       case "students":
         this.loadStudentsData();
         break;
