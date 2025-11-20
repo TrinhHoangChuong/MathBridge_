@@ -24,6 +24,9 @@ class TutorDashboard {
     this.setupModals();
     this.updateTutorAvatar();
     this.initializeConsultationSchedule();
+    
+    // Set initial page title
+    this.updatePageTitle(this.currentSection);
   }
 
   checkAuthentication() {
@@ -133,6 +136,22 @@ class TutorDashboard {
       const initials = this.getInitials(name);
       headerAvatar.innerHTML = `<span class="avatar-initials">${initials}</span>`;
     }
+
+    // Cập nhật dropdown user info
+    const dropdownName = document.getElementById("dropdownName");
+    const dropdownEmail = document.getElementById("dropdownEmail");
+    const dropdownAvatar = document.querySelector(".dropdown-user-avatar");
+
+    if (dropdownName) {
+      dropdownName.textContent = name;
+    }
+    if (dropdownEmail) {
+      dropdownEmail.textContent = email || "tutor@mathbridge.vn";
+    }
+    if (dropdownAvatar) {
+      const initials = this.getInitials(name);
+      dropdownAvatar.innerHTML = `<span class="avatar-initials">${initials}</span>`;
+    }
   }
 
   getInitials(name) {
@@ -189,6 +208,24 @@ class TutorDashboard {
         this.logout();
       });
     }
+
+    // User menu button
+    const userMenuBtn = document.getElementById("userMenuBtn");
+    if (userMenuBtn) {
+      userMenuBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.toggleUserDropdown();
+      });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      const userMenu = document.querySelector(".user-menu");
+      const userDropdown = document.getElementById("userDropdown");
+      if (userMenu && userDropdown && !userMenu.contains(e.target)) {
+        this.closeUserDropdown();
+      }
+    });
 
     // Notification button
     const notificationBtn = document.getElementById("notificationBtn");
@@ -502,17 +539,31 @@ class TutorDashboard {
     const pageTitle = document.getElementById("pageTitle");
     const titles = {
       dashboard: "Dashboard",
-      students: "Quản lý học sinh",
-      teachers: "Quản lý gia sư",
-      classes: "Quản lý lớp học",
+      "assigned-students": "Học sinh được phân công",
+      "consultation-schedule": "Lịch tư vấn",
       payments: "Thanh toán",
       support: "Hỗ trợ",
+      consultations: "Yêu cầu tư vấn",
       messages: "Nhắn tin trực tiếp",
     };
 
-    if (pageTitle && titles[sectionId]) {
-      pageTitle.textContent = titles[sectionId];
+    if (pageTitle) {
+      // Get title from mapping or use section name
+      const title = titles[sectionId] || this.getSectionTitleFromNav(sectionId) || "Dashboard";
+      pageTitle.textContent = title;
     }
+  }
+
+  getSectionTitleFromNav(sectionId) {
+    // Try to get title from navigation item
+    const navItem = document.querySelector(`[data-section="${sectionId}"]`);
+    if (navItem) {
+      const span = navItem.querySelector("span");
+      if (span) {
+        return span.textContent.trim();
+      }
+    }
+    return null;
   }
 
   updateActiveNavItem() {
@@ -820,6 +871,9 @@ class TutorDashboard {
       // Get filter value
       const filterSelect = document.getElementById("assignmentStatusFilter");
       const filter = filterSelect ? filterSelect.value : "active";
+      
+      // Update current filter
+      this.currentStatusFilter = filter;
 
       // Load students
       const students = await window.tutorAPI.getAssignedStudents(idNv, filter);
@@ -1043,22 +1097,30 @@ class TutorDashboard {
     const filterSelect = document.getElementById("assignmentStatusFilter");
     const classFilter = document.getElementById("classFilter");
 
+    const filter = filterSelect ? filterSelect.value : "active";
+
+    // Store current filter to check if it changed
+    if (!this.currentStatusFilter) {
+      this.currentStatusFilter = filter;
+    }
+
+    // If status filter changed, reload from API
+    if (this.currentStatusFilter !== filter) {
+      this.currentStatusFilter = filter;
+      this.loadAssignedStudentsData();
+      return;
+    }
+
+    // If no students loaded yet, load them
     if (!this.assignedStudents) {
       this.loadAssignedStudentsData();
       return;
     }
 
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
-    const filter = filterSelect ? filterSelect.value : "active";
-
-    // If status filter changed to a specific status (not active/all), reload from API
-    if (filter !== "active" && filter !== "all") {
-      this.loadAssignedStudentsData();
-      return;
-    }
-
     // Filter by search term
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
     let filtered = this.assignedStudents;
+    
     if (searchTerm) {
       filtered = this.assignedStudents.filter((student) => {
         const name = (student.hoTen || "").toLowerCase();
@@ -3501,6 +3563,98 @@ class TutorDashboard {
       "Chủ nhật",
     ];
     return days[index] || "";
+  }
+
+  toggleUserDropdown() {
+    const userDropdown = document.getElementById("userDropdown");
+    const userMenuBtn = document.getElementById("userMenuBtn");
+    
+    if (userDropdown && userMenuBtn) {
+      const isActive = userDropdown.classList.contains("active");
+      
+      if (isActive) {
+        this.closeUserDropdown();
+      } else {
+        userDropdown.classList.add("active");
+        userMenuBtn.classList.add("active");
+      }
+    }
+  }
+
+  closeUserDropdown() {
+    const userDropdown = document.getElementById("userDropdown");
+    const userMenuBtn = document.getElementById("userMenuBtn");
+    
+    if (userDropdown) {
+      userDropdown.classList.remove("active");
+    }
+    if (userMenuBtn) {
+      userMenuBtn.classList.remove("active");
+    }
+  }
+
+  openProfile() {
+    this.closeUserDropdown();
+    showNotification("Tính năng hồ sơ cá nhân đang được phát triển.", "info");
+    // TODO: Implement profile modal
+  }
+
+  openSettings() {
+    this.closeUserDropdown();
+    showNotification("Tính năng cài đặt đang được phát triển.", "info");
+    // TODO: Implement settings modal
+  }
+
+  openHelp() {
+    this.closeUserDropdown();
+    showNotification("Tính năng trợ giúp đang được phát triển.", "info");
+    // TODO: Implement help modal
+  }
+
+  toggleUserDropdown() {
+    const userDropdown = document.getElementById("userDropdown");
+    const userMenuBtn = document.getElementById("userMenuBtn");
+    
+    if (userDropdown && userMenuBtn) {
+      const isActive = userDropdown.classList.contains("active");
+      
+      if (isActive) {
+        this.closeUserDropdown();
+      } else {
+        userDropdown.classList.add("active");
+        userMenuBtn.classList.add("active");
+      }
+    }
+  }
+
+  closeUserDropdown() {
+    const userDropdown = document.getElementById("userDropdown");
+    const userMenuBtn = document.getElementById("userMenuBtn");
+    
+    if (userDropdown) {
+      userDropdown.classList.remove("active");
+    }
+    if (userMenuBtn) {
+      userMenuBtn.classList.remove("active");
+    }
+  }
+
+  openProfile() {
+    this.closeUserDropdown();
+    showNotification("Tính năng hồ sơ cá nhân đang được phát triển.", "info");
+    // TODO: Implement profile modal
+  }
+
+  openSettings() {
+    this.closeUserDropdown();
+    showNotification("Tính năng cài đặt đang được phát triển.", "info");
+    // TODO: Implement settings modal
+  }
+
+  openHelp() {
+    this.closeUserDropdown();
+    showNotification("Tính năng trợ giúp đang được phát triển.", "info");
+    // TODO: Implement help modal
   }
 
   showNotifications() {

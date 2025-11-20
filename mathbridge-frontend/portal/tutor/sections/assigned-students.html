@@ -1,30 +1,4 @@
 <section class="content-section" id="assigned-students">
-    <div class="section-header">
-        <h2><i class="fas fa-user-graduate"></i> Học sinh được phân công</h2>
-        <div class="header-actions">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="studentSearchInput" placeholder="Tìm kiếm học sinh..." onkeyup="tutorDashboard.filterStudents()">
-            </div>
-            <div class="filter-buttons">
-                <select class="form-select" id="assignmentStatusFilter" onchange="tutorDashboard.filterStudents()">
-                    <option value="active">Đang phụ trách</option>
-                    <option value="all">Tất cả</option>
-                    <option value="Dang phu trach">Đang phụ trách</option>
-                    <option value="Tam dung">Tạm dừng</option>
-                    <option value="Ket thuc">Kết thúc</option>
-                </select>
-                <select class="form-select" id="classFilter" onchange="tutorDashboard.filterStudents()">
-                    <option value="">-- Lọc theo lớp (tất cả) --</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" id="exportBtn" onclick="tutorDashboard.exportStudents()">
-                <i class="fas fa-download"></i>
-                Xuất danh sách
-            </button>
-        </div>
-    </div>
-
     <div class="assigned-students-stats" id="assignedStudentsStats" style="display: none;">
         <div class="stat-card-mini">
             <div class="stat-icon-mini">
@@ -34,6 +8,41 @@
                 <h3 id="activeStudentsCount">0</h3>
                 <p>Đang phụ trách</p>
             </div>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <h2><i class="fas fa-user-graduate"></i> Học sinh được phân công</h2>
+        <div class="header-actions">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="studentSearchInput" placeholder="Tìm kiếm học sinh..." onkeyup="tutorDashboard.filterStudents()">
+            </div>
+            <div class="filter-buttons">
+                <div class="filter-group">
+                    <label for="assignmentStatusFilter" class="filter-label">
+                        <i class="fas fa-filter"></i> Trạng thái phân công
+                    </label>
+                    <select class="form-select" id="assignmentStatusFilter" onchange="tutorDashboard.filterStudents()">
+                        <option value="active" selected>Đang phụ trách</option>
+                        <option value="all">Tất cả</option>
+                        <option value="Tam dung">Tạm dừng</option>
+                        <option value="Ket thuc">Đã kết thúc</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="classFilter" class="filter-label">
+                        <i class="fas fa-chalkboard"></i> Lớp học
+                    </label>
+                    <select class="form-select" id="classFilter" onchange="tutorDashboard.filterStudents()">
+                        <option value="">Tất cả lớp</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="exportBtn" onclick="tutorDashboard.exportStudents()">
+                <i class="fas fa-download"></i>
+                Xuất danh sách
+            </button>
         </div>
     </div>
 

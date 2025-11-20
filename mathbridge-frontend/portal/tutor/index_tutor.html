@@ -121,6 +121,38 @@
                         <span>Nguyễn Thị B</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-user-info">
+                                <div class="dropdown-user-avatar">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="dropdown-user-details">
+                                    <span class="dropdown-name" id="dropdownName">Nguyễn Thị B</span>
+                                    <span class="dropdown-email" id="dropdownEmail">tutor@mathbridge.vn</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="#" class="dropdown-item" onclick="tutorDashboard.openProfile(); tutorDashboard.closeUserDropdown();">
+                                <i class="fas fa-user"></i>
+                                <span>Hồ sơ cá nhân</span>
+                            </a>
+                            <a href="#" class="dropdown-item" onclick="tutorDashboard.openSettings(); tutorDashboard.closeUserDropdown();">
+                                <i class="fas fa-cog"></i>
+                                <span>Cài đặt</span>
+                            </a>
+                            <a href="#" class="dropdown-item" onclick="tutorDashboard.openHelp(); tutorDashboard.closeUserDropdown();">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Trợ giúp</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item logout-item" onclick="tutorDashboard.logout(); tutorDashboard.closeUserDropdown();">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
