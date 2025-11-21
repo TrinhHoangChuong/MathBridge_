@@ -4391,16 +4391,55 @@ async function generateReport(studentId) {
 // Consultation Schedule functions
 async function addConsultation() {
   const form = document.getElementById("consultationForm");
-  if (form) {
-    const formData = new FormData(form);
-    try {
-      await window.tutorAPI.createConsultation(formData);
-      showNotification("Buổi tư vấn đã được tạo thành công!", "success");
-      loadConsultationSchedule();
-    } catch (error) {
-      console.error("Error creating consultation:", error);
-      window.tutorAPI.handleError(error);
+  if (!form || !form.checkValidity()) {
+    form?.reportValidity();
+    return;
+  }
+
+  try {
+    // Get form values
+    const hoTen = document.getElementById("hoTen").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const sdt = document.getElementById("sdt").value.trim();
+    const tieuDe = document.getElementById("tieuDe").value.trim();
+    const noiDung = document.getElementById("noiDung").value.trim();
+    const hinhThucTuVan = document.getElementById("hinhThucTuVan").value;
+    const consultationDate = document.getElementById("consultationDate").value;
+    const consultationTime = document.getElementById("consultationTime").value;
+
+    // Validate required fields
+    if (!hoTen || !sdt || !tieuDe || !hinhThucTuVan || !consultationDate || !consultationTime) {
+      showNotification("Vui lòng điền đầy đủ các trường bắt buộc!", "error");
+      return;
     }
+
+    // Combine date and time into datetime string
+    const thoiGianTuVan = `${consultationDate}T${consultationTime}:00`;
+
+    // Create request body matching LienHeTuVanDTO
+    const requestData = {
+      hoTen: hoTen,
+      email: email || null,
+      sdt: sdt,
+      tieuDe: tieuDe,
+      noiDung: noiDung || null,
+      hinhThucTuVan: hinhThucTuVan,
+      thoiGianTuVan: thoiGianTuVan
+    };
+
+    await window.tutorAPI.createConsultation(requestData);
+    showNotification("Buổi tư vấn đã được tạo thành công!", "success");
+    closeConsultationModal();
+    
+    // Reload schedule
+    if (window.consultationScheduleModule && window.consultationScheduleModule.loadSchedule) {
+      window.consultationScheduleModule.loadSchedule();
+    } else if (typeof loadConsultationSchedule === 'function') {
+      loadConsultationSchedule();
+    }
+  } catch (error) {
+    console.error("Error creating consultation:", error);
+    window.tutorAPI.handleError(error);
   }
 }
 
@@ -4758,57 +4797,86 @@ function exportStudentList() {
 }
 
 function showAddConsultationModal() {
+  // Remove existing modal if any
+  const existingModal = document.querySelector('.consultation-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+
   const modal = document.createElement("div");
-  modal.className = "modal";
+  modal.className = "modal active consultation-modal";
+  modal.id = "consultationModal";
   modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Thêm buổi tư vấn</h3>
-                    <span class="close">&times;</span>
+                    <button class="modal-close" onclick="closeConsultationModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
                 <div class="modal-body">
                     <form id="consultationForm">
                         <div class="form-group">
-                            <label for="studentSelect">Học sinh</label>
-                            <select class="form-select" id="studentSelect" required>
-                                <option value="">Chọn học sinh</option>
-                                <option value="TC">Trần Văn C - Lớp 10A1</option>
-                                <option value="LD">Lê Thị D - Lớp 11B2</option>
-                                <option value="PE">Phạm Văn E - Lớp 12C1</option>
+                            <label for="hoTen">Họ và tên <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="hoTen" name="hoTen" required placeholder="Nhập họ và tên">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email">
+                        </div>
+                        <div class="form-group">
+                            <label for="sdt">Số điện thoại <span class="required">*</span></label>
+                            <input type="tel" class="form-control" id="sdt" name="sdt" required placeholder="Nhập số điện thoại">
+                        </div>
+                        <div class="form-group">
+                            <label for="tieuDe">Tiêu đề <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="tieuDe" name="tieuDe" required placeholder="Nhập tiêu đề tư vấn">
+                        </div>
+                        <div class="form-group">
+                            <label for="noiDung">Nội dung</label>
+                            <textarea class="form-control" id="noiDung" name="noiDung" rows="4" placeholder="Mô tả nội dung tư vấn..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="hinhThucTuVan">Hình thức tư vấn <span class="required">*</span></label>
+                            <select class="form-select" id="hinhThucTuVan" name="hinhThucTuVan" required>
+                                <option value="">Chọn hình thức tư vấn</option>
+                                <option value="Trực tiếp">Trực tiếp</option>
+                                <option value="Trực tuyến">Trực tuyến</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="consultationDate">Ngày tư vấn</label>
-                            <input type="date" class="form-control" id="consultationDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="consultationTime">Thời gian</label>
-                            <input type="time" class="form-control" id="consultationTime" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="consultationType">Loại tư vấn</label>
-                            <select class="form-select" id="consultationType" required>
-                                <option value="">Chọn loại tư vấn</option>
-                                <option value="study-guidance">Định hướng học tập</option>
-                                <option value="exam-prep">Chuẩn bị thi</option>
-                                <option value="course-selection">Chọn lớp nâng cao</option>
-                                <option value="career-guidance">Định hướng nghề nghiệp</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="consultationContent">Nội dung tư vấn</label>
-                            <textarea class="form-control" id="consultationContent" rows="4" placeholder="Mô tả nội dung tư vấn..."></textarea>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="consultationDate">Ngày tư vấn <span class="required">*</span></label>
+                                <input type="date" class="form-control" id="consultationDate" name="consultationDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="consultationTime">Giờ tư vấn <span class="required">*</span></label>
+                                <input type="time" class="form-control" id="consultationTime" name="consultationTime" required>
+                            </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                    <button class="btn btn-secondary" onclick="closeConsultationModal()">Hủy</button>
                     <button class="btn btn-primary" onclick="addConsultation()">Tạo buổi tư vấn</button>
                 </div>
             </div>
         `;
   document.body.appendChild(modal);
-  modal.style.display = "block";
+  
+  // Close modal when clicking outside
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeConsultationModal();
+    }
+  });
+}
+
+function closeConsultationModal() {
+  const modal = document.getElementById('consultationModal');
+  if (modal) {
+    modal.remove();
+  }
 }
 
 function showPaymentDetailsModal(payment) {

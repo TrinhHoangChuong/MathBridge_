@@ -32,6 +32,9 @@ public class LienHeTuVanService {
         entity.setTieuDe(dto.getTieuDe());
         entity.setNoiDung(dto.getNoiDung());
         entity.setHinhThucTuVan(dto.getHinhThucTuVan() != null ? dto.getHinhThucTuVan() : "Liên hệ qua form");
+        
+        // Set thoiGianTuVan if provided
+        entity.setThoiGianTuVan(dto.getThoiGianTuVan());
 
         entity.setThoiDiemTao(LocalDateTime.now());
         entity.setTrangThai("Chưa xử lý");
@@ -54,7 +57,7 @@ public class LienHeTuVanService {
         return convertToResponseDTO(entity);
     }
 
-    private TuLienHeTuVanResponseDTO convertToResponseDTO(LienHeTuVan entity) {
+    public TuLienHeTuVanResponseDTO convertToResponseDTO(LienHeTuVan entity) {
         TuLienHeTuVanResponseDTO dto = new TuLienHeTuVanResponseDTO();
         dto.setIdTv(entity.getIdTv());
         dto.setHoTen(entity.getHoTen());
@@ -65,6 +68,7 @@ public class LienHeTuVanService {
         dto.setHinhThucTuVan(entity.getHinhThucTuVan());
         dto.setThoiDiemTao(entity.getThoiDiemTao());
         dto.setTrangThai(entity.getTrangThai());
+        dto.setThoiGianTuVan(entity.getThoiGianTuVan());
         return dto;
     }
 }

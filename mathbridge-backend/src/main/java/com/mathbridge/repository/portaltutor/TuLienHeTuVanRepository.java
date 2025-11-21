@@ -11,5 +11,7 @@ import java.util.List;
 public interface TuLienHeTuVanRepository extends JpaRepository<LienHeTuVan, String> {
 
     List<LienHeTuVan> findByThoiDiemTaoBetween(LocalDateTime start, LocalDateTime end);
+    
+    List<LienHeTuVan> findByThoiGianTuVanBetween(LocalDateTime start, LocalDateTime end);
 }
 

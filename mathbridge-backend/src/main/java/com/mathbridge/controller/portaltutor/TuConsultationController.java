@@ -1,5 +1,6 @@
 package com.mathbridge.controller.portaltutor;
 
+import com.mathbridge.dto.LienHeTuVanDTO;
 import com.mathbridge.dto.portaltutor.TuLienHeTuVanResponseDTO;
 import com.mathbridge.service.LienHeTuVanService;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/portal/tutor/consultations")
+@RequestMapping("/api/portal/tutor")
 @CrossOrigin(origins = "*")
 public class TuConsultationController {
 
@@ -19,7 +20,7 @@ public class TuConsultationController {
     }
 
     // Lấy danh sách tất cả yêu cầu tư vấn
-    @GetMapping
+    @GetMapping("/consultations")
     public ResponseEntity<List<TuLienHeTuVanResponseDTO>> getAllConsultations() {
         try {
             List<TuLienHeTuVanResponseDTO> consultations = lienHeTuVanService.getAllConsultationRequests();
@@ -29,8 +30,34 @@ public class TuConsultationController {
         }
     }
 
+    // Tạo buổi tư vấn mới
+    @PostMapping("/consultation-schedule")
+    public ResponseEntity<TuLienHeTuVanResponseDTO> createConsultation(@RequestBody LienHeTuVanDTO dto) {
+        try {
+            // Validate required fields
+            if (dto.getHoTen() == null || dto.getHoTen().trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            if (dto.getSdt() == null || dto.getSdt().trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            if (dto.getTieuDe() == null || dto.getTieuDe().trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            if (dto.getThoiGianTuVan() == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            var entity = lienHeTuVanService.saveContactRequest(dto);
+            TuLienHeTuVanResponseDTO response = lienHeTuVanService.convertToResponseDTO(entity);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     // Cập nhật trạng thái yêu cầu tư vấn
-    @PutMapping("/{idTv}/status")
+    @PutMapping("/consultations/{idTv}/status")
     public ResponseEntity<TuLienHeTuVanResponseDTO> updateStatus(
             @PathVariable String idTv,
             @RequestBody UpdateStatusRequest request) {

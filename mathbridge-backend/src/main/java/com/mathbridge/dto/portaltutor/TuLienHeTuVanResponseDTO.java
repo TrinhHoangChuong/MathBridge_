@@ -12,6 +12,7 @@ public class TuLienHeTuVanResponseDTO {
     private String hinhThucTuVan;
     private LocalDateTime thoiDiemTao;
     private String trangThai;
+    private LocalDateTime thoiGianTuVan;
 
     public TuLienHeTuVanResponseDTO() {}
 
@@ -85,6 +86,14 @@ public class TuLienHeTuVanResponseDTO {
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public LocalDateTime getThoiGianTuVan() {
+        return thoiGianTuVan;
+    }
+
+    public void setThoiGianTuVan(LocalDateTime thoiGianTuVan) {
+        this.thoiGianTuVan = thoiGianTuVan;
     }
 }
 

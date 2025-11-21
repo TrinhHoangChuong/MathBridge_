@@ -328,6 +328,16 @@
           el.textContent = value;
         }
       });
+    },
+
+    addSchedule() {
+      if (typeof showAddConsultationModal === 'function') {
+        showAddConsultationModal();
+      } else if (typeof window.showAddConsultationModal === 'function') {
+        window.showAddConsultationModal();
+      } else {
+        console.error('showAddConsultationModal function not found');
+      }
     }
   };
 

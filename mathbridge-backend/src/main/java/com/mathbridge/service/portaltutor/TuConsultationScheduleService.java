@@ -26,7 +26,8 @@ public class TuConsultationScheduleService {
         LocalDateTime from = weekStart.atStartOfDay();
         LocalDateTime to = weekEnd.atTime(LocalTime.MAX);
 
-        List<LienHeTuVan> requests = tuLienHeTuVanRepository.findByThoiDiemTaoBetween(from, to);
+        // Query by ThoiGianTuVan (consultation time) instead of ThoiDiemTao (creation time)
+        List<LienHeTuVan> requests = tuLienHeTuVanRepository.findByThoiGianTuVanBetween(from, to);
 
         List<TuConsultationScheduleDTO> items = requests.stream()
                 .map(this::convertToScheduleDTO)
@@ -47,7 +48,9 @@ public class TuConsultationScheduleService {
         dto.setEmail(entity.getEmail());
         dto.setPhone(entity.getSdt());
 
-        LocalDateTime start = entity.getThoiDiemTao() != null ? entity.getThoiDiemTao() : LocalDateTime.now();
+        // Use ThoiGianTuVan (consultation time) instead of ThoiDiemTao (creation time)
+        LocalDateTime start = entity.getThoiGianTuVan() != null ? entity.getThoiGianTuVan() : 
+                              (entity.getThoiDiemTao() != null ? entity.getThoiDiemTao() : LocalDateTime.now());
         dto.setStartTime(start);
         dto.setEndTime(start.plusMinutes(60));
 

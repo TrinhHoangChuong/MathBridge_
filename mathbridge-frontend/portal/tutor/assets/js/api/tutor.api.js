@@ -654,10 +654,13 @@ class TutorAPI {
     return await this.request(endpoint);
   }
 
-  async createConsultation(formData) {
+  async createConsultation(data) {
     return await this.request("/consultation-schedule", {
       method: "POST",
-      body: formData,
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
   }
 

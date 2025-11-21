@@ -389,3 +389,77 @@
     }
 }
 
+/* Consultation Form Modal Styles */
+.consultation-modal .modal-content {
+    max-width: 600px;
+    width: 90%;
+}
+
+.consultation-modal .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.consultation-modal .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.consultation-modal .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.consultation-modal .form-group label .required {
+    color: #ef4444;
+    margin-left: 0.25rem;
+}
+
+.consultation-modal .form-control,
+.consultation-modal .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 0.9375rem;
+    transition: all 0.3s ease;
+    background: var(--background-color);
+    font-family: inherit;
+}
+
+.consultation-modal .form-control:focus,
+.consultation-modal .form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.consultation-modal .form-control::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.consultation-modal .modal-footer {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background: var(--background-color);
+}
+
+@media (max-width: 768px) {
+    .consultation-modal .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .consultation-modal .modal-content {
+        width: 95%;
+        max-width: 95%;
+    }
+}
+
