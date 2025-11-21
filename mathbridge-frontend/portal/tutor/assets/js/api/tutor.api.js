@@ -65,8 +65,12 @@ class TutorAPI {
       if (!response.ok) {
         // Try to get error message from response
         let errorMessage = `HTTP error! status: ${response.status}`;
+        let errorData = null;
+        
         try {
-          const errorData = await response.json();
+          // Clone response để có thể đọc lại sau
+          const responseClone = response.clone();
+          errorData = await responseClone.json();
           if (errorData.message) {
             errorMessage = errorData.message;
           } else if (errorData.error) {
@@ -80,6 +84,7 @@ class TutorAPI {
         const error = new Error(errorMessage);
         error.status = response.status;
         error.response = response;
+        error.errorData = errorData; // Lưu errorData để có thể truy cập sau
         throw error;
       }
 

@@ -116,6 +116,7 @@ public class TuPaymentService {
         // Tạo lịch sử thanh toán
         LichSuThanhToan lichSuThanhToan = new LichSuThanhToan();
         lichSuThanhToan.setIdLs(newIdLs);
+        lichSuThanhToan.setIdPt(phuongThuc.getIdPt()); // QUAN TRỌNG: Phải set idPt trực tiếp vì @JoinColumn có insertable=false
         lichSuThanhToan.setPhuongThucThanhToan(phuongThuc);
         lichSuThanhToan.setTongTien(hoaDon.getTongTien());
         lichSuThanhToan.setTrangThaiThanhToan("Thanh Cong");
@@ -137,6 +138,7 @@ public class TuPaymentService {
         LocalDate ngayThanhToan = LocalDate.now();
         hoaDon.setNgayThanhToan(ngayThanhToan);
         hoaDon.setTrangThai("Da Thanh Toan");
+        hoaDon.setIdLs(newIdLs); // QUAN TRỌNG: Phải set idLs trực tiếp vì @JoinColumn có insertable=false
         hoaDon.setLichSuThanhToan(lichSuThanhToan);
         hoaDonRepository.save(hoaDon);
         

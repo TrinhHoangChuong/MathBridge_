@@ -918,13 +918,18 @@ class TutorDashboard {
       const weekStartStr = weekStart.toISOString().split('T')[0];
 
       // Load consultation schedule
-      const schedule = await window.tutorAPI.getWeeklySchedule({
+      const scheduleResponse = await window.tutorAPI.getWeeklySchedule({
         startDate: weekStartStr,
         idNv: idNv
       });
 
+      // Extract schedule array from response (could be direct array or wrapped in object)
+      const schedule = Array.isArray(scheduleResponse) 
+        ? scheduleResponse 
+        : (scheduleResponse?.items || scheduleResponse?.data || []);
+
       // Render weekly calendar
-      this.renderWeeklyCalendar(container, weekStart, schedule || []);
+      this.renderWeeklyCalendar(container, weekStart, schedule);
 
     } catch (error) {
       console.error("Error loading weekly schedule:", error);
@@ -936,6 +941,9 @@ class TutorDashboard {
     const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    // Ensure schedule is an array
+    const scheduleArray = Array.isArray(schedule) ? schedule : (schedule?.items || schedule?.data || []);
 
     let html = '<div class="calendar-grid">';
     
@@ -952,8 +960,8 @@ class TutorDashboard {
       const isToday = currentDate.getTime() === today.getTime();
       
       // Find events for this day
-      const dayEvents = schedule.filter(event => {
-        if (!event.ngay) return false;
+      const dayEvents = scheduleArray.filter(event => {
+        if (!event || !event.ngay) return false;
         const eventDate = new Date(event.ngay);
         eventDate.setHours(0, 0, 0, 0);
         return eventDate.getTime() === currentDate.getTime();
@@ -1009,13 +1017,23 @@ class TutorDashboard {
   loadSectionData(sectionId) {
     switch (sectionId) {
       case "dashboard":
-        this.loadDashboardData();
+        // Use module if available, otherwise fallback to method
+        if (window.dashboardModule && window.dashboardModule.loadData) {
+          window.dashboardModule.loadData();
+        } else {
+          this.loadDashboardData();
+        }
         break;
       case "students":
         this.loadStudentsData();
         break;
       case "assigned-students":
-        this.loadAssignedStudentsData();
+        // Use module if available, otherwise fallback to method
+        if (window.assignedStudentsModule && window.assignedStudentsModule.loadData) {
+          window.assignedStudentsModule.loadData();
+        } else {
+          this.loadAssignedStudentsData();
+        }
         break;
       case "teachers":
         this.loadTeachersData();
@@ -1024,16 +1042,39 @@ class TutorDashboard {
         this.loadClassesData();
         break;
       case "payments":
-        this.loadPaymentsData();
+        // Use module if available, otherwise fallback to method
+        if (window.paymentsModule && window.paymentsModule.loadData) {
+          window.paymentsModule.loadData();
+        } else {
+          this.loadPaymentsData();
+        }
         break;
       case "support":
-        this.loadSupportData();
+        // Use module if available, otherwise fallback to method
+        if (window.supportModule && window.supportModule.loadData) {
+          window.supportModule.loadData();
+        } else {
+          this.loadSupportData();
+        }
         break;
       case "consultations":
-        this.loadConsultationsData();
+        // Use module if available, otherwise fallback to method
+        if (window.consultationsModule && window.consultationsModule.loadData) {
+          window.consultationsModule.loadData();
+        } else {
+          this.loadConsultationsData();
+        }
         break;
       case "messages":
         this.loadMessagesData();
+        break;
+      case "consultation-schedule":
+        // Use module if available, otherwise fallback to method
+        if (window.consultationScheduleModule && window.consultationScheduleModule.loadData) {
+          window.consultationScheduleModule.loadData();
+        } else {
+          this.initializeConsultationSchedule();
+        }
         break;
     }
   }
@@ -3259,98 +3300,27 @@ class TutorDashboard {
                         <p>Chưa có yêu cầu tư vấn nào</p>
                     </div>
                 `;
+        // Update stats to show zeros
+        this.updateConsultationStats([]);
         return;
       }
 
-      // Sort by date (newest first)
+      // Update statistics - ensure this is called with all consultations
+      if (consultations && consultations.length > 0) {
+        this.updateConsultationStats(consultations);
+      } else {
+        this.updateConsultationStats([]);
+      }
+
+      // Sort by date (newest first) - default
       consultations.sort((a, b) => {
         const dateA = new Date(a.thoiDiemTao);
         const dateB = new Date(b.thoiDiemTao);
         return dateB - dateA;
       });
 
-      container.innerHTML = consultations
-        .map((consultation) => {
-          const date = new Date(consultation.thoiDiemTao);
-          const formattedDate = date.toLocaleDateString("vi-VN", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-
-          const statusClass =
-            consultation.trangThai === "Chưa xử lý"
-              ? "urgent"
-              : consultation.trangThai === "Đang xử lý"
-              ? "high"
-              : "normal";
-
-          return `
-                    <div class="consultation-item ${
-                      consultation.trangThai === "Chưa xử lý" ? "unread" : ""
-                    }">
-                        <div class="consultation-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="consultation-content">
-                            <div class="consultation-header">
-                                <h4>${consultation.hoTen}</h4>
-                                <span class="consultation-time">${formattedDate}</span>
-                            </div>
-                            <div class="consultation-subject">
-                                <strong>Tiêu đề:</strong> ${consultation.tieuDe}
-                            </div>
-                            <div class="consultation-type">
-                                <i class="fas fa-tag"></i> ${
-                                  consultation.hinhThucTuVan
-                                }
-                            </div>
-                            <div class="consultation-details">
-                                <p><strong>Email:</strong> ${
-                                  consultation.email || "N/A"
-                                }</p>
-                                <p><strong>SĐT:</strong> ${
-                                  consultation.sdt || "N/A"
-                                }</p>
-                                ${
-                                  consultation.noiDung
-                                    ? `<p><strong>Nội dung:</strong> ${consultation.noiDung}</p>`
-                                    : ""
-                                }
-                            </div>
-                            <div class="consultation-actions">
-                                ${
-                                  consultation.trangThai === "Chưa xử lý"
-                                    ? `<button class="btn btn-sm btn-primary" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đang xử lý')">
-                                        <i class="fas fa-check"></i> Bắt đầu xử lý
-                                    </button>`
-                                    : ""
-                                }
-                                ${
-                                  consultation.trangThai === "Đang xử lý"
-                                    ? `<button class="btn btn-sm btn-success" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đã xử lý')">
-                                        <i class="fas fa-check-circle"></i> Hoàn thành
-                                    </button>`
-                                    : ""
-                                }
-                                <button class="btn btn-sm btn-secondary" onclick="tutorDashboard.viewConsultationDetails('${
-                                  consultation.idTv
-                                }')">
-                                    <i class="fas fa-info-circle"></i> Chi tiết
-                                </button>
-                            </div>
-                        </div>
-                        <div class="consultation-status">
-                            <span class="status-badge ${statusClass}">${
-            consultation.trangThai
-          }</span>
-                        </div>
-                    </div>
-                `;
-        })
-        .join("");
+      // Render consultations
+      this.renderConsultations(consultations);
 
       // Setup search and filter
       this.setupConsultationFilters(consultations);
@@ -3369,82 +3339,94 @@ class TutorDashboard {
     }
   }
 
-  setupConsultationFilters(allConsultations) {
-    const searchInput = document.getElementById("consultationSearch");
-    const statusFilter = document.getElementById("consultationStatusFilter");
-    const refreshBtn = document.getElementById("refreshConsultations");
-    const container = document.getElementById("consultationsContainer");
+  updateConsultationStats(consultations) {
+    // Get stat elements
+    const statPendingEl = document.getElementById("statPendingConsultations");
+    const statProcessingEl = document.getElementById("statProcessingConsultations");
+    const statCompletedEl = document.getElementById("statCompletedConsultations");
+    const statTotalEl = document.getElementById("statTotalConsultations");
 
-    if (searchInput) {
-      searchInput.addEventListener("input", (e) => {
-        this.filterConsultations(
-          allConsultations,
-          e.target.value,
-          statusFilter?.value
-        );
+    if (!statPendingEl || !statProcessingEl || !statCompletedEl || !statTotalEl) {
+      console.warn("Consultation stat elements not found. Elements:", {
+        pending: !!statPendingEl,
+        processing: !!statProcessingEl,
+        completed: !!statCompletedEl,
+        total: !!statTotalEl
       });
-    }
-
-    if (statusFilter) {
-      statusFilter.addEventListener("change", (e) => {
-        this.filterConsultations(
-          allConsultations,
-          searchInput?.value || "",
-          e.target.value
-        );
-      });
-    }
-
-    if (refreshBtn) {
-      refreshBtn.addEventListener("click", () => {
-        this.loadConsultationsData();
-      });
-    }
-  }
-
-  filterConsultations(allConsultations, searchTerm, statusFilter) {
-    const container = document.getElementById("consultationsContainer");
-    if (!container) return;
-
-    let filtered = [...allConsultations];
-
-    // Filter by status
-    if (statusFilter) {
-      filtered = filtered.filter((c) => c.trangThai === statusFilter);
-    }
-
-    // Filter by search term
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (c) =>
-          c.hoTen.toLowerCase().includes(term) ||
-          c.email?.toLowerCase().includes(term) ||
-          c.sdt?.includes(term) ||
-          c.tieuDe.toLowerCase().includes(term) ||
-          c.noiDung?.toLowerCase().includes(term)
-      );
-    }
-
-    // Re-render filtered results
-    if (filtered.length === 0) {
-      container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-search"></i>
-                    <p>Không tìm thấy yêu cầu tư vấn nào</p>
-                </div>
-            `;
       return;
     }
 
-    // Sort by date (newest first)
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.thoiDiemTao);
-      const dateB = new Date(b.thoiDiemTao);
-      return dateB - dateA;
+    if (!consultations || consultations.length === 0) {
+      statPendingEl.textContent = "0";
+      statProcessingEl.textContent = "0";
+      statCompletedEl.textContent = "0";
+      statTotalEl.textContent = "0";
+      return;
+    }
+
+    let pending = 0;
+    let processing = 0;
+    let completed = 0;
+
+    consultations.forEach((c) => {
+      if (!c) return;
+      
+      // Get status - handle all possible cases
+      let status = "";
+      if (c.trangThai !== null && c.trangThai !== undefined) {
+        status = String(c.trangThai).trim();
+      }
+      
+      // Direct comparison first (most accurate)
+      if (status === "Chưa xử lý") {
+        pending++;
+      } else if (status === "Đang xử lý") {
+        processing++;
+      } else if (status === "Đã xử lý") {
+        completed++;
+      } else if (status.length > 0) {
+        // Fallback: normalize and compare
+        const normalized = status.toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+          .replace(/\s+/g, " ") // Normalize spaces
+          .trim();
+        
+        // Check normalized strings - be more flexible
+        if (normalized.includes("chua") && normalized.includes("xu ly")) {
+          pending++;
+        } else if (normalized.includes("dang") && normalized.includes("xu ly")) {
+          processing++;
+        } else if (normalized.includes("da") && normalized.includes("xu ly")) {
+          completed++;
+        }
+      }
     });
 
-    container.innerHTML = filtered
+    const total = consultations.length;
+
+    // Update DOM elements
+    statPendingEl.textContent = pending;
+    statProcessingEl.textContent = processing;
+    statCompletedEl.textContent = completed;
+    statTotalEl.textContent = total;
+  }
+
+  renderConsultations(consultations) {
+    const container = document.getElementById("consultationsContainer");
+    if (!container) return;
+
+    if (!consultations || consultations.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p>Chưa có yêu cầu tư vấn nào</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = consultations
       .map((consultation) => {
         const date = new Date(consultation.thoiDiemTao);
         const formattedDate = date.toLocaleDateString("vi-VN", {
@@ -3454,91 +3436,288 @@ class TutorDashboard {
           hour: "2-digit",
           minute: "2-digit",
         });
+        const timeAgo = this.getTimeAgo(consultation.thoiDiemTao);
 
-        const statusClass =
-          consultation.trangThai === "Chưa xử lý"
-            ? "urgent"
-            : consultation.trangThai === "Đang xử lý"
-            ? "high"
-            : "normal";
+        // Get initials for avatar
+        const name = consultation.hoTen || "N/A";
+        const initials = this.getInitials(name);
+
+        // Get status for comparison
+        const status = (consultation.trangThai || "").trim();
+        
+        // Status badge class - direct comparison first
+        let statusBadgeClass = "completed";
+        let normalizedStatus = "";
+        
+        if (status === "Chưa xử lý") {
+          statusBadgeClass = "pending";
+          normalizedStatus = "chua xu ly";
+        } else if (status === "Đang xử lý") {
+          statusBadgeClass = "processing";
+          normalizedStatus = "dang xu ly";
+        } else if (status === "Đã xử lý") {
+          statusBadgeClass = "completed";
+          normalizedStatus = "da xu ly";
+        } else {
+          // Fallback: normalize
+          normalizedStatus = status.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, " ");
+          
+          if (normalizedStatus.includes("chua") && normalizedStatus.includes("xu ly")) {
+            statusBadgeClass = "pending";
+          } else if (normalizedStatus.includes("dang") && normalizedStatus.includes("xu ly")) {
+            statusBadgeClass = "processing";
+          } else {
+            statusBadgeClass = "completed";
+          }
+        }
 
         return `
-                <div class="consultation-item ${
-                  consultation.trangThai === "Chưa xử lý" ? "unread" : ""
-                }">
-                    <div class="consultation-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="consultation-content">
-                        <div class="consultation-header">
-                            <h4>${consultation.hoTen}</h4>
-                            <span class="consultation-time">${formattedDate}</span>
-                        </div>
-                        <div class="consultation-subject">
-                            <strong>Tiêu đề:</strong> ${consultation.tieuDe}
-                        </div>
-                        <div class="consultation-type">
-                            <i class="fas fa-tag"></i> ${
-                              consultation.hinhThucTuVan
-                            }
-                        </div>
-                        <div class="consultation-details">
-                            <p><strong>Email:</strong> ${
-                              consultation.email || "N/A"
-                            }</p>
-                            <p><strong>SĐT:</strong> ${
-                              consultation.sdt || "N/A"
-                            }</p>
-                            ${
-                              consultation.noiDung
-                                ? `<p><strong>Nội dung:</strong> ${consultation.noiDung}</p>`
-                                : ""
-                            }
-                        </div>
-                        <div class="consultation-actions">
-                            ${
-                              consultation.trangThai === "Chưa xử lý"
-                                ? `<button class="btn btn-sm btn-primary" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đang xử lý')">
-                                    <i class="fas fa-check"></i> Bắt đầu xử lý
-                                </button>`
-                                : ""
-                            }
-                            ${
-                              consultation.trangThai === "Đang xử lý"
-                                ? `<button class="btn btn-sm btn-success" onclick="tutorDashboard.updateConsultationStatus('${consultation.idTv}', 'Đã xử lý')">
-                                    <i class="fas fa-check-circle"></i> Hoàn thành
-                                </button>`
-                                : ""
-                            }
-                            <button class="btn btn-sm btn-secondary" onclick="tutorDashboard.viewConsultationDetails('${
-                              consultation.idTv
-                            }')">
-                                <i class="fas fa-info-circle"></i> Chi tiết
-                            </button>
-                        </div>
-                    </div>
-                    <div class="consultation-status">
-                        <span class="status-badge ${statusClass}">${
-          consultation.trangThai
-        }</span>
-                    </div>
+          <div class="consultation-card-modern ${
+            (normalizedStatus === "chua xu ly" || 
+             (normalizedStatus.includes("chua") && normalizedStatus.includes("xu ly"))) ? "unread" : ""
+          }">
+            <div class="consultation-time-modern">
+              <i class="fas fa-clock"></i>
+              ${timeAgo}
+            </div>
+            <div class="consultation-card-header">
+              <div class="consultation-avatar-modern">
+                <span class="avatar-initials">${initials}</span>
+              </div>
+              <div class="consultation-main-info">
+                <div class="consultation-name-row">
+                  <h3 class="consultation-name">${name}</h3>
+                  <span class="consultation-status-badge ${statusBadgeClass}">
+                    ${consultation.trangThai}
+                  </span>
                 </div>
-            `;
+                <div class="consultation-meta-row">
+                  ${consultation.email ? `
+                    <div class="consultation-meta-item">
+                      <i class="fas fa-envelope"></i>
+                      <span>${consultation.email}</span>
+                    </div>
+                  ` : ''}
+                  ${consultation.sdt ? `
+                    <div class="consultation-meta-item">
+                      <i class="fas fa-phone"></i>
+                      <span>${consultation.sdt}</span>
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="consultation-title">
+                  <i class="fas fa-comment-dots"></i>
+                  ${consultation.tieuDe || "Yêu cầu tư vấn"}
+                </div>
+                ${consultation.hinhThucTuVan ? `
+                  <div class="consultation-type-badge">
+                    <i class="fas fa-tag"></i>
+                    ${consultation.hinhThucTuVan}
+                  </div>
+                ` : ''}
+                ${consultation.noiDung ? `
+                  <div class="consultation-content-preview">
+                    ${consultation.noiDung}
+                  </div>
+                ` : ''}
+                <div class="consultation-actions-modern">
+                  <div class="status-update-dropdown">
+                    <label class="status-label" for="statusSelect_${consultation.idTv}">Cập nhật trạng thái:</label>
+                    <select class="status-select" id="statusSelect_${consultation.idTv}" 
+                            onchange="tutorDashboard.updateConsultationStatus('${consultation.idTv}', this.value)"
+                            data-current-status="${consultation.trangThai}">
+                      <option value="Chưa xử lý" ${status === "Chưa xử lý" ? "selected" : ""}>Chưa xử lý</option>
+                      <option value="Đang xử lý" ${status === "Đang xử lý" ? "selected" : ""}>Đang xử lý</option>
+                      <option value="Đã xử lý" ${status === "Đã xử lý" ? "selected" : ""}>Đã xử lý</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
       })
       .join("");
   }
 
+  setupConsultationFilters(allConsultations) {
+    const searchInput = document.getElementById("consultationSearch");
+    const statusFilter = document.getElementById("consultationStatusFilter");
+    const sortSelect = document.getElementById("consultationSort");
+    const clearSearchBtn = document.getElementById("clearConsultationSearch");
+    const container = document.getElementById("consultationsContainer");
+
+    // Store all consultations for filtering
+    this.allConsultations = allConsultations;
+
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        const value = e.target.value;
+        if (clearSearchBtn) {
+          clearSearchBtn.style.display = value ? "flex" : "none";
+        }
+        this.filterConsultations(
+          allConsultations,
+          value,
+          statusFilter?.value,
+          sortSelect?.value
+        );
+      });
+    }
+
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener("click", () => {
+        if (searchInput) {
+          searchInput.value = "";
+          clearSearchBtn.style.display = "none";
+        }
+        this.filterConsultations(
+          allConsultations,
+          "",
+          statusFilter?.value,
+          sortSelect?.value
+        );
+      });
+    }
+
+    if (statusFilter) {
+      statusFilter.addEventListener("change", (e) => {
+        this.filterConsultations(
+          allConsultations,
+          searchInput?.value || "",
+          e.target.value,
+          sortSelect?.value
+        );
+      });
+    }
+
+    if (sortSelect) {
+      sortSelect.addEventListener("change", (e) => {
+        this.filterConsultations(
+          allConsultations,
+          searchInput?.value || "",
+          statusFilter?.value,
+          e.target.value
+        );
+      });
+    }
+  }
+
+  filterConsultations(allConsultations, searchTerm, statusFilter, sortBy = "newest") {
+    const container = document.getElementById("consultationsContainer");
+    if (!container) return;
+
+    let filtered = [...allConsultations];
+
+    // Filter by status - direct comparison first
+    if (statusFilter) {
+      filtered = filtered.filter((c) => {
+        const status = (c.trangThai || "").trim();
+        // Direct comparison
+        if (status === statusFilter) {
+          return true;
+        }
+        // Fallback: normalize and compare
+        const normalizeStatus = (s) => {
+          if (!s) return "";
+          return s.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, " ");
+        };
+        const normalizedFilter = normalizeStatus(statusFilter);
+        const normalizedStatus = normalizeStatus(status);
+        return normalizedStatus === normalizedFilter;
+      });
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (c) =>
+          c.hoTen?.toLowerCase().includes(term) ||
+          c.email?.toLowerCase().includes(term) ||
+          c.sdt?.includes(term) ||
+          c.tieuDe?.toLowerCase().includes(term) ||
+          c.noiDung?.toLowerCase().includes(term)
+      );
+    }
+
+    // Re-render filtered results
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-search"></i>
+          <p>Không tìm thấy yêu cầu tư vấn nào</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortBy === "oldest") {
+        const dateA = new Date(a.thoiDiemTao);
+        const dateB = new Date(b.thoiDiemTao);
+        return dateA - dateB;
+      } else if (sortBy === "name") {
+        return (a.hoTen || "").localeCompare(b.hoTen || "");
+      } else if (sortBy === "status") {
+        const statusOrder = { "Chưa xử lý": 1, "Đang xử lý": 2, "Đã xử lý": 3 };
+        return (statusOrder[a.trangThai] || 0) - (statusOrder[b.trangThai] || 0);
+      } else {
+        // newest (default)
+        const dateA = new Date(a.thoiDiemTao);
+        const dateB = new Date(b.thoiDiemTao);
+        return dateB - dateA;
+      }
+    });
+
+    // Update stats with ALL consultations (not filtered)
+    // This ensures stats always show total counts
+    if (this.allConsultations) {
+      this.updateConsultationStats(this.allConsultations);
+    } else {
+      this.updateConsultationStats(filtered);
+    }
+
+    // Render filtered results
+    this.renderConsultations(filtered);
+  }
+
   async updateConsultationStatus(idTv, trangThai) {
+    // Get current status from select element
+    const selectElement = document.getElementById(`statusSelect_${idTv}`);
+    if (selectElement) {
+      const currentStatus = selectElement.getAttribute("data-current-status");
+      
+      // Check if status actually changed (direct comparison)
+      if (currentStatus === trangThai) {
+        // Status hasn't changed, don't call API
+        return;
+      }
+    }
+    
     try {
-      await window.tutorAPI.updateConsultationStatus(idTv, trangThai);
+      // Ensure we send the correct format
+      const statusToSend = trangThai.trim();
+      
+      await window.tutorAPI.updateConsultationStatus(idTv, statusToSend);
       showNotification(
-        `Đã cập nhật trạng thái thành "${trangThai}"`,
+        `Đã cập nhật trạng thái thành "${statusToSend}"`,
         "success"
       );
+      // Reload data to reflect changes
       await this.loadConsultationsData();
     } catch (error) {
       console.error("Error updating consultation status:", error);
       showNotification("Có lỗi xảy ra khi cập nhật trạng thái", "error");
+      // Reload to reset dropdown to correct state
+      await this.loadConsultationsData();
     }
   }
 

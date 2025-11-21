@@ -16,14 +16,14 @@
         <div class="header-actions">
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="studentSearchInput" placeholder="Tìm kiếm học sinh..." onkeyup="tutorDashboard.filterStudents()">
+                <input type="text" id="studentSearchInput" placeholder="Tìm kiếm học sinh..." onkeyup="(window.assignedStudentsModule && window.assignedStudentsModule.filter ? window.assignedStudentsModule.filter() : (window.tutorDashboard && window.tutorDashboard.filterStudents ? window.tutorDashboard.filterStudents() : null))">
             </div>
             <div class="filter-buttons">
                 <div class="filter-group">
                     <label for="assignmentStatusFilter" class="filter-label">
                         <i class="fas fa-filter"></i> Trạng thái phân công
                     </label>
-                    <select class="form-select" id="assignmentStatusFilter" onchange="tutorDashboard.filterStudents()">
+                    <select class="form-select" id="assignmentStatusFilter" onchange="(window.assignedStudentsModule && window.assignedStudentsModule.filter ? window.assignedStudentsModule.filter() : (window.tutorDashboard && window.tutorDashboard.filterStudents ? window.tutorDashboard.filterStudents() : null))">
                         <option value="active" selected>Đang phụ trách</option>
                         <option value="all">Tất cả</option>
                         <option value="Tam dung">Tạm dừng</option>
@@ -34,12 +34,12 @@
                     <label for="classFilter" class="filter-label">
                         <i class="fas fa-chalkboard"></i> Lớp học
                     </label>
-                    <select class="form-select" id="classFilter" onchange="tutorDashboard.filterStudents()">
+                    <select class="form-select" id="classFilter" onchange="(window.assignedStudentsModule && window.assignedStudentsModule.filter ? window.assignedStudentsModule.filter() : (window.tutorDashboard && window.tutorDashboard.filterStudents ? window.tutorDashboard.filterStudents() : null))">
                         <option value="">Tất cả lớp</option>
                     </select>
                 </div>
             </div>
-            <button class="btn btn-primary" id="exportBtn" onclick="tutorDashboard.exportStudents()">
+            <button class="btn btn-primary" id="exportBtn" onclick="(window.assignedStudentsModule && window.assignedStudentsModule.exportStudents ? window.assignedStudentsModule.exportStudents() : (window.tutorDashboard && window.tutorDashboard.exportStudents ? window.tutorDashboard.exportStudents() : null))">
                 <i class="fas fa-download"></i>
                 Xuất danh sách
             </button>
@@ -75,4 +75,7 @@
         </div>
     </div>
 </section>
+
+<link rel="stylesheet" href="assets/css/sections/assigned-students.css">
+<script src="assets/js/sections/assigned-students.js"></script>
 

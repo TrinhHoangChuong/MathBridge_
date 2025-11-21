@@ -5,7 +5,9 @@ import com.mathbridge.service.portaltutor.TuPaymentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/portal/tutor/payments")
@@ -53,14 +55,23 @@ public class TuPaymentController {
 
     // Xử lý thanh toán
     @PostMapping("/process")
-    public ResponseEntity<TuPaymentDTO> processPayment(@RequestBody TuProcessPaymentRequestDTO request) {
+    public ResponseEntity<?> processPayment(@RequestBody TuProcessPaymentRequestDTO request) {
         try {
             TuPaymentDTO result = paymentService.processPayment(request);
             return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            // Trả về error message chi tiết
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage() != null ? e.getMessage() : "Lỗi xử lý thanh toán");
+            errorResponse.put("message", e.getMessage() != null ? e.getMessage() : "Lỗi xử lý thanh toán");
+            return ResponseEntity.badRequest().body(errorResponse);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            // Log lỗi để debug
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Lỗi máy chủ khi xử lý thanh toán");
+            errorResponse.put("message", e.getMessage() != null ? e.getMessage() : "Lỗi máy chủ khi xử lý thanh toán");
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 

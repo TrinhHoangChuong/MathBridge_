@@ -5,11 +5,11 @@
             <p class="section-subtitle">Theo dõi toàn bộ buổi tư vấn của bạn trong tuần, điều hướng nhanh bằng lịch mini.</p>
         </div>
         <div class="consultation-actions">
-            <button class="btn btn-secondary" onclick="exportConsultationSchedule()">
+            <button class="btn btn-secondary" onclick="(window.consultationScheduleModule && window.consultationScheduleModule.exportSchedule ? window.consultationScheduleModule.exportSchedule() : (typeof exportConsultationSchedule === 'function' ? exportConsultationSchedule() : null))">
                 <i class="fas fa-download"></i>
                 Xuất lịch
             </button>
-            <button class="btn btn-primary" onclick="addConsultationSchedule()">
+            <button class="btn btn-primary" onclick="(window.consultationScheduleModule && window.consultationScheduleModule.addSchedule ? window.consultationScheduleModule.addSchedule() : (typeof addConsultationSchedule === 'function' ? addConsultationSchedule() : null))">
                 <i class="fas fa-plus"></i>
                 Tạo buổi tư vấn
             </button>
@@ -82,4 +82,7 @@
         </div>
     </div>
 </section>
+
+<link rel="stylesheet" href="assets/css/sections/consultation-schedule.css">
+<script src="assets/js/sections/consultation-schedule.js"></script>
 
