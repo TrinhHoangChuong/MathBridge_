@@ -811,6 +811,35 @@ class TutorAPI {
     return await this.request("/study-guidance/programs");
   }
 
+  // Recruitment API Methods
+  async getAllJobs() {
+    return await this.request("/recruitment");
+  }
+
+  async getJobById(idTd) {
+    return await this.request(`/recruitment/${idTd}`);
+  }
+
+  async createJob(jobData) {
+    return await this.request("/recruitment", {
+      method: "POST",
+      body: JSON.stringify(jobData),
+    });
+  }
+
+  async updateJob(idTd, jobData) {
+    return await this.request(`/recruitment/${idTd}`, {
+      method: "PUT",
+      body: JSON.stringify(jobData),
+    });
+  }
+
+  async deleteJob(idTd) {
+    return await this.request(`/recruitment/${idTd}`, {
+      method: "DELETE",
+    });
+  }
+
   // Error handling
   handleError(error) {
     console.error("API Error:", error);

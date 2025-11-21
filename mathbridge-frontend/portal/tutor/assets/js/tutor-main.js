@@ -1068,6 +1068,12 @@ class TutorDashboard {
       case "messages":
         this.loadMessagesData();
         break;
+      case "recruitment":
+        // Load recruitment module if available
+        if (window.recruitmentModule && window.recruitmentModule.loadData) {
+          window.recruitmentModule.loadData();
+        }
+        break;
       case "consultation-schedule":
         // Use module if available, otherwise fallback to method
         if (window.consultationScheduleModule && window.consultationScheduleModule.loadData) {

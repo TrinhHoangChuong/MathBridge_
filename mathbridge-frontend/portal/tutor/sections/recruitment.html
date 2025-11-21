@@ -1,0 +1,247 @@
+<section class="content-section" id="recruitment">
+    <div class="section-header">
+        <h2><i class="fas fa-briefcase"></i> Quản lý tuyển dụng</h2>
+        <div class="section-actions">
+            <button class="btn btn-primary" id="createJobBtn">
+                <i class="fas fa-plus-circle"></i> Tạo tin tuyển dụng
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="jobSearchInput" placeholder="🔍 Tìm kiếm theo tiêu đề, vị trí...">
+        </div>
+        <div class="filter-group">
+            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem; display: block;">
+                <i class="fas fa-filter"></i> Lọc theo trạng thái
+            </label>
+            <select class="form-select" id="statusFilter">
+                <option value="">Tất cả trạng thái</option>
+                <option value="Đang tuyển">✅ Đang tuyển</option>
+                <option value="Tạm dừng">⏸️ Tạm dừng</option>
+                <option value="Đã đóng">🔒 Đã đóng</option>
+            </select>
+        </div>
+        <button class="btn btn-secondary" id="refreshJobsBtn">
+            <i class="fas fa-sync-alt"></i> Làm mới
+        </button>
+    </div>
+
+    <!-- Jobs Table -->
+    <div class="jobs-table-container">
+        <div class="table-header">
+            <div class="sortable" data-sort="tieuDe">
+                Tiêu đề <i class="fas fa-sort"></i>
+            </div>
+            <div class="sortable" data-sort="viTri">
+                Vị trí <i class="fas fa-sort"></i>
+            </div>
+            <div>Mô tả ngắn</div>
+            <div class="sortable" data-sort="mucLuongTu">
+                Mức lương <i class="fas fa-sort"></i>
+            </div>
+            <div class="sortable" data-sort="kinhNghiem">
+                Kinh nghiệm <i class="fas fa-sort"></i>
+            </div>
+            <div class="sortable" data-sort="soLuongTuyen">
+                Số lượng <i class="fas fa-sort"></i>
+            </div>
+            <div class="sortable" data-sort="hanNop">
+                Hạn nộp <i class="fas fa-sort"></i>
+            </div>
+            <div class="sortable" data-sort="trangThai">
+                Trạng thái <i class="fas fa-sort"></i>
+            </div>
+            <div>Hành động</div>
+        </div>
+        <div id="jobsTableBody" class="table-body">
+            <div class="loading-state" id="jobsLoading">
+                <div class="spinner"></div>
+                <p>Đang tải danh sách tin tuyển dụng...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Create/Edit Job Modal -->
+<div class="modal-overlay" id="jobModal" style="display: none;">
+    <div class="modal-container job-modal">
+        <div class="modal-header">
+            <h3 id="jobModalTitle">
+                <i class="fas fa-briefcase"></i> Tạo tin tuyển dụng mới
+            </h3>
+            <button class="modal-close" id="closeJobModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="jobForm">
+                <input type="hidden" id="jobId" name="idTd">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobTitle">
+                            Tiêu đề <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="jobTitle" name="tieuDe" 
+                               placeholder="Ví dụ: Tuyển Giáo viên Toán IGCSE" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobPosition">
+                            Vị trí <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="jobPosition" name="viTri" 
+                               placeholder="Ví dụ: Giáo viên Toán IGCSE" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobShortDesc">
+                            Mô tả ngắn
+                        </label>
+                        <textarea class="form-control" id="jobShortDesc" name="moTaNgan" 
+                                  rows="2" placeholder="Mô tả ngắn gọn về công việc..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobDescription">
+                            Mô tả công việc <span class="required">*</span>
+                        </label>
+                        <textarea class="form-control" id="jobDescription" name="moTa" 
+                                  rows="5" placeholder="Mô tả chi tiết về công việc, trách nhiệm..." required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobRequirements">
+                            Yêu cầu <span class="required">*</span>
+                        </label>
+                        <textarea class="form-control" id="jobRequirements" name="yeuCau" 
+                                  rows="5" placeholder="Mỗi yêu cầu trên một dòng..." required></textarea>
+                        <small class="form-text">Mỗi yêu cầu trên một dòng riêng</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobLevel">
+                            Cấp bậc
+                        </label>
+                        <select class="form-select" id="jobLevel" name="capBac">
+                            <option value="">-- Chọn cấp bậc --</option>
+                            <option value="Entry Level">Entry Level</option>
+                            <option value="Mid Level">Mid Level</option>
+                            <option value="Senior Level">Senior Level</option>
+                            <option value="Manager">Manager</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="jobWorkType">
+                            Hình thức làm việc
+                        </label>
+                        <select class="form-select" id="jobWorkType" name="hinhThucLamViec">
+                            <option value="">-- Chọn hình thức --</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Remote">Remote</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobSalaryFrom">
+                            Mức lương từ
+                        </label>
+                        <input type="text" class="form-control" id="jobSalaryFrom" name="mucLuongTu" 
+                               placeholder="Ví dụ: 20 triệu">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobSalaryTo">
+                            Mức lương đến
+                        </label>
+                        <input type="text" class="form-control" id="jobSalaryTo" name="mucLuongDen" 
+                               placeholder="Ví dụ: 35 triệu">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobExperience">
+                            Kinh nghiệm (năm)
+                        </label>
+                        <input type="number" class="form-control" id="jobExperience" name="kinhNghiem" 
+                               min="0" placeholder="Ví dụ: 1">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobQuantity">
+                            Số lượng tuyển
+                        </label>
+                        <input type="number" class="form-control" id="jobQuantity" name="soLuongTuyen" 
+                               min="1" placeholder="Ví dụ: 2">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jobDeadline">
+                            Hạn nộp hồ sơ
+                        </label>
+                        <input type="datetime-local" class="form-control" id="jobDeadline" name="hanNop">
+                    </div>
+                    <div class="form-group">
+                        <label for="jobStatus">
+                            Trạng thái <span class="required">*</span>
+                        </label>
+                        <select class="form-select" id="jobStatus" name="trangThai" required>
+                            <option value="Đang tuyển">Đang tuyển</option>
+                            <option value="Tạm dừng">Tạm dừng</option>
+                            <option value="Đã đóng">Đã đóng</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelJobBtn">Hủy</button>
+            <button class="btn btn-primary" id="saveJobBtn">
+                <i class="fas fa-save"></i> Lưu tin tuyển dụng
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Job Details Modal -->
+<div class="modal-overlay" id="jobDetailsModal" style="display: none;">
+    <div class="modal-container job-details-modal">
+        <div class="modal-header">
+            <h3 id="jobDetailsTitle">
+                <i class="fas fa-briefcase"></i> Chi tiết tin tuyển dụng
+            </h3>
+            <button class="modal-close" id="closeJobDetailsModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="jobDetailsBody">
+            <!-- Content will be loaded dynamically -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="closeJobDetailsBtn">Đóng</button>
+            <button class="btn btn-primary" id="editJobFromDetailsBtn">
+                <i class="fas fa-edit"></i> Chỉnh sửa
+            </button>
+        </div>
+    </div>
+</div>
+
