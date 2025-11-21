@@ -66,10 +66,10 @@
 
   function getConsultationSlotConfig() {
     return [
-      { id: "morning", label: "Ca sáng (05:00 - 11:00)", start: 5, end: 11 },
-      { id: "midday", label: "Ca 3 (11:00 - 14:00)", start: 11, end: 14 },
-      { id: "afternoon", label: "Chiều (14:00 - 17:30)", start: 14, end: 17.5 },
-      { id: "evening", label: "Ca 4 (17:30 - 22:00)", start: 17.5, end: 22 },
+      { id: "morning", label: "(07:00 - 09:00)", start: 7, end: 9 },
+      { id: "midday", label: "(09:00 - 11:00)", start: 9, end: 11 },
+      { id: "afternoon", label: "(13:00 - 15:00)", start: 13, end: 15 },
+      { id: "evening", label: "(15:00 - 17:00)", start: 15, end: 17 },
     ];
   }
 
@@ -200,7 +200,6 @@
         this.consultationWeekData = response?.items || [];
 
         this.render(weekStart, weekEnd, this.consultationWeekData);
-        this.updateStats(this.consultationWeekData);
         this.updateWeekPickerValue();
         this.updateWeekRangeLabel(weekStart, weekEnd);
       } catch (error) {
@@ -303,32 +302,6 @@
       return card;
     },
 
-    updateStats(items = []) {
-      const totalSessions = items.length;
-      const totalMinutes = items.reduce((total, session) => {
-        if (!session.startTime) return total;
-        const start = new Date(session.startTime);
-        const end = session.endTime ? new Date(session.endTime) : new Date(start.getTime() + 60 * 60000);
-        return total + (end - start) / 60000;
-      }, 0);
-
-      const onlineSessions = items.filter((session) => session.online).length;
-      const onsiteSessions = totalSessions - onlineSessions;
-
-      const statsMap = {
-        consultationTotalSessions: totalSessions,
-        consultationTotalHours: `${Math.max(totalMinutes / 60, 0).toFixed(1)}h`,
-        consultationOnlineSessions: onlineSessions,
-        consultationOnsiteSessions: onsiteSessions,
-      };
-
-      Object.entries(statsMap).forEach(([elementId, value]) => {
-        const el = document.getElementById(elementId);
-        if (el) {
-          el.textContent = value;
-        }
-      });
-    },
 
     addSchedule() {
       if (typeof showAddConsultationModal === 'function') {
