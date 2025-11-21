@@ -368,7 +368,7 @@ public class StudentService {
             assignmentDTO.setAutoSubmit(resolveAutoSubmit(baiTap));
             assignmentDTO.setWarningMessage(resolveWarningMessage(baiTap));
             assignmentDTO.setRequiresManualReview(hasEssayQuestion(baiTap));
-            boolean allowRetry = Boolean.TRUE.equals(baiTap.getChoPhepLamLai());
+            boolean allowRetry = Boolean.TRUE.equals(baiTap.getChoPhepLamBai());
             assignmentDTO.setAllowRetry(allowRetry);
             long attemptCount = baiNopStudentRepository.countByBaiTap_IdBtAndHocSinh_IdHs(
                 baiTap.getIdBt(), studentId);
@@ -681,9 +681,9 @@ public class StudentService {
             if ("IN_PROGRESS".equalsIgnoreCase(submission.getTrangThai())) {
                 return submission;
             }
-            // Check if assignment allows retake (choPhepLamLai)
-            Boolean choPhepLamLai = assignment.getChoPhepLamLai();
-            if (choPhepLamLai != null && choPhepLamLai) {
+            // Check if assignment allows retake (choPhepLamBai)
+            Boolean choPhepLamBai = assignment.getChoPhepLamBai();
+            if (choPhepLamBai != null && choPhepLamBai) {
                 // Allow retake - create a new submission (this preserves history as each submission is a new BaiNop)
                 // The old submission remains in database as history
                 System.out.println("Assignment allows retake. Creating new submission for student: " + student.getIdHs());
@@ -718,21 +718,14 @@ public class StudentService {
         BaiNop newSubmission = new BaiNop();
         
         // Set ID IMMEDIATELY - BEFORE any other operations
-        // Set both ID_BN and ID_BaiNop (database has both columns)
         newSubmission.setIdBn(submissionId);
-        newSubmission.setIdBaiNop(submissionId); // Set same value for both columns
         
         // Verify ID is set correctly
         String verifyId = newSubmission.getIdBn();
-        String verifyIdBaiNop = newSubmission.getIdBaiNop();
         if (verifyId == null || verifyId.trim().isEmpty()) {
             throw new RuntimeException("ERROR: ID không được set sau khi gọi setIdBn()");
         }
-        if (verifyIdBaiNop == null || verifyIdBaiNop.trim().isEmpty()) {
-            throw new RuntimeException("ERROR: ID_BaiNop không được set sau khi gọi setIdBaiNop()");
-        }
         System.out.println("ID_BN after setIdBn(): '" + verifyId + "' (length: " + verifyId.length() + ")");
-        System.out.println("ID_BaiNop after setIdBaiNop(): '" + verifyIdBaiNop + "' (length: " + verifyIdBaiNop.length() + ")");
         
         // Set other required fields
         newSubmission.setIdBt(assignment.getIdBt());
@@ -744,18 +737,13 @@ public class StudentService {
         newSubmission.setTrangThai("IN_PROGRESS");
         newSubmission.setThoiGianBatDau(LocalDateTime.now());
         
-        // Final check before save - verify BOTH IDs are still set
+        // Final check before save - verify ID is still set
         String finalId = newSubmission.getIdBn();
-        String finalIdBaiNop = newSubmission.getIdBaiNop();
         if (finalId == null || finalId.trim().isEmpty()) {
             throw new RuntimeException("ERROR: ID_BN bị mất trước khi save! Was: '" + verifyId + "'");
         }
-        if (finalIdBaiNop == null || finalIdBaiNop.trim().isEmpty()) {
-            throw new RuntimeException("ERROR: ID_BaiNop bị mất trước khi save! Was: '" + verifyIdBaiNop + "'");
-        }
         System.out.println("ID_BN before save(): '" + finalId + "' (length: " + finalId.length() + ")");
-        System.out.println("ID_BaiNop before save(): '" + finalIdBaiNop + "' (length: " + finalIdBaiNop.length() + ")");
-        System.out.println("Entity state before save - idBn: " + finalId + ", idBaiNop: " + finalIdBaiNop + ", idBt: " + newSubmission.getIdBt() + ", idHs: " + newSubmission.getIdHs());
+        System.out.println("Entity state before save - idBn: " + finalId + ", idBt: " + newSubmission.getIdBt() + ", idHs: " + newSubmission.getIdHs());
         
         // Save entity
         try {

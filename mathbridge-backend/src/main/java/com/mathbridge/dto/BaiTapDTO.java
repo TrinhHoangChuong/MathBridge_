@@ -11,7 +11,7 @@ public class BaiTapDTO {
     private String tieuDe;
     private String moTa;
     private String loaiBt; // BAI_TAP, KIEM_TRA_15P, KIEM_TRA_45P, THI_HK
-    private Boolean choPhepLamLai;
+    private Boolean choPhepLamBai;
     private String hocSinhDuocPhep; // JSON array of student IDs: ["HS001", "HS002"]
     
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
@@ -81,12 +81,12 @@ public class BaiTapDTO {
         this.loaiBt = loaiBt;
     }
 
-    public Boolean getChoPhepLamLai() {
-        return choPhepLamLai;
+    public Boolean getChoPhepLamBai() {
+        return choPhepLamBai;
     }
 
-    public void setChoPhepLamLai(Boolean choPhepLamLai) {
-        this.choPhepLamLai = choPhepLamLai;
+    public void setChoPhepLamBai(Boolean choPhepLamBai) {
+        this.choPhepLamBai = choPhepLamBai;
     }
 
     public String getHocSinhDuocPhep() {
