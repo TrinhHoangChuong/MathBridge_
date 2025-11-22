@@ -3,8 +3,13 @@
     padding: 24px 28px;
     font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
         "Segoe UI", sans-serif;
-    background: #f8fafc;
+    background: #ffffff;              /* giống hsht-panel */
     color: #0f172a;
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.06),
+        0 0 0 1px rgba(15, 23, 42, 0.02);
 }
 
 /* Header */
@@ -19,13 +24,13 @@
     font-size: 1.6rem;
     font-weight: 600;
     margin: 0 0 4px;
-    color: #0f172a;
+    color: #020617;
 }
 
 .ct-subtitle {
     margin: 0;
     font-size: 0.92rem;
-    color: #64748b;
+    color: #6b7280;
 }
 
 /* Hai card giới thiệu trên cùng */
@@ -37,15 +42,15 @@
 }
 
 .ct-card {
-    background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
+    background: #f9fafb;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
     padding: 18px 20px;
     display: flex;
     flex-direction: column;
     box-shadow:
-        0 14px 30px rgba(15, 23, 42, 0.08),
-        0 3px 10px rgba(15, 23, 42, 0.05);
+        0 14px 30px rgba(15, 23, 42, 0.06),
+        0 3px 10px rgba(15, 23, 42, 0.04);
 }
 
 .ct-card-main {
@@ -57,7 +62,7 @@
 .ct-icon {
     width: 40px;
     height: 40px;
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -74,24 +79,32 @@
     stroke-linejoin: round;
 }
 
+/* đổi sang tone giống hsht-panel */
 .ct-icon-blue {
-    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    background: radial-gradient(circle at 0 0, #38bdf8, #0ea5e9);
+    box-shadow:
+        0 0 0 1px rgba(56, 189, 248, 0.25),
+        0 18px 30px rgba(14, 165, 233, 0.45);
 }
 
 .ct-icon-green {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+    box-shadow:
+        0 0 0 1px rgba(34, 197, 94, 0.25),
+        0 18px 30px rgba(22, 163, 74, 0.45);
 }
 
 .ct-card-title {
     margin: 0;
     font-size: 1.02rem;
     font-weight: 600;
+    color: #111827;
 }
 
 .ct-card-desc {
     margin: 4px 0 6px;
     font-size: 0.88rem;
-    color: #64748b;
+    color: #6b7280;
 }
 
 .ct-meta-list {
@@ -107,7 +120,7 @@
     justify-content: flex-end;
 }
 
-/* Buttons */
+/* ========= Buttons ========= */
 .ct-btn {
     border-radius: 999px;
     padding: 8px 16px;
@@ -125,33 +138,51 @@
     transform: translateY(1px) scale(0.98);
 }
 
+/* primary: gradient hồng như hsht-panel .btn.primary */
+.ct-btn.primary,
 .ct-btn-primary {
-    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    background: linear-gradient(135deg, #fb7185, #ec4899);
     color: #f9fafb;
-    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 16px 35px rgba(236, 72, 153, 0.55);
 }
 
+.ct-btn.primary:hover,
 .ct-btn-primary:hover {
-    background: linear-gradient(135deg, #1d4ed8, #4338ca);
+    box-shadow: 0 20px 45px rgba(236, 72, 153, 0.7);
 }
 
+/* outline & ghost dùng tone xám giống hsht */
 .ct-btn-outline {
     background: #ffffff;
-    border-color: #cbd5e1;
-    color: #0f172a;
+    border-color: #e5e7eb;
+    color: #111827;
 }
 
 .ct-btn-outline:hover {
-    background: #eff6ff;
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.ct-btn.ghost {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+    color: #6b7280;
+}
+
+.ct-btn.ghost:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #111827;
 }
 
 /* ========= Tabs ========= */
 .ct-tabs {
     display: inline-flex;
-    background: #e2e8f0;
+    background: #f3f4f6;
     padding: 4px;
     border-radius: 999px;
     margin-bottom: 18px;
+    border: 1px solid #e5e7eb;
 }
 
 .ct-tab {
@@ -160,34 +191,35 @@
     padding: 8px 18px;
     border-radius: 999px;
     font-size: 0.85rem;
-    color: #64748b;
+    color: #6b7280;
     cursor: pointer;
     font-weight: 500;
 }
 
+/* active: pill hồng giống hsht-main-tab.is-active */
 .ct-tab-active {
-    background: #ffffff;
-    color: #0f172a;
-    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+    background: linear-gradient(135deg, #fb7185, #ec4899);
+    color: #f9fafb;
+    box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
 }
 
 /* ========= Tab panels ========= */
 .ct-tab-panels {
-    background: #ffffff;
+    background: #f9fafb;
     border-radius: 18px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e5e7eb;
     padding: 18px 20px 20px;
     box-shadow:
-        0 18px 35px rgba(15, 23, 42, 0.08),
-        0 4px 12px rgba(15, 23, 42, 0.04);
+        0 18px 35px rgba(15, 23, 42, 0.06),
+        0 4px 12px rgba(15, 23, 42, 0.03);
 }
 
 .ct-tab-panel {
-    display: none;
+    display: none;          /* GIỮ NGUYÊN CẤU TRÚC */
 }
 
 .ct-tab-panel-active {
-    display: block;
+    display: block;         /* GIỮ NGUYÊN CẤU TRÚC */
 }
 
 .ct-panel-header {
@@ -202,12 +234,13 @@
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
+    color: #111827;
 }
 
 .ct-panel-sub {
     margin: 3px 0 0;
     font-size: 0.84rem;
-    color: #64748b;
+    color: #6b7280;
 }
 
 /* ========= Program card grid ========= */
@@ -217,11 +250,12 @@
     gap: 14px;
 }
 
+/* GIỮ layout, chỉ đổi màu cho “đậm chất MathBridge” hơn */
 .prog-card {
     border-radius: 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #fecdd3;
     padding: 14px 14px 12px;
-    background: radial-gradient(circle at 0 0, #eff6ff 0, #ffffff 40%);
+    background: radial-gradient(circle at 0 0, #fdf2f8 0, #ffffff 45%);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -233,10 +267,10 @@
 
 .prog-card:hover {
     box-shadow:
-        0 12px 24px rgba(15, 23, 42, 0.12),
-        0 3px 10px rgba(15, 23, 42, 0.06);
+        0 12px 24px rgba(236, 72, 153, 0.18),
+        0 3px 10px rgba(236, 72, 153, 0.12);
     transform: translateY(-1px);
-    border-color: #bfdbfe;
+    border-color: #fb7185;
 }
 
 .prog-title-row {
@@ -254,10 +288,10 @@
 
 .prog-code {
     font-size: 0.75rem;
-    color: #64748b;
+    color: #9f1239;
     padding: 2px 8px;
     border-radius: 999px;
-    background: #e0f2fe;
+    background: #ffe4e6;
 }
 
 .prog-desc {
@@ -274,7 +308,7 @@
 
 .prog-btn {
     border-radius: 999px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #e5e7eb;
     padding: 4px 10px;
     font-size: 0.78rem;
     background: #ffffff;
@@ -286,8 +320,8 @@
 }
 
 .prog-btn:hover {
-    background: #eff6ff;
-    border-color: #bfdbfe;
+    background: #fdf2f8;
+    border-color: #fecdd3;
 }
 
 .prog-btn.danger {
@@ -303,8 +337,8 @@
 .class-table-wrapper {
     margin-top: 4px;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
 }
 
 .class-table {
@@ -314,14 +348,14 @@
 }
 
 .class-table thead {
-    background: #f8fafc;
+    background: #f9fafb;
 }
 
 .class-table th,
 .class-table td {
     padding: 8px 10px;
     text-align: left;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .class-table th {
@@ -331,7 +365,7 @@
 }
 
 .class-table tbody tr:hover {
-    background: #f9fafb;
+    background: #e0f2fe;
 }
 
 /* Cột thông tin lớp (tên + chi tiết nhỏ) */
@@ -400,7 +434,7 @@
     min-width: 120px;
     background: #ffffff;
     border-radius: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e5e7eb;
     box-shadow:
         0 12px 24px rgba(15, 23, 42, 0.16),
         0 4px 8px rgba(15, 23, 42, 0.08);
@@ -435,7 +469,7 @@
     color: #b91c1c;
 }
 
-/* ========= Modal (dùng lại, chỉ tinh chỉnh chút) ========= */
+/* ========= Modal ========= */
 .ct-modal.hidden {
     display: none;
 }
@@ -449,7 +483,7 @@
 .ct-modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(15, 23, 42, 0.55);
+    background: rgba(15, 23, 42, 0.45);
     backdrop-filter: blur(3px);
 }
 
@@ -461,17 +495,41 @@
     max-width: calc(100% - 32px);
     transform: translate(-50%, -50%);
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 22px 24px;
+    border: 1px solid #e5e7eb;
     box-shadow:
-        0 24px 45px rgba(15, 23, 42, 0.4),
-        0 8px 18px rgba(15, 23, 42, 0.24);
+        0 24px 45px rgba(15, 23, 42, 0.38),
+        0 8px 18px rgba(15, 23, 42, 0.22);
 }
 
+.ct-modal-box.ct-modal-lg {
+    width: 720px;
+    max-width: calc(100% - 32px);
+}
+
+/* Header trong modal lớp */
+.ct-modal-header {
+    margin-bottom: 10px;
+}
+
+.ct-modal-header h2,
 .ct-modal-box h2 {
-    margin: 0 0 14px;
+    margin: 0 0 6px;
     font-size: 1.1rem;
     font-weight: 600;
+    color: #0f172a;
+}
+
+.ct-modal-subtitle {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+/* Form cơ bản */
+.ct-form {
+    margin-top: 4px;
 }
 
 .ct-form-group {
@@ -487,20 +545,109 @@
 }
 
 .ct-form-group input,
-.ct-form-group textarea {
+.ct-form-group textarea,
+.ct-form-group select {
     border-radius: 10px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #e5e7eb;
     padding: 7px 9px;
     font-size: 0.86rem;
     outline: none;
+    background: #ffffff;
 }
 
 .ct-form-group input:focus,
-.ct-form-group textarea:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+.ct-form-group textarea:focus,
+.ct-form-group select:focus {
+    border-color: #ec4899;
+    box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
 }
 
+/* Layout form nâng cao cho modal lớp */
+.ct-form-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ct-form-section {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 10px;
+    margin-top: 6px;
+}
+
+.ct-form-section:first-of-type {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+.ct-form-section-title {
+    font-size: 0.86rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    margin: 0 0 8px;
+}
+
+.ct-form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+/* Input/Select/Textarea styling chung cho form lớp */
+.ct-input,
+.ct-select,
+.ct-textarea {
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    padding: 7px 9px;
+    font-size: 0.86rem;
+    outline: none;
+    background: #ffffff;
+}
+
+.ct-input:focus,
+.ct-select:focus,
+.ct-textarea:focus {
+    border-color: #ec4899;
+    box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+}
+
+.ct-input-prefix-group {
+    display: flex;
+    align-items: stretch;
+}
+
+.ct-input-prefix {
+    padding: 7px 9px;
+    font-size: 0.82rem;
+    background: #f9fafb;
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #e5e7eb;
+    border-right: none;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ct-input-prefix-group .ct-input {
+    border-radius: 0 10px 10px 0;
+    border-left: none;
+    flex: 1;
+}
+
+.ct-field-hint {
+    margin-top: 2px;
+    font-size: 0.76rem;
+    color: #94a3b8;
+}
+
+.ct-textarea {
+    resize: vertical;
+}
+
+/* Modal footer */
 .ct-modal-footer {
     display: flex;
     justify-content: flex-end;
@@ -527,4 +674,23 @@
     .class-table td {
         padding: 6px 8px;
     }
+
+    .ct-modal-box,
+    .ct-modal-box.ct-modal-lg {
+        width: 100%;
+        max-width: calc(100% - 24px);
+    }
+
+    .ct-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+/* Ẩn header nội bộ "Chương trình & Lớp học" trong ct-page */
+.ct-page .ct-header-row {
+    display: none;
+}
+
+/* Nếu muốn gom khoảng trống lại cho đẹp hơn */
+.ct-page {
+    padding-top: 18px; /* hoặc 20px, tùy bạn */
 }

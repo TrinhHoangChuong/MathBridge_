@@ -1,11 +1,527 @@
-<div class="dash-card content-panel">
-    <div class="content-head">
-        <div>
-            <div class="content-title">Học sinh & Học tập</div>
-            <div class="content-sub">Tiến độ, điểm danh, bài tập, kết quả</div>
+<!-- ICONS (Remix Icon) -->
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+
+<!-- HỌC SINH & HỌC TẬP -->
+<div class="dash-card content-panel hsht-panel" id="hsht-panel">
+    <!-- HEADER: ICON + TIÊU ĐỀ + ACTION -->
+    <div class="hsht-header">
+        <div class="hsht-header-left">
+            <div class="hsht-header-icon">
+                <i class="ri-graduation-cap-line"></i>
+            </div>
+            <div>
+                <h2 class="hsht-title">Học sinh &amp; Học tập</h2>
+                <p class="hsht-subtitle">
+                    Quản lý hồ sơ học sinh, bài tập, bài nộp và kết quả học tập trong hệ
+                    thống.
+                </p>
+            </div>
+        </div>
+        <div class="hsht-header-right">
+            <button class="btn ghost" id="btn-hsht-refresh">
+                <i class="ri-refresh-line"></i>
+                Làm mới
+            </button>
         </div>
     </div>
-    <p class="placeholder-desc">
-        (Theo dõi BuoiHocChiTiet, bài nộp, nhận xét GV...)
-    </p>
+
+    <!-- MAIN TABS: HỌC SINH / BÀI TẬP / BÀI NỘP / KẾT QUẢ -->
+    <div class="hsht-main-tabs">
+        <button
+                class="hsht-main-tab is-active"
+                data-view="students"
+                type="button"
+        >
+            <i class="ri-user-3-line hsht-main-tab-icon"></i>
+            <span>Học sinh</span>
+        </button>
+        <button class="hsht-main-tab" data-view="assignments" type="button">
+            <i class="ri-task-line hsht-main-tab-icon"></i>
+            <span>Bài tập</span>
+        </button>
+        <button class="hsht-main-tab" data-view="submissions" type="button">
+            <i class="ri-file-list-2-line hsht-main-tab-icon"></i>
+            <span>Bài nộp &amp; Chấm điểm</span>
+        </button>
+        <button class="hsht-main-tab" data-view="results" type="button">
+            <i class="ri-bar-chart-2-line hsht-main-tab-icon"></i>
+            <span>Đánh giá &amp; Kết quả</span>
+        </button>
+    </div>
+
+    <!-- ===================================================
+         VIEW 1: HỌC SINH (DANH SÁCH + CHI TIẾT)
+         =================================================== -->
+    <div class="hsht-main-view is-active" data-view-content="students">
+        <div class="section-head">
+            <div>
+                <div class="section-title">Quản lý học sinh</div>
+                <div class="section-sub">
+                    Xem danh sách học sinh, lọc theo chương trình / lớp và xem chi tiết
+                    hồ sơ cùng lớp đang học.
+                </div>
+            </div>
+            <div>
+                <!-- Ẩn theo yêu cầu -->
+                <button class="btn primary" id="btn-add-student" style="display: none">
+                    <i class="ri-user-add-line"></i>
+                    Thêm học sinh
+                </button>
+            </div>
+        </div>
+
+        <div class="hsht-student-layout">
+            <!-- CỘT TRÁI: DANH SÁCH HỌC SINH -->
+            <div class="hsht-column">
+                <div class="section-card">
+                    <div class="hsht-filters-row">
+                        <div class="form-group">
+                            <label for="filter-student-search">Tìm kiếm</label>
+                            <div class="input-with-icon">
+                                <i class="ri-search-line"></i>
+                                <input
+                                        type="text"
+                                        id="filter-student-search"
+                                        class="input-text"
+                                        placeholder="Tên, email, mã học sinh..."
+                                />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-student-program">Chương trình</label>
+                            <select
+                                    id="filter-student-program"
+                                    class="input-select"
+                            >
+                                <option value="">Tất cả</option>
+                                <!-- ChuongTrinh -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-student-class">Lớp học</label>
+                            <select id="filter-student-class" class="input-select">
+                                <option value="">Tất cả</option>
+                                <!-- LopHoc -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filter-student-status">Trạng thái</label>
+                            <select
+                                    id="filter-student-status"
+                                    class="input-select"
+                            >
+                                <option value="">Tất cả</option>
+                                <option value="active">Đang học</option>
+                                <option value="inactive">Ngưng / xóa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper" style="margin-top: 12px">
+                        <table class="mb-table" id="tbl-student-list">
+                            <thead>
+                            <tr>
+                                <th>Mã HS</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>SĐT</th>
+                                <th>Số lớp đang học</th>
+                                <th>Trạng thái</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="empty-row">
+                                <td colspan="7">Chưa có dữ liệu học sinh.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CỘT PHẢI: CHI TIẾT HỌC SINH -->
+            <div class="hsht-column">
+                <!-- HỒ SƠ -->
+                <div class="section-card">
+                    <div class="section-head compact">
+                        <div>
+                            <div class="section-title small">
+                                Thông tin học sinh
+                            </div>
+                            <div class="section-sub">
+                                Thông tin cá nhân &amp; trạng thái hoạt động
+                            </div>
+                        </div>
+                        <span class="pill" id="student-selected-pill">
+                            Chưa chọn học sinh
+                        </span>
+                    </div>
+                    <div class="hsht-student-info" id="student-info-panel">
+                        <p class="muted">Chọn một học sinh ở bảng bên trái.</p>
+                    </div>
+                </div>
+
+                <!-- LỚP ĐANG HỌC -->
+                <div class="section-card">
+                    <div class="section-head compact">
+                        <div>
+                            <div class="section-title small">Lớp đang học</div>
+                            <div class="section-sub">
+                                Lấy từ DangKyLH + LopHoc theo học sinh đã chọn
+                            </div>
+                        </div>
+                        <button
+                                class="btn ghost"
+                                id="btn-add-class-for-student"
+                                type="button"
+                        >
+                            <i class="ri-add-line"></i>
+                            Thêm vào lớp
+                        </button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="mb-table" id="tbl-student-classes">
+                            <thead>
+                            <tr>
+                                <th>Mã lớp</th>
+                                <th>Tên lớp</th>
+                                <th>Chương trình</th>
+                                <th>Ngày bắt đầu</th>
+                                <th>Hình thức</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="empty-row">
+                                <td colspan="6">Chưa có lớp nào.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TÓM TẮT HỌC TẬP -->
+                <div class="section-card">
+                    <div class="section-head compact">
+                        <div>
+                            <div class="section-title small">
+                                Tóm tắt bài tập &amp; kết quả
+                            </div>
+                            <div class="section-sub">
+                                Tổng quan số bài tập, bài nộp và kết quả từ BaiTap,
+                                BaiNop, KetQuaHocTap
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hsht-result-block" id="student-summary-panel">
+                        <p class="muted">Chưa có dữ liệu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================
+         VIEW 2: BÀI TẬP (THEO LỚP + BUỔI)
+         =================================================== -->
+    <div class="hsht-main-view" data-view-content="assignments">
+        <div class="section-head">
+            <div>
+                <div class="section-title">Bài tập</div>
+                <div class="section-sub">
+                    Quản lý bài tập theo lớp và buổi học (BaiTap + BuoiHocChiTiet).
+                </div>
+            </div>
+            <div>
+            </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="hsht-filters">
+            <div class="hsht-filters-row">
+                <div class="form-group">
+                    <label for="filter-assign-program">Chương trình</label>
+                    <select
+                            id="filter-assign-program"
+                            class="input-select"
+                    >
+                        <option value="">Tất cả</option>
+                        <!-- ChuongTrinh -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-assign-class">Lớp học</label>
+                    <select id="filter-assign-class" class="input-select">
+                        <option value="">Chọn lớp học</option>
+                        <!-- LopHoc -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-assign-session">Buổi học</label>
+                    <select id="filter-assign-session" class="input-select">
+                        <option value="">Tất cả buổi</option>
+                        <!-- BuoiHocChiTiet -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-assign-from">Từ ngày</label>
+                    <input
+                            type="date"
+                            id="filter-assign-from"
+                            class="input-text"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="filter-assign-to">Đến ngày</label>
+                    <input
+                            type="date"
+                            id="filter-assign-to"
+                            class="input-text"
+                    />
+                </div>
+                <div class="form-group hsht-filter-actions">
+                    <button class="btn primary" id="btn-assign-apply-filter">
+                        <i class="ri-filter-3-line"></i>
+                        Áp dụng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DANH SÁCH BÀI TẬP -->
+        <div class="section-card">
+            <div class="section-head">
+                <div class="section-title">Danh sách bài tập</div>
+                <div class="section-sub">
+                    Lấy dữ liệu từ bảng BaiTap theo lớp / buổi / khoảng thời gian.
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table class="mb-table" id="tbl-assignments">
+                    <thead>
+                    <tr>
+                        <th>Tiêu đề</th>
+                        <th>Buổi học</th>
+                        <th>Loại bài</th>
+                        <th>Thời gian</th>
+                        <th>Số HS đã nộp</th>
+                        <th>Điểm TB</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="empty-row">
+                        <td colspan="7">
+                            Chưa có bài tập cho bộ lọc hiện tại.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================
+         VIEW 3: BÀI NỘP & CHẤM ĐIỂM (BaiNop + BinhLuanBaiNop)
+         =================================================== -->
+    <div class="hsht-main-view" data-view-content="submissions">
+        <div class="section-head">
+            <div>
+                <div class="section-title">Bài nộp &amp; Chấm điểm</div>
+                <div class="section-sub">
+                    Xem và chấm điểm bài nộp của học sinh theo lớp, buổi và bài tập.
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="hsht-filters">
+            <div class="hsht-filters-row">
+                <div class="form-group">
+                    <label for="filter-sub-program">Chương trình</label>
+                    <select id="filter-sub-program" class="input-select">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-sub-class">Lớp học</label>
+                    <select id="filter-sub-class" class="input-select">
+                        <option value="">Tất cả lớp</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-sub-assignment">Bài tập</label>
+                    <select
+                            id="filter-sub-assignment"
+                            class="input-select"
+                    >
+                        <option value="">Tất cả bài tập</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-sub-status">Trạng thái</label>
+                    <select id="filter-sub-status" class="input-select">
+                        <option value="">Tất cả</option>
+                        <option value="submitted">Đã nộp</option>
+                        <option value="graded">Đã chấm</option>
+                        <option value="late">Nộp trễ</option>
+                    </select>
+                </div>
+                <div class="form-group hsht-filter-actions">
+                    <button class="btn primary" id="btn-sub-apply-filter">
+                        <i class="ri-filter-3-line"></i>
+                        Áp dụng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DANH SÁCH BÀI NỘP -->
+        <div class="section-card">
+            <div class="section-head">
+                <div class="section-title">Danh sách bài nộp</div>
+                <div class="section-sub">
+                    Lấy từ bảng BaiNop, join HocSinh &amp; BaiTap.
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table class="mb-table" id="tbl-submission-list">
+                    <thead>
+                    <tr>
+                        <th>Học sinh</th>
+                        <th>Lớp</th>
+                        <th>Bài tập</th>
+                        <th>File</th>
+                        <th>Điểm</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="empty-row">
+                        <td colspan="7">Chưa có dữ liệu bài nộp.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- KHỐI CHI TIẾT (CHẤM ĐIỂM + BÌNH LUẬN) -->
+        <div class="section-card">
+            <div class="section-head compact">
+                <div>
+                    <div class="section-title small">
+                        Chi tiết bài nộp / chấm điểm
+                    </div>
+                    <div class="section-sub">
+                        Điểm số, nhận xét và bình luận (BinhLuanBaiNop).
+                    </div>
+                </div>
+            </div>
+            <div class="hsht-eval-block" id="submission-detail-block">
+                <p class="muted">
+                    Chọn một bài nộp ở bảng trên để xem &amp; chấm điểm.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================
+         VIEW 4: ĐÁNH GIÁ & KẾT QUẢ (DanhGiaBuoiHoc, DanhGiaLopHoc, KetQuaHocTap)
+         =================================================== -->
+    <div class="hsht-main-view" data-view-content="results">
+        <div class="section-head">
+            <div>
+                <div class="section-title">Đánh giá &amp; Kết quả</div>
+                <div class="section-sub">
+                    Tổng hợp đánh giá buổi học, đánh giá lớp và kết quả học tập của học
+                    sinh.
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="hsht-filters">
+            <div class="hsht-filters-row">
+                <div class="form-group">
+                    <label for="filter-res-student">Học sinh</label>
+                    <select id="filter-res-student" class="input-select">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-res-class">Lớp học</label>
+                    <select id="filter-res-class" class="input-select">
+                        <option value="">Tất cả lớp</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-res-session">Buổi học</label>
+                    <select id="filter-res-session" class="input-select">
+                        <option value="">Tất cả buổi</option>
+                    </select>
+                </div>
+                <div class="form-group hsht-filter-actions">
+                    <button class="btn primary" id="btn-res-apply-filter">
+                        <i class="ri-filter-3-line"></i>
+                        Áp dụng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="hsht-eval-layout">
+            <!-- ĐÁNH GIÁ LỚP HỌC -->
+            <div class="section-card">
+                <div class="section-title small">Đánh giá lớp học</div>
+                <div class="table-wrapper">
+                    <table class="mb-table" id="tbl-class-rating">
+                        <thead>
+                        <tr>
+                            <th>Học sinh</th>
+                            <th>Lớp</th>
+                            <th>Điểm đánh giá</th>
+                            <th>Nhận xét</th>
+                            <th>Thời điểm</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="empty-row">
+                            <td colspan="5">Chưa có đánh giá lớp học.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- KẾT QUẢ & XẾP LOẠI -->
+            <div class="section-card">
+                <div class="section-title small">Kết quả &amp; xếp loại</div>
+                <div class="table-wrapper">
+                    <table class="mb-table" id="tbl-result-list">
+                        <thead>
+                        <tr>
+                            <th>Học sinh</th>
+                            <th>Lớp</th>
+                            <th>Điểm tổng kết</th>
+                            <th>Xếp loại</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="empty-row">
+                            <td colspan="4">
+                                Chưa có kết quả kết thúc khóa.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Nếu sau này cần chart, có thể đặt container ở đây -->
+            </div>
+        </div>
+    </div>
 </div>

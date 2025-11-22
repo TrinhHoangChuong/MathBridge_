@@ -1,0 +1,619 @@
+/* =========================================================
+   1. LAYOUT & SURFACE COLORS
+   ========================================================= */
+
+.td-panel {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+/* =========================================================
+   2. HEADER (ICON + TITLE + ACTION)
+   ========================================================= */
+
+.td-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.td-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.td-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 0 0, #fb7185, #ec4899);
+  color: #ffffff;
+  font-size: 22px;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.25),
+    0 18px 30px rgba(236, 72, 153, 0.45);
+}
+
+.td-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #020617;
+}
+
+.td-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.td-header-right .btn.ghost {
+  background: #f9fafb;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.td-header-right .btn.ghost i {
+  font-size: 15px;
+}
+
+.td-header-right .btn.ghost:hover {
+  border-color: #d1d5db;
+  color: #111827;
+  background: #f3f4f6;
+}
+
+/* =========================================================
+   3. MAIN VIEW TABS
+   ========================================================= */
+
+.td-main-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  align-self: flex-start;
+}
+
+.td-main-tab {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.td-main-tab-icon {
+  font-size: 16px;
+}
+
+.td-main-tab.is-active {
+  background: linear-gradient(135deg, #fb7185, #ec4899);
+  color: #f9fafb;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+}
+
+.td-main-tab:not(.is-active):hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* toggle view */
+.td-main-view {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.td-main-view.is-active {
+  display: flex;
+}
+
+/* =========================================================
+   4. FILTER BAR
+   ========================================================= */
+
+.td-filters {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.td-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.form-group label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.input-text,
+.input-select {
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 12px;
+  padding: 0 12px;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.input-text:focus,
+.input-select:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+.input-text::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+}
+
+.td-filter-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Nút chính màu hồng */
+.btn.primary {
+  background: linear-gradient(135deg, #fb7185, #ec4899);
+  border-radius: 999px;
+  padding: 6px 16px;
+  border: none;
+  color: #f9fafb;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 16px 35px rgba(236, 72, 153, 0.55);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn.primary i {
+  font-size: 15px;
+}
+
+.btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 20px 45px rgba(236, 72, 153, 0.7);
+}
+
+/* =========================================================
+   5. SECTION CARD & META
+   ========================================================= */
+
+.section-card {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.section-card.inner {
+  background: #ffffff;
+}
+
+.section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.section-head.compact {
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.section-title.small {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.section-sub {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.pill {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+}
+
+/* =========================================================
+   6. TABLES
+   ========================================================= */
+
+.table-wrapper {
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.mb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.mb-table thead {
+  background: #f9fafb;
+}
+
+.mb-table thead th {
+  text-align: left;
+  padding: 9px 10px;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.mb-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.mb-table tbody td {
+  padding: 8px 10px;
+  color: #111827;
+}
+
+.mb-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.mb-table tbody tr:hover {
+  background: #e0f2fe;
+}
+
+.empty-row td {
+  text-align: center;
+  color: #9ca3af;
+}
+
+/* =========================================================
+   7. INPUT WITH ICON
+   ========================================================= */
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon i {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.input-with-icon .input-text {
+  padding-left: 28px;
+}
+
+/* =========================================================
+   8. RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .td-filters-row {
+    flex-direction: column;
+  }
+
+  .td-main-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .td-main-tab span {
+    display: none;
+  }
+
+  .td-main-tab {
+    justify-content: center;
+    padding-inline: 8px;
+  }
+
+  .td-modal {
+    width: calc(100% - 32px);
+  }
+
+  .td-modal-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .td-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .td-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* =========================================================
+   9. ACTION LINKS
+   ========================================================= */
+
+.td-actions-cell {
+  white-space: nowrap;
+}
+
+.td-link-btn {
+  border: none;
+  background: none;
+  padding: 0 4px;
+  font-size: 12px;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+.td-link-btn:hover {
+  text-decoration: underline;
+}
+
+.td-link {
+  font-size: 12px;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.td-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   10. TEXTAREA
+   ========================================================= */
+
+.td-textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  font-size: 12px;
+  resize: vertical;
+  outline: none;
+}
+
+.td-textarea:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+/* =========================================================
+   11. MODAL STYLES
+   ========================================================= */
+
+.td-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+/* tôn trọng thuộc tính hidden để không bị đè giao diện khi mới vào trang */
+.td-modal-backdrop[hidden] {
+  display: none !important;
+}
+
+.td-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 14px 16px 14px;
+  width: min(900px, 100% - 40px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.td-modal-detail {
+  width: min(960px, 100% - 40px);
+}
+
+.td-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.td-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #020617;
+}
+
+.td-modal-close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.td-modal-close i {
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.td-modal-close:hover {
+  background: #f3f4f6;
+}
+
+.td-modal-body {
+  overflow: auto;
+  padding-top: 4px;
+  padding-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.td-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.td-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+/* =========================================================
+   12. DETAIL VIEW
+   ========================================================= */
+
+.td-detail-body {
+  gap: 12px;
+}
+
+.td-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 16px;
+}
+
+.td-detail-item .detail-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.td-detail-item .detail-value {
+  font-size: 13px;
+  color: #111827;
+}
+
+.td-detail-block {
+  margin-top: 6px;
+}
+
+.td-detail-block .detail-label {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.td-detail-block .detail-value {
+  font-size: 13px;
+  color: #111827;
+  white-space: pre-line;
+}
+
+/* header nhỏ trong phần ứng viên của modal chi tiết */
+.td-detail-candidate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+/* style ghost button trong header này cho đồng bộ */
+.td-detail-candidate-header .btn.ghost {
+  background: #f9fafb;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 4px 10px;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.td-detail-candidate-header .btn.ghost i {
+  font-size: 14px;
+}
+
+.td-detail-candidate-header .btn.ghost:hover {
+  border-color: #d1d5db;
+  color: #111827;
+  background: #f3f4f6;
+}
+/* dropdown trạng thái inline trong bảng tin */
+.td-job-status-select {
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  font-size: 11px;
+  padding: 2px 6px;
+  background: #ffffff;
+  max-width: 130px;
+}

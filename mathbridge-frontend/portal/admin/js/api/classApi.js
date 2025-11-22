@@ -18,6 +18,8 @@ export async function apiGetClassById(id) {
 }
 
 /** Tạo lớp mới */
+// NOTE: payload lấy từ FormData(form) bên chuongtrinhPage.js
+// -> name input phải trùng với field trong ClassRequest (idLh, idNv, idCt, ...)
 export async function apiCreateClass(payload) {
     const res = await fetch(BASE_URL, {
         method: "POST",

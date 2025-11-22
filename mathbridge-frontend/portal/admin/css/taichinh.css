@@ -1,0 +1,498 @@
+/* ===== TÀI CHÍNH & HỌC PHÍ (đồng bộ style HSHT / NS) ===== */
+
+.tc-panel {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+/* HEADER */
+
+.tc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tc-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tc-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* có thể đổi sang xanh nếu muốn, tạm dùng gradient chung */
+  background: radial-gradient(circle at 0 0, #fb7185, #ec4899);
+  color: #ffffff;
+  font-size: 22px;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.25),
+    0 18px 30px rgba(236, 72, 153, 0.45);
+}
+
+.tc-header-icon i {
+  font-size: 1.4rem;
+}
+
+.tc-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #020617;
+}
+
+.tc-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.tc-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* .btn.ghost dùng chung style với HSHT/NS */
+.tc-header-right .btn.ghost {
+  background: #f9fafb;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.tc-header-right .btn.ghost i {
+  font-size: 15px;
+}
+
+.tc-header-right .btn.ghost:hover {
+  border-color: #d1d5db;
+  color: #111827;
+  background: #f3f4f6;
+}
+
+/* TABS – giống hsht-main-tabs / ns-tabs */
+
+.tc-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  align-self: flex-start;
+}
+
+.tc-tab {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.tc-tab i {
+  font-size: 16px;
+}
+
+.tc-tab span {
+  white-space: nowrap;
+}
+
+.tc-tab.active {
+  background: linear-gradient(135deg, #fb7185, #ec4899);
+  color: #f9fafb;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+}
+
+.tc-tab:not(.active):hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* VIEWS */
+
+.tc-views {
+  margin-top: 10px;
+}
+
+.tc-view {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tc-view.active {
+  display: flex;
+}
+
+/* TOOLBAR & FILTERS – card giống ns-filters / hsht-filters */
+
+.tc-toolbar {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tc-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tc-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.tc-filter-group label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.tc-filter-dates {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.tc-filter-dates > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* input/select trong toolbar */
+
+.tc-toolbar input,
+.tc-toolbar select {
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 12px;
+  padding: 0 12px;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.tc-toolbar input:focus,
+.tc-toolbar select:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+.tc-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* TABLES – đồng bộ mb-table style */
+
+.tc-table-wrapper {
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.tc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.tc-table thead {
+  background: #f9fafb;
+}
+
+.tc-table thead th {
+  text-align: left;
+  padding: 9px 10px;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.tc-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.tc-table tbody td {
+  padding: 8px 10px;
+  color: #111827;
+}
+
+.tc-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.tc-table tbody tr:hover {
+  background: #e0f2fe;
+}
+
+.tc-empty-row {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ACTIONS cell (nút sửa/xóa) */
+
+.tc-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tc-action-btn {
+  border: none;
+  background: transparent;
+  padding: 2px;
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.tc-action-btn:hover {
+  opacity: 1;
+  background: #e5e7eb;
+}
+
+.tc-action-btn i {
+  font-size: 14px;
+}
+
+/* STATUS CHIP (trạng thái thanh toán / hóa đơn) */
+
+.tc-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.tc-status-chip i {
+  font-size: 12px;
+}
+
+.tc-status-CHO_THANH_TOAN {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.tc-status-DA_THANH_TOAN {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tc-status-QUA_HAN {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* MODALS – giống ns-modal (card trắng) */
+
+.tc-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+.tc-modal.open {
+  display: flex;
+}
+
+.tc-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.tc-modal-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(720px, 100% - 40px);
+  max-height: calc(100vh - 60px);
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.26);
+  display: flex;
+  flex-direction: column;
+}
+
+.tc-modal-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tc-modal-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.tc-modal-close {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.tc-modal-close:hover {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.tc-modal-body {
+  padding: 10px 14px 8px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.tc-modal-footer {
+  padding: 8px 14px 10px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* FORM */
+
+.tc-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+
+.tc-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tc-form-group-full {
+  grid-column: 1 / -1;
+}
+
+.tc-form-group label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.tc-form-group input,
+.tc-form-group select,
+.tc-form-group textarea {
+  font-size: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  padding: 6px 10px;
+  outline: none;
+  transition: all 0.16s ease;
+  resize: vertical;
+}
+
+.tc-form-group input:focus,
+.tc-form-group select:focus,
+.tc-form-group textarea:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+.tc-hint {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 960px) {
+  .tc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tc-toolbar-actions {
+    justify-content: flex-start;
+  }
+
+  .tc-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .tc-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .tc-tab span {
+    display: none;
+  }
+
+  .tc-tab {
+    justify-content: center;
+    padding-inline: 8px;
+  }
+}

@@ -28,9 +28,9 @@
                         Danh mục chương trình đào tạo, dùng để gán cho các lớp học.
                     </p>
                     <ul class="ct-meta-list">
-                        <li>• Phân loại theo cấp độ, mục tiêu</li>
-                        <li>• Cấu hình nội dung &amp; thời lượng</li>
-                        <li>• Kích hoạt / ngừng áp dụng</li>
+                        <li> Phân loại theo cấp độ, mục tiêu</li>
+                        <li> Cấu hình nội dung &amp; thời lượng</li>
+                        <li> Kích hoạt / ngừng áp dụng</li>
                     </ul>
                 </div>
             </div>
@@ -61,9 +61,9 @@
                         Quản lý lớp học, giảng viên, lịch học và trạng thái lớp.
                     </p>
                     <ul class="ct-meta-list">
-                        <li>• Danh sách lớp theo chương trình</li>
-                        <li>• Gán giảng viên, lịch học</li>
-                        <li>• Theo dõi trạng thái &amp; tình hình lớp</li>
+                        <li> Danh sách lớp theo chương trình</li>
+                        <li> Gán giảng viên, lịch học</li>
+                        <li> Theo dõi trạng thái &amp; tình hình lớp</li>
                     </ul>
                 </div>
             </div>
@@ -212,75 +212,217 @@
 <div id="ctClassModal" class="ct-modal hidden">
     <div class="ct-modal-backdrop"></div>
 
-    <div class="ct-modal-box">
-        <h2 id="ctClassModalTitle">Thêm lớp học</h2>
+    <div class="ct-modal-box ct-modal-lg">
+        <div class="ct-modal-header">
+            <h2 id="ctClassModalTitle">Thêm lớp học</h2>
+            <p class="ct-modal-subtitle">
+                Nhập đầy đủ thông tin lớp học, gán chương trình và giảng viên phụ trách.
+            </p>
+        </div>
 
-        <form id="ctClassForm" class="ct-form">
-            <div class="ct-form-group">
-                <label for="cl-idLh">Mã lớp học</label>
-                <input id="cl-idLh" name="idLh" type="text" required />
+        <form id="ctClassForm" class="ct-form ct-form-vertical">
+            <!-- === NHÓM 1: Thông tin chung === -->
+            <div class="ct-form-section">
+                <h3 class="ct-form-section-title">Thông tin chung</h3>
+
+                <div class="ct-form-row">
+                    <div class="ct-form-group">
+                        <label for="cl-idLh">Mã lớp học</label>
+                        <!-- NOTE: id & name giữ nguyên để JS/BE hoạt động -->
+                        <input
+                                id="cl-idLh"
+                                name="idLh"
+                                type="text"
+                                required
+                                class="ct-input"
+                        />
+                        <p class="ct-field-hint">
+                            Mã lớp sẽ được hệ thống gợi ý, bạn có thể chỉnh sửa nếu cần.
+                        </p>
+                    </div>
+
+                    <div class="ct-form-group">
+                        <label for="cl-tenLop">Tên lớp</label>
+                        <input
+                                id="cl-tenLop"
+                                name="tenLop"
+                                type="text"
+                                required
+                                class="ct-input"
+                        />
+                    </div>
+                </div>
+
+                <div class="ct-form-row">
+                    <div class="ct-form-group">
+                        <label for="cl-idCt">Chương trình</label>
+                        <!-- NOTE: đổi sang select, name/id giữ nguyên -->
+                        <select
+                                id="cl-idCt"
+                                name="idCt"
+                                required
+                                class="ct-select"
+                        >
+                            <option value="">-- Chọn chương trình --</option>
+                            <!-- TODO: có thể fill bằng JS từ apiGetAllPrograms -->
+                        </select>
+                    </div>
+
+                    <div class="ct-form-group">
+                        <label for="cl-idNv">Giảng viên / Nhân viên phụ trách</label>
+                        <!-- NOTE: cũng nên là select, nhưng hiện chưa có API nhân viên
+                             => tạm để trống, bạn có thể fill cứng hoặc build API sau -->
+                        <select
+                                id="cl-idNv"
+                                name="idNv"
+                                required
+                                class="ct-select"
+                        >
+                            <option value="">-- Chọn nhân viên --</option>
+                            <!-- TODO: fill từ list nhân viên (khi có API) -->
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div class="ct-form-group">
-                <label for="cl-idNv">Mã nhân viên</label>
-                <input id="cl-idNv" name="idNv" type="text" required />
+            <!-- === NHÓM 2: Lịch học & hình thức === -->
+            <div class="ct-form-section">
+                <h3 class="ct-form-section-title">Lịch học & hình thức</h3>
+
+                <div class="ct-form-row">
+                    <div class="ct-form-group">
+                        <label for="cl-loaiNgay">Loại ngày</label>
+                        <input
+                                id="cl-loaiNgay"
+                                name="loaiNgay"
+                                type="text"
+                                required
+                                class="ct-input"
+                        />
+                        <p class="ct-field-hint">
+                            Ví dụ: Thứ 2 - 4 - 6, hoặc Thứ 7 &amp; Chủ nhật.
+                        </p>
+                    </div>
+
+                    <div class="ct-form-group">
+                        <label for="cl-soBuoi">Số buổi</label>
+                        <input
+                                id="cl-soBuoi"
+                                name="soBuoi"
+                                type="number"
+                                min="1"
+                                required
+                                class="ct-input"
+                        />
+                    </div>
+                </div>
+
+                <div class="ct-form-row">
+                    <div class="ct-form-group">
+                        <label for="cl-hinhThucHoc">Hình thức học</label>
+                        <!-- NOTE: đổi sang select, có đúng 3 loại trong CSDL
+                             => KHÔNG bịa value, bạn tự điền đúng 3 giá trị thực tế -->
+                        <select
+                                id="cl-hinhThucHoc"
+                                name="hinhThucHoc"
+                                required
+                                class="ct-select"
+                        >
+                            <option value="">-- Chọn hình thức --</option>
+                            <!-- TODO: điền đúng 3 option theo CSDL của bạn -->
+                            <!--
+                            <option value="...">Hình thức 1</option>
+                            <option value="...">Hình thức 2</option>
+                            <option value="...">Hình thức 3</option>
+                            -->
+                        </select>
+                    </div>
+
+                    <div class="ct-form-group">
+                        <label for="cl-ngayBatDau">Ngày bắt đầu</label>
+                        <input
+                                id="cl-ngayBatDau"
+                                name="ngayBatDau"
+                                type="date"
+                                required
+                                class="ct-input"
+                        />
+                    </div>
+                </div>
             </div>
 
-            <div class="ct-form-group">
-                <label for="cl-idCt">Mã chương trình</label>
-                <input id="cl-idCt" name="idCt" type="text" required />
-            </div>
+            <!-- === NHÓM 3: Học phí & trạng thái === -->
+            <div class="ct-form-section">
+                <h3 class="ct-form-section-title">Học phí & trạng thái</h3>
 
-            <div class="ct-form-group">
-                <label for="cl-tenLop">Tên lớp</label>
-                <input id="cl-tenLop" name="tenLop" type="text" required />
-            </div>
+                <div class="ct-form-row">
+                    <div class="ct-form-group">
+                        <label for="cl-mucGiaThang">Mức giá (tháng)</label>
+                        <div class="ct-input-prefix-group">
+                            <span class="ct-input-prefix">₫</span>
+                            <input
+                                    id="cl-mucGiaThang"
+                                    name="mucGiaThang"
+                                    type="number"
+                                    min="0"
+                                    step="10000"
+                                    required
+                                    class="ct-input"
+                            />
+                        </div>
+                        <p class="ct-field-hint">
+                            Nhập học phí theo tháng. Ví dụ: 1500000.
+                        </p>
+                    </div>
 
-            <div class="ct-form-group">
-                <label for="cl-loaiNgay">Loại ngày</label>
-                <input id="cl-loaiNgay" name="loaiNgay" type="text" required />
-            </div>
+                    <div class="ct-form-group">
+                        <label for="cl-trangThai">Trạng thái lớp</label>
+                        <!-- NOTE: vẫn là select, giá trị thực tế tùy CSDL của bạn -->
+                        <select
+                                id="cl-trangThai"
+                                name="trangThai"
+                                required
+                                class="ct-select"
+                        >
+                            <option value="">-- Chọn trạng thái --</option>
+                            <!-- TODO: thêm option đúng với CSDL (VD: Đang mở, Đã kết thúc, Tạm dừng, ...) -->
+                        </select>
+                    </div>
+                </div>
 
-            <div class="ct-form-group">
-                <label for="cl-soBuoi">Số buổi</label>
-                <input id="cl-soBuoi" name="soBuoi" type="text" required />
-            </div>
+                <div class="ct-form-row">
+                    <div class="ct-form-group">
+                        <label for="cl-danhGia">Đánh giá</label>
+                        <input
+                                id="cl-danhGia"
+                                name="danhGia"
+                                type="text"
+                                class="ct-input"
+                        />
+                    </div>
 
-            <div class="ct-form-group">
-                <label for="cl-hinhThucHoc">Hình thức học</label>
-                <input id="cl-hinhThucHoc" name="hinhThucHoc" type="text" required />
-            </div>
-
-            <div class="ct-form-group">
-                <label for="cl-ngayBatDau">Ngày bắt đầu</label>
-                <input id="cl-ngayBatDau" name="ngayBatDau" type="date" required />
-            </div>
-
-            <div class="ct-form-group">
-                <label for="cl-mucGiaThang">Mức giá tháng</label>
-                <input id="cl-mucGiaThang" name="mucGiaThang" type="text" required />
-            </div>
-
-            <div class="ct-form-group">
-                <label for="cl-danhGia">Đánh giá</label>
-                <input id="cl-danhGia" name="danhGia" type="text" />
-            </div>
-
-            <div class="ct-form-group">
-                <label for="cl-trangThai">Trạng thái</label>
-                <input id="cl-trangThai" name="trangThai" type="text" required />
-            </div>
-
-            <div class="ct-form-group">
-                <label for="cl-moTa">Mô tả</label>
-                <textarea id="cl-moTa" name="moTa" rows="4"></textarea>
+                    <div class="ct-form-group">
+                        <label for="cl-moTa">Ghi chú / Mô tả</label>
+                        <textarea
+                                id="cl-moTa"
+                                name="moTa"
+                                rows="3"
+                                class="ct-textarea"
+                        ></textarea>
+                    </div>
+                </div>
             </div>
 
             <div class="ct-modal-footer">
-                <button type="button" id="clCancelBtn" class="ct-btn ghost">Hủy</button>
-                <button type="submit" class="ct-btn primary" id="clSubmitBtn">Lưu</button>
+                <button type="button" id="clCancelBtn" class="ct-btn ghost">
+                    Hủy
+                </button>
+                <button type="submit" class="ct-btn primary" id="clSubmitBtn">
+                    Lưu
+                </button>
             </div>
         </form>
     </div>
 </div>
+
 
