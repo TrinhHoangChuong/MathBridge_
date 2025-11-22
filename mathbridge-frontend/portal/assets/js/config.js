@@ -11,3 +11,8 @@ const ENV = {
 };
 export const CONFIG = ENV.dev;
 
+// Also expose to window for backward compatibility
+if (typeof window !== 'undefined') {
+  window.CONFIG = CONFIG;
+}
+

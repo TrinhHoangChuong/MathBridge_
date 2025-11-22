@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface NhanVienRepository extends JpaRepository<NhanVien, String> {
 
     long countByTrangThaiHoatDong(boolean b);
+
+    Optional<NhanVien> findByIdTk(String idTk);
 }
