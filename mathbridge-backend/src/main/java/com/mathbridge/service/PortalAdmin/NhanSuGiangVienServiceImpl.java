@@ -2,7 +2,12 @@ package com.mathbridge.service.PortalAdmin;
 
 import com.mathbridge.dto.PortalAdmin.Request.NhanSuGiangVienRequest;
 import com.mathbridge.dto.PortalAdmin.Response.NhanSuGiangVienResponse;
-import com.mathbridge.entity.*;
+import com.mathbridge.entity.CoSo;
+import com.mathbridge.entity.HopDong;
+import com.mathbridge.entity.NhanVien;
+import com.mathbridge.entity.Role;
+import com.mathbridge.entity.TaiKhoan;
+import com.mathbridge.entity.TaiKhoan_VaiTro;
 import com.mathbridge.repository.Admin.CoSoAdminRepository;
 import com.mathbridge.repository.Admin.HopDongAdminRepository;
 import com.mathbridge.repository.Admin.NhanVienAdminRepository;
@@ -10,31 +15,35 @@ import com.mathbridge.repository.Admin.RoleAdminRepository;
 import com.mathbridge.repository.Admin.TaiKhoanAdminRepository;
 import com.mathbridge.repository.Admin.TaiKhoanVaiTroAdminRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
 
     private final NhanVienAdminRepository nhanVienRepository;
     private final HopDongAdminRepository hopDongRepository;
     private final CoSoAdminRepository coSoRepository;
-    private final RoleAdminRepository roleRepository;
     private final TaiKhoanAdminRepository taiKhoanRepository;
+    private final RoleAdminRepository roleRepository;
     private final TaiKhoanVaiTroAdminRepository taiKhoanVaiTroRepository;
 
+    // ========================================================
+    // DROPDOWNS
+    // ========================================================
 
     @Override
+    @Transactional(readOnly = true)
     public List<NhanSuGiangVienResponse.CampusOption> getAllCampuses() {
         return coSoRepository.findAll()
                 .stream()
@@ -42,10 +51,11 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
                         .idCs(cs.getIdCs())
                         .tenCoSo(cs.getTenCoSo())
                         .build())
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<NhanSuGiangVienResponse.RoleOption> getAllRoles() {
         return roleRepository.findAll()
                 .stream()
@@ -53,70 +63,89 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
                         .idRole(r.getIdRole())
                         .tenVaiTro(r.getTenVaiTro())
                         .build())
-                .toList();
+                .collect(Collectors.toList());
     }
-
-    // phần còn lại: searchStaff, createStaff, updateStaff, contracts...
-
-    // ==================== NHÂN SỰ ====================
 
     @Override
     @Transactional(readOnly = true)
-    public List<NhanSuGiangVienResponse> searchStaff(NhanSuGiangVienRequest filter) {
-        // 1. Lấy toàn bộ NhanVien
-        List<NhanVien> all = nhanVienRepository.findAll();
+    public List<NhanSuGiangVienResponse.AccountOption> getAvailableAccounts() {
+        List<NhanVien> allStaff = nhanVienRepository.findAll();
+        Set<String> usedAccountIds = allStaff.stream()
+                .map(NhanVien::getIdTk)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
-        // 2. Đọc filter từ FE
-        String keyword = normalize(filter.getSearchKeyword());              // cho tìm kiếm
-        String campusId = normalizeFilterValue(filter.getCampusId());      // "" / all => null
-        String roleFilterId = normalizeFilterValue(filter.getRoleId());    // "" / all => null
-        String statusRaw = normalizeFilterValue(filter.getStatus());       // "" / all => null
+        List<TaiKhoan> allAccounts = taiKhoanRepository.findAll();
+        RoleMapping mapping = loadRoleMapping();
 
-        Boolean active = null;
+        return allAccounts.stream()
+                // chưa gắn với bất kỳ nhân viên nào
+                .filter(tk -> !usedAccountIds.contains(tk.getIdTk()))
+                // trạng thái phù hợp (ACTIVE hoặc null)
+                .filter(tk -> {
+                    String st = tk.getTrangThai();
+                    if (!StringUtils.hasText(st)) return true;
+                    return "ACTIVE".equalsIgnoreCase(st.trim());
+                })
+                .map(tk -> {
+                    String ownerType;
+                    if (StringUtils.hasText(tk.getIdNv())) {
+                        ownerType = "NV";
+                    } else if (StringUtils.hasText(tk.getIdHs())) {
+                        ownerType = "HS";
+                    } else {
+                        ownerType = "OTHER";
+                    }
+
+                    List<String> roleNames = mapping.roleNamesByTk
+                            .getOrDefault(tk.getIdTk(), Collections.emptyList());
+
+                    return NhanSuGiangVienResponse.AccountOption.builder()
+                            .idTk(tk.getIdTk())
+                            .email(tk.getEmail())
+                            .roleNames(roleNames)
+                            .ownerType(ownerType)
+                            .idNv(tk.getIdNv())
+                            .idHs(tk.getIdHs())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    // ========================================================
+    // NHÂN SỰ
+    // ========================================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NhanSuGiangVienResponse.StaffInfo> searchStaff(NhanSuGiangVienRequest filter) {
+        if (filter == null) {
+            filter = new NhanSuGiangVienRequest();
+        }
+
+        String keyword = normalize(filter.getSearchKeyword());
+        String campusId = normalizeFilterValue(filter.getCampusId());
+        String roleFilterId = normalizeFilterValue(filter.getRoleId());
+        String statusRaw = normalizeFilterValue(filter.getStatus());
+
+        Boolean activeFilter = null;
         if ("active".equalsIgnoreCase(statusRaw)) {
-            active = Boolean.TRUE;
+            activeFilter = Boolean.TRUE;
         } else if ("inactive".equalsIgnoreCase(statusRaw)) {
-            active = Boolean.FALSE;
+            activeFilter = Boolean.FALSE;
         }
 
-        // 3. Preload dữ liệu cơ sở
-        Map<String, CoSo> campusById = coSoRepository.findAll().stream()
-                .collect(Collectors.toMap(CoSo::getIdCs, c -> c));
+        List<NhanVien> allStaff = nhanVienRepository.findAll();
+        Map<String, CoSo> campusById = coSoRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(CoSo::getIdCs, Function.identity()));
 
-        // 4. Preload mapping tài khoản – vai trò để dùng cho filter + hiển thị
-        List<TaiKhoan_VaiTro> allMappings = taiKhoanVaiTroRepository.findAll();
+        RoleMapping roleMapping = loadRoleMapping();
 
-        // idTk -> set idRole (để lọc)
-        Map<String, Set<String>> roleIdsByTk = new HashMap<>();
-        // idTk -> danh sách tên vai trò (để hiển thị)
-        Map<String, List<String>> roleNamesByTk = new HashMap<>();
+        List<NhanSuGiangVienResponse.StaffInfo> matched = new ArrayList<>();
 
-        for (TaiKhoan_VaiTro m : allMappings) {
-            if (m.getId() == null) continue;
-            String idTk = m.getId().getIdTk();
-            String idRole = m.getId().getIdRole();
-            if (idTk == null || idRole == null) continue;
-
-            Role r = m.getRole();
-            String tenVaiTro = (r != null && r.getTenVaiTro() != null)
-                    ? r.getTenVaiTro()
-                    : idRole;
-
-            roleIdsByTk
-                    .computeIfAbsent(idTk, k -> new HashSet<>())
-                    .add(idRole);
-
-            roleNamesByTk
-                    .computeIfAbsent(idTk, k -> new ArrayList<>())
-                    .add(tenVaiTro);
-        }
-
-        // 5. Lọc trong memory
-        List<NhanSuGiangVienResponse> results = new ArrayList<>();
-
-        for (NhanVien nv : all) {
-
-            // 5.1 Lọc keyword (họ tên + email + sdt)
+        for (NhanVien nv : allStaff) {
+            // keyword
             if (keyword != null) {
                 String fullName = buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen());
                 String email = Optional.ofNullable(nv.getEmail()).orElse("");
@@ -128,65 +157,58 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
                 }
             }
 
-            // 5.2 Lọc cơ sở
+            // campus
             if (campusId != null && !campusId.equalsIgnoreCase(nv.getIdCs())) {
                 continue;
             }
 
-            // 5.3 Lọc trạng thái hoạt động
-            if (active != null) {
-                Boolean flag = nv.getTrangThaiHoatDong();
-                if (flag == null || !flag.equals(active)) {
+            // status
+            if (activeFilter != null) {
+                Boolean current = nv.getTrangThaiHoatDong();
+                boolean isActive = current == null || Boolean.TRUE.equals(current);
+                if (!activeFilter.equals(isActive)) {
                     continue;
                 }
             }
 
-            // 5.4 Lọc theo vai trò (nếu người dùng chọn 1 role cụ thể)
+            // role filter
             if (roleFilterId != null) {
                 String idTk = nv.getIdTk();
                 if (idTk == null) {
-                    // nhân viên không có tài khoản => không có role => không match
                     continue;
                 }
-                Set<String> staffRoleIds = roleIdsByTk.get(idTk);
+                Set<String> staffRoleIds = roleMapping.roleIdsByTk.get(idTk);
                 if (staffRoleIds == null || !staffRoleIds.contains(roleFilterId)) {
                     continue;
                 }
             }
 
-            // 5.5 Chuẩn bị dữ liệu hiển thị
             CoSo campus = campusById.get(nv.getIdCs());
             String campusName = campus != null ? campus.getTenCoSo() : null;
-            List<String> roleNames = roleNamesByTk.getOrDefault(nv.getIdTk(), Collections.emptyList());
 
-            results.add(toNhanSuResponse(nv, campusName, roleNames));
+            List<String> roleNames = roleMapping.roleNamesByTk
+                    .getOrDefault(nv.getIdTk(), Collections.emptyList());
+
+            matched.add(toStaffInfo(nv, campusName, roleNames));
         }
 
-        // Hiện tại trả về full list (FE tự lo phân trang nếu cần)
-        return results;
-    }
-
-    /**
-     * Giá trị filter từ FE:
-     * - null, "", "all", "ALL", "tatca", "tat ca" => coi như KHÔNG LỌC
-     * - các giá trị khác giữ nguyên (dùng để so sánh)
-     */
-    private String normalizeFilterValue(String s) {
-        if (s == null) return null;
-        String trimmed = s.trim();
-        if (trimmed.isEmpty()) return null;
-
-        String lower = trimmed.toLowerCase(Locale.ROOT);
-        if ("all".equals(lower) || "tatca".equals(lower) || "tat ca".equals(lower)) {
-            return null;
+        Integer page = filter.getPage();
+        Integer size = filter.getSize();
+        if (page != null && size != null && page >= 0 && size > 0) {
+            int from = page * size;
+            if (from >= matched.size()) {
+                return Collections.emptyList();
+            }
+            int to = Math.min(from + size, matched.size());
+            return matched.subList(from, to);
         }
-        return trimmed;
-    }
 
+        return matched;
+    }
 
     @Override
     @Transactional(readOnly = true)
-    public NhanSuGiangVienResponse getStaffById(String idNv) {
+    public NhanSuGiangVienResponse.StaffInfo getStaffDetail(String idNv) {
         NhanVien nv = nhanVienRepository.findById(idNv)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân sự với ID_NV = " + idNv));
 
@@ -194,208 +216,148 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
         if (nv.getIdCs() != null) {
             campus = coSoRepository.findById(nv.getIdCs()).orElse(null);
         }
-        String campusName = null;
-        if (campus != null) {
-            campusName = campus.getTenCoSo();
-        }
+        String campusName = campus != null ? campus.getTenCoSo() : null;
 
-        List<String> roleNames = getRoleNamesByAccountId(nv.getIdTk());
+        RoleMapping roleMapping = loadRoleMapping();
+        List<String> roleNames = roleMapping.roleNamesByTk
+                .getOrDefault(nv.getIdTk(), Collections.emptyList());
 
-        return toNhanSuResponse(nv, campusName, roleNames);
+        return toStaffInfo(nv, campusName, roleNames);
     }
 
     @Override
-    public NhanSuGiangVienResponse createStaff(NhanSuGiangVienRequest.StaffUpsert request) {
-        // Sinh ID_TK & ID_NV
-        String idTk = generateId("TK", 8, taiKhoanRepository::existsById);
+    public NhanSuGiangVienResponse.StaffInfo createStaff(NhanSuGiangVienRequest.StaffUpsert request) {
+        // 1. Validate input
+        if (!StringUtils.hasText(request.getIdTk())) {
+            throw new IllegalArgumentException("Vui lòng chọn tài khoản hệ thống cho nhân sự (ID_TK).");
+        }
+        if (!StringUtils.hasText(request.getIdCs())) {
+            throw new IllegalArgumentException("Cơ sở làm việc (ID_CS) là bắt buộc.");
+        }
+        if (request.getGioiTinh() == null) {
+            throw new IllegalArgumentException("Giới tính nhân sự là bắt buộc.");
+        }
+
+        // 2. Tìm tài khoản theo ID_TK
+        String idTk = request.getIdTk().trim();
+        TaiKhoan account = taiKhoanRepository.findById(idTk)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy tài khoản với ID_TK = " + idTk));
+
+        // 3. Đảm bảo tài khoản chưa gán cho nhân sự khác
+        ensureAccountNotUsedByOtherStaff(idTk, null, account);
+
+        // 4. Kiểm tra trạng thái tài khoản (không LOCKED)
+        if (account.getTrangThai() != null) {
+            String st = account.getTrangThai().trim().toUpperCase();
+            if ("LOCKED".equals(st)) {
+                throw new IllegalStateException("Tài khoản này đang bị khóa, không thể gán cho nhân sự.");
+            }
+        }
+
+        // 5. Nếu sau này FE gửi roleId, có thể validate role ở đây (hiện tại FE chưa dùng)
+
+        // 6. Kiểm tra CoSo tồn tại
+        CoSo campus = coSoRepository.findById(request.getIdCs())
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy cơ sở với ID_CS = " + request.getIdCs()));
+
+        // 7. Tạo ID_NV mới
         String idNv = generateId("NV", 6, nhanVienRepository::existsById);
 
-        // 1. Tạo tài khoản (chưa gán ID_NV để tránh FK vòng)
-        TaiKhoan account = TaiKhoan.builder()
-                .idTk(idTk)
-                .email(request.getEmail())
-                .passWord("123456")   // mật khẩu mặc định, bạn có thể đổi
-                .trangThai("ACTIVE")
-                .thoiDiemTao(LocalDateTime.now())
-                .build();
-        taiKhoanRepository.save(account);
-
-        // 2. Tạo nhân viên, gán ID_TK
-        NhanVien nv = NhanVien.builder()
-                .idNv(idNv)
-                .idTk(idTk)
-                .idCs(request.getIdCs())
-                .ho(request.getHo())
-                .tenDem(request.getTenDem())
-                .ten(request.getTen())
-                .email(request.getEmail())
-                .sdt(request.getSdt())
-                .gioiTinh(request.getGioiTinh())
-                .chuyenMon(request.getChuyenMon())
-                .kinhNghiem(request.getKinhNghiem())
-                .chucVu(request.getChucVu())
-                .trangThaiHoatDong(
-                        request.getTrangThaiHoatDong() == null || request.getTrangThaiHoatDong()
-                )
-                .thoiGianTao(LocalDateTime.now())
-                .thoiGianCapNhat(LocalDateTime.now())
-                .build();
-        nhanVienRepository.save(nv);
-
-        // 3. Cập nhật lại TaiKhoan.ID_NV sau khi đã có NhanVien
-        account.setIdNv(idNv);
-        taiKhoanRepository.save(account);
-
-        // 4. Gán role nếu có
-        if (request.getRoleId() != null && !request.getRoleId().isBlank()) {
-            Role role = roleRepository.findById(request.getRoleId())
-                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy Role " + request.getRoleId()));
-
-            TaiKhoanVaiTroId tvId = TaiKhoanVaiTroId.builder()
-                    .idTk(idTk)
-                    .idRole(role.getIdRole())
-                    .build();
-
-            TaiKhoan_VaiTro mapping = TaiKhoan_VaiTro.builder()
-                    .id(tvId)
-                    .taiKhoan(account)
-                    .role(role)
-                    .build();
-
-            taiKhoanVaiTroRepository.save(mapping);
-        }
-
-        CoSo campus = null;
-        if (nv.getIdCs() != null) {
-            campus = coSoRepository.findById(nv.getIdCs()).orElse(null);
-        }
-        String campusName = (campus != null) ? campus.getTenCoSo() : null;
-
-        List<String> roleNames = getRoleNamesByAccountId(idTk);
-
-        return toNhanSuResponse(nv, campusName, roleNames);
-    }
-
-    @Override
-    public NhanSuGiangVienResponse updateStaff(String idNv, NhanSuGiangVienRequest.StaffUpsert request) {
-        NhanVien nv = nhanVienRepository.findById(idNv)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân sự với ID_NV = " + idNv));
+        // 8. Tạo entity NhanVien
+        NhanVien nv = new NhanVien();
+        nv.setIdNv(idNv);
+        nv.setIdTk(idTk);
+        nv.setIdCs(campus.getIdCs());
 
         nv.setHo(request.getHo());
         nv.setTenDem(request.getTenDem());
         nv.setTen(request.getTen());
-        nv.setEmail(request.getEmail());
-        nv.setSdt(request.getSdt());
+
+        // Email nhân sự luôn = Email tài khoản
+        nv.setEmail(account.getEmail());
+
         nv.setGioiTinh(request.getGioiTinh());
-        nv.setIdCs(request.getIdCs());
-        nv.setChucVu(request.getChucVu());
+        nv.setSdt(request.getSdt());
         nv.setChuyenMon(request.getChuyenMon());
         nv.setKinhNghiem(request.getKinhNghiem());
-        if (request.getTrangThaiHoatDong() != null) {
-            nv.setTrangThaiHoatDong(request.getTrangThaiHoatDong());
-        }
-        nv.setThoiGianCapNhat(LocalDateTime.now());
+        nv.setChucVu(request.getChucVu());
+
+        nv.setTrangThaiHoatDong(
+                request.getTrangThaiHoatDong() != null ? request.getTrangThaiHoatDong() : Boolean.TRUE
+        );
+
+        LocalDateTime now = LocalDateTime.now();
+        nv.setThoiGianTao(now);
+        nv.setThoiGianCapNhat(now);
 
         nhanVienRepository.save(nv);
 
-        // Sync email, trạng thái sang TaiKhoan nếu có
-        if (nv.getIdTk() != null) {
-            taiKhoanRepository.findById(nv.getIdTk()).ifPresent(tk -> {
-                tk.setEmail(request.getEmail());
-                taiKhoanRepository.save(tk);
-            });
+        // 9. Đồng bộ ngược ID_NV vào tài khoản
+        if (account.getIdNv() == null || !idNv.equals(account.getIdNv())) {
+            account.setIdNv(idNv);
+            taiKhoanRepository.save(account);
         }
 
-        // Cập nhật role: xóa mapping cũ, giữ 1 role chính mới
-        if (request.getRoleId() != null && nv.getIdTk() != null) {
-            // Xóa mapping cũ
-            List<TaiKhoan_VaiTro> allMappings = taiKhoanVaiTroRepository.findAll();
-            List<TaiKhoan_VaiTro> toDelete = allMappings.stream()
-                    .filter(m -> m.getTaiKhoan() != null
-                            && nv.getIdTk().equals(m.getTaiKhoan().getIdTk()))
-                    .collect(Collectors.toList());
-            taiKhoanVaiTroRepository.deleteAll(toDelete);
+        List<String> roleNames = loadRoleMapping()
+                .roleNamesByTk
+                .getOrDefault(idTk, Collections.emptyList());
 
-            // Tạo mapping mới (nếu roleId không rỗng)
-            if (!request.getRoleId().isBlank()) {
-                Role role = roleRepository.findById(request.getRoleId())
-                        .orElseThrow(() -> new NoSuchElementException("Không tìm thấy Role " + request.getRoleId()));
+        return toStaffInfo(nv, campus.getTenCoSo(), roleNames);
+    }
 
-                TaiKhoan tk = taiKhoanRepository.findById(nv.getIdTk())
-                        .orElseThrow(() -> new NoSuchElementException("Không tìm thấy tài khoản của nhân sự"));
+    @Override
+    public NhanSuGiangVienResponse.StaffInfo updateStaff(String idNv, NhanSuGiangVienRequest.StaffUpsert request) {
+        NhanVien nv = nhanVienRepository.findById(idNv)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân sự với ID_NV = " + idNv));
 
-                TaiKhoanVaiTroId tvId = TaiKhoanVaiTroId.builder()
-                        .idTk(tk.getIdTk())
-                        .idRole(role.getIdRole())
-                        .build();
-
-                TaiKhoan_VaiTro mapping = TaiKhoan_VaiTro.builder()
-                        .id(tvId)
-                        .taiKhoan(tk)
-                        .role(role)
-                        .build();
-
-                taiKhoanVaiTroRepository.save(mapping);
-            }
+        // Không cho đổi tài khoản (ID_TK) ở đây
+        String idTk = nv.getIdTk();
+        TaiKhoan account = null;
+        if (idTk != null) {
+            account = taiKhoanRepository.findById(idTk).orElse(null);
         }
+
+        nv.setHo(request.getHo());
+        nv.setTenDem(request.getTenDem());
+        nv.setTen(request.getTen());
+        nv.setSdt(request.getSdt());
+        nv.setChuyenMon(request.getChuyenMon());
+        nv.setKinhNghiem(request.getKinhNghiem());
+        nv.setChucVu(request.getChucVu());
+
+        if (request.getGioiTinh() != null) {
+            nv.setGioiTinh(request.getGioiTinh());
+        }
+
+        if (StringUtils.hasText(request.getIdCs())) {
+            CoSo campus = coSoRepository.findById(request.getIdCs())
+                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy cơ sở với ID_CS = " + request.getIdCs()));
+            nv.setIdCs(campus.getIdCs());
+        }
+
+        if (request.getTrangThaiHoatDong() != null) {
+            nv.setTrangThaiHoatDong(request.getTrangThaiHoatDong());
+        }
+
+        // Email nhân sự luôn sync theo tài khoản (nếu có)
+        if (account != null) {
+            nv.setEmail(account.getEmail());
+        }
+
+        nv.setThoiGianCapNhat(LocalDateTime.now());
+        nhanVienRepository.save(nv);
 
         CoSo campus = null;
         if (nv.getIdCs() != null) {
             campus = coSoRepository.findById(nv.getIdCs()).orElse(null);
         }
-        String campusName = (campus != null) ? campus.getTenCoSo() : null;
+        String campusName = campus != null ? campus.getTenCoSo() : null;
 
-        List<String> roleNames = getRoleNamesByAccountId(nv.getIdTk());
+        List<String> roleNames = loadRoleMapping()
+                .roleNamesByTk
+                .getOrDefault(idTk, Collections.emptyList());
 
-        return toNhanSuResponse(nv, campusName, roleNames);
-    }
-
-    @Override
-    public void deleteStaff(String idNv) {
-        NhanVien nv = nhanVienRepository.findById(idNv)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân sự với ID_NV = " + idNv));
-
-        String idTk = nv.getIdTk();
-
-        try {
-            // 1. Xóa toàn bộ hợp đồng của nhân sự này
-            List<HopDong> hopDongs = hopDongRepository.findAll().stream()
-                    .filter(h -> idNv.equals(h.getIdNv()))
-                    .collect(Collectors.toList());
-            hopDongRepository.deleteAll(hopDongs);
-
-            // 2. Xóa mapping role
-            if (idTk != null) {
-                List<TaiKhoan_VaiTro> mappings = taiKhoanVaiTroRepository.findAll().stream()
-                        .filter(m -> m.getTaiKhoan() != null
-                                && idTk.equals(m.getTaiKhoan().getIdTk()))
-                        .collect(Collectors.toList());
-                taiKhoanVaiTroRepository.deleteAll(mappings);
-            }
-
-            // 3. Cập nhật TaiKhoan.ID_NV = null rồi lưu lại
-            TaiKhoan account = null;
-            if (idTk != null) {
-                account = taiKhoanRepository.findById(idTk).orElse(null);
-            }
-            if (account != null) {
-                account.setIdNv(null);
-                taiKhoanRepository.save(account);
-            }
-
-            // 4. Xóa nhân viên
-            nhanVienRepository.delete(nv);
-
-            // 5. Xóa tài khoản (sau khi đã xóa nhân viên)
-            if (account != null) {
-                taiKhoanRepository.delete(account);
-            }
-        } catch (DataIntegrityViolationException ex) {
-            // Vẫn còn bị FK từ LopHoc, CoVan_HocSinh... => báo lỗi rõ ràng
-            throw new IllegalStateException(
-                    "Không thể xóa nhân sự vì đang được sử dụng ở bảng khác (LopHoc, CoVan_HocSinh, ...)", ex
-            );
-        }
+        return toStaffInfo(nv, campusName, roleNames);
     }
 
     @Override
@@ -406,71 +368,113 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
         nv.setTrangThaiHoatDong(active);
         nv.setThoiGianCapNhat(LocalDateTime.now());
         nhanVienRepository.save(nv);
+    }
 
-        if (nv.getIdTk() != null) {
-            taiKhoanRepository.findById(nv.getIdTk()).ifPresent(tk -> {
-                tk.setTrangThai(active ? "ACTIVE" : "INACTIVE");
+    @Override
+    public void deleteStaff(String idNv) {
+        NhanVien nv = nhanVienRepository.findById(idNv)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân sự với ID_NV = " + idNv));
+
+        String idTk = nv.getIdTk();
+
+        // 1. Xóa toàn bộ hợp đồng của nhân sự này
+        List<HopDong> contracts = hopDongRepository.findAll()
+                .stream()
+                .filter(h -> idNv.equals(h.getIdNv()))
+                .collect(Collectors.toList());
+        if (!contracts.isEmpty()) {
+            hopDongRepository.deleteAll(contracts);
+        }
+
+        // 2. Xóa nhân sự
+        nhanVienRepository.delete(nv);
+
+        // 3. Gỡ liên kết tài khoản, không xóa tài khoản
+        if (idTk != null) {
+            taiKhoanRepository.findById(idTk).ifPresent(tk -> {
+                tk.setIdNv(null);
+                if (tk.getTrangThai() == null || !"INACTIVE".equalsIgnoreCase(tk.getTrangThai())) {
+                    tk.setTrangThai("INACTIVE");
+                }
                 taiKhoanRepository.save(tk);
             });
         }
     }
 
-    // ==================== HỢP ĐỒNG ====================
+    // ========================================================
+    // HỢP ĐỒNG
+    // ========================================================
 
     @Override
     @Transactional(readOnly = true)
     public List<NhanSuGiangVienResponse.ContractInfo> searchContracts(NhanSuGiangVienRequest.ContractSearch filter) {
-        List<HopDong> allContracts = hopDongRepository.findAll();
+        if (filter == null) {
+            filter = new NhanSuGiangVienRequest.ContractSearch();
+        }
 
         String keyword = normalize(filter.getSearchKeyword());
-        String staffId = nullIfBlank(filter.getStaffId());
-        String contractType = nullIfBlank(filter.getContractType());
-        String status = nullIfBlank(filter.getStatus()); // active | expired | terminated
+        String staffId = normalizeFilterValue(filter.getStaffId());
+        String contractType = normalizeFilterValue(filter.getContractType());
+        String statusRaw = normalizeFilterValue(filter.getStatus());
 
-        Map<String, NhanVien> staffById = nhanVienRepository.findAll().stream()
-                .collect(Collectors.toMap(NhanVien::getIdNv, Function.identity(), (a, b) -> a));
+        List<HopDong> allContracts = hopDongRepository.findAll();
 
-        List<NhanSuGiangVienResponse.ContractInfo> results = new ArrayList<>();
+        Map<String, NhanVien> staffById = nhanVienRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(NhanVien::getIdNv, Function.identity()));
+
+        List<NhanSuGiangVienResponse.ContractInfo> matched = new ArrayList<>();
 
         for (HopDong hd : allContracts) {
-            NhanVien nv = staffById.get(hd.getIdNv());
 
-            // Lọc staffId
             if (staffId != null && !staffId.equalsIgnoreCase(hd.getIdNv())) {
                 continue;
             }
 
-            // Lọc loại HĐ
-            if (contractType != null && (hd.getLoaiHopDong() == null
-                    || !contractType.equalsIgnoreCase(hd.getLoaiHopDong()))) {
-                continue;
-            }
-
-            // Lọc trạng thái
-            if (status != null) {
-                String computedStatus = computeContractStatus(hd);
-                if (!status.equalsIgnoreCase(computedStatus)) {
+            if (contractType != null) {
+                String loai = Optional.ofNullable(hd.getLoaiHopDong()).orElse("");
+                if (!loai.equalsIgnoreCase(contractType)) {
                     continue;
                 }
             }
 
-            // Lọc keyword: theo ID_HD hoặc tên nhân viên
+            if (statusRaw != null) {
+                String status = computeContractStatus(hd);
+                if (!statusRaw.equalsIgnoreCase(status)) {
+                    continue;
+                }
+            }
+
+            NhanVien nv = hd.getIdNv() != null ? staffById.get(hd.getIdNv()) : null;
+            String staffName = nv != null
+                    ? buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen())
+                    : null;
+
             if (keyword != null) {
-                String hdId = hd.getIdHd() != null ? hd.getIdHd().toLowerCase() : "";
-                String staffName = "";
-                if (nv != null) {
-                    staffName = buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen()).toLowerCase();
-                }
-
-                if (!hdId.contains(keyword) && !staffName.contains(keyword)) {
+                String combined = ((staffName != null ? staffName : "")
+                        + " " + Optional.ofNullable(hd.getLoaiHopDong()).orElse("")
+                        + " " + Optional.ofNullable(hd.getHinhThucDay()).orElse(""))
+                        .toLowerCase();
+                if (!combined.contains(keyword)) {
                     continue;
                 }
             }
 
-            results.add(toContractResponse(hd, nv));
+            matched.add(toContractInfo(hd, staffName));
         }
 
-        return results;
+        Integer page = filter.getPage();
+        Integer size = filter.getSize();
+        if (page != null && size != null && page >= 0 && size > 0) {
+            int from = page * size;
+            if (from >= matched.size()) {
+                return Collections.emptyList();
+            }
+            int to = Math.min(from + size, matched.size());
+            return matched.subList(from, to);
+        }
+
+        return matched;
     }
 
     @Override
@@ -483,16 +487,27 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
         if (hd.getIdNv() != null) {
             nv = nhanVienRepository.findById(hd.getIdNv()).orElse(null);
         }
+        String staffName = nv != null
+                ? buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen())
+                : null;
 
-        return toContractResponse(hd, nv);
+        return toContractInfo(hd, staffName);
     }
 
     @Override
     public NhanSuGiangVienResponse.ContractInfo createContract(NhanSuGiangVienRequest.ContractUpsert request) {
+        if (!StringUtils.hasText(request.getIdNv())) {
+            throw new IllegalArgumentException("Hợp đồng phải gắn với một nhân sự (ID_NV).");
+        }
+
+        NhanVien nv = nhanVienRepository.findById(request.getIdNv())
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân sự với ID_NV = " + request.getIdNv()));
+
         String idHd = generateId("HD", 6, hopDongRepository::existsById);
 
         HopDong hd = new HopDong();
         hd.setIdHd(idHd);
+
         applyContractUpsert(hd, request);
 
         if (hd.getThoiGianTao() == null) {
@@ -502,12 +517,8 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
 
         hopDongRepository.save(hd);
 
-        NhanVien nv = null;
-        if (hd.getIdNv() != null) {
-            nv = nhanVienRepository.findById(hd.getIdNv()).orElse(null);
-        }
-
-        return toContractResponse(hd, nv);
+        String staffName = buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen());
+        return toContractInfo(hd, staffName);
     }
 
     @Override
@@ -516,19 +527,18 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy hợp đồng với ID_HD = " + idHd));
 
         applyContractUpsert(hd, request);
-        if (hd.getThoiGianTao() == null) {
-            hd.setThoiGianTao(LocalDateTime.now());
-        }
         hd.setThoiGianCapNhat(LocalDateTime.now());
-
         hopDongRepository.save(hd);
 
         NhanVien nv = null;
         if (hd.getIdNv() != null) {
             nv = nhanVienRepository.findById(hd.getIdNv()).orElse(null);
         }
+        String staffName = nv != null
+                ? buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen())
+                : null;
 
-        return toContractResponse(hd, nv);
+        return toContractInfo(hd, staffName);
     }
 
     @Override
@@ -542,26 +552,28 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
                     .filter(h -> idNv.equals(h.getIdNv()))
                     .count();
             if (count <= 1) {
-                throw new IllegalStateException("Không thể xóa hợp đồng cuối cùng của nhân sự này.");
+                throw new IllegalStateException(
+                        "Không thể xóa hợp đồng cuối cùng của nhân sự này. " +
+                                "Nếu muốn chấm dứt toàn bộ, hãy xóa nhân sự (nghỉ việc)."
+                );
             }
         }
 
         hopDongRepository.delete(hd);
     }
 
-    // ==================== HELPER ====================
+    // ========================================================
+    // MAPPING HELPERS
+    // ========================================================
 
-    private NhanSuGiangVienResponse toNhanSuResponse(NhanVien nv,
-                                                     String campusName,
-                                                     List<String> roleNames) {
-        String fullName = buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen());
-
-        return NhanSuGiangVienResponse.builder()
+    private NhanSuGiangVienResponse.StaffInfo toStaffInfo(NhanVien nv,
+                                                          String campusName,
+                                                          List<String> roleNames) {
+        return NhanSuGiangVienResponse.StaffInfo.builder()
                 .idNv(nv.getIdNv())
                 .ho(nv.getHo())
                 .tenDem(nv.getTenDem())
                 .ten(nv.getTen())
-                .fullName(fullName)
                 .email(nv.getEmail())
                 .sdt(nv.getSdt())
                 .gioiTinh(nv.getGioiTinh())
@@ -570,7 +582,9 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
                 .chucVu(nv.getChucVu())
                 .chuyenMon(nv.getChuyenMon())
                 .kinhNghiem(nv.getKinhNghiem())
-                .trangThaiHoatDong(nv.getTrangThaiHoatDong())
+                .trangThaiHoatDong(
+                        nv.getTrangThaiHoatDong() != null ? nv.getTrangThaiHoatDong() : Boolean.TRUE
+                )
                 .idTk(nv.getIdTk())
                 .roleNames(roleNames)
                 .thoiGianTao(nv.getThoiGianTao())
@@ -578,12 +592,7 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
                 .build();
     }
 
-    private NhanSuGiangVienResponse.ContractInfo toContractResponse(HopDong hd, NhanVien nv) {
-        String staffName = null;
-        if (nv != null) {
-            staffName = buildFullName(nv.getHo(), nv.getTenDem(), nv.getTen());
-        }
-
+    private NhanSuGiangVienResponse.ContractInfo toContractInfo(HopDong hd, String staffName) {
         return NhanSuGiangVienResponse.ContractInfo.builder()
                 .idHd(hd.getIdHd())
                 .idNv(hd.getIdNv())
@@ -600,7 +609,12 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
     }
 
     private void applyContractUpsert(HopDong hd, NhanSuGiangVienRequest.ContractUpsert req) {
-        hd.setIdNv(req.getIdNv());
+        if (req.getIdNv() != null) {
+            nhanVienRepository.findById(req.getIdNv())
+                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân sự với ID_NV = " + req.getIdNv()));
+            hd.setIdNv(req.getIdNv());
+        }
+
         hd.setLoaiHopDong(req.getLoaiHopDong());
         hd.setHinhThucDay(req.getHinhThucDay());
         hd.setPhamViCongViec(req.getPhamViCongViec());
@@ -616,60 +630,82 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
         }
 
         hd.setChamDutHd(req.getChamDutHD());
-        if (req.getNgayChamDutHD() != null) {
-            hd.setNgayChamDutHd(req.getNgayChamDutHD().atStartOfDay());
+        if (Boolean.TRUE.equals(req.getChamDutHD())) {
+            if (req.getNgayChamDutHD() != null) {
+                hd.setNgayChamDutHd(req.getNgayChamDutHD().atStartOfDay());
+            } else {
+                hd.setNgayChamDutHd(LocalDate.now().atStartOfDay());
+            }
+        } else {
+            hd.setNgayChamDutHd(null);
         }
     }
 
-    private List<String> getRoleNamesByAccountId(String idTk) {
-        if (idTk == null) return Collections.emptyList();
+    // ========================================================
+    // UTILITIES
+    // ========================================================
 
-        return taiKhoanVaiTroRepository.findAll().stream()
-                .filter(m -> m.getTaiKhoan() != null
-                        && idTk.equals(m.getTaiKhoan().getIdTk())
-                        && m.getRole() != null)
-                .map(m -> m.getRole().getTenVaiTro())
-                .collect(Collectors.toList());
-    }
-
-    private String generateId(String prefix,
-                              int randomLen,
-                              java.util.function.Predicate<String> existsFn) {
-        Random rnd = new Random();
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        while (true) {
-            StringBuilder sb = new StringBuilder(prefix);
-            for (int i = 0; i < randomLen; i++) {
-                sb.append(chars.charAt(rnd.nextInt(chars.length())));
-            }
-            String id = sb.toString();
-            if (!existsFn.test(id)) {
-                return id;
-            }
-        }
-    }
-
-    private String buildFullName(String ho, String tenDem, String ten) {
+    private static String buildFullName(String ho, String tenDem, String ten) {
         StringBuilder sb = new StringBuilder();
-        if (ho != null && !ho.isBlank()) sb.append(ho.trim());
-        if (tenDem != null && !tenDem.isBlank()) {
-            if (!sb.isEmpty()) sb.append(' ');
+        if (StringUtils.hasText(ho)) {
+            sb.append(ho.trim());
+        }
+        if (StringUtils.hasText(tenDem)) {
+            if (sb.length() > 0) sb.append(" ");
             sb.append(tenDem.trim());
         }
-        if (ten != null && !ten.isBlank()) {
-            if (!sb.isEmpty()) sb.append(' ');
+        if (StringUtils.hasText(ten)) {
+            if (sb.length() > 0) sb.append(" ");
             sb.append(ten.trim());
         }
         return sb.toString();
     }
 
-    private String normalize(String s) {
-        if (s == null || s.isBlank()) return null;
-        return s.toLowerCase().trim();
+    private static String normalize(String s) {
+        if (!StringUtils.hasText(s)) return null;
+        return s.trim().toLowerCase();
     }
 
-    private String nullIfBlank(String s) {
-        return (s == null || s.isBlank()) ? null : s;
+    private static String normalizeFilterValue(String s) {
+        if (!StringUtils.hasText(s)) return null;
+        String v = s.trim();
+        if ("all".equalsIgnoreCase(v) || "*".equals(v)) {
+            return null;
+        }
+        return v;
+    }
+
+    private LocalDate toLocalDate(LocalDateTime dt) {
+        return dt != null ? dt.toLocalDate() : null;
+    }
+
+    private String generateId(String prefix, int numericLength, Predicate<String> existsFn) {
+        Random random = new Random();
+        String id;
+        do {
+            StringBuilder sb = new StringBuilder(prefix);
+            for (int i = 0; i < numericLength; i++) {
+                sb.append(random.nextInt(10));
+            }
+            id = sb.toString();
+        } while (existsFn.test(id));
+        return id;
+    }
+
+    private void ensureAccountNotUsedByOtherStaff(String idTk, String currentIdNv, TaiKhoan account) {
+        if (!StringUtils.hasText(idTk)) return;
+
+        boolean usedByOther = nhanVienRepository.findAll().stream()
+                .anyMatch(nv -> idTk.equals(nv.getIdTk()) &&
+                        (currentIdNv == null || !currentIdNv.equals(nv.getIdNv())));
+        if (usedByOther) {
+            throw new IllegalStateException("Tài khoản này đã được gán cho một nhân sự khác.");
+        }
+
+        if (StringUtils.hasText(account.getIdNv())
+                && (currentIdNv == null || !account.getIdNv().equals(currentIdNv))) {
+            throw new IllegalStateException("Tài khoản này đã có liên kết với một nhân sự khác.");
+        }
     }
 
     private String computeContractStatus(HopDong hd) {
@@ -686,7 +722,38 @@ public class NhanSuGiangVienServiceImpl implements NhanSuGiangVienService {
         return "active";
     }
 
-    private LocalDate toLocalDate(LocalDateTime dt) {
-        return dt != null ? dt.toLocalDate() : null;
+    private RoleMapping loadRoleMapping() {
+        List<TaiKhoan_VaiTro> mappings = taiKhoanVaiTroRepository.findAll();
+
+        Map<String, Set<String>> roleIdsByTk = new HashMap<>();
+        Map<String, List<String>> roleNamesByTk = new HashMap<>();
+
+        for (TaiKhoan_VaiTro m : mappings) {
+            if (m.getId() == null) continue;
+            String idTk = m.getId().getIdTk();
+            String idRole = m.getId().getIdRole();
+            if (!StringUtils.hasText(idTk) || !StringUtils.hasText(idRole)) continue;
+
+            Role r = m.getRole();
+            String tenVaiTro = (r != null && r.getTenVaiTro() != null)
+                    ? r.getTenVaiTro()
+                    : idRole;
+
+            roleIdsByTk.computeIfAbsent(idTk, k -> new HashSet<>())
+                    .add(idRole);
+
+            roleNamesByTk.computeIfAbsent(idTk, k -> new ArrayList<>())
+                    .add(tenVaiTro);
+        }
+
+        RoleMapping rm = new RoleMapping();
+        rm.roleIdsByTk = roleIdsByTk;
+        rm.roleNamesByTk = roleNamesByTk;
+        return rm;
+    }
+
+    private static class RoleMapping {
+        Map<String, Set<String>> roleIdsByTk = new HashMap<>();
+        Map<String, List<String>> roleNamesByTk = new HashMap<>();
     }
 }

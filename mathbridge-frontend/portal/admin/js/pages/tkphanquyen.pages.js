@@ -4,7 +4,6 @@ import {
   apiGetAccountDetail,
   apiCreateAccount,
   apiUpdateAccount,
-  apiDeleteAccount,
   apiSearchRoles,
   apiGetAllRoles,
   apiCreateRole,
@@ -15,8 +14,8 @@ import {
 let accountFilters = {
   searchKeyword: "",
   roleId: "",
-  ownerType: "ALL",
-  status: "ALL",
+  ownerType: "ALL", // ALL | HS | NV | OTHER
+  status: "ALL", // ALL | ACTIVE | INACTIVE | LOCKED
   page: 0,
   size: 10,
 };
@@ -39,16 +38,14 @@ function setupTabs() {
   tabButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const targetView = btn.getAttribute("data-view");
+      if (!targetView) return;
 
       tabButtons.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
       views.forEach((v) => {
-        if (v.getAttribute("data-view") === targetView) {
-          v.classList.remove("hidden");
-        } else {
-          v.classList.add("hidden");
-        }
+        const viewKey = v.getAttribute("data-view");
+        v.hidden = viewKey !== targetView;
       });
 
       if (targetView === "accounts") {
@@ -74,24 +71,12 @@ function openModal(id) {
 function closeModal(id) {
   const backdrop = document.getElementById(id);
   if (backdrop) {
+    backdrop.hidden = true;
     backdrop.classList.remove("is-open");
-    // delay nhỏ cho animation (nếu có)
-    setTimeout(() => {
-      backdrop.hidden = true;
-    }, 120);
   }
 }
 
-function setupModalCloseHandlers() {
-  document.addEventListener("click", (e) => {
-    const closeBtn = e.target.closest("[data-close-modal]");
-    if (closeBtn) {
-      const id = closeBtn.getAttribute("data-close-modal");
-      closeModal(id);
-    }
-  });
-
-  // click ra ngoài modal
+function setupModalBackdropClose() {
   ["tkpq-account-modal", "tkpq-role-modal"].forEach((id) => {
     const backdrop = document.getElementById(id);
     if (!backdrop) return;
@@ -109,11 +94,11 @@ function setupModalCloseHandlers() {
 
 async function loadRolesForFilterAndMultiselect() {
   try {
-    allRolesCache = await apiGetAllRoles();
+    const roles = await apiGetAllRoles();
+    allRolesCache = Array.isArray(roles) ? roles : [];
 
+    // Fill dropdown filter (vai trò)
     const filterSelect = document.getElementById("tkpq-filter-role");
-    const multiSelect = document.getElementById("tkpq-account-roles");
-
     if (filterSelect) {
       const currentValue = filterSelect.value;
       filterSelect.innerHTML =
@@ -121,17 +106,21 @@ async function loadRolesForFilterAndMultiselect() {
         allRolesCache
           .map(
             (r) =>
-              `<option value="${r.idRole}">${r.idRole} - ${r.tenVaiTro}</option>`
+              `<option value="${r.idRole}">${r.tenVaiTro || r.idRole}</option>`
           )
           .join("");
-      filterSelect.value = currentValue;
+      if (currentValue) {
+        filterSelect.value = currentValue;
+      }
     }
 
+    // Fill multiselect trong modal tài khoản
+    const multiSelect = document.getElementById("tkpq-account-roles");
     if (multiSelect) {
       multiSelect.innerHTML = allRolesCache
         .map(
           (r) =>
-            `<option value="${r.idRole}">${r.idRole} - ${r.tenVaiTro}</option>`
+            `<option value="${r.idRole}">${r.tenVaiTro || r.idRole}</option>`
         )
         .join("");
     }
@@ -221,15 +210,9 @@ function renderAccountsTable(response) {
           type="button"
           class="btn ghost tkpq-btn-edit-account"
           data-id="${acc.idTk}"
+          title="Chỉnh sửa tài khoản"
         >
           <i class="ri-edit-line"></i>
-        </button>
-        <button
-          type="button"
-          class="btn ghost tkpq-btn-delete-account"
-          data-id="${acc.idTk}"
-        >
-          <i class="ri-delete-bin-line"></i>
         </button>
       </td>
     `;
@@ -270,22 +253,25 @@ async function loadAccounts() {
   }
 }
 
-function setupAccountsFilters() {
-  const searchInput = document.getElementById("tkpq-account-search");
+function setupAccountFilters() {
+  const searchInput = document.getElementById("tkpq-filter-search");
   const roleSelect = document.getElementById("tkpq-filter-role");
-  const typeSelect = document.getElementById("tkpq-filter-type");
+  const typeSelect = document.getElementById("tkpq-filter-owner-type");
   const statusSelect = document.getElementById("tkpq-filter-status");
-  const refreshBtn = document.getElementById("tkpq-btn-refresh-accounts");
+  const resetBtn = document.getElementById("tkpq-filter-reset");
+  const refreshBtn = document.getElementById("tkpq-refresh-all");
 
   if (searchInput) {
     let searchTimeout = null;
     searchInput.addEventListener("input", () => {
-      clearTimeout(searchTimeout);
+      const value = searchInput.value || "";
+      if (searchTimeout) clearTimeout(searchTimeout);
+
       searchTimeout = setTimeout(() => {
-        accountFilters.searchKeyword = searchInput.value.trim();
+        accountFilters.searchKeyword = value.trim();
         accountFilters.page = 0;
         loadAccounts();
-      }, 400);
+      }, 300);
     });
   }
 
@@ -313,6 +299,26 @@ function setupAccountsFilters() {
     });
   }
 
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      accountFilters = {
+        searchKeyword: "",
+        roleId: "",
+        ownerType: "ALL",
+        status: "ALL",
+        page: 0,
+        size: 10,
+      };
+
+      if (searchInput) searchInput.value = "";
+      if (roleSelect) roleSelect.value = "";
+      if (typeSelect) typeSelect.value = "ALL";
+      if (statusSelect) statusSelect.value = "ALL";
+
+      loadAccounts();
+    });
+  }
+
   if (refreshBtn) {
     refreshBtn.addEventListener("click", () => {
       accountFilters = {
@@ -323,81 +329,76 @@ function setupAccountsFilters() {
         page: 0,
         size: 10,
       };
+
       if (searchInput) searchInput.value = "";
       if (roleSelect) roleSelect.value = "";
       if (typeSelect) typeSelect.value = "ALL";
       if (statusSelect) statusSelect.value = "ALL";
-      loadAccounts();
-    });
-  }
 
-  const globalRefresh = document.getElementById("tkpq-refresh-all");
-  if (globalRefresh) {
-    globalRefresh.addEventListener("click", () => {
-      loadRolesForFilterAndMultiselect();
       loadAccounts();
-      loadRoles();
+      loadRolesForFilterAndMultiselect();
     });
   }
 }
 
-/**
- * Mở modal account (create / edit)
- */
-function openAccountModalForCreate() {
-  const titleEl = document.getElementById("tkpq-account-modal-title");
-  const idTkInput = document.getElementById("tkpq-account-idTk");
-  const emailInput = document.getElementById("tkpq-account-email");
-  const pwInput = document.getElementById("tkpq-account-password");
-  const statusSelect = document.getElementById("tkpq-account-status");
+function resetAccountModal() {
+  const form = document.getElementById("tkpq-account-form");
+  if (!form) return;
+
+  form.reset();
+  const idField = document.getElementById("tkpq-account-idTk");
   const idHsSpan = document.getElementById("tkpq-account-idHs");
   const idNvSpan = document.getElementById("tkpq-account-idNv");
   const rolesSelect = document.getElementById("tkpq-account-roles");
+  const titleEl = document.getElementById("tkpq-account-modal-title");
 
-  if (titleEl) titleEl.textContent = "Thêm tài khoản";
-  if (idTkInput) idTkInput.value = "";
-  if (emailInput) emailInput.value = "";
-  if (pwInput) pwInput.value = "";
-  if (statusSelect) statusSelect.value = "ACTIVE";
+  if (idField) idField.value = "";
   if (idHsSpan) idHsSpan.textContent = "-";
   if (idNvSpan) idNvSpan.textContent = "-";
   if (rolesSelect) {
-    Array.from(rolesSelect.options).forEach((opt) => {
+    for (const opt of rolesSelect.options) {
       opt.selected = false;
-    });
+    }
   }
+  if (titleEl) {
+    titleEl.textContent = "Thêm tài khoản";
+  }
+}
 
+async function openAccountModalForCreate() {
+  resetAccountModal();
   openModal("tkpq-account-modal");
 }
 
 async function openAccountModalForEdit(idTk) {
+  resetAccountModal();
   try {
     const acc = await apiGetAccountDetail(idTk);
-
-    const titleEl = document.getElementById("tkpq-account-modal-title");
-    const idTkInput = document.getElementById("tkpq-account-idTk");
+    const idField = document.getElementById("tkpq-account-idTk");
     const emailInput = document.getElementById("tkpq-account-email");
-    const pwInput = document.getElementById("tkpq-account-password");
     const statusSelect = document.getElementById("tkpq-account-status");
     const idHsSpan = document.getElementById("tkpq-account-idHs");
     const idNvSpan = document.getElementById("tkpq-account-idNv");
     const rolesSelect = document.getElementById("tkpq-account-roles");
+    const titleEl = document.getElementById("tkpq-account-modal-title");
 
-    if (titleEl) titleEl.textContent = `Cập nhật tài khoản (${acc.idTk})`;
-    if (idTkInput) idTkInput.value = acc.idTk || "";
+    if (idField) idField.value = acc.idTk || "";
     if (emailInput) emailInput.value = acc.email || "";
-    if (pwInput) pwInput.value = ""; // để trống, BE tự xử lý nếu không gửi
-    if (statusSelect) statusSelect.value = acc.trangThai || "ACTIVE";
+    if (statusSelect && acc.trangThai) {
+      statusSelect.value = acc.trangThai;
+    }
     if (idHsSpan) idHsSpan.textContent = acc.idHs || "-";
     if (idNvSpan) idNvSpan.textContent = acc.idNv || "-";
 
-    if (rolesSelect) {
-      const currentRoleIds = Array.isArray(acc.roles)
-        ? acc.roles.map((r) => r.idRole)
-        : [];
-      Array.from(rolesSelect.options).forEach((opt) => {
-        opt.selected = currentRoleIds.includes(opt.value);
-      });
+    if (rolesSelect && Array.isArray(acc.roles)) {
+      const roleIds = acc.roles.map((r) => r.idRole);
+      for (const opt of rolesSelect.options) {
+        opt.selected = roleIds.includes(opt.value);
+      }
+    }
+
+    if (titleEl) {
+      titleEl.textContent = `Chỉnh sửa tài khoản ${acc.idTk || ""}`;
     }
 
     openModal("tkpq-account-modal");
@@ -414,51 +415,65 @@ function setupAccountModalSubmit() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const idTkInput = document.getElementById("tkpq-account-idTk");
+    const idField = document.getElementById("tkpq-account-idTk");
     const emailInput = document.getElementById("tkpq-account-email");
-    const pwInput = document.getElementById("tkpq-account-password");
+    const passwordInput = document.getElementById("tkpq-account-password");
     const statusSelect = document.getElementById("tkpq-account-status");
-    const idHsSpan = document.getElementById("tkpq-account-idHs");
-    const idNvSpan = document.getElementById("tkpq-account-idNv");
     const rolesSelect = document.getElementById("tkpq-account-roles");
 
-    const idTk = idTkInput?.value?.trim() || "";
-    const email = emailInput?.value?.trim() || "";
-    const passWord = pwInput?.value || "";
+    const idTk = idField?.value?.trim();
+    const email = emailInput?.value?.trim();
+    const password = passwordInput?.value?.trim();
     const trangThai = statusSelect?.value || "ACTIVE";
-    const idHs =
-      idHsSpan && idHsSpan.textContent !== "-" ? idHsSpan.textContent : null;
-    const idNv =
-      idNvSpan && idNvSpan.textContent !== "-" ? idNvSpan.textContent : null;
 
-    const roleIds = rolesSelect
-      ? Array.from(rolesSelect.selectedOptions).map((opt) => opt.value)
-      : [];
+    const selectedRoleIds = [];
+    if (rolesSelect) {
+      for (const opt of rolesSelect.options) {
+        if (opt.selected) selectedRoleIds.push(opt.value);
+      }
+    }
+
+    if (!email) {
+      alert("Email không được để trống.");
+      return;
+    }
 
     const payload = {
       email,
       trangThai,
-      idHs,
-      idNv,
-      roleIds,
+      roleIds: selectedRoleIds,
     };
 
-    // Chỉ gửi passWord nếu tạo mới hoặc thực sự nhập
-    if (!idTk || passWord) {
-      payload.passWord = passWord;
+    // ===============================
+    // QUAN TRỌNG: logic password
+    // ===============================
+    // - Tạo mới (idTk rỗng): bắt buộc nhập mật khẩu
+    // - Sửa: chỉ gửi passWord nếu user nhập (đổi mật khẩu)
+    if (!idTk) {
+      // CREATE
+      if (!password) {
+        alert("Mật khẩu không được để trống khi tạo mới tài khoản.");
+        return;
+      }
+      payload.passWord = password;
+    } else {
+      // UPDATE
+      if (password) {
+        payload.passWord = password;
+      }
     }
 
     try {
-      if (idTk) {
-        await apiUpdateAccount(idTk, payload);
-      } else {
+      if (!idTk) {
         await apiCreateAccount(payload);
+      } else {
+        await apiUpdateAccount(idTk, payload);
       }
       closeModal("tkpq-account-modal");
       await loadAccounts();
     } catch (err) {
       console.error(err);
-      alert("Không thể lưu tài khoản. Vui lòng kiểm tra lại dữ liệu.");
+      alert(err?.message || "Không thể lưu tài khoản.");
     }
   });
 }
@@ -469,25 +484,11 @@ function setupAccountRowActions() {
 
   tbody.addEventListener("click", async (e) => {
     const editBtn = e.target.closest(".tkpq-btn-edit-account");
-    const delBtn = e.target.closest(".tkpq-btn-delete-account");
 
     if (editBtn) {
       const idTk = editBtn.getAttribute("data-id");
       if (idTk) {
         await openAccountModalForEdit(idTk);
-      }
-    }
-
-    if (delBtn) {
-      const idTk = delBtn.getAttribute("data-id");
-      if (idTk && confirm("Xóa tài khoản này?")) {
-        try {
-          await apiDeleteAccount(idTk);
-          await loadAccounts();
-        } catch (err) {
-          console.error(err);
-          alert("Không thể xóa tài khoản. Kiểm tra ràng buộc dữ liệu.");
-        }
       }
     }
   });
@@ -507,7 +508,6 @@ function setupAccountRowActions() {
 function renderRolesTable(response) {
   const tbody = document.getElementById("tkpq-roles-tbody");
   const emptyState = document.getElementById("tkpq-roles-empty");
-  const paginationEl = document.getElementById("tkpq-roles-pagination");
 
   if (!tbody) return;
 
@@ -519,10 +519,8 @@ function renderRolesTable(response) {
 
   if (!items.length) {
     if (emptyState) emptyState.hidden = false;
-    if (paginationEl) paginationEl.innerHTML = "";
     return;
   }
-
   if (emptyState) emptyState.hidden = true;
 
   items.forEach((role) => {
@@ -550,28 +548,6 @@ function renderRolesTable(response) {
     `;
     tbody.appendChild(tr);
   });
-
-  if (!paginationEl) return;
-  paginationEl.innerHTML = "";
-
-  if (response && typeof response.totalPages === "number") {
-    const totalPages = response.totalPages;
-    const currentPage = response.page ?? 0;
-
-    if (totalPages > 1) {
-      for (let p = 0; p < totalPages; p++) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "tkpq-page-btn" + (p === currentPage ? " active" : "");
-        btn.textContent = p + 1;
-        btn.addEventListener("click", () => {
-          roleFilters.page = p;
-          loadRoles();
-        });
-        paginationEl.appendChild(btn);
-      }
-    }
-  }
 }
 
 async function loadRoles() {
@@ -584,85 +560,41 @@ async function loadRoles() {
   }
 }
 
-function setupRolesFilters() {
+function setupRoleFilters() {
   const searchInput = document.getElementById("tkpq-role-search");
-  if (searchInput) {
-    let timeout = null;
-    searchInput.addEventListener("input", () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        roleFilters.searchKeyword = searchInput.value.trim();
-        roleFilters.page = 0;
-        loadRoles();
-      }, 400);
-    });
-  }
+  if (!searchInput) return;
 
-  const addBtn = document.getElementById("tkpq-btn-add-role");
-  if (addBtn) {
-    addBtn.addEventListener("click", () => {
-      openRoleModalForCreate();
-    });
-  }
+  let timeout = null;
+  searchInput.addEventListener("input", () => {
+    const value = searchInput.value || "";
+    if (timeout) clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
+      roleFilters.searchKeyword = value.trim();
+      roleFilters.page = 0;
+      loadRoles();
+    }, 300);
+  });
 }
 
-async function openRoleModalForEdit(idRole) {
-  try {
-    // Thử lấy từ cache
-    let role =
-      allRolesCache.find((r) => r.idRole === idRole) || null;
+function resetRoleModal() {
+  const form = document.getElementById("tkpq-role-form");
+  if (!form) return;
 
-    // Nếu không có trong cache, gọi search 1 item
-    if (!role) {
-      const res = await apiSearchRoles({
-        searchKeyword: idRole,
-        page: 0,
-        size: 1,
-      });
-      const list = Array.isArray(res) ? res : res?.content || [];
-      role = list[0];
-    }
-
-    if (!role) {
-      alert("Không tìm thấy vai trò.");
-      return;
-    }
-
-    const titleEl = document.getElementById("tkpq-role-modal-title");
-    const idInput = document.getElementById("tkpq-role-id");
-    const nameInput = document.getElementById("tkpq-role-name");
-    const noteInput = document.getElementById("tkpq-role-note");
-
-    if (titleEl) titleEl.textContent = `Cập nhật vai trò (${role.idRole})`;
-    if (idInput) {
-      idInput.value = role.idRole || "";
-      idInput.disabled = true; // không cho sửa PK
-    }
-    if (nameInput) nameInput.value = role.tenVaiTro || "";
-    if (noteInput) noteInput.value = role.ghiChu || "";
-
-    openModal("tkpq-role-modal");
-  } catch (err) {
-    console.error(err);
-    alert("Không thể tải chi tiết vai trò.");
-  }
-}
-
-function openRoleModalForCreate() {
-  const titleEl = document.getElementById("tkpq-role-modal-title");
+  form.reset();
   const idInput = document.getElementById("tkpq-role-id");
-  const nameInput = document.getElementById("tkpq-role-name");
-  const noteInput = document.getElementById("tkpq-role-note");
+  const modeInput = document.getElementById("tkpq-role-mode");
+  const titleEl = document.getElementById("tkpq-role-modal-title");
 
-  if (titleEl) titleEl.textContent = "Thêm vai trò";
   if (idInput) {
-    idInput.value = "";
     idInput.disabled = false;
   }
-  if (nameInput) nameInput.value = "";
-  if (noteInput) noteInput.value = "";
-
-  openModal("tkpq-role-modal");
+  if (modeInput) {
+    modeInput.value = "create";
+  }
+  if (titleEl) {
+    titleEl.textContent = "Thêm vai trò";
+  }
 }
 
 function setupRoleModalSubmit() {
@@ -675,39 +607,51 @@ function setupRoleModalSubmit() {
     const idInput = document.getElementById("tkpq-role-id");
     const nameInput = document.getElementById("tkpq-role-name");
     const noteInput = document.getElementById("tkpq-role-note");
+    const modeInput = document.getElementById("tkpq-role-mode");
 
-    const idRole = idInput?.value?.trim() || "";
-    const tenVaiTro = nameInput?.value?.trim() || "";
-    const ghiChu = noteInput?.value?.trim() || "";
+    const idRole = idInput?.value?.trim();
+    const tenVaiTro = nameInput?.value?.trim();
+    const ghiChu = noteInput?.value?.trim();
+    const mode = modeInput?.value || "create";
 
     if (!idRole || !tenVaiTro) {
-      alert("Vui lòng nhập đầy đủ ID_Role và Tên vai trò.");
+      alert("ID_Role và Tên vai trò không được để trống.");
       return;
     }
 
-    const payload = { idRole, tenVaiTro, ghiChu };
+    const payload = {
+      idRole,
+      tenVaiTro,
+      ghiChu,
+    };
 
     try {
-      if (idInput.disabled) {
-        // đang edit
-        await apiUpdateRole(idRole, payload);
-      } else {
+      if (mode === "create") {
         await apiCreateRole(payload);
+      } else {
+        await apiUpdateRole(idRole, payload);
       }
-
       closeModal("tkpq-role-modal");
       await loadRoles();
       await loadRolesForFilterAndMultiselect();
     } catch (err) {
       console.error(err);
-      alert("Không thể lưu vai trò.");
+      alert(err?.message || "Không thể lưu vai trò.");
     }
   });
 }
 
 function setupRoleRowActions() {
   const tbody = document.getElementById("tkpq-roles-tbody");
+  const addBtn = document.getElementById("tkpq-btn-add-role");
   if (!tbody) return;
+
+  if (addBtn) {
+    addBtn.addEventListener("click", () => {
+      resetRoleModal();
+      openModal("tkpq-role-modal");
+    });
+  }
 
   tbody.addEventListener("click", async (e) => {
     const editBtn = e.target.closest(".tkpq-btn-edit-role");
@@ -716,13 +660,51 @@ function setupRoleRowActions() {
     if (editBtn) {
       const idRole = editBtn.getAttribute("data-id");
       if (idRole) {
-        await openRoleModalForEdit(idRole);
+        const rows = tbody.querySelectorAll("tr");
+        let selectedRole = null;
+        rows.forEach((row) => {
+          const firstCell = row.querySelector("td");
+          if (firstCell && firstCell.textContent === idRole) {
+            const cells = row.querySelectorAll("td");
+            selectedRole = {
+              idRole,
+              tenVaiTro: cells[1]?.textContent || "",
+              ghiChu: cells[2]?.textContent || "",
+            };
+          }
+        });
+
+        if (selectedRole) {
+          const idInput = document.getElementById("tkpq-role-id");
+          const nameInput = document.getElementById("tkpq-role-name");
+          const noteInput = document.getElementById("tkpq-role-note");
+          const modeInput = document.getElementById("tkpq-role-mode");
+          const titleEl = document.getElementById("tkpq-role-modal-title");
+
+          if (idInput) {
+            idInput.value = selectedRole.idRole;
+            idInput.disabled = true;
+          }
+          if (nameInput)
+            nameInput.value = selectedRole.tenVaiTro || "";
+          if (noteInput) noteInput.value = selectedRole.ghiChu || "";
+          if (modeInput) modeInput.value = "edit";
+          if (titleEl)
+            titleEl.textContent = `Chỉnh sửa vai trò ${selectedRole.idRole}`;
+
+          openModal("tkpq-role-modal");
+        }
       }
     }
 
     if (delBtn) {
       const idRole = delBtn.getAttribute("data-id");
-      if (idRole && confirm("Xóa vai trò này?")) {
+      if (
+        idRole &&
+        confirm(
+          "Xóa vai trò này? Nếu đang được gán cho tài khoản nào đó sẽ không xóa được."
+        )
+      ) {
         try {
           await apiDeleteRole(idRole);
           await loadRoles();
@@ -730,7 +712,8 @@ function setupRoleRowActions() {
         } catch (err) {
           console.error(err);
           alert(
-            "Không thể xóa vai trò. Kiểm tra xem có tài khoản nào đang dùng vai trò này không."
+            err?.message ||
+              "Không thể xóa vai trò. Kiểm tra ràng buộc dữ liệu."
           );
         }
       }
@@ -739,21 +722,18 @@ function setupRoleRowActions() {
 }
 
 /* ==========================
-   INIT ENTRY
+   INIT
    ========================== */
 
-/**
- * Hàm nội bộ khởi tạo trang Tài khoản & Phân quyền
- */
-async function initTkPhanQuyenPage() {
+export async function initTkPhanQuyenPage() {
   setupTabs();
-  setupModalCloseHandlers();
+  setupModalBackdropClose();
 
-  setupAccountsFilters();
+  setupAccountFilters();
   setupAccountModalSubmit();
   setupAccountRowActions();
 
-  setupRolesFilters();
+  setupRoleFilters();
   setupRoleModalSubmit();
   setupRoleRowActions();
 

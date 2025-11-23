@@ -12,7 +12,8 @@ import {
   apiGetCandidatesOfJob,
   apiAddCandidatesToJob,
   apiRemoveCandidateFromJob,
-} from "../api/tuyendung.api.js";
+} from "../api/tuyendung.api.js"
+
 
 let jobListCache = [];
 let candidateListCache = [];

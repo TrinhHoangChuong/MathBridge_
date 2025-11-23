@@ -1,0 +1,803 @@
+/* =========================================================
+   PHÂN CÔNG CỐ VẤN HỌC SINH (pc-panel)
+   Đồng bộ phong cách với Học sinh & Học tập
+   ========================================================= */
+
+/* 1. PANEL & BODY LAYOUT
+   --------------------------------------------------------- */
+
+.pc-panel {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: #0f172a;
+    border: 1px solid #e5e7eb;
+    box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.06),
+        0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+.pc-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 2. HEADER
+   --------------------------------------------------------- */
+
+.pc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.pc-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.pc-header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fb7185, #ec4899);
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.pc-header-icon i {
+    font-size: 1.3rem;
+}
+
+.pc-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    color: #0f172a;
+}
+
+.pc-subtitle {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.pc-header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* 3. LAYOUT 2 CỘT (LEFT LIST + RIGHT DETAIL)
+   --------------------------------------------------------- */
+
+.pc-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+/* Mỗi cột là một card phụ để bố cục rõ ràng hơn */
+.pc-left,
+.pc-right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-radius: 18px;
+    padding: 12px 14px 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+}
+
+/* 4. SECTION HEAD (TIÊU ĐỀ NHỎ TRONG PANEL)
+   --------------------------------------------------------- */
+
+.pc-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.pc-section-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.pc-section-subtitle {
+    margin: 4px 0 0;
+    font-size: 0.8rem;
+    color: #6b7280;
+    max-width: 520px;
+}
+
+.pc-section-head .btn.sm {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+}
+
+/* 5. FILTERS
+   --------------------------------------------------------- */
+
+.pc-filters {
+    margin-top: 8px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    background: #fefefe;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pc-filter-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pc-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+    flex: 1;
+}
+
+.pc-filter-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+/* Input / Select theo style pill giống Học sinh & Học tập */
+
+.pc-input,
+.pc-select,
+.pc-textarea {
+    width: 100%;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    font-size: 0.85rem;
+    padding: 7px 11px;
+    background: #ffffff;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.pc-textarea {
+    border-radius: 14px;
+    resize: vertical;
+    min-height: 70px;
+}
+
+.pc-input::placeholder,
+.pc-textarea::placeholder {
+    color: #9ca3af;
+}
+
+.pc-input:focus,
+.pc-select:focus,
+.pc-textarea:focus {
+    border-color: #fb7185;
+    box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.3);
+    background: #ffffff;
+}
+
+/* Input có icon bên trái */
+
+.pc-input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.pc-input-with-icon i {
+    position: absolute;
+    left: 10px;
+    font-size: 0.9rem;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.pc-input-with-icon .pc-input {
+    padding-left: 30px;
+}
+
+/* Checkbox */
+
+.pc-filter-checkbox {
+    align-items: flex-end;
+}
+
+.pc-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #4b5563;
+}
+
+.pc-checkbox-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+}
+
+/* 6. DANH SÁCH (LEFT ADVISORS + STUDENT/ASSIGNMENT LIST)
+   --------------------------------------------------------- */
+
+.pc-advisor-list,
+.pc-student-list,
+.pc-assignment-list {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Scroll mượt hơn một chút */
+.pc-advisor-list::-webkit-scrollbar,
+.pc-student-list::-webkit-scrollbar,
+.pc-assignment-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.pc-advisor-list::-webkit-scrollbar-thumb,
+.pc-student-list::-webkit-scrollbar-thumb,
+.pc-assignment-list::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 999px;
+}
+
+/* Wrapper chung kiểu "table card" */
+
+.pc-list-wrapper {
+    margin-top: 10px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+/* Header list giống header table */
+
+.pc-list-header {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    gap: 8px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #f9fafb;
+    padding: 8px 10px;
+    color: #6b7280;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.pc-list-header-meta {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.pc-list-header-actions {
+    text-align: right;
+}
+
+/* Card cố vấn (trái) */
+
+.pc-advisor-item {
+    padding: 9px 10px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.05s ease;
+}
+
+.pc-advisor-item:hover {
+    background: #f9fafb;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    transform: translateY(-1px);
+}
+
+.pc-advisor-item.active {
+    border-color: #fb7185;
+    box-shadow: 0 0 0 1px rgba(251, 113, 133, 0.3);
+    background: #fdf2f8;
+}
+
+.pc-advisor-main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.pc-advisor-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.pc-advisor-meta {
+    margin-top: 2px;
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+.pc-advisor-status {
+    flex-shrink: 0;
+}
+
+.pc-advisor-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+/* Tags / chips chung */
+
+.pc-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.pc-tag.role {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+}
+
+.pc-tag.specialty {
+    background: rgba(16, 185, 129, 0.1);
+    color: #047857;
+}
+
+.pc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.pc-chip.primary {
+    background: rgba(251, 113, 133, 0.12);
+    color: #be123c;
+}
+
+.pc-chip i {
+    font-size: 0.82rem;
+}
+
+/* Trạng thái chip cho boolToStatusChip */
+
+.pc-tag-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 500;
+}
+
+.pc-tag-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #9ca3af;
+}
+
+.pc-tag-status.active {
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+}
+
+.pc-tag-status.active .pc-tag-status-dot {
+    background: #22c55e;
+}
+
+.pc-tag-status.inactive {
+    background: rgba(148, 163, 184, 0.16);
+    color: #4b5563;
+}
+
+/* Hàng list học sinh / phân công (JS dùng .pc-list-item) */
+
+.pc-list-item {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.6fr) minmax(0, 1.1fr) auto;
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    align-items: center;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.pc-list-item:last-child {
+    border-bottom: none;
+}
+
+.pc-list-item:hover {
+    background: #f9fafb;
+}
+
+.pc-list-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pc-list-name {
+    font-weight: 500;
+    color: #111827;
+}
+
+.pc-list-sub {
+    font-size: 0.76rem;
+    color: #6b7280;
+}
+
+.pc-list-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.78rem;
+    color: #4b5563;
+}
+
+.pc-list-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.pc-list-meta i {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+.pc-list-status {
+    font-size: 0.78rem;
+}
+
+/* Vùng action bên phải */
+
+.pc-list-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+/* 7. EMPTY STATE (CHƯA CHỌN CỐ VẤN)
+   --------------------------------------------------------- */
+
+.pc-empty-state {
+    border-radius: 18px;
+    border: 1px dashed #d1d5db;
+    background: #fefefe;
+    padding: 24px 18px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #6b7280;
+}
+
+.pc-empty-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    background: rgba(251, 113, 133, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fb7185;
+    margin-bottom: 4px;
+}
+
+.pc-empty-icon i {
+    font-size: 1.4rem;
+}
+
+.pc-empty-state h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #111827;
+}
+
+.pc-empty-state p {
+    margin: 0;
+    font-size: 0.82rem;
+}
+
+/* 8. ADVISOR SUMMARY + DETAILS
+   --------------------------------------------------------- */
+
+.pc-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pc-advisor-summary {
+    border-radius: 18px;
+    background: #fefefe;
+    border: 1px solid #e5e7eb;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pc-advisor-summary-main {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.pc-advisor-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #fb7185, #ec4899);
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.pc-advisor-summary-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pc-advisor-summary-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.pc-advisor-summary-meta {
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+.pc-advisor-summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* 9. TABS (AVAILABLE / ASSIGNED)
+   --------------------------------------------------------- */
+
+.pc-tabs {
+    margin-top: 4px;
+    padding: 3px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    display: inline-flex;
+    gap: 4px;
+}
+
+.pc-tab-button {
+    position: relative;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #4b5563;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pc-tab-button.active {
+    background: linear-gradient(135deg, #fb7185, #ec4899);
+    color: #ffffff;
+    box-shadow: 0 10px 25px rgba(236, 72, 153, 0.3);
+}
+
+.pc-tab-badge {
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.08);
+    color: #0f172a;
+}
+
+.pc-tab-button.active .pc-tab-badge {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+
+.pc-tab-panel {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 10. MODAL PHÂN CÔNG
+   --------------------------------------------------------- */
+
+.pc-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+}
+
+.pc-modal {
+    width: 100%;
+    max-width: 640px;
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    box-shadow:
+        0 22px 55px rgba(15, 23, 42, 0.22),
+        0 0 0 1px rgba(15, 23, 42, 0.03);
+    padding: 16px 18px 18px;
+}
+
+.pc-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.pc-modal-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.pc-modal-close {
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.pc-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.pc-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pc-modal-summary {
+    border-radius: 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    color: #4b5563;
+}
+
+/* Form trong modal */
+
+.pc-form-grid {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+}
+
+.pc-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pc-form-group-full {
+    grid-column: 1 / -1;
+}
+
+.pc-form-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.pc-required {
+    color: #ef4444;
+}
+
+.pc-help-text {
+    margin: 2px 0 0;
+    font-size: 0.74rem;
+    color: #9ca3af;
+}
+
+.pc-modal-footer {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* 11. RESPONSIVE
+   --------------------------------------------------------- */
+
+@media (max-width: 960px) {
+    .pc-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .pc-panel {
+        padding: 16px 14px 16px;
+    }
+
+    .pc-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pc-form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

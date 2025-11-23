@@ -255,9 +255,24 @@
                     <label for="ns-staff-ten">Tên <span>*</span></label>
                     <input type="text" id="ns-staff-ten" required />
                 </div>
+
+                <!-- TÀI KHOẢN HỆ THỐNG (chọn từ TaiKhoan đã có) -->
+                <div class="ns-field ns-field-full">
+                    <label for="ns-staff-account-modal">Tài khoản hệ thống <span>*</span></label>
+                    <select id="ns-staff-account-modal" required>
+                        <option value="">Chọn tài khoản đã tạo</option>
+                    </select>
+                    <small class="ns-field-hint">
+                        Chỉ hiển thị các tài khoản đã tạo ở mục "Tài khoản &amp; Phân quyền" và chưa gắn với nhân viên khác.
+                    </small>
+                </div>
+
                 <div class="ns-field">
                     <label for="ns-staff-email">Email <span>*</span></label>
-                    <input type="email" id="ns-staff-email" required />
+                    <input type="email" id="ns-staff-email" required readonly />
+                    <small class="ns-field-hint">
+                        Email được lấy tự động từ tài khoản, không chỉnh sửa tại đây.
+                    </small>
                 </div>
                 <div class="ns-field">
                     <label for="ns-staff-sdt">Số điện thoại <span>*</span></label>
@@ -289,15 +304,9 @@
                     <label for="ns-staff-kinhnghiem">Kinh nghiệm (năm)</label>
                     <input type="number" min="0" id="ns-staff-kinhnghiem" />
                 </div>
-                <div class="ns-field">
-                    <label for="ns-staff-role-modal">Vai trò hệ thống</label>
-                    <select id="ns-staff-role-modal">
-                        <option value="">Chọn vai trò</option>
-                    </select>
-                    <small class="ns-field-hint">
-                        Vai trò dùng để gán quyền trong hệ thống (bảng Role + TaiKhoan_VaiTro).
-                    </small>
-                </div>
+
+                <!-- KHÔNG còn chọn Role ở đây, vì phân quyền làm ở module Tài khoản & Phân quyền -->
+
                 <div class="ns-field ns-field-inline">
                     <label for="ns-staff-active">Đang hoạt động</label>
                     <label class="ns-switch">

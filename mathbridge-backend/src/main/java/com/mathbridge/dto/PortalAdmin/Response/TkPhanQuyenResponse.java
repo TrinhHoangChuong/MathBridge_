@@ -13,7 +13,10 @@ import java.util.List;
  */
 public class TkPhanQuyenResponse {
 
-    // ===== ROLE DTO =====
+    // =========================================================
+    // ROLE DTO
+    // =========================================================
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -24,41 +27,45 @@ public class TkPhanQuyenResponse {
         private String ghiChu;    // Role.GhiChu
     }
 
-    // ===== ACCOUNT DTO =====
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class AccountDto {
-        private String idTk;          // TaiKhoan.ID_TK
-        private String email;         // TaiKhoan.Email
-        private String trangThai;     // TaiKhoan.TrangThai
-        private String idHs;          // TaiKhoan.ID_HS
-        private String idNv;          // TaiKhoan.ID_NV
-        private LocalDateTime thoiDiemTao; // TaiKhoan.ThoiDiemTao
-
-        private List<RoleDto> roles;  // list role lấy từ TaiKhoan_VaiTro
-    }
-
-    // ===== PAGED WRAPPER =====
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class AccountPage {
-        private List<AccountDto> content;
-        private long totalElements;
-        private int totalPages;
-        private int page;
-        private int size;
-    }
-
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class RolePage {
         private List<RoleDto> content;
+        private long totalElements;
+        private int totalPages;
+        private int page;
+        private int size;
+    }
+
+    // =========================================================
+    // ACCOUNT DTO
+    // =========================================================
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class AccountDto {
+        private String idTk;              // TaiKhoan.ID_TK
+        private String email;             // TaiKhoan.Email
+        private String trangThai;         // TaiKhoan.TrangThai
+
+        private String idHs;              // TaiKhoan.ID_HS
+        private String idNv;              // TaiKhoan.ID_NV
+
+        private LocalDateTime thoiDiemTao; // TaiKhoan.ThoiDiemTao
+
+        private List<RoleDto> roles;      // list role mapping
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class AccountPage {
+        private List<AccountDto> content;
         private long totalElements;
         private int totalPages;
         private int page;

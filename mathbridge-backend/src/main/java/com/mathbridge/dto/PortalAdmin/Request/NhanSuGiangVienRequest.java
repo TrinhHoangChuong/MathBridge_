@@ -4,114 +4,100 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
-/**
- * DTO filter dùng cho API search danh sách nhân sự.
- * FE: POST /api/portal/admin/nhansu/staff/search
- */
 @Data
 public class NhanSuGiangVienRequest {
 
-    /**
-     * Từ khóa chung: tìm theo Họ tên, Email, SĐT...
-     */
+    // ====== SEARCH STAFF (POST /staff/search) ======
+
     private String searchKeyword;
-
-    /**
-     * Lọc theo cơ sở (ID_CS từ bảng CoSo), có thể null.
-     */
     private String campusId;
-
-    /**
-     * Lọc theo vai trò (ID_Role từ bảng Role), có thể null.
-     */
     private String roleId;
-
-    /**
-     * Trạng thái nhân sự:
-     *  - "active"   -> TrangThaiHoatDong = 1
-     *  - "inactive" -> TrangThaiHoatDong = 0
-     *  - null / ""  -> tất cả
-     */
     private String status;
-
-    /**
-     * Phân trang (page 0-based) – FE đang gửi, nhưng hiện tại BE có thể dùng hoặc không.
-     */
     private Integer page;
-
-    /**
-     * Kích thước trang (mặc định 10).
-     */
     private Integer size;
 
-    // ========= INNER DTO dùng cho các API khác trong cùng module =========
+    // ====== UP-SERT STAFF (POST/PUT /staff) ======
 
-    /**
-     * DTO dùng cho tạo / cập nhật nhân sự.
-     * FE: POST /staff, PUT /staff/{idNv}
-     */
     @Data
     public static class StaffUpsert {
-        private String idNv;                 // có thể null khi tạo mới
+
+        /**
+         * ID_NV:
+         *  - null khi tạo mới
+         *  - có giá trị khi update
+         */
+        private String idNv;
+
+        /**
+         * ID_TK của tài khoản đã chọn (dropdown):
+         *  - BẮT BUỘC khi tạo mới nhân sự (create)
+         *  - BE bỏ qua khi update (không đổi tài khoản ở đây).
+         */
+        private String idTk;
+
         private String ho;
         private String tenDem;
         private String ten;
-        private String email;
-        private String sdt;
+
         /**
-         * true = Nam, false = Nữ, null = không khai báo
+         * Email hiển thị trên form (readonly).
+         * FE vẫn gửi lên, nhưng BE luôn sync = TaiKhoan.Email.
+         */
+        private String email;
+
+        private String sdt;
+
+        /**
+         * true  -> Nam
+         * false -> Nữ
          */
         private Boolean gioiTinh;
+
         /**
-         * ID_CS từ bảng CoSo
+         * Cơ sở làm việc (ID_CS).
          */
         private String idCs;
+
         private String chucVu;
         private String chuyenMon;
         private Integer kinhNghiem;
+
         /**
-         * Trạng thái hoạt động của nhân sự
+         * Trạng thái làm việc (NhanVien.TrangThaiHoatDong).
          */
         private Boolean trangThaiHoatDong;
 
         /**
-         * ID_Role từ bảng Role để gán vào TaiKhoan_VaiTro.
-         * Nếu null thì không gán role mặc định.
+         * FE hiện tại chưa gửi, nhưng nếu sau này cần lọc tài khoản theo role
+         * thì có thể dùng thêm field này.
          */
         private String roleId;
     }
 
-    /**
-     * DTO dùng cho search danh sách hợp đồng.
-     * FE: POST /contracts/search
-     */
+    // ====== SEARCH CONTRACTS (POST /contracts/search) ======
+
     @Data
     public static class ContractSearch {
-        private String searchKeyword;  // Mã HĐ hoặc tên nhân viên
-        private String staffId;        // ID_NV
-        private String contractType;   // LoaiHopDong
-        /**
-         * "active" | "expired" | "terminated" | null
-         */
-        private String status;
+        private String searchKeyword;
+        private String staffId;      // ID_NV
+        private String contractType; // LoaiHopDong
+        private String status;       // active | expired | terminated
         private Integer page;
         private Integer size;
     }
 
-    /**
-     * DTO dùng cho tạo / cập nhật hợp đồng.
-     * FE: POST /contracts, PUT /contracts/{idHd}
-     */
+    // ====== UP-SERT CONTRACT (POST/PUT /contracts) ======
+
     @Data
     public static class ContractUpsert {
-        private String idHd;               // có thể null khi tạo mới
-        private String idNv;               // ID_NV nhân viên
+        private String idHd;
+        private String idNv;
         private String loaiHopDong;
+        private String hinhThucDay;
         private LocalDate ngayKy;
         private LocalDate ngayHieuLuc;
         private LocalDate ngayKetThuc;
         private String phamViCongViec;
-        private String hinhThucDay;
         private Boolean chamDutHD;
         private LocalDate ngayChamDutHD;
     }

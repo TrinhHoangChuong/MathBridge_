@@ -5,6 +5,7 @@ import com.mathbridge.dto.PortalAdmin.Response.TkPhanQuyenResponse;
 import com.mathbridge.entity.Role;
 import com.mathbridge.entity.TaiKhoan;
 import com.mathbridge.entity.TaiKhoan_VaiTro;
+import com.mathbridge.entity.TaiKhoanVaiTroId;
 import com.mathbridge.repository.Admin.RoleAdminRepository;
 import com.mathbridge.repository.Admin.TaiKhoanAdminRepository;
 import com.mathbridge.repository.Admin.TaiKhoanVaiTroAdminRepository;
@@ -55,10 +56,20 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
                 .map(String::trim)
                 .orElse("ALL");
 
-        // Lấy tất cả tài khoản (có thể thay bằng Page<TaiKhoan> sau nếu muốn)
+        // Lấy toàn bộ tài khoản
         List<TaiKhoan> allAccounts = taiKhoanAdminRepository.findAll();
 
-        // Lấy tất cả mapping tài khoản - vai trò một lần
+        if (allAccounts.isEmpty()) {
+            return TkPhanQuyenResponse.AccountPage.builder()
+                    .content(Collections.emptyList())
+                    .totalElements(0)
+                    .totalPages(0)
+                    .page(page)
+                    .size(size)
+                    .build();
+        }
+
+        // Map roles cho mỗi account để filter theo Role
         Set<String> allIdTks = allAccounts.stream()
                 .map(TaiKhoan::getIdTk)
                 .filter(Objects::nonNull)
@@ -82,16 +93,17 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
                     }
                     String idTk = Optional.ofNullable(tk.getIdTk()).orElse("");
                     String email = Optional.ofNullable(tk.getEmail()).orElse("");
-                    String lowerKeyword = keyword.toLowerCase();
-                    return idTk.toLowerCase().contains(lowerKeyword)
-                            || email.toLowerCase().contains(lowerKeyword);
+                    String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
+                    return idTk.toLowerCase(Locale.ROOT).contains(lowerKeyword)
+                            || email.toLowerCase(Locale.ROOT).contains(lowerKeyword);
                 })
                 .filter(tk -> {
                     // ownerType: ALL | HS | NV | OTHER
                     if ("ALL".equalsIgnoreCase(ownerType)) return true;
                     boolean hasHs = tk.getIdHs() != null && !tk.getIdHs().isBlank();
                     boolean hasNv = tk.getIdNv() != null && !tk.getIdNv().isBlank();
-                    return switch (ownerType.toUpperCase()) {
+
+                    return switch (ownerType.toUpperCase(Locale.ROOT)) {
                         case "HS" -> hasHs;
                         case "NV" -> hasNv;
                         case "OTHER" -> !hasHs && !hasNv;
@@ -99,26 +111,31 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
                     };
                 })
                 .filter(tk -> {
-                    // status: ALL | ACTIVE | INACTIVE | LOCKED
-                    if ("ALL".equalsIgnoreCase(statusFilter)) return true;
+                    if (statusFilter.isEmpty() || "ALL".equalsIgnoreCase(statusFilter)) {
+                        return true;
+                    }
                     String st = Optional.ofNullable(tk.getTrangThai()).orElse("");
                     return st.equalsIgnoreCase(statusFilter);
                 })
                 .filter(tk -> {
-                    if (roleIdFilter.isEmpty()) return true;
-                    List<Role> accountRoles = rolesByAccount.getOrDefault(
-                            tk.getIdTk(),
-                            Collections.emptyList()
-                    );
-                    return accountRoles.stream()
+                    if (roleIdFilter.isEmpty()) {
+                        return true;
+                    }
+                    List<Role> roles = rolesByAccount.getOrDefault(tk.getIdTk(), Collections.emptyList());
+                    return roles.stream()
                             .anyMatch(r -> roleIdFilter.equalsIgnoreCase(r.getIdRole()));
                 })
                 .collect(Collectors.toList());
 
         long totalElements = filtered.size();
         int totalPages = (int) Math.ceil(totalElements / (double) size);
-        if (page >= totalPages && totalPages > 0) {
-            page = totalPages - 1;
+        if (totalPages == 0) {
+            totalPages = 0;
+            page = 0;
+        } else {
+            if (page >= totalPages) {
+                page = totalPages - 1;
+            }
         }
 
         int fromIndex = page * size;
@@ -149,7 +166,7 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
         TaiKhoan tk = taiKhoanAdminRepository.findById(idTk)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Không tìm thấy tài khoản với ID_TK=" + idTk
+                        "Không tìm thấy tài khoản: " + idTk
                 ));
 
         List<TaiKhoan_VaiTro> relations =
@@ -165,34 +182,49 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
     public TkPhanQuyenResponse.AccountDto createAccount(
             TkPhanQuyenRequest.AccountUpsertRequest request
     ) {
-        if (request.getEmail() == null || request.getEmail().isBlank()) {
+        String email = Optional.ofNullable(request.getEmail())
+                .map(String::trim)
+                .orElse("");
+        if (email.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Email không được để trống"
             );
         }
 
-        String idTk = generateIdTk();
+        String rawPassword = Optional.ofNullable(request.getPassWord())
+                .map(String::trim)
+                .orElse("");
+        if (rawPassword.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Mật khẩu không được để trống"
+            );
+        }
 
         TaiKhoan tk = new TaiKhoan();
-        tk.setIdTk(idTk);
-        tk.setEmail(request.getEmail().trim());
-        tk.setPassWord(request.getPassWord()); // có thể encode ở layer khác nếu muốn
-        tk.setTrangThai(
-                Optional.ofNullable(request.getTrangThai()).orElse("ACTIVE")
-        );
+        tk.setIdTk(generateNewAccountId("TK"));
+        tk.setEmail(email);
+        tk.setPassWord(rawPassword); // KHÔNG mã hóa theo yêu cầu hiện tại
+
+        String status = Optional.ofNullable(request.getTrangThai())
+                .map(String::trim)
+                .orElse("ACTIVE");
+        tk.setTrangThai(status);
+
+        // Mapping HS/NV: màn hình này không dùng, nhưng nếu request có thì set luôn
+        if (request.getIdHs() != null && !request.getIdHs().isBlank()) {
+            tk.setIdHs(request.getIdHs());
+        }
+        if (request.getIdNv() != null && !request.getIdNv().isBlank()) {
+            tk.setIdNv(request.getIdNv());
+        }
+
         tk.setThoiDiemTao(Optional.ofNullable(tk.getThoiDiemTao())
                 .orElse(LocalDateTime.now()));
 
-        // idHs / idNv: mapping này nên được tạo từ module Học Sinh / Nhân Sự,
-        // nên ở đây không set (tránh sai lệch FK 2 chiều)
-        // Nếu bạn muốn set khi create, có thể mở comment:
-        // tk.setIdHs(request.getIdHs());
-        // tk.setIdNv(request.getIdNv());
-
         taiKhoanAdminRepository.save(tk);
 
-        // Gán vai trò
         List<Role> roles = applyRolesForAccount(tk, request.getRoleIds());
 
         return toAccountDto(tk, roles);
@@ -206,57 +238,42 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
         TaiKhoan tk = taiKhoanAdminRepository.findById(idTk)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Không tìm thấy tài khoản với ID_TK=" + idTk
+                        "Không tìm thấy tài khoản: " + idTk
                 ));
 
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            tk.setEmail(request.getEmail().trim());
+        if (request.getEmail() != null) {
+            String email = request.getEmail().trim();
+            if (email.isEmpty()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Email không được để trống"
+                );
+            }
+            tk.setEmail(email);
         }
 
-        if (request.getTrangThai() != null && !request.getTrangThai().isBlank()) {
-            tk.setTrangThai(request.getTrangThai());
+        if (request.getTrangThai() != null) {
+            String status = request.getTrangThai().trim();
+            if (!status.isEmpty()) {
+                tk.setTrangThai(status);
+            }
         }
 
-        // Chỉ đổi mật khẩu nếu FE gửi lên passWord (không rỗng)
-        if (request.getPassWord() != null && !request.getPassWord().isBlank()) {
-            tk.setPassWord(request.getPassWord());
+        if (request.getPassWord() != null) {
+            String rawPassword = request.getPassWord().trim();
+            if (!rawPassword.isEmpty()) {
+                tk.setPassWord(rawPassword); // KHÔNG mã hóa theo yêu cầu hiện tại
+            }
         }
 
-        // idHs / idNv giữ nguyên (read-only trong module này)
+        // Mặc định không chỉnh sửa mapping HS/NV từ màn hình này nên bỏ qua
+        // Nếu muốn bật cho API dùng thì có thể set tương tự createAccount.
 
         taiKhoanAdminRepository.save(tk);
 
-        // Cập nhật lại roles: xóa mapping cũ, tạo mapping mới
         List<Role> roles = applyRolesForAccount(tk, request.getRoleIds());
 
         return toAccountDto(tk, roles);
-    }
-
-    @Override
-    public void deleteAccount(String idTk) {
-        TaiKhoan tk = taiKhoanAdminRepository.findById(idTk)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy tài khoản với ID_TK=" + idTk
-                ));
-
-        // Xóa mapping TaiKhoan_VaiTro trước
-        List<TaiKhoan_VaiTro> relations =
-                taiKhoanVaiTroAdminRepository.findByTaiKhoan_IdTk(idTk);
-        if (!relations.isEmpty()) {
-            taiKhoanVaiTroAdminRepository.deleteAll(relations);
-        }
-
-        try {
-            taiKhoanAdminRepository.delete(tk);
-        } catch (DataIntegrityViolationException ex) {
-            // Có FK từ HocSinh, NhanVien, BinhLuanBaiNop...
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Không thể xóa tài khoản do đang được sử dụng ở bảng khác",
-                    ex
-            );
-        }
     }
 
     // =========================================================
@@ -282,18 +299,23 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
         List<Role> filtered = allRoles.stream()
                 .filter(role -> {
                     if (keyword.isEmpty()) return true;
-                    String lower = keyword.toLowerCase();
-                    String id = Optional.ofNullable(role.getIdRole()).orElse("");
-                    String name = Optional.ofNullable(role.getTenVaiTro()).orElse("");
-                    return id.toLowerCase().contains(lower)
-                            || name.toLowerCase().contains(lower);
+                    String idRole = Optional.ofNullable(role.getIdRole()).orElse("");
+                    String tenVaiTro = Optional.ofNullable(role.getTenVaiTro()).orElse("");
+                    String lowerKeyword = keyword.toLowerCase(Locale.ROOT);
+                    return idRole.toLowerCase(Locale.ROOT).contains(lowerKeyword)
+                            || tenVaiTro.toLowerCase(Locale.ROOT).contains(lowerKeyword);
                 })
                 .collect(Collectors.toList());
 
         long totalElements = filtered.size();
         int totalPages = (int) Math.ceil(totalElements / (double) size);
-        if (page >= totalPages && totalPages > 0) {
-            page = totalPages - 1;
+        if (totalPages == 0) {
+            totalPages = 0;
+            page = 0;
+        } else {
+            if (page >= totalPages) {
+                page = totalPages - 1;
+            }
         }
 
         int fromIndex = page * size;
@@ -327,31 +349,36 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
     public TkPhanQuyenResponse.RoleDto createRole(
             TkPhanQuyenRequest.RoleUpsertRequest request
     ) {
-        if (request.getIdRole() == null || request.getIdRole().isBlank()) {
+        String idRole = Optional.ofNullable(request.getIdRole())
+                .map(String::trim)
+                .orElse("");
+        String tenVaiTro = Optional.ofNullable(request.getTenVaiTro())
+                .map(String::trim)
+                .orElse("");
+
+        if (idRole.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "ID_Role không được để trống"
             );
         }
-        if (request.getTenVaiTro() == null || request.getTenVaiTro().isBlank()) {
+        if (tenVaiTro.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Tên vai trò không được để trống"
             );
         }
 
-        String idRole = request.getIdRole().trim();
-
         if (roleAdminRepository.existsById(idRole)) {
             throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Đã tồn tại vai trò với ID_Role=" + idRole
+                    HttpStatus.BAD_REQUEST,
+                    "ID_Role đã tồn tại: " + idRole
             );
         }
 
         Role role = new Role();
         role.setIdRole(idRole);
-        role.setTenVaiTro(request.getTenVaiTro().trim());
+        role.setTenVaiTro(tenVaiTro);
         role.setGhiChu(request.getGhiChu());
 
         roleAdminRepository.save(role);
@@ -367,13 +394,19 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
         Role role = roleAdminRepository.findById(idRole)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Không tìm thấy vai trò với ID_Role=" + idRole
+                        "Không tìm thấy role: " + idRole
                 ));
 
-        if (request.getTenVaiTro() != null && !request.getTenVaiTro().isBlank()) {
-            role.setTenVaiTro(request.getTenVaiTro().trim());
+        if (request.getTenVaiTro() != null) {
+            String tenVaiTro = request.getTenVaiTro().trim();
+            if (!tenVaiTro.isEmpty()) {
+                role.setTenVaiTro(tenVaiTro);
+            }
         }
-        role.setGhiChu(request.getGhiChu());
+
+        if (request.getGhiChu() != null) {
+            role.setGhiChu(request.getGhiChu().trim());
+        }
 
         roleAdminRepository.save(role);
 
@@ -385,24 +418,22 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
         Role role = roleAdminRepository.findById(idRole)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Không tìm thấy vai trò với ID_Role=" + idRole
+                        "Không tìm thấy role: " + idRole
                 ));
 
-        List<TaiKhoan_VaiTro> mappings =
-                taiKhoanVaiTroAdminRepository.findByRole_IdRole(idRole);
-
-        if (!mappings.isEmpty()) {
+        try {
+            roleAdminRepository.delete(role);
+        } catch (DataIntegrityViolationException ex) {
+            // Nếu bị FK constraint (đang có account dùng role này)
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Không thể xóa vai trò vì đang được gán cho tài khoản"
+                    "Không thể xóa vai trò đang được sử dụng"
             );
         }
-
-        roleAdminRepository.delete(role);
     }
 
     // =========================================================
-    // HELPER METHODS
+    // HELPER
     // =========================================================
 
     private TkPhanQuyenResponse.AccountDto toAccountDto(
@@ -434,7 +465,7 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
 
     /**
      * Gán list roleIds cho 1 tài khoản:
-     * - Xóa mapping cũ
+     * - Xóa mapping cũ trong TaiKhoan_VaiTro
      * - Tạo mapping mới theo list roleIds
      */
     private List<Role> applyRolesForAccount(TaiKhoan tk, List<String> roleIds) {
@@ -445,44 +476,44 @@ public class TkPhanQuyenServiceImpl implements TkPhanQuyenService {
             taiKhoanVaiTroAdminRepository.deleteAll(oldRelations);
         }
 
+        // Không chọn role nào thì thôi
         if (roleIds == null || roleIds.isEmpty()) {
             return Collections.emptyList();
         }
 
+        // Lấy Role từ DB theo danh sách roleIds
         List<Role> roles = roleAdminRepository.findAllById(roleIds);
 
-        // Map id -> entity để kiểm tra thiếu
-        Set<String> foundIds = roles.stream()
-                .map(Role::getIdRole)
-                .collect(Collectors.toSet());
+        // Tạo list mapping mới
+        List<TaiKhoan_VaiTro> newRelations = roles.stream()
+                .map(role -> {
+                    TaiKhoan_VaiTro rel = new TaiKhoan_VaiTro();
 
-        for (String id : roleIds) {
-            if (!foundIds.contains(id)) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Không tìm thấy vai trò với ID_Role=" + id
-                );
-            }
-        }
+                    // Gán composite key cho entity mapping với bảng TaiKhoan_VaiTro
+                    TaiKhoanVaiTroId id = new TaiKhoanVaiTroId();
+                    id.setIdTk(tk.getIdTk());           // map với cột [ID_TK]
+                    id.setIdRole(role.getIdRole());     // map với cột [ID_Role]
+                    rel.setId(id);
 
-        for (Role role : roles) {
-            TaiKhoan_VaiTro rel = new TaiKhoan_VaiTro();
-            // assuming entity dạng EmbeddedId + MapsId
-            rel.setTaiKhoan(tk);
-            rel.setRole(role);
-            taiKhoanVaiTroAdminRepository.save(rel);
-        }
+                    // Gán reference đến TaiKhoan & Role
+                    rel.setTaiKhoan(tk);
+                    rel.setRole(role);
+
+                    return rel;
+                })
+                .collect(Collectors.toList());
+
+        taiKhoanVaiTroAdminRepository.saveAll(newRelations);
 
         return roles;
     }
 
     /**
-     * Generate ID_TK mới dạng TK + 8 ký tự chữ số/chữ hoa, ví dụ: TKMI9RZ1ZU
-     * Phù hợp nvarchar(10) và không thay đổi schema.
+     * Sinh ID_TK mới dạng prefix + chuỗi số ngẫu nhiên,
+     * đảm bảo không trùng với bất kỳ TaiKhoan hiện có.
      */
-    private String generateIdTk() {
-        final String prefix = "TK";
-        final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private String generateNewAccountId(String prefix) {
+        String chars = "0123456789";
         Random random = new Random();
 
         while (true) {

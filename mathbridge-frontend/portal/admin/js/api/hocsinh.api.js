@@ -1,5 +1,6 @@
 // portal/admin/js/api/hocsinh.api.js
 import { CONFIG } from "../../../../assets/js/config.js";
+import { getAuthHeaders } from "../admin-auth-guard.js";
 
 const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/hocsinh-baitap`;
 
@@ -13,8 +14,10 @@ const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/hocsinh-baitap`;
 export async function apiSearchStudents(filterPayload = {}) {
   const res = await fetch(`${BASE_URL}/students/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(filterPayload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(filterPayload || {}),
   });
 
   if (!res.ok) {
@@ -28,7 +31,13 @@ export async function apiSearchStudents(filterPayload = {}) {
  * GET /students/{idHs}
  */
 export async function apiGetStudentDetail(idHs) {
-  const res = await fetch(`${BASE_URL}/students/${encodeURIComponent(idHs)}`);
+  const res = await fetch(
+    `${BASE_URL}/students/${encodeURIComponent(idHs)}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
+  );
 
   if (!res.ok) {
     throw new Error("Không thể tải chi tiết học sinh");
@@ -44,7 +53,9 @@ export async function apiGetStudentDetail(idHs) {
 export async function apiCreateStudent(payload) {
   const res = await fetch(`${BASE_URL}/students`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
     body: JSON.stringify(payload || {}),
   });
 
@@ -59,11 +70,16 @@ export async function apiCreateStudent(payload) {
  * PUT /students/{idHs}
  */
 export async function apiUpdateStudent(idHs, payload) {
-  const res = await fetch(`${BASE_URL}/students/${encodeURIComponent(idHs)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload || {}),
-  });
+  const res = await fetch(
+    `${BASE_URL}/students/${encodeURIComponent(idHs)}`,
+    {
+      method: "PUT",
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify(payload || {}),
+    }
+  );
 
   if (!res.ok) {
     throw new Error("Không thể cập nhật học sinh");
@@ -81,7 +97,9 @@ export async function apiAddStudentToClass(idHs, classId) {
     `${BASE_URL}/students/${encodeURIComponent(idHs)}/classes`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
       body: JSON.stringify({ classIdToAdd: classId }),
     }
   );
@@ -104,6 +122,7 @@ export async function apiRemoveStudentFromClass(idHs, idLh) {
     )}/classes/${encodeURIComponent(idLh)}`,
     {
       method: "DELETE",
+      headers: getAuthHeaders(),
     }
   );
 
@@ -122,8 +141,10 @@ export async function apiRemoveStudentFromClass(idHs, idLh) {
 export async function apiSearchAssignments(payload = {}) {
   const res = await fetch(`${BASE_URL}/assignments/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}),
   });
 
   if (!res.ok) {
@@ -141,8 +162,10 @@ export async function apiSearchAssignments(payload = {}) {
 export async function apiSearchSubmissions(payload = {}) {
   const res = await fetch(`${BASE_URL}/submissions/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}),
   });
 
   if (!res.ok) {
@@ -156,7 +179,7 @@ export async function apiSearchSubmissions(payload = {}) {
  * Lấy đánh giá & kết quả của 1 lớp
  * POST /evaluations/class
  * body: { classId }
- * response mong đợi:
+ * response:
  * {
  *   classEvaluations: [...],
  *   classResults: [...]
@@ -165,8 +188,10 @@ export async function apiSearchSubmissions(payload = {}) {
 export async function apiGetClassEvaluation(payload = {}) {
   const res = await fetch(`${BASE_URL}/evaluations/class`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}),
   });
 
   if (!res.ok) {

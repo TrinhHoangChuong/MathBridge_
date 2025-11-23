@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Đăng nhập Admin - MathBridge</title>
+
+    <!-- ICONS (Remix Icon) -->
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+    />
+
+    <!-- CSS admin chung nếu có -->
+    <link rel="stylesheet" href="./css/admin.css" />
+
+    <!-- CSS riêng cho trang login -->
+    <style>
+        body {
+          margin: 0;
+          min-height: 100vh;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            sans-serif;
+          background: radial-gradient(circle at top left, #e0f2fe, #f9fafb);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .admin-login-wrapper {
+          width: 100%;
+          max-width: 420px;
+          padding: 16px;
+        }
+
+        .admin-login-card {
+          background: #ffffff;
+          border-radius: 24px;
+          padding: 24px 24px 28px;
+          box-shadow:
+            0 18px 45px rgba(15, 23, 42, 0.12),
+            0 0 0 1px rgba(148, 163, 184, 0.18);
+          border: 1px solid #e5e7eb;
+        }
+
+        .admin-login-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .admin-login-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #0f766e, #14b8a6);
+          color: #ecfeff;
+          font-size: 22px;
+        }
+
+        .admin-login-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #0f172a;
+          margin: 0 0 2px;
+        }
+
+        .admin-login-subtitle {
+          font-size: 13px;
+          color: #64748b;
+          margin: 0;
+        }
+
+        .admin-login-form {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          margin-top: 8px;
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .form-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: #0f172a;
+        }
+
+        .form-control {
+          border-radius: 12px;
+          border: 1px solid #e5e7eb;
+          padding: 9px 11px;
+          font-size: 14px;
+          outline: none;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .form-control:focus {
+          border-color: #0f766e;
+          box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.15);
+        }
+
+        .admin-login-actions {
+          margin-top: 6px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          border-radius: 999px;
+          padding: 9px 14px;
+          font-size: 14px;
+          font-weight: 600;
+          border: none;
+          cursor: pointer;
+          transition: transform 0.1s ease, box-shadow 0.1s ease,
+            background-color 0.15s ease;
+        }
+
+        .btn.primary {
+          background: linear-gradient(135deg, #0f766e, #14b8a6);
+          color: #ecfeff;
+          box-shadow:
+            0 10px 30px rgba(15, 118, 110, 0.35),
+            0 0 0 1px rgba(15, 23, 42, 0.03);
+        }
+
+        .btn.primary:hover {
+          transform: translateY(-1px);
+          box-shadow:
+            0 14px 35px rgba(15, 118, 110, 0.4),
+            0 0 0 1px rgba(15, 23, 42, 0.04);
+        }
+
+        .btn:disabled {
+          opacity: 0.7;
+          cursor: default;
+          transform: none;
+          box-shadow: none;
+        }
+
+        .admin-login-footer {
+          margin-top: 10px;
+          font-size: 12px;
+          color: #94a3b8;
+          text-align: center;
+        }
+
+        .admin-login-error {
+          margin-top: 8px;
+          font-size: 13px;
+          color: #b91c1c;
+          background: #fef2f2;
+          border-radius: 12px;
+          padding: 8px 10px;
+          display: none;
+        }
+    </style>
+</head>
+
+<body>
+<div class="admin-login-wrapper">
+    <div class="admin-login-card">
+        <!-- HEADER -->
+        <div class="admin-login-header">
+            <div class="admin-login-icon">
+                <i class="ri-shield-user-line"></i>
+            </div>
+            <div>
+                <h1 class="admin-login-title">Đăng nhập Admin</h1>
+                <p class="admin-login-subtitle">
+                    Truy cập trang quản trị MathBridge. Chỉ dành cho tài khoản có
+                    quyền ADMIN.
+                </p>
+            </div>
+        </div>
+
+        <!-- FORM -->
+        <form id="admin-login-form" class="admin-login-form">
+            <div class="form-group">
+                <label class="form-label" for="admin-login-email">
+                    Email đăng nhập
+                </label>
+                <input
+                        type="email"
+                        id="admin-login-email"
+                        class="form-control"
+                        placeholder="admin@gmail.com"
+                        autocomplete="username"
+                        required
+                />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="admin-login-password">
+                    Mật khẩu
+                </label>
+                <input
+                        type="password"
+                        id="admin-login-password"
+                        class="form-control"
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                        required
+                />
+            </div>
+
+            <div id="admin-login-error" class="admin-login-error"></div>
+
+            <div class="admin-login-actions">
+                <button
+                        type="submit"
+                        id="admin-login-submit"
+                        class="btn primary"
+                >
+                    <i class="ri-login-circle-line"></i>
+                    <span>Đăng nhập</span>
+                </button>
+            </div>
+        </form>
+
+        <div class="admin-login-footer">
+            <span>MathBridge Admin Portal</span>
+        </div>
+    </div>
+</div>
+
+<!-- JS login (ES module) -->
+<script type="module" src="./js/pages/admin-login.js"></script>
+</body>
+</html>
