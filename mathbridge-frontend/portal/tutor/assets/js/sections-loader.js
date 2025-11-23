@@ -20,7 +20,44 @@
       const template = doc.createElement("template");
       template.innerHTML = html.trim();
 
-      placeholder.replaceWith(template.content.cloneNode(true));
+      // Extract scripts before cloning
+      const scripts = Array.from(template.content.querySelectorAll("script"));
+      const scriptData = scripts.map(script => ({
+        src: script.src,
+        text: script.textContent,
+        type: script.type,
+        async: script.async,
+        defer: script.defer
+      }));
+      
+      // Remove scripts from template (they won't execute in template anyway)
+      scripts.forEach(script => script.remove());
+
+      // Insert HTML content
+      const clonedContent = template.content.cloneNode(true);
+      const parent = placeholder.parentElement;
+      placeholder.replaceWith(clonedContent);
+      
+      // Find the inserted section element
+      const insertedSection = parent.querySelector('section.content-section') || parent.lastElementChild;
+      const container = insertedSection || parent;
+      
+      // Execute scripts after DOM insertion
+      scriptData.forEach((scriptInfo) => {
+        const newScript = doc.createElement("script");
+        if (scriptInfo.src) {
+          newScript.src = scriptInfo.src;
+          newScript.async = scriptInfo.async || false;
+          newScript.defer = scriptInfo.defer || false;
+        } else {
+          newScript.textContent = scriptInfo.text;
+        }
+        if (scriptInfo.type) {
+          newScript.type = scriptInfo.type;
+        }
+        // Append to the section or body
+        container.appendChild(newScript);
+      });
     } catch (error) {
       console.error("[Tutor Sections] Unable to load section:", src, error);
       placeholder.replaceWith(doc.createComment(`Failed to load section ${src}`));

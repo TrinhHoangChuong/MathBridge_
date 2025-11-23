@@ -26,10 +26,12 @@ public class TuConsultationScheduleService {
         LocalDateTime from = weekStart.atStartOfDay();
         LocalDateTime to = weekEnd.atTime(LocalTime.MAX);
 
-        // Query by ThoiGianTuVan (consultation time) instead of ThoiDiemTao (creation time)
+        // Query by ThoiGianTuVan (consultation time) - only get records with ThoiGianTuVan not null
         List<LienHeTuVan> requests = tuLienHeTuVanRepository.findByThoiGianTuVanBetween(from, to);
 
+        // Filter to only include records with ThoiGianTuVan not null
         List<TuConsultationScheduleDTO> items = requests.stream()
+                .filter(entity -> entity.getThoiGianTuVan() != null) // Only include records with consultation time
                 .map(this::convertToScheduleDTO)
                 .sorted(Comparator.comparing(TuConsultationScheduleDTO::getStartTime))
                 .collect(Collectors.toList());
@@ -48,11 +50,16 @@ public class TuConsultationScheduleService {
         dto.setEmail(entity.getEmail());
         dto.setPhone(entity.getSdt());
 
-        // Use ThoiGianTuVan (consultation time) instead of ThoiDiemTao (creation time)
-        LocalDateTime start = entity.getThoiGianTuVan() != null ? entity.getThoiGianTuVan() : 
-                              (entity.getThoiDiemTao() != null ? entity.getThoiDiemTao() : LocalDateTime.now());
+        // Use ThoiGianTuVan (consultation time) as startTime
+        // EndTime = StartTime + 1 hour (60 minutes)
+        LocalDateTime start = entity.getThoiGianTuVan();
+        if (start == null) {
+            // This should not happen as we filter null values, but handle it just in case
+            start = LocalDateTime.now();
+        }
         dto.setStartTime(start);
-        dto.setEndTime(start.plusMinutes(60));
+        // EndTime = StartTime + 1 hour
+        dto.setEndTime(start.plusHours(1));
 
         boolean online = isOnlineChannel(entity.getHinhThucTuVan());
         dto.setOnline(online);

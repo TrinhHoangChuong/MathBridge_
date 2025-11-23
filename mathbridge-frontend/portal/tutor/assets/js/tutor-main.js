@@ -1076,11 +1076,33 @@ class TutorDashboard {
         break;
       case "consultation-schedule":
         // Use module if available, otherwise fallback to method
-        if (window.consultationScheduleModule && window.consultationScheduleModule.loadData) {
-          window.consultationScheduleModule.loadData();
-        } else {
-          this.initializeConsultationSchedule();
-        }
+        console.log('[loadSectionData] Loading consultation-schedule section...');
+        
+        // Wait for script to load if not available yet
+        const checkModule = (retries = 10) => {
+          if (window.consultationScheduleModule) {
+            console.log('[loadSectionData] consultationScheduleModule found!');
+            if (window.consultationScheduleModule.init) {
+              window.consultationScheduleModule.init();
+            }
+            if (window.consultationScheduleModule.loadData) {
+              // Small delay to ensure DOM is ready
+              setTimeout(() => {
+                window.consultationScheduleModule.loadData();
+              }, 200);
+            }
+          } else if (retries > 0) {
+            console.log(`[loadSectionData] consultationScheduleModule not found, retrying... (${retries} left)`);
+            setTimeout(() => checkModule(retries - 1), 100);
+          } else {
+            console.warn('[loadSectionData] consultationScheduleModule not found after retries, using fallback');
+            if (this.initializeConsultationSchedule) {
+              this.initializeConsultationSchedule();
+            }
+          }
+        };
+        
+        checkModule();
         break;
     }
   }
