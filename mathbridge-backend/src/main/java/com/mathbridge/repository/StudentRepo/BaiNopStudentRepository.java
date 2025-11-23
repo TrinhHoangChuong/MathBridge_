@@ -19,7 +19,7 @@ public interface BaiNopStudentRepository extends JpaRepository<BaiNop, String> {
 
     Optional<BaiNop> findFirstByIdBnAndHocSinh_IdHs(String idBn, String idHs);
 
-    Optional<BaiNop> findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByThoiGianBatDauDesc(String idBT, String idHS);
+    Optional<BaiNop> findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByIdBnDesc(String idBT, String idHS);
 
     long countByBaiTap_IdBtAndHocSinh_IdHs(String idBT, String idHS);
 }

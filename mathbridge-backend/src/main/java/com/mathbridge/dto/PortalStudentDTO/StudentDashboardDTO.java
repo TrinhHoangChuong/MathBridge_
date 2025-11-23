@@ -9,6 +9,7 @@ public class StudentDashboardDTO {
     private String phone;
     private String address;
     private Boolean gender;
+    private String birthDate;
     private List<StudentClassDTO> classes;
     private List<StudentAssignmentDTO> assignments;
     private List<StudentGradeDTO> grades;
@@ -91,6 +92,14 @@ public class StudentDashboardDTO {
 
     public void setGender(Boolean gender) {
         this.gender = gender;
+    }
+
+    public String getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(String birthDate) {
+        this.birthDate = birthDate;
     }
 
     public List<StudentClassDTO> getClasses() {

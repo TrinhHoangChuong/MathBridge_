@@ -391,6 +391,7 @@ class StudentDashboard {
     constructor() {
         this.currentSection = 'dashboard';
         this.studentData = null;
+        this.scheduleData = []; // Schedule data loaded from API
         this.charts = {};
         this.currentMonth = new Date().getMonth();
         this.currentYear = new Date().getFullYear();
@@ -1853,6 +1854,42 @@ class StudentDashboard {
             });
         } catch (e) {
             return 'N/A';
+        }
+    }
+
+    formatDateForInput(dateString) {
+        if (!dateString) return '';
+        try {
+            // Parse date from various formats
+            let date;
+            if (typeof dateString === 'string') {
+                // If it's already in YYYY-MM-DD format, return as is
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+                    return dateString;
+                }
+                // Try to parse ISO format or other formats
+                date = new Date(dateString);
+            } else {
+                date = new Date(dateString);
+            }
+            
+            if (isNaN(date.getTime())) {
+                // Try to extract date part if it's in ISO format with time
+                const datePart = dateString.split('T')[0];
+                if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+                    return datePart;
+                }
+                return '';
+            }
+            
+            // Format to YYYY-MM-DD for date input
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        } catch (e) {
+            console.warn('Error formatting date for input:', dateString, e);
+            return '';
         }
     }
 
@@ -3643,7 +3680,7 @@ class StudentDashboard {
                         </div>
                         <div class="form-field">
                             <label for="profileBirthDate">Ngày sinh</label>
-                            <input type="date" id="profileBirthDate" value="${this.studentData.birthDate || ''}">
+                            <input type="date" id="profileBirthDate" value="${this.formatDateForInput(this.studentData.birthDate)}">
                         </div>
                         <div class="form-field">
                             <label for="profileGender">Giới tính</label>
@@ -4757,11 +4794,32 @@ class StudentDashboard {
         
         if (formContainer) {
             formContainer.style.display = 'block';
+            
+            // Populate class dropdown with student's registered classes
+            this.populateSupportClassDropdown();
         }
         
         // Ẩn bảng yêu cầu khi đang tạo form
         if (requestsContainer) {
             requestsContainer.style.display = 'none';
+        }
+    }
+    
+    populateSupportClassDropdown() {
+        const classSelect = document.getElementById('supportClass');
+        if (!classSelect) return;
+        
+        // Clear existing options except the first one
+        classSelect.innerHTML = '<option value="">-- Chọn lớp học --</option>';
+        
+        // Get classes from studentData
+        if (this.studentData && this.studentData.classes && this.studentData.classes.length > 0) {
+            this.studentData.classes.forEach(cls => {
+                const option = document.createElement('option');
+                option.value = cls.classId || '';
+                option.textContent = cls.className || 'Lớp học';
+                classSelect.appendChild(option);
+            });
         }
     }
 
@@ -4788,11 +4846,12 @@ class StudentDashboard {
         event.preventDefault();
 
         const formData = new FormData(event.target);
+        const classId = formData.get('supportClass');
         const supportData = {
             type: formData.get('supportType'),
             title: formData.get('supportTitle'),
             description: formData.get('supportDescription'),
-            classId: null, // Không còn trường chọn lớp học
+            classId: classId && classId.trim() !== '' ? classId.trim() : null,
             fileUrl: null // File upload will be handled separately in future
         };
 
@@ -5363,95 +5422,48 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Schedule loading methods
-StudentDashboard.prototype.loadSchedule = function() {
-    // Update today's date
-    const todayDateElement = document.getElementById('todayDate');
-    if (todayDateElement) {
-        const today = new Date();
-        todayDateElement.textContent = today.toLocaleDateString('vi-VN', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    }
-
-    // Load today's schedule
-    this.loadTodaySchedule();
-
-    // Update calendar
-    this.updateCalendar();
-};
-
-StudentDashboard.prototype.loadTodaySchedule = function() {
-    const todayScheduleList = document.getElementById('todayScheduleList');
-    if (!todayScheduleList) return;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
-
-    // First, try to get today's schedule from attendedClasses
-    let scheduleItems = '';
-    
-    if (this.studentData?.attendedClasses && this.studentData.attendedClasses.length > 0) {
-        const todayClasses = this.studentData.attendedClasses.filter(ac => {
-            if (!ac.sessionDate) return false;
-            const sessionDate = new Date(ac.sessionDate);
-            sessionDate.setHours(0, 0, 0, 0);
-            return sessionDate.getTime() === today.getTime();
-        });
-
-        if (todayClasses.length > 0) {
-            scheduleItems = todayClasses.map(ac => {
-                const startTime = ac.startTime ? ac.startTime.substring(0, 5) : 'N/A';
-                const endTime = ac.endTime ? ac.endTime.substring(0, 5) : 'N/A';
-                return `
-                    <div class="schedule-item">
-                        <div class="schedule-time">
-                            <div class="time">${startTime}</div>
-                            <div class="duration">${endTime}</div>
-                        </div>
-                        <div class="schedule-details">
-                            <h4>${this.escapeHtml(ac.className || 'Lớp học')}</h4>
-                            <p><i class="fas fa-map-marker-alt"></i> ${this.escapeHtml(ac.room || 'Chưa có phòng')}</p>
-                            <p><i class="fas fa-user"></i> Buổi ${ac.sessionNumber || 'N/A'}</p>
-                            ${ac.content ? `<p>${this.escapeHtml(ac.content)}</p>` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+StudentDashboard.prototype.loadSchedule = async function() {
+    try {
+        // Load schedule data from API
+        console.log('Loading schedule data from API...');
+        const scheduleResponse = await this.apiCall('/api/portal/student/schedule');
+        console.log('Schedule API response:', scheduleResponse);
+        
+        if (scheduleResponse && scheduleResponse.success && scheduleResponse.data) {
+            this.scheduleData = scheduleResponse.data;
+            console.log('Schedule data loaded:', this.scheduleData.length, 'sessions');
+        } else if (scheduleResponse && Array.isArray(scheduleResponse)) {
+            // Fallback: if response is array directly
+            this.scheduleData = scheduleResponse;
+            console.log('Schedule data loaded (array):', this.scheduleData.length, 'sessions');
+        } else if (scheduleResponse && scheduleResponse.data) {
+            // Fallback: if response has data directly
+            this.scheduleData = scheduleResponse.data;
+            console.log('Schedule data loaded (data field):', this.scheduleData.length, 'sessions');
+        } else {
+            // Không có dữ liệu từ API, để mảng rỗng
+            this.scheduleData = [];
+            console.log('No schedule data from API, using empty array');
         }
-    }
 
-    // If no attended classes for today, show schedule from classes list
-    if (!scheduleItems && this.studentData?.classes && this.studentData.classes.length > 0) {
-        scheduleItems = this.studentData.classes
-            .filter(cls => cls.schedule && cls.schedule !== 'Chưa có lịch học')
-            .map(cls => `
-                <div class="schedule-item">
-                    <div class="schedule-time">
-                        <div class="time">Lịch học</div>
-                    </div>
-                    <div class="schedule-details">
-                        <h4>${this.escapeHtml(cls.className || 'Lớp học')}</h4>
-                        <p><i class="fas fa-clock"></i> ${this.escapeHtml(cls.schedule || 'Chưa có lịch học')}</p>
-                        <p><i class="fas fa-map-marker-alt"></i> ${this.escapeHtml(cls.room || 'Chưa có phòng')}</p>
-                    </div>
-                </div>
-            `).join('');
-    }
-
-    if (scheduleItems) {
-        todayScheduleList.innerHTML = scheduleItems;
-    } else {
-        todayScheduleList.innerHTML = '<p class="empty-state">Không có lịch học hôm nay</p>';
+        // Update calendar
+        this.updateCalendar();
+    } catch (error) {
+        console.error('Error loading schedule:', error);
+        // Không có dữ liệu, để mảng rỗng
+        this.scheduleData = [];
+        this.updateCalendar();
     }
 };
 
 StudentDashboard.prototype.updateCalendar = function() {
         const calendarGrid = document.getElementById('calendarGrid');
-        if (!calendarGrid) return;
+        if (!calendarGrid) {
+            console.warn('[updateCalendar] Element calendarGrid not found');
+            return;
+        }
+        
+        console.log('[updateCalendar] Updating calendar with scheduleData length:', this.scheduleData?.length || 0);
 
         // Update month display
         const currentMonthElement = document.getElementById('currentMonth');
@@ -5476,13 +5488,32 @@ StudentDashboard.prototype.updateCalendar = function() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        // Đếm từ attendedClasses
-        if (this.studentData?.attendedClasses) {
-            this.studentData.attendedClasses.forEach(ac => {
+        // Chỉ đếm từ scheduleData (loaded from BuoiHocChiTiet API)
+        const scheduleSource = this.scheduleData || [];
+        
+        if (scheduleSource && scheduleSource.length > 0) {
+            scheduleSource.forEach(ac => {
                 if (ac.sessionDate) {
-                    const date = new Date(ac.sessionDate);
-                    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                    dateClassCount.set(dateKey, (dateClassCount.get(dateKey) || 0) + 1);
+                    // Parse date từ ISO format (có thể là "2025-11-15T12:10:00" hoặc "2025-11-15")
+                    let date;
+                    try {
+                        // Thử parse ISO format trước
+                        date = new Date(ac.sessionDate);
+                        // Kiểm tra nếu date không hợp lệ
+                        if (isNaN(date.getTime())) {
+                            // Thử parse format khác
+                            const dateStr = ac.sessionDate.split('T')[0]; // Lấy phần date nếu có T
+                            date = new Date(dateStr + 'T00:00:00');
+                        }
+                    } catch (e) {
+                        console.warn('[updateCalendar] Error parsing date:', ac.sessionDate, e);
+                        return;
+                    }
+                    
+                    if (!isNaN(date.getTime())) {
+                        const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        dateClassCount.set(dateKey, (dateClassCount.get(dateKey) || 0) + 1);
+                    }
                 }
             });
         }
@@ -5540,15 +5571,15 @@ StudentDashboard.prototype.updateCalendar = function() {
                 dayClass += ' today';
             }
             
-            // Hiển thị badge số lượng lớp
+            // Hiển thị badge số lượng khóa học
             if (classCount > 0) {
                 let badgeClass = 'day-badge';
                 if (classCount >= 3) {
-                    badgeClass += ' badge-many'; // Đỏ cho 3+ lớp
+                    badgeClass += ' badge-many'; // Đỏ cho 3+ khóa học
                 } else if (classCount === 2) {
-                    badgeClass += ' badge-medium'; // Vàng cho 2 lớp
+                    badgeClass += ' badge-medium'; // Vàng cho 2 khóa học
                 } else {
-                    badgeClass += ' badge-few'; // Xanh cho 1 lớp
+                    badgeClass += ' badge-few'; // Xanh cho 1 khóa học
                 }
                 dayBadge = `<div class="${badgeClass}">${classCount} khóa học</div>`;
             }
@@ -5594,9 +5625,8 @@ StudentDashboard.prototype.switchScheduleView = function(view) {
 
 StudentDashboard.prototype.changeWeek = function(delta) {
         const today = new Date();
-        const currentWeekStart = this.getWeekStartDate(today);
-        currentWeekStart.setDate(currentWeekStart.getDate() + (delta * 7));
-        this.currentWeek = this.getWeekNumber(currentWeekStart);
+        const currentWeekNumber = this.getWeekNumber(today);
+        this.currentWeek = currentWeekNumber + delta;
         this.updateWeekView();
     };
 
@@ -5609,10 +5639,17 @@ StudentDashboard.prototype.getWeekNumber = function(date) {
     };
 
 StudentDashboard.prototype.getWeekStartDate = function(date) {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-        return new Date(d.setDate(diff));
+        // Tạo bản sao để không modify date gốc
+        const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const day = d.getDay(); // 0 = Chủ nhật, 1 = Thứ 2, ..., 6 = Thứ 7
+        // Tính số ngày cần trừ để về Thứ 2 (Monday = 1)
+        // Nếu là Chủ nhật (0), trừ 6 ngày để về Thứ 2
+        // Nếu là Thứ 2 (1), trừ 0 ngày
+        // Nếu là Thứ 3 (2), trừ 1 ngày
+        // Công thức: day === 0 ? -6 : 1 - day
+        const diff = day === 0 ? -6 : 1 - day;
+        d.setDate(d.getDate() + diff);
+        return d;
     };
 
 StudentDashboard.prototype.updateWeekView = function() {
@@ -5620,20 +5657,27 @@ StudentDashboard.prototype.updateWeekView = function() {
         const currentWeekEl = document.getElementById('currentWeek');
         if (!weekSchedule) return;
 
+        // Tính tuần hiện tại dựa trên currentWeek và currentYear
         const today = new Date();
-        const weekStart = this.getWeekStartDate(today);
-        weekStart.setDate(weekStart.getDate() + ((this.currentWeek - this.getWeekNumber(today)) * 7));
+        const currentWeekStart = this.getWeekStartDate(today);
+        
+        // Tính số tuần offset từ tuần hiện tại
+        const currentWeekNumber = this.getWeekNumber(today);
+        const weekOffset = this.currentWeek - currentWeekNumber;
+        
+        // Tính ngày bắt đầu tuần cần hiển thị
+        const weekStart = new Date(currentWeekStart);
+        weekStart.setDate(currentWeekStart.getDate() + (weekOffset * 7));
         
         if (currentWeekEl) {
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekEnd.getDate() + 6);
-            const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-                              'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
             currentWeekEl.textContent = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}, ${weekEnd.getFullYear()}`;
         }
 
         let weekHTML = '';
-        const dayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        // Thứ tự: Thứ 2, Thứ 3, Thứ 4, Thứ 5, Thứ 6, Thứ 7, Chủ nhật
+        const dayNames = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'];
         
         for (let i = 0; i < 7; i++) {
             const currentDay = new Date(weekStart);
@@ -5642,7 +5686,11 @@ StudentDashboard.prototype.updateWeekView = function() {
             
             // Lấy các lớp học trong ngày
             const dayClasses = this.getClassesForDate(dateKey);
-            const isToday = currentDay.toDateString() === new Date().toDateString();
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+            const checkDate = new Date(currentDay);
+            checkDate.setHours(0, 0, 0, 0);
+            const isToday = checkDate.getTime() === todayDate.getTime();
             
             weekHTML += `
                 <div class="week-day ${isToday ? 'today' : ''}">
@@ -5651,13 +5699,16 @@ StudentDashboard.prototype.updateWeekView = function() {
                         <span class="week-day-date">${currentDay.getDate()}/${currentDay.getMonth() + 1}</span>
                     </div>
                     <div class="week-day-classes">
-                        ${dayClasses.length > 0 ? dayClasses.map(cls => `
+                        ${dayClasses.length > 0 ? dayClasses.map(cls => {
+                            const startTime = cls.startTime ? cls.startTime.substring(0, 5) : 'N/A';
+                            return `
                             <div class="week-class-item" onclick="dashboard.showDaySchedule('${dateKey}')">
-                                <div class="week-class-time">${cls.startTime || 'N/A'}</div>
+                                <div class="week-class-time">${startTime}</div>
                                 <div class="week-class-name">${this.escapeHtml(cls.className || 'Lớp học')}</div>
                                 <div class="week-class-room">${this.escapeHtml(cls.room || 'Chưa có phòng')}</div>
                             </div>
-                        `).join('') : '<div class="week-day-empty">Không có lịch học</div>'}
+                        `;
+                        }).join('') : '<div class="week-day-empty">Không có lịch học</div>'}
                     </div>
                 </div>
             `;
@@ -5667,13 +5718,28 @@ StudentDashboard.prototype.updateWeekView = function() {
     };
 
 StudentDashboard.prototype.getClassesForDate = function(dateKey) {
-        if (!this.studentData?.attendedClasses) return [];
+        // Chỉ lấy từ scheduleData (BuoiHocChiTiet), không dùng fallback
+        const scheduleSource = this.scheduleData || [];
         
-        return this.studentData.attendedClasses.filter(ac => {
+        if (!scheduleSource || scheduleSource.length === 0) return [];
+        
+        return scheduleSource.filter(ac => {
             if (!ac.sessionDate) return false;
-            const date = new Date(ac.sessionDate);
-            const acDateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            return acDateKey === dateKey;
+            try {
+                // Parse date từ ISO format
+                let date = new Date(ac.sessionDate);
+                if (isNaN(date.getTime())) {
+                    const dateStr = ac.sessionDate.split('T')[0];
+                    date = new Date(dateStr + 'T00:00:00');
+                }
+                if (isNaN(date.getTime())) return false;
+                
+                const acDateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                return acDateKey === dateKey;
+            } catch (e) {
+                console.warn('[getClassesForDate] Error parsing date:', ac.sessionDate, e);
+                return false;
+            }
         });
     };
 
@@ -5695,17 +5761,28 @@ StudentDashboard.prototype.showDaySchedule = function(dateKey) {
         modalTitle.textContent = `${dateStr} (${classes.length} Lịch Học)`;
         
         if (classes.length > 0) {
-            modalBody.innerHTML = classes.map((cls, index) => {
+            // Sắp xếp theo thời gian bắt đầu
+            const sortedClasses = classes.sort((a, b) => {
+                const timeA = a.startTime || '00:00';
+                const timeB = b.startTime || '00:00';
+                return timeA.localeCompare(timeB);
+            });
+            
+            modalBody.innerHTML = sortedClasses.map((cls, index) => {
                 const startTime = cls.startTime ? cls.startTime.substring(0, 5) : 'N/A';
                 const endTime = cls.endTime ? cls.endTime.substring(0, 5) : 'N/A';
+                const className = cls.className || 'Lớp học';
+                const classId = cls.classId || '';
+                const displayName = classId ? `${className} - ${classId}` : className;
+                
                 return `
                     <div class="schedule-modal-item">
                         <div class="schedule-modal-time">${startTime}</div>
                         <div class="schedule-modal-content">
-                            <h4>${this.escapeHtml(cls.className || 'Lớp học')}</h4>
+                            <h4>${this.escapeHtml(displayName)}</h4>
                             <p><i class="fas fa-map-marker-alt"></i> Phòng: ${this.escapeHtml(cls.room || 'Chưa có phòng')}</p>
                             <p><i class="fas fa-clock"></i> Thời gian: ${startTime} → ${endTime}</p>
-                            ${cls.content ? `<p><i class="fas fa-sticky-note"></i> Ghi chú: ${this.escapeHtml(cls.content)}</p>` : ''}
+                            <p><i class="fas fa-sticky-note"></i> Ghi chú: ${cls.content ? this.escapeHtml(cls.content) : ''}</p>
                         </div>
                     </div>
                 `;

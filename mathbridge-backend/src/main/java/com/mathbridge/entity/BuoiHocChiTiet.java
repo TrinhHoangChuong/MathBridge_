@@ -46,6 +46,12 @@ public class BuoiHocChiTiet {
 
     @Column(name = "GhiChu", length = 200)
     private String ghiChu;
+
+    @Column(name = "DiemDanhGia")
+    private Integer diemDanhGia;
+
+    @Column(name = "NhanXetDanhGia", length = 500)
+    private String nhanXetDanhGia;
     // QUAN HỆ
 
     @ManyToOne

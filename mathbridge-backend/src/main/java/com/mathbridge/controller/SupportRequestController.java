@@ -172,8 +172,17 @@ public class SupportRequestController {
                 fileUrl = fileUrl.substring(0, 400);
             }
 
+            // Get student ID from user ID
+            Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
+            if (!studentOpt.isPresent()) {
+                return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, "Không tìm thấy thông tin học sinh", null));
+            }
+            String studentId = studentOpt.get().getIdHs();
+
             YeuCauHoTro request = new YeuCauHoTro();
             request.setIdYc(newId);
+            request.setIdHs(studentId); // Set student ID
             request.setTieuDe(tieuDe); // length <= 100, nullable = false
             request.setNoiDung(noiDung); // length <= 200, nullable = false
             request.setLoaiYeuCau(loaiYeuCau); // length <= 100, nullable
@@ -187,21 +196,20 @@ public class SupportRequestController {
                 Optional<LopHoc> lopHocOpt = lopHocRepository.findById(createDTO.getClassId().trim());
                 if (lopHocOpt.isPresent()) {
                     // Verify student is registered in this class
-                    Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
-                    if (studentOpt.isPresent()) {
-                        String studentId = studentOpt.get().getIdHs();
-                        boolean isRegistered = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
-                            .anyMatch(dk -> dk.getLopHoc() != null && 
-                                          dk.getLopHoc().getIdLh().equals(createDTO.getClassId().trim()));
-                        
-                        if (isRegistered) {
-                            request.setLopHoc(lopHocOpt.get());
-                        } else {
-                            // Student not registered in this class, but we'll still allow it
-                            // (maybe it's a general question about the class)
-                            request.setLopHoc(lopHocOpt.get());
-                        }
+                    boolean isRegistered = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
+                        .anyMatch(dk -> dk.getLopHoc() != null && 
+                                      dk.getLopHoc().getIdLh().equals(createDTO.getClassId().trim()));
+                    
+                    if (isRegistered) {
+                        request.setIdLh(createDTO.getClassId().trim()); // Set class ID
+                        request.setLopHoc(lopHocOpt.get());
+                    } else {
+                        return ResponseEntity.badRequest()
+                            .body(new ApiResponse<>(false, "Bạn chưa đăng ký lớp học này", null));
                     }
+                } else {
+                    return ResponseEntity.badRequest()
+                        .body(new ApiResponse<>(false, "Không tìm thấy lớp học", null));
                 }
             }
 
