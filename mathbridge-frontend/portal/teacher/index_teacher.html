@@ -502,7 +502,12 @@
 
                 <!-- Grade Table -->
                 <div class="grades-table-container">
-                    <h3>Chi tiết điểm số</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Chi tiết điểm số</h3>
+                        <button type="button" class="btn btn-primary" id="editGradesBtn" onclick="toggleEditMode(event)">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </button>
+                    </div>
                     <div class="table-wrapper">
                         <table class="grades-table">
                             <thead>
@@ -514,12 +519,11 @@
                                     <th>Điểm thi HK</th>
                                     <th>Điểm TB</th>
                                     <th>Xếp loại</th>
-                                    <th>Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr class="placeholder-row">
-                                    <td colspan="8" class="text-center">Vui lòng chọn lớp để xem điểm số.</td>
+                                    <td colspan="7" class="text-center">Vui lòng chọn lớp để xem điểm số.</td>
                                 </tr>
                             </tbody>
                         </table>

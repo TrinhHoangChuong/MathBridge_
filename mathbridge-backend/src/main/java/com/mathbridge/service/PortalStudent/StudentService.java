@@ -104,11 +104,6 @@ public class StudentService {
         dashboard.setPhone(student.getSdt());
         dashboard.setAddress(student.getDiaChi());
         dashboard.setGender(student.getGioiTinh());
-        
-        // Format birthDate to YYYY-MM-DD for date input
-        if (student.getNgaySinh() != null) {
-            dashboard.setBirthDate(student.getNgaySinh().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE));
-        }
 
         // Get real data from database
         dashboard.setClasses(getStudentClasses(studentId));
@@ -135,7 +130,7 @@ public class StudentService {
         int duration = resolveDurationMinutes(assignment);
 
         Optional<BaiNop> submissionOpt = baiNopStudentRepository
-                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByIdBnDesc(assignmentId, student.getIdHs());
+                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByThoiGianBatDauDesc(assignmentId, student.getIdHs());
         BaiNop submission = submissionOpt
                 .map(bn -> autoFinalizeIfExpired(assignment, bn, duration))
                 .orElse(null);
@@ -158,7 +153,7 @@ public class StudentService {
         int duration = resolveDurationMinutes(assignment);
 
         Optional<BaiNop> submissionOpt = baiNopStudentRepository
-                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByIdBnDesc(assignmentId, student.getIdHs());
+                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByThoiGianBatDauDesc(assignmentId, student.getIdHs());
         BaiNop submission = ensureSubmissionForStart(assignment, student, submissionOpt.orElse(null),
                 questions, duration);
 
@@ -373,14 +368,14 @@ public class StudentService {
             assignmentDTO.setAutoSubmit(resolveAutoSubmit(baiTap));
             assignmentDTO.setWarningMessage(resolveWarningMessage(baiTap));
             assignmentDTO.setRequiresManualReview(hasEssayQuestion(baiTap));
-            boolean allowRetry = Boolean.TRUE.equals(baiTap.getChoPhepLamBai());
+            boolean allowRetry = Boolean.TRUE.equals(baiTap.getChoPhepLamLai());
             assignmentDTO.setAllowRetry(allowRetry);
             long attemptCount = baiNopStudentRepository.countByBaiTap_IdBtAndHocSinh_IdHs(
                 baiTap.getIdBt(), studentId);
             assignmentDTO.setAttemptCount((int) attemptCount);
             
         Optional<BaiNop> baiNopOpt = baiNopStudentRepository
-                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByIdBnDesc(baiTap.getIdBt(), studentId);
+                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByThoiGianBatDauDesc(baiTap.getIdBt(), studentId);
 
             BaiNop submission = baiNopOpt
                     .map(bn -> autoFinalizeIfExpired(baiTap, bn, durationMinutes))
@@ -686,9 +681,9 @@ public class StudentService {
             if ("IN_PROGRESS".equalsIgnoreCase(submission.getTrangThai())) {
                 return submission;
             }
-            // Check if assignment allows retake (choPhepLamBai)
-            Boolean choPhepLamBai = assignment.getChoPhepLamBai();
-            if (choPhepLamBai != null && choPhepLamBai) {
+            // Check if assignment allows retake (choPhepLamLai)
+            Boolean choPhepLamLai = assignment.getChoPhepLamLai();
+            if (choPhepLamLai != null && choPhepLamLai) {
                 // Allow retake - create a new submission (this preserves history as each submission is a new BaiNop)
                 // The old submission remains in database as history
                 System.out.println("Assignment allows retake. Creating new submission for student: " + student.getIdHs());
@@ -723,14 +718,21 @@ public class StudentService {
         BaiNop newSubmission = new BaiNop();
         
         // Set ID IMMEDIATELY - BEFORE any other operations
+        // Set both ID_BN and ID_BaiNop (database has both columns)
         newSubmission.setIdBn(submissionId);
+        newSubmission.setIdBaiNop(submissionId); // Set same value for both columns
         
         // Verify ID is set correctly
         String verifyId = newSubmission.getIdBn();
+        String verifyIdBaiNop = newSubmission.getIdBaiNop();
         if (verifyId == null || verifyId.trim().isEmpty()) {
             throw new RuntimeException("ERROR: ID không được set sau khi gọi setIdBn()");
         }
+        if (verifyIdBaiNop == null || verifyIdBaiNop.trim().isEmpty()) {
+            throw new RuntimeException("ERROR: ID_BaiNop không được set sau khi gọi setIdBaiNop()");
+        }
         System.out.println("ID_BN after setIdBn(): '" + verifyId + "' (length: " + verifyId.length() + ")");
+        System.out.println("ID_BaiNop after setIdBaiNop(): '" + verifyIdBaiNop + "' (length: " + verifyIdBaiNop.length() + ")");
         
         // Set other required fields
         newSubmission.setIdBt(assignment.getIdBt());
@@ -742,13 +744,18 @@ public class StudentService {
         newSubmission.setTrangThai("IN_PROGRESS");
         newSubmission.setThoiGianBatDau(LocalDateTime.now());
         
-        // Final check before save - verify ID is still set
+        // Final check before save - verify BOTH IDs are still set
         String finalId = newSubmission.getIdBn();
+        String finalIdBaiNop = newSubmission.getIdBaiNop();
         if (finalId == null || finalId.trim().isEmpty()) {
             throw new RuntimeException("ERROR: ID_BN bị mất trước khi save! Was: '" + verifyId + "'");
         }
+        if (finalIdBaiNop == null || finalIdBaiNop.trim().isEmpty()) {
+            throw new RuntimeException("ERROR: ID_BaiNop bị mất trước khi save! Was: '" + verifyIdBaiNop + "'");
+        }
         System.out.println("ID_BN before save(): '" + finalId + "' (length: " + finalId.length() + ")");
-        System.out.println("Entity state before save - idBn: " + finalId + ", idBt: " + newSubmission.getIdBt() + ", idHs: " + newSubmission.getIdHs());
+        System.out.println("ID_BaiNop before save(): '" + finalIdBaiNop + "' (length: " + finalIdBaiNop.length() + ")");
+        System.out.println("Entity state before save - idBn: " + finalId + ", idBaiNop: " + finalIdBaiNop + ", idBt: " + newSubmission.getIdBt() + ", idHs: " + newSubmission.getIdHs());
         
         // Save entity
         try {
@@ -987,72 +994,32 @@ public class StudentService {
         return registrationDTOs;
     }
 
-    public List<StudentAttendedClassDTO> getStudentSchedule(String userId) {
-        HocSinh student = getHocSinhByUserId(userId);
-        return getStudentAttendedClasses(student.getIdHs());
-    }
-
     private List<StudentAttendedClassDTO> getStudentAttendedClasses(String studentId) {
         List<BuoiHocChiTiet> sessions = buoiHocChiTietStudentRepository.findByHocSinhId(studentId);
-        
-        System.out.println("[getStudentAttendedClasses] Student ID: " + studentId);
-        System.out.println("[getStudentAttendedClasses] Found " + sessions.size() + " sessions from database");
         
         // Use Map to store unique sessions by classId + sessionNumber
         // Key: classId + "_" + sessionNumber, Value: StudentAttendedClassDTO (keep the most recent one)
         Map<String, StudentAttendedClassDTO> uniqueSessionsMap = new HashMap<>();
         
-        int processedCount = 0;
-        int skippedCount = 0;
-        
         for (BuoiHocChiTiet session : sessions) {
-            processedCount++;
-            if (session.getLopHoc() == null) {
-                skippedCount++;
-                continue;
-            }
+            if (session.getLopHoc() == null) continue;
             
             LopHoc lopHoc = session.getLopHoc();
             String classId = lopHoc.getIdLh();
             
-            // Safely parse session number from "Buổi X" format or just number
+            // Safely parse session number
             int sessionNumber = 0;
             try {
                 if (session.getThuTuBuoiHoc() != null && !session.getThuTuBuoiHoc().trim().isEmpty()) {
-                    String thuTuBuoiHoc = session.getThuTuBuoiHoc().trim();
-                    
-                    // Handle format "Buổi X" or "Buoi X"
-                    if (thuTuBuoiHoc.startsWith("Buổi ") || thuTuBuoiHoc.startsWith("Buoi ")) {
-                        // Extract number from "Buổi X" or "Buoi X"
-                        String numberStr = thuTuBuoiHoc.replaceAll("(?i)buổi\\s*|buoi\\s*", "").trim();
-                        if (!numberStr.isEmpty()) {
-                            sessionNumber = Integer.parseInt(numberStr);
-                        }
-                    } else {
-                        // Try to parse directly as number, or extract number from string
-                        // Remove all non-digit characters and parse
-                        String numberStr = thuTuBuoiHoc.replaceAll("[^0-9]", "");
-                        if (!numberStr.isEmpty()) {
-                            sessionNumber = Integer.parseInt(numberStr);
-                        } else {
-                            // Last resort: try direct parse
-                            sessionNumber = Integer.parseInt(thuTuBuoiHoc);
-                        }
-                    }
+                    sessionNumber = Integer.parseInt(session.getThuTuBuoiHoc());
                 }
             } catch (NumberFormatException e) {
                 // Skip sessions with invalid session number
-                System.out.println("[getStudentAttendedClasses] Warning: Cannot parse session number from: '" + session.getThuTuBuoiHoc() + "' (Session ID: " + session.getIdBh() + ")");
-                skippedCount++;
                 continue;
             }
             
             // Skip if sessionNumber is 0 or invalid
-            if (sessionNumber <= 0) {
-                System.out.println("[getStudentAttendedClasses] Warning: Session number is 0 or invalid for session: " + session.getIdBh() + " (ThuTuBuoiHoc: '" + session.getThuTuBuoiHoc() + "')");
-                skippedCount++;
-                continue;
-            }
+            if (sessionNumber <= 0) continue;
             
             // Create unique key: classId + sessionNumber
             String uniqueKey = classId + "_" + sessionNumber;
@@ -1117,20 +1084,8 @@ public class StudentService {
             }
         }
         
-        System.out.println("[getStudentAttendedClasses] Processed: " + processedCount + ", Skipped: " + skippedCount + ", Final result: " + uniqueSessionsMap.size() + " sessions");
-        
         // Convert map values to list
-        List<StudentAttendedClassDTO> result = new ArrayList<>(uniqueSessionsMap.values());
-        
-        // Sort by session date
-        result.sort((a, b) -> {
-            if (a.getSessionDate() == null && b.getSessionDate() == null) return 0;
-            if (a.getSessionDate() == null) return 1;
-            if (b.getSessionDate() == null) return -1;
-            return a.getSessionDate().compareTo(b.getSessionDate());
-        });
-        
-        return result;
+        return new ArrayList<>(uniqueSessionsMap.values());
     }
 
     private List<StudentSupportRequestDTO> getSupportRequests(String studentId) {
@@ -1400,10 +1355,6 @@ public class StudentService {
             danhGia = new DanhGiaBuoiHoc();
             String newId = generateNextDanhGiaBuoiHocId();
             danhGia.setIdDgbh(newId);
-            // Set ID trực tiếp vì @JoinColumn có insertable = false, updatable = false
-            danhGia.setIdBh(session.getIdBh());
-            danhGia.setIdHs(student.getIdHs());
-            // Set relationship để có thể truy cập entity
             danhGia.setHocSinh(student);
             danhGia.setBuoiHocChiTiet(session);
         }
@@ -1487,10 +1438,6 @@ public class StudentService {
             danhGia = new DanhGiaLopHoc();
             String newId = generateNextDanhGiaLopHocId();
             danhGia.setIdDglh(newId);
-            // Set ID trực tiếp vì @JoinColumn có insertable = false, updatable = false
-            danhGia.setIdHs(student.getIdHs());
-            danhGia.setIdLh(lopHoc.getIdLh());
-            // Set relationship để có thể truy cập entity
             danhGia.setHocSinh(student);
             danhGia.setLopHoc(lopHoc);
         }

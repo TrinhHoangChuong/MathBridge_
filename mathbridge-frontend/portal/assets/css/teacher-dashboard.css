@@ -3211,16 +3211,27 @@ body {
     display: block;
 }
 
-/* Large Modal */
-.large-modal {
-    align-items: center;
-    justify-content: center;
-}
+/* Large Modal - Applied to modal-content, not modal itself */
 
-.large-modal .modal-content {
+.modal-content.large-modal {
     width: min(90vw, 960px);
     max-width: 960px;
     max-height: 90vh;
+    margin: 0 auto !important;
+    position: relative;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+}
+
+.modal-content.large-modal.grading-modal-content {
+    width: min(95vw, 1400px) !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    position: relative;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
 }
 
 .large-modal .modal-body {
@@ -3737,10 +3748,15 @@ body {
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(2px);
+    overflow-y: auto;
+    padding: 2rem 1rem;
+    box-sizing: border-box;
 }
 
 .modal.active {
-    display: flex;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .modal-content {
@@ -3752,6 +3768,8 @@ body {
     max-height: 92vh;
     overflow-y: auto;
     animation: slideUp 0.28s ease;
+    margin: auto !important;
+    position: relative;
 }
 
 .modal-header {
@@ -4535,11 +4553,30 @@ body {
 
 /* Modern Grading Modal Styles */
 .grading-modal-content {
-    max-width: 1400px;
-    width: 95vw;
+    max-width: 1400px !important;
+    width: min(95vw, 1400px) !important;
     max-height: 90vh;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
+    margin: 0 auto !important;
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+}
+
+/* Force center alignment for all modals */
+.modal.active {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal.active .modal-content {
+    margin: auto !important;
+    position: relative !important;
 }
 
 .modal-header-content {
@@ -4761,6 +4798,21 @@ body {
     background: white;
 }
 
+.grade-input-modern.input-valid {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.grade-input-modern.input-invalid {
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+
+.grade-input-modern.input-saved {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
 .score-max {
     font-size: 0.875rem;
     color: var(--text-secondary);
@@ -4811,6 +4863,11 @@ body {
 .status-badge-modern.pending {
     background: #fee2e2;
     color: #dc2626;
+}
+
+.status-badge-modern.expired {
+    background: #f3f4f6;
+    color: #6b7280;
 }
 
 .btn-save-grade {

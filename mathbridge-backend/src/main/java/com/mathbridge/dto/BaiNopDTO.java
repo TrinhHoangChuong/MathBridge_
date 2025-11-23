@@ -14,6 +14,8 @@ public class BaiNopDTO {
     private String trangThai;
     private String ghiChu;
     private LocalDateTime ngayNop;
+    private LocalDateTime thoiGianNop; // Alias for ngayNop
+    private LocalDateTime ngayKetThuc; // Hạn nộp của bài tập
     private Integer tongSoCau;
     private Integer soCauDung;
 
@@ -114,6 +116,25 @@ public class BaiNopDTO {
 
     public void setSoCauDung(Integer soCauDung) {
         this.soCauDung = soCauDung;
+    }
+
+    public LocalDateTime getThoiGianNop() {
+        return thoiGianNop != null ? thoiGianNop : ngayNop;
+    }
+
+    public void setThoiGianNop(LocalDateTime thoiGianNop) {
+        this.thoiGianNop = thoiGianNop;
+        if (ngayNop == null) {
+            this.ngayNop = thoiGianNop;
+        }
+    }
+
+    public LocalDateTime getNgayKetThuc() {
+        return ngayKetThuc;
+    }
+
+    public void setNgayKetThuc(LocalDateTime ngayKetThuc) {
+        this.ngayKetThuc = ngayKetThuc;
     }
 }
 

@@ -520,7 +520,16 @@ class TeacherAPI {
     }
 
     async chamDiemBaiNop(idBn, diemSo, nhanXet) {
-        return this.put(`/public/giaovien/bainop/${idBn}/chamdiem?diemSo=${diemSo}&nhanXet=${encodeURIComponent(nhanXet || '')}`);
+        let url = `/public/giaovien/bainop/${idBn}/chamdiem?`;
+        const params = [];
+        if (diemSo != null && diemSo !== undefined && diemSo !== '') {
+            params.push(`diemSo=${diemSo}`);
+        }
+        if (nhanXet != null && nhanXet !== undefined && nhanXet !== '') {
+            params.push(`nhanXet=${encodeURIComponent(nhanXet)}`);
+        }
+        url += params.join('&');
+        return this.put(url);
     }
 
     // ===== ĐIỂM SỐ =====
@@ -529,7 +538,11 @@ class TeacherAPI {
     }
 
     async updateDiemSo(idLh, idHs, loaiDiem, diemSo) {
-        return this.put(`/public/giaovien/lophoc/${idLh}/hocsinh/${idHs}/diemso?loaiDiem=${loaiDiem}&diemSo=${diemSo}`);
+        let url = `/public/giaovien/lophoc/${idLh}/hocsinh/${idHs}/diemso?loaiDiem=${loaiDiem}`;
+        if (diemSo !== null && diemSo !== undefined) {
+            url += `&diemSo=${diemSo}`;
+        }
+        return this.put(url);
     }
 
     async exportBaoCaoDiemSo(idLh) {
@@ -1384,7 +1397,7 @@ class TeacherDashboard {
         if (list.length === 0) {
             gradesTableBody.innerHTML = `
                 <tr class="placeholder-row">
-                    <td colspan="8" class="text-center">Chưa có điểm số cho lớp này.</td>
+                    <td colspan="7" class="text-center">Chưa có điểm số cho lớp này.</td>
                 </tr>
             `;
             return;
@@ -1402,7 +1415,18 @@ class TeacherDashboard {
             const diem45 = this.formatScore(item.diem45Phut ?? item.diem45p);
             const diemHK = this.formatScore(item.diemThiHK ?? item.diemThiHocKy ?? item.diemThi);
             const diemTB = this.formatScore(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet);
-            const xepLoai = item.xepLoai || this.classifyScore(diemTB);
+            let xepLoai = item.xepLoai || this.classifyScore(diemTB);
+            // Normalize xepLoai: fix encoding issues and convert variations
+            if (xepLoai) {
+                // Fix "Gi?i" -> "Giỏi" (encoding issue)
+                if (xepLoai.includes('Gi?i') || xepLoai === 'Gi?i') {
+                    xepLoai = 'Giỏi';
+                }
+                // Convert "Trung bình" or "Trung binh" to "TB"
+                if (xepLoai.toLowerCase().includes('trung bình') || xepLoai.toLowerCase().includes('trung binh')) {
+                    xepLoai = 'TB';
+                }
+            }
             const badgeClass = this.getGradeBadgeClass(xepLoai, diemTB);
             const initials = getInitials(studentName, studentEmail);
 
@@ -1413,37 +1437,45 @@ class TeacherDashboard {
                             <div class="student-avatar">${this.escapeHtml(initials)}</div>
                             <div class="student-meta">
                                 <strong>${this.escapeHtml(studentName)}</strong>
-                                ${studentEmail ? `<div class="student-sub">${this.escapeHtml(studentEmail)}</div>` : ''}
-                                ${studentPhone ? `<div class="student-sub">${this.escapeHtml(studentPhone)}</div>` : ''}
                             </div>
                         </div>
                     </td>
                     <td>${this.escapeHtml(classLabel)}</td>
                     <td>
-                        <input type="number" class="grade-input-small"
+                        <input type="number" class="grade-input-small" 
+                               data-student-id="${studentId}" 
+                               data-class-id="${classId}" 
+                               data-loai-diem="15P"
+                               data-original-value="${diem15 || ''}"
                                value="${diem15}"
                                min="0" max="10" step="0.1"
-                               onchange="updateDiemSo('${classId}', '${studentId}', '15P', this.value)">
+                               placeholder="0.0"
+                               disabled>
                     </td>
                     <td>
                         <input type="number" class="grade-input-small"
+                               data-student-id="${studentId}" 
+                               data-class-id="${classId}" 
+                               data-loai-diem="45P"
+                               data-original-value="${diem45 || ''}"
                                value="${diem45}"
                                min="0" max="10" step="0.1"
-                               onchange="updateDiemSo('${classId}', '${studentId}', '45P', this.value)">
+                               placeholder="0.0"
+                               disabled>
                     </td>
                     <td>
                         <input type="number" class="grade-input-small"
+                               data-student-id="${studentId}" 
+                               data-class-id="${classId}" 
+                               data-loai-diem="HK"
+                               data-original-value="${diemHK || ''}"
                                value="${diemHK}"
                                min="0" max="10" step="0.1"
-                               onchange="updateDiemSo('${classId}', '${studentId}', 'HK', this.value)">
+                               placeholder="0.0"
+                               disabled>
                     </td>
-                    <td>${diemTB || '-'}</td>
-                    <td><span class="grade-badge ${badgeClass}">${this.escapeHtml(xepLoai || 'Chưa có')}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="editGrade('${studentId}', '${classId}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
+                    <td class="diem-tb-cell" data-student-id="${studentId}">${diemTB || '-'}</td>
+                    <td><span class="grade-badge ${badgeClass} xep-loai-cell" data-student-id="${studentId}">${(xepLoai || 'N')}</span></td>
                 </tr>
             `;
         }).join('');
@@ -1496,7 +1528,7 @@ class TeacherDashboard {
         }
         if (score >= 8.5) return 'Giỏi';
         if (score >= 7) return 'Khá';
-        if (score >= 5.5) return 'Trung bình';
+        if (score >= 5.5) return 'TB';
         if (score >= 4) return 'Yếu';
         return 'Kém';
     }
@@ -1509,7 +1541,7 @@ class TeacherDashboard {
         if (normalized.includes('khá') || normalized.includes('kha') || normalized.includes('good')) {
             return 'good';
         }
-        if (normalized.includes('trung bình') || normalized.includes('trung binh') || normalized.includes('average')) {
+        if (normalized.includes('tb') || normalized.includes('trung bình') || normalized.includes('trung binh') || normalized.includes('average')) {
             return 'average';
         }
         if (normalized.includes('yếu') || normalized.includes('kem') || normalized.includes('poor') || normalized.includes('yeu')) {
