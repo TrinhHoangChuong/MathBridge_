@@ -110,6 +110,8 @@ function setupRefreshButton() {
       await loadStudentList();
       if (currentStudentId) {
         await handleViewStudentDetail(currentStudentId);
+      } else {
+        renderStudentPanels(null);
       }
     } catch (err) {
       console.error("Lỗi làm mới Học sinh & Học tập:", err);
@@ -438,16 +440,42 @@ async function loadStudentList() {
 // ===============================
 // 3. PANEL CHI TIẾT BÊN PHẢI
 // ===============================
+
+// ✨ ĐÃ SỬA: unwrap payload + kiểm tra success & data
 async function handleViewStudentDetail(idHs) {
   if (!idHs) return;
   try {
-    const res = await apiGetStudentDetail(idHs);
-    currentStudentId = idHs;
-    currentStudentDetail = res?.studentDetail || null;
-    currentStudentClasses = res?.studentClasses || [];
-    currentStudentStats = res?.studentStats || null;
+    const raw = await apiGetStudentDetail(idHs);
 
-    renderStudentPanels(res);
+    // Một số trường hợp BE có thể trả { success, message, ... }
+    // hoặc { data: { studentDetail, ... } }
+    const payload = raw?.data || raw || {};
+    const detail = payload.studentDetail || raw?.studentDetail || null;
+    const classes =
+      payload.studentClasses || raw?.studentClasses || [];
+    const stats = payload.studentStats || raw?.studentStats || null;
+
+    if (!detail) {
+      const msg =
+        raw?.message ||
+        payload?.message ||
+        "Không lấy được chi tiết học sinh từ máy chủ.";
+      console.error("Payload chi tiết HS không hợp lệ:", raw);
+      alert(msg);
+      renderStudentPanels(null);
+      return;
+    }
+
+    currentStudentId = idHs;
+    currentStudentDetail = detail;
+    currentStudentClasses = classes || [];
+    currentStudentStats = stats;
+
+    renderStudentPanels({
+      studentDetail: detail,
+      studentClasses: classes,
+      studentStats: stats,
+    });
   } catch (err) {
     console.error("Không thể lấy chi tiết học sinh", err);
     alert("Không thể lấy chi tiết học sinh. Vui lòng thử lại.");
@@ -701,10 +729,16 @@ function openAddClassPanel(triggerBtn) {
     }
     try {
       const res = await apiAddStudentToClass(currentStudentId, classId);
-      currentStudentDetail = res?.studentDetail || null;
-      currentStudentClasses = res?.studentClasses || [];
-      currentStudentStats = res?.studentStats || null;
-      renderStudentPanels(res);
+      const payload = res?.data || res || {};
+      currentStudentDetail = payload.studentDetail || res.studentDetail || null;
+      currentStudentClasses =
+        payload.studentClasses || res.studentClasses || [];
+      currentStudentStats = payload.studentStats || res.studentStats || null;
+      renderStudentPanels({
+        studentDetail: currentStudentDetail,
+        studentClasses: currentStudentClasses,
+        studentStats: currentStudentStats,
+      });
       panel.classList.remove("is-open");
     } catch (err) {
       console.error("Không thể thêm học sinh vào lớp", err);
