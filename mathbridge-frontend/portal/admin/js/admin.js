@@ -1,3 +1,9 @@
+// portal/admin/js/admin.js
+import { ensureAdminAuthenticated } from "./admin-auth-guard.js";
+
+// Bắt buộc đã login + có role admin
+ensureAdminAuthenticated();
+
 // ===== Sidebar collapse toggle =====
 (function () {
   const sidebarToggle = document.getElementById("sidebarToggle");
@@ -30,6 +36,22 @@
   }
 })();
 
+// ===== Logout Admin =====
+(function () {
+  const logoutBtn = document.getElementById("btnAdminLogout");
+  if (!logoutBtn) return;
+
+  logoutBtn.addEventListener("click", () => {
+    // Xoá thông tin auth trong localStorage
+    localStorage.removeItem("MB_ACCESS_TOKEN");
+    localStorage.removeItem("MB_ACCOUNT_ROLES");
+    localStorage.removeItem("MB_AUTH_USER");
+
+    // Chuyển về trang login admin
+    window.location.href = "./login.html";
+  });
+})();
+
 // ===== Simple module loader (HTML + CSS + optional callback) =====
 const __moduleLoaded = new Set();
 
@@ -51,7 +73,7 @@ function ensureCssLoaded(href) {
  * Load 1 section:
  * - inject HTML
  * - inject CSS
- * - gọi afterLoad() (nếu có) sau khi HTML đã sẵn sàng trong DOM
+ * - gọi afterLoad() (nếu có)
  */
 async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
   const host = document.getElementById(sectionId);
@@ -76,7 +98,10 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
 
       __moduleLoaded.add(sectionId);
     } catch (err) {
-      console.error(`Lỗi khi load module cho section ${sectionId}:`, err);
+      console.error(
+        `Lỗi khi load module cho section ${sectionId}:`,
+        err
+      );
     }
   }
 }
@@ -88,7 +113,7 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
 
   const sections = {
     dashboard: document.getElementById("section-dashboard"),
-    lichoc: document.getElementById("section-lichhoc"),
+    lichhoc: document.getElementById("section-lichhoc"),
     chuongtrinh: document.getElementById("section-chuongtrinh"),
     hocsinh: document.getElementById("section-hocsinh"),
     nhansu: document.getElementById("section-nhansu"),
@@ -96,6 +121,7 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
     taichinh: document.getElementById("section-taichinh"),
     taikhoan: document.getElementById("section-taikhoan"),
     cauhinh: document.getElementById("section-cauhinh"),
+    phancong: document.getElementById("section-phancong"),
   };
 
   function setActive(sectionKey, labelText) {
@@ -104,7 +130,9 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
       btn.classList.toggle("active", isActive);
     });
 
-    if (pageTitle) pageTitle.textContent = labelText || "Dashboard";
+    if (pageTitle) {
+      pageTitle.textContent = labelText || "Dashboard";
+    }
 
     Object.keys(sections).forEach((key) => {
       const el = sections[key];
@@ -113,7 +141,7 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
     });
   }
 
-  // Load Dashboard ngay khi vào (HTML + CSS + JS KPI)
+  // Load Dashboard khi vào
   loadSectionModule(
     "section-dashboard",
     "sections/dashboard.html",
@@ -145,7 +173,7 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
             }
           }
         );
-      } else if (target === "lichoc") {
+      } else if (target === "lichhoc") {
         await loadSectionModule(
           "section-lichhoc",
           "sections/lichhoc.html",
@@ -188,7 +216,6 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
           "css/nhansu.css",
           async () => {
             const module = await import("./pages/nhansu.pages.js");
-            // 🔥 Dùng đúng tên hàm đã export
             if (module && typeof module.initNhansuPage === "function") {
               await module.initNhansuPage();
             }
@@ -213,7 +240,6 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
           "css/taichinh.css",
           async () => {
             const module = await import("./pages/taichinhpages.js");
-            // nhớ export hàm này trong taichinh.pages.js
             if (module && typeof module.initTaiChinhPage === "function") {
               await module.initTaiChinhPage();
             }
@@ -240,6 +266,18 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
             const module = await import("./pages/cauhinh.pages.js");
             if (module && typeof module.initCauHinhPage === "function") {
               await module.initCauHinhPage();
+            }
+          }
+        );
+      } else if (target === "phancong") {
+        await loadSectionModule(
+          "section-phancong",
+          "sections/phancong.html",
+          "css/phancong.css",
+          async () => {
+            const module = await import("./pages/phancong.pages.js");
+            if (module && typeof module.initPhanCongPage === "function") {
+              await module.initPhanCongPage();
             }
           }
         );

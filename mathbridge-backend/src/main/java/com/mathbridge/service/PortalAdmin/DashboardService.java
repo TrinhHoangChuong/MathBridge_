@@ -6,11 +6,14 @@ import com.mathbridge.dto.PortalAdmin.Response.DashboardResponse.ContractPerTeac
 import com.mathbridge.dto.PortalAdmin.Response.DashboardResponse.InvoiceUnpaidSoonDto;
 import com.mathbridge.dto.PortalAdmin.Response.DashboardResponse.RecruitmentSummaryDto;
 import com.mathbridge.dto.PortalAdmin.Response.DashboardResponse.TopClassByStudentDto;
-import com.mathbridge.repository.*;
-import com.mathbridge.repository.Admin.*;
+import com.mathbridge.repository.HocSinhRepository;
+import com.mathbridge.repository.LopHocRepository;
+import com.mathbridge.repository.NhanVienRepository;
 import com.mathbridge.repository.Admin.BuoiHocChiTietAdminRepository;
 import com.mathbridge.repository.Admin.HoaDonAdminRepository;
+import com.mathbridge.repository.Admin.HopDongAdminRepository;
 import com.mathbridge.repository.Admin.PhongAdmimRepository;
+import com.mathbridge.repository.Admin.YeuCauHoTroAdminRepository;
 import com.mathbridge.repository.DangKyLHRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -67,7 +70,6 @@ public class DashboardService {
         // ================== KPI 1-4 ==================
 
         // (1) Lớp đang mở: LopHoc.TrangThai = N'Đang mở'
-        // SQL gốc: SELECT COUNT(*) FROM LopHoc WHERE TrangThai = N'Đang mở'
         Long lopDangMo = singleLong(
                 "SELECT COUNT(*) FROM LopHoc WHERE TrangThai = N'Đang mở'"
         );
@@ -83,20 +85,20 @@ public class DashboardService {
 
         // (4) Tổng doanh thu đã thu:
         // FROM HoaDon WHERE TrangThai = N'Da Thanh Toan'
-        // SQL: SELECT COALESCE(SUM(TongTien),0) FROM HoaDon WHERE TrangThai = N'Da Thanh Toan'
         BigDecimal tongDoanhThuDaThu = singleBigDecimal(
                 "SELECT COALESCE(SUM(TongTien),0) FROM HoaDon WHERE TrangThai = N'Da Thanh Toan'"
         );
         res.setTongDoanhThuDaThu(tongDoanhThuDaThu);
 
         // ================== KPI 5: HÓA ĐƠN THEO TRẠNG THÁI ==================
-        // Da Thanh Toan
+
+        // Đã thanh toán
         Long hdPaid = singleLong(
                 "SELECT COUNT(*) FROM HoaDon WHERE TrangThai = N'Da Thanh Toan'"
         );
         res.setHoaDonDaThanhToan(nullSafe(hdPaid));
 
-        // Chua Thanh Toan
+        // Chưa thanh toán
         Long hdUnpaid = singleLong(
                 "SELECT COUNT(*) FROM HoaDon WHERE TrangThai = N'Chua Thanh Toan'"
         );
@@ -132,10 +134,7 @@ public class DashboardService {
         res.setHoaDonChuaThanhToanSapDenHan(unpaidSoonList);
 
         // ================== KPI 7: DOANH THU THEO PHƯƠNG THỨC (LichSuThanhToan) ==================
-        // SQL:
-        // SELECT ID_PT, COALESCE(SUM(TongTien),0)
-        // FROM LichSuThanhToan
-        // GROUP BY ID_PT
+        // SELECT ID_PT, COALESCE(SUM(TongTien),0) FROM LichSuThanhToan GROUP BY ID_PT
         Map<String, BigDecimal> revenueByPT = new HashMap<>();
         List<Object[]> ptRows = em.createNativeQuery(
                 "SELECT ID_PT, COALESCE(SUM(TongTien),0) " +
@@ -156,8 +155,6 @@ public class DashboardService {
         // ================== KPI 8: TOP LỚP THEO SĨ SỐ ==================
         // FROM DangKyLH + LopHoc
         // SELECT TOP 5 d.ID_LH, l.TenLop, COUNT(DISTINCT d.ID_HS) AS SoHS
-        // GROUP BY d.ID_LH, l.TenLop
-        // ORDER BY SoHS DESC
         List<Object[]> topClassRows = em.createNativeQuery(
                 "SELECT TOP 5 d.ID_LH, l.TenLop, COUNT(DISTINCT d.ID_HS) AS SoHS " +
                         "FROM DangKyLH d " +
@@ -179,9 +176,6 @@ public class DashboardService {
         // ================== KPI 9: LỚP THEO CHƯƠNG TRÌNH ==================
         // FROM ChuongTrinh + LopHoc
         // SELECT c.ID_CT, c.TenCT, COUNT(l.ID_LH) AS SoLop
-        // FROM ChuongTrinh c
-        // LEFT JOIN LopHoc l ON l.ID_CT = c.ID_CT
-        // GROUP BY c.ID_CT, c.TenCT
         List<Object[]> classPerProgramRows = em.createNativeQuery(
                 "SELECT c.ID_CT, c.TenCT, COUNT(l.ID_LH) AS SoLop " +
                         "FROM ChuongTrinh c " +
@@ -200,12 +194,9 @@ public class DashboardService {
         }
         res.setLopTheoChuongTrinh(classPerPrograms);
 
-        // ================== KPI 10: TUYỂN DỤNG & ỨNG VIÊN ==================
+        // ================== KPI 10: TUYỂN DỤNG ==================
         // FROM TinTuyenDung + Association_25 (ID_TD, ID_UV)
         // SELECT t.ID_TD, t.TieuDe, t.TrangThai, COUNT(a.ID_UV) AS SoUV
-        // FROM TinTuyenDung t
-        // LEFT JOIN Association_25 a ON a.ID_TD = t.ID_TD
-        // GROUP BY t.ID_TD, t.TieuDe, t.TrangThai
         List<Object[]> recruitmentRows = em.createNativeQuery(
                 "SELECT t.ID_TD, t.TieuDe, t.TrangThai, COUNT(a.ID_UV) AS SoUV " +
                         "FROM TinTuyenDung t " +
@@ -234,11 +225,12 @@ public class DashboardService {
 
         res.setSupportOpen(openSupport);
         res.setSupportClosed(closedSupport);
-        res.setSupportProcessing(0L); // chưa có rule rõ trong CSDL, để 0 (sau này map thêm nếu có cột/enum)
+        // hiện tại CSDL không có cột trạng thái processing riêng, để 0
+        res.setSupportProcessing(0L);
 
         // ================== KPI 12: HỢP ĐỒNG THEO TRẠNG THÁI ==================
         // FROM HopDong.TrangThai
-        // 'Hieu luc' / 'Het han' đã được seed trong script
+        // Ví dụ seed: 'Hieu luc' / 'Het han'
         long contractActive = hopDongAdminRepository.countByTrangThai("Hieu luc");
         long contractExpired = hopDongAdminRepository.countByTrangThai("Het han");
 
@@ -296,7 +288,9 @@ public class DashboardService {
     private LocalDate toLocalDate(Object o) {
         if (o == null) return null;
         if (o instanceof java.sql.Date) return ((java.sql.Date) o).toLocalDate();
-        if (o instanceof java.sql.Timestamp) return ((java.sql.Timestamp) o).toLocalDateTime().toLocalDate();
+        if (o instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) o).toLocalDateTime().toLocalDate();
+        }
         if (o instanceof LocalDate) return (LocalDate) o;
         return LocalDate.parse(o.toString());
     }

@@ -10,10 +10,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Dùng trả về cho tất cả API của HocSinhBaiTapController.
- * Tuỳ API mà chỉ dùng một số field.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -39,14 +35,13 @@ public class HocSinhBaiTapResponse {
     private List<SubmissionSummary> submissions;
 
     // --------- TAB ĐÁNH GIÁ & KẾT QUẢ ----------
-    /** Đánh giá buổi học */
     private List<LessonEvaluation> lessonEvaluations;
-
-    /** Đánh giá lớp học */
     private List<ClassEvaluation> classEvaluations;
-
-    /** Kết quả & xếp loại theo lớp (lọc theo HS thuộc lớp) */
     private List<ClassResult> classResults;
+
+    // --------- CHO FILTER COMBOBOX ----------
+    private List<SessionOption> sessionOptions;
+    private List<AssignmentOption> assignmentOptions;
 
     // ====================== INNER DTOs ======================
 
@@ -106,11 +101,11 @@ public class HocSinhBaiTapResponse {
     @AllArgsConstructor
     public static class StudentSummaryStats {
         private int soLopDangHoc;
-        private int tongSoBaiTap;   // tổng số BaiTap của các lớp HS đang học
-        private int soBaiDaNop;     // số BaiNop của HS
-        private int soBaiChuaNop;   // tongSoBaiTap - soBaiDaNop (>=0)
-        private BigDecimal diemTrungBinh; // từ KetQuaHocTap hoặc tính TB từ BaiNop.DiemSo
-        private String xepLoai;           // từ KetQuaHocTap.XepLoai (char(10))
+        private int tongSoBaiTap;
+        private int soBaiDaNop;
+        private int soBaiChuaNop;
+        private BigDecimal diemTrungBinh;
+        private String xepLoai;
     }
 
     // ====================== TAB BÀI TẬP ======================
@@ -120,26 +115,22 @@ public class HocSinhBaiTapResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AssignmentSummary {
-        private String idBt;           // ID_BT
+        private String idBt;
         private String tieuDe;
         private String moTa;
         private String loaiBt;
-
-        private String idBh;           // ID_BH
-        private String tenBuoiHoc;     // từ BuoiHocChiTiet.TenCaHoc / NoiDung
-        private LocalDateTime ngayHoc; // từ BuoiHocChiTiet.NgayHoc (nếu map LocalDateTime)
-
-        private String idLh;           // ID_LH
+        private String idBh;
+        private String tenBuoiHoc;
+        private LocalDateTime ngayHoc;
+        private String idLh;
         private String tenLop;
-        private String idCt;           // ID_CT
+        private String idCt;
         private String tenCt;
-
-        private LocalDateTime ngayBatDau; // BaiTap.NgayBatDau
-        private LocalDateTime ngayKetThuc; // BaiTap.NgayKetThuc
-
-        private int soHsTrongLop;      // số HS đã đăng ký lớp (DangKyLH)
-        private int soLuongNop;        // số BaiNop thuộc bài tập này
-        private BigDecimal diemTrungBinh; // TB DiemSo từ BaiNop (nếu có)
+        private LocalDateTime ngayBatDau;
+        private LocalDateTime ngayKetThuc;
+        private int soHsTrongLop;
+        private int soLuongNop;
+        private BigDecimal diemTrungBinh;
     }
 
     // ====================== TAB BÀI NỘP & CHẤM ĐIỂM ======================
@@ -149,59 +140,52 @@ public class HocSinhBaiTapResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SubmissionSummary {
-        private String idBn;      // ID_BN
-        private String idBt;      // ID_BT
-        private String tieuDeBt;  // BaiTap.TieuDe
-
-        private String idHs;      // ID_HS
-        private String tenHs;     // họ tên từ HocSinh
-
-        private String fileUrl;   // FileURL
+        private String idBn;
+        private String idBt;
+        private String tieuDeBt;
+        private String idHs;
+        private String tenHs;
+        private String fileUrl;
         private BigDecimal diemSo;
         private String nhanXet;
         private String trangThai;
         private String ghiChu;
+        private LocalDateTime thoiGianNop; // Thêm field này
     }
 
     // ====================== TAB ĐÁNH GIÁ & KẾT QUẢ ======================
 
-    /** Đánh giá từng buổi học (DanhGiaBuoiHoc + BuoiHocChiTiet + HocSinh) */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LessonEvaluation {
-        private String idDgbh;           // ID_DGBH
-        private String idBh;             // ID_BH
+        private String idDgbh;
+        private String idBh;
         private String tenBuoiHoc;
-        private LocalDateTime ngayHoc;   // BuoiHocChiTiet.NgayHoc
-
-        private String idHs;             // ID_HS
+        private LocalDateTime ngayHoc;
+        private String idHs;
         private String tenHs;
-
-        private int diemDanhGia;         // DiemDanhGia (tinyint)
-        private String nhanXet;          // NhanXet
+        private int diemDanhGia;
+        private String nhanXet;
         private LocalDateTime thoiDiemDanhGia;
     }
 
-    /** Đánh giá lớp học (DanhGiaLopHoc + HocSinh) */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ClassEvaluation {
-        private String idDglh;           // ID_DGLH
-        private String idLh;             // ID_LH
-
+        private String idDglh;
+        private String idLh;
+        private String tenLop; // Thêm tên lớp
         private String idHs;
         private String tenHs;
-
-        private int diemDanhGia;         // DiemDanhGia
+        private int diemDanhGia;
         private String nhanXet;
         private LocalDateTime thoiDiemDanhGia;
     }
 
-    /** Kết quả tổng kết theo HS trong lớp (KetQuaHocTap + HocSinh + DangKyLH) */
     @Data
     @Builder
     @NoArgsConstructor
@@ -209,7 +193,32 @@ public class HocSinhBaiTapResponse {
     public static class ClassResult {
         private String idHs;
         private String tenHs;
-        private BigDecimal diemKetQua;   // KetQuaHocTap.DiemSo
-        private String xepLoai;          // KetQuaHocTap.XepLoai
+        private String idLh; // Thêm ID lớp
+        private String tenLop; // Thêm tên lớp
+        private BigDecimal diemKetQua;
+        private String xepLoai;
+    }
+
+    // ====================== CHO FILTER COMBOBOX ======================
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SessionOption {
+        private String idBh;
+        private String tenBuoiHoc;
+        private LocalDateTime ngayHoc;
+        private String idLh;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AssignmentOption {
+        private String idBt;
+        private String tieuDe;
+        private String idLh;
     }
 }

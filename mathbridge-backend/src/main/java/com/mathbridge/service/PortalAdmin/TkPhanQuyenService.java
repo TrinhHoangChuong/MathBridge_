@@ -24,8 +24,6 @@ public interface TkPhanQuyenService {
             TkPhanQuyenRequest.AccountUpsertRequest request
     );
 
-    void deleteAccount(String idTk);
-
     // ===== ROLES =====
 
     TkPhanQuyenResponse.RolePage searchRoles(

@@ -4,6 +4,7 @@
 import {
   apiGetCampuses,
   apiGetRoles,
+  apiGetAvailableAccounts,
   apiSearchStaff,
   apiGetStaffDetail,
   apiCreateStaff,
@@ -15,13 +16,13 @@ import {
   apiCreateContract,
   apiUpdateContract,
   apiDeleteContract,
+  apiGetStaffForDropdown,
 } from "../api/nhansu.api.js";
-
 // ====== STATE ======
 
 const staffState = {
   page: 0,
-  size: 10,
+  size: 10000,
   totalPages: 0,
   filters: {
     searchKeyword: "",
@@ -34,7 +35,7 @@ const staffState = {
 
 const contractState = {
   page: 0,
-  size: 10,
+  size: 10000,
   totalPages: 0,
   filters: {
     searchKeyword: "",
@@ -46,6 +47,7 @@ const contractState = {
 };
 
 let staffOptionsForContracts = [];
+let accountOptionsForStaff = [];
 
 // ====== UTILS ======
 
@@ -143,7 +145,9 @@ async function loadDropdownData() {
         campuses
           .map(
             (cs) =>
-              `<option value="${cs.idCs}">${cs.tenCoSo || cs.tencoso || cs.tenCOSO}</option>`
+              `<option value="${cs.idCs}">${
+                cs.tenCoSo || cs.tencoso || cs.tenCOSO
+              }</option>`
           )
           .join("");
     }
@@ -154,39 +158,93 @@ async function loadDropdownData() {
         campuses
           .map(
             (cs) =>
-              `<option value="${cs.idCs}">${cs.tenCoSo || cs.tencoso || cs.tenCOSO}</option>`
+              `<option value="${cs.idCs}">${
+                cs.tenCoSo || cs.tencoso || cs.tenCOSO
+              }</option>`
           )
           .join("");
     }
 
     const roles = await apiGetRoles();
     const roleFilter = $("#ns-staff-role");
-    const roleModal = $("#ns-staff-role-modal");
-
+    // Không còn roleModal (không gán role ở màn Nhân sự)
     if (roleFilter) {
       roleFilter.innerHTML =
         '<option value="">Tất cả vai trò</option>' +
         roles
           .map(
             (r) =>
-              `<option value="${r.idRole}">${r.tenVaiTro || r.tenvaitro}</option>`
-          )
-          .join("");
-    }
-
-    if (roleModal) {
-      roleModal.innerHTML =
-        '<option value="">Chọn vai trò</option>' +
-        roles
-          .map(
-            (r) =>
-              `<option value="${r.idRole}">${r.tenVaiTro || r.tenvaitro}</option>`
+              `<option value="${r.idRole}">${
+                r.tenVaiTro || r.tenvaitro
+              }</option>`
           )
           .join("");
     }
   } catch (err) {
     console.error("Không thể tải dropdown Nhân sự:", err);
   }
+}
+
+// ====== DROPDOWN TÀI KHOẢN CHO NHÂN SỰ ======
+
+async function fetchAccountOptionsIfNeeded() {
+  if (accountOptionsForStaff.length) return;
+
+  try {
+    const accounts = await apiGetAvailableAccounts();
+    accountOptionsForStaff = Array.isArray(accounts) ? accounts : [];
+  } catch (err) {
+    console.error("Không thể tải danh sách tài khoản khả dụng:", err);
+  }
+}
+
+function fillAccountSelectForCreate() {
+  const select = $("#ns-staff-account-modal");
+  if (!select) return;
+
+  select.disabled = false;
+  select.innerHTML =
+    '<option value="">Chọn tài khoản đã tạo</option>' +
+    accountOptionsForStaff
+      .map((acc) => {
+        const idTk = acc.idTk || acc.ID_TK || acc.id || "";
+        const email = acc.email || acc.Email || "";
+        const rolesArr = acc.roleNames || acc.roles || [];
+        const rolesText = Array.isArray(rolesArr) ? rolesArr.join(", ") : "";
+        const ownerType =
+          acc.ownerType ||
+          acc.owner ||
+          (acc.idNv || acc.ID_NV
+            ? "NV"
+            : acc.idHs || acc.ID_HS
+            ? "HS"
+            : "OTHER");
+
+        const parts = [
+          email || idTk,
+          rolesText ? `(${rolesText})` : null,
+          ownerType ? `- ${ownerType}` : null,
+        ].filter(Boolean);
+
+        const label = parts.join(" ");
+        return `<option value="${idTk}">${label}</option>`;
+      })
+      .join("");
+}
+
+function syncEmailFromSelectedAccount() {
+  const select = $("#ns-staff-account-modal");
+  const emailInput = $("#ns-staff-email");
+  if (!select || !emailInput) return;
+
+  const selectedId = select.value;
+  const acc =
+    accountOptionsForStaff.find((a) => {
+      const idTk = a.idTk || a.ID_TK || a.id || "";
+      return String(idTk) === String(selectedId);
+    }) || null;
+
+  emailInput.value = acc ? acc.email || acc.Email || "" : "";
 }
 
 // ====== STAFF: API -> STATE & RENDER ======
@@ -247,7 +305,8 @@ function renderStaffTable() {
     tr.appendChild(emailCell);
 
     const phoneCell = document.createElement("td");
-    phoneCell.textContent = staff.sdt || staff.SDT || staff.soDienThoai || "";
+    phoneCell.textContent =
+      staff.sdt || staff.SDT || staff.soDienThoai || "";
     tr.appendChild(phoneCell);
 
     const cvCell = document.createElement("td");
@@ -277,7 +336,10 @@ function renderStaffTable() {
     editBtn.innerHTML = '<i class="ri-pencil-line"></i>';
     editBtn.title = "Chỉnh sửa nhân sự";
     editBtn.addEventListener("click", () =>
-      openStaffModal("edit", staff.idNv || staff.ID_NV || staff.maNv || staff.id)
+      openStaffModal(
+        "edit",
+        staff.idNv || staff.ID_NV || staff.maNv || staff.id
+      )
     );
 
     const toggleBtn = createEl("button", "btn icon-only");
@@ -376,14 +438,26 @@ function resetStaffForm() {
   $("#ns-staff-ho").value = "";
   $("#ns-staff-tendem").value = "";
   $("#ns-staff-ten").value = "";
-  $("#ns-staff-email").value = "";
+
+  const emailInput = $("#ns-staff-email");
+  if (emailInput) {
+    emailInput.value = "";
+    emailInput.readOnly = true; // email luôn lấy từ tài khoản
+  }
+
   $("#ns-staff-sdt").value = "";
   $("#ns-staff-gioitinh").value = "";
   $("#ns-staff-campus-modal").value = "";
   $("#ns-staff-chucvu").value = "";
   $("#ns-staff-chuyenmon").value = "";
   $("#ns-staff-kinhnghiem").value = "";
-  $("#ns-staff-role-modal").value = "";
+
+  const accountSelect = $("#ns-staff-account-modal");
+  if (accountSelect) {
+    accountSelect.disabled = false;
+    // nội dung sẽ được fill khi create (fillAccountSelectForCreate)
+  }
+
   $("#ns-staff-active").checked = true;
 }
 
@@ -395,7 +469,12 @@ function populateStaffForm(staff) {
   $("#ns-staff-tendem").value = staff.tenDem || "";
   $("#ns-staff-ten").value = staff.ten || "";
 
-  $("#ns-staff-email").value = staff.email || staff.Email || "";
+  const emailInput = $("#ns-staff-email");
+  if (emailInput) {
+    emailInput.value = staff.email || staff.Email || "";
+    emailInput.readOnly = true;
+  }
+
   $("#ns-staff-sdt").value = staff.sdt || staff.SDT || "";
 
   const gioiTinh = staff.gioiTinh ?? staff.gender ?? null;
@@ -417,13 +496,19 @@ function populateStaffForm(staff) {
   $("#ns-staff-kinhnghiem").value =
     staff.kinhNghiem ?? staff.KinhNghiem ?? staff.experience ?? "";
 
-  const roles = rolesFromStaff(staff);
-  if (roles.length) {
-    const roleSelect = $("#ns-staff-role-modal");
-    const found = Array.from(roleSelect.options).find((o) =>
-      roles.includes(o.textContent)
-    );
-    if (found) roleSelect.value = found.value;
+  // Tài khoản: không cho đổi ở màn chỉnh sửa
+  const accountSelect = $("#ns-staff-account-modal");
+  if (accountSelect) {
+    const idTk =
+      staff.idTk ||
+      staff.ID_TK ||
+      staff.taiKhoanId ||
+      staff.idTkNhanVien ||
+      "";
+    const email = staff.email || staff.Email || "";
+    const label = idTk ? `${idTk} - ${email}` : email || "Không có tài khoản";
+    accountSelect.disabled = true;
+    accountSelect.innerHTML = `<option value="${idTk}">${label}</option>`;
   }
 
   const active =
@@ -447,17 +532,26 @@ function buildStaffPayloadFromForm() {
   const chucVu = $("#ns-staff-chucvu").value.trim() || null;
   const chuyenMon = $("#ns-staff-chuyenmon").value.trim() || null;
   const kinhNghiemStr = $("#ns-staff-kinhnghiem").value;
-  const roleId = $("#ns-staff-role-modal").value || null;
   const active = $("#ns-staff-active").checked;
 
   const kinhNghiem = kinhNghiemStr ? parseInt(kinhNghiemStr, 10) : null;
 
+  const accountSelect = $("#ns-staff-account-modal");
+  // Nếu đang chỉnh sửa (idNv != null) thì không cho đổi ID_TK → không gửi idTk mới
+  const idTk =
+    idNv || !accountSelect
+      ? null
+      : accountSelect.value
+      ? accountSelect.value
+      : null;
+
   return {
     idNv,
+    idTk, // chỉ set khi tạo mới
     ho,
     tenDem,
     ten,
-    email,
+    email, // BE có thể bỏ qua và tự sync = TaiKhoan.Email
     sdt,
     gioiTinh: gioiTinhVal === "" ? null : gioiTinhVal === "male",
     idCs,
@@ -465,7 +559,6 @@ function buildStaffPayloadFromForm() {
     chuyenMon,
     kinhNghiem,
     trangThaiHoatDong: active,
-    roleId,
   };
 }
 
@@ -473,6 +566,9 @@ async function openStaffModal(mode, staffId) {
   const modal = $("#ns-staff-modal");
   const titleEl = $("#ns-staff-modal-title");
   resetStaffForm();
+  if (modal) {
+    modal.dataset.mode = mode || "create";
+  }
 
   if (mode === "edit" && staffId) {
     titleEl.textContent = "Chỉnh sửa nhân sự";
@@ -486,13 +582,20 @@ async function openStaffModal(mode, staffId) {
     }
   } else {
     titleEl.textContent = "Thêm nhân sự";
+    // Tạo mới → cần danh sách tài khoản khả dụng
+    await fetchAccountOptionsIfNeeded();
+    fillAccountSelectForCreate();
   }
 
   modal.classList.remove("hidden");
 }
 
 function closeStaffModal() {
-  $("#ns-staff-modal").classList.add("hidden");
+  const modal = $("#ns-staff-modal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.dataset.mode = "";
+  }
 }
 
 async function onStaffFormSubmit(e) {
@@ -505,8 +608,14 @@ async function onStaffFormSubmit(e) {
       await apiUpdateStaff(staffId, payload);
       showToast("Cập nhật nhân sự thành công");
     } else {
+      if (!payload.idTk) {
+        showToast("Vui lòng chọn tài khoản hệ thống cho nhân sự", "error");
+        return;
+      }
       await apiCreateStaff(payload);
       showToast("Thêm nhân sự thành công");
+      // Sau khi tạo thành công, có thể invalid cache account để lần sau load lại
+      accountOptionsForStaff = [];
     }
     closeStaffModal();
     await refreshStaffList();
@@ -518,7 +627,7 @@ async function onStaffFormSubmit(e) {
 
 async function onDeleteStaff(idNv) {
   const ok = window.confirm(
-    "Bạn chắc chắn muốn xóa nhân sự này? (BE sẽ xử lý xóa theo đúng ràng buộc NhanVien + HopDong + TaiKhoan...)"
+    "Bạn chắc chắn muốn xóa nhân sự này?\n(BE sẽ xử lý xóa/chấm dứt toàn bộ hợp đồng liên quan và giữ lại tài khoản đăng nhập theo đúng nghiệp vụ.)"
   );
   if (!ok) return;
 
@@ -659,18 +768,14 @@ function renderContractTable() {
     editBtn.innerHTML = '<i class="ri-pencil-line"></i>';
     editBtn.title = "Chỉnh sửa hợp đồng";
     editBtn.addEventListener("click", () =>
-      openContractModal("edit", ct.idHd || ct.ID_HD || ct.maHd || ct.id)
+      openContractModal(
+        "edit",
+        ct.idHd || ct.ID_HD || ct.maHd || ct.id
+      )
     );
 
-    const delBtn = createEl("button", "btn icon-only danger");
-    delBtn.type = "button";
-    delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
-    delBtn.title = "Xóa hợp đồng";
-    delBtn.addEventListener("click", () =>
-      onDeleteContract(ct.idHd || ct.ID_HD || ct.maHd || ct.id)
-    );
-
-    actionsCell.append(editBtn, delBtn);
+    // KHÔNG còn nút Xóa HĐ lẻ để bám rule nghiệp vụ
+    actionsCell.append(editBtn);
     tr.appendChild(actionsCell);
 
     tbody.appendChild(tr);
@@ -743,25 +848,29 @@ async function refreshContractList() {
 // ====== DROPDOWN STAFF CHO HỢP ĐỒNG ======
 
 async function loadStaffOptionsForContracts() {
-  staffOptionsForContracts = staffState.list || [];
+  try {
+    staffOptionsForContracts = await apiGetStaffForDropdown();
 
-  const selects = [
-    $("#ns-contract-staff"),
-    $("#ns-contract-staff-modal"),
-  ].filter(Boolean);
+    const selects = [$("#ns-contract-staff"), $("#ns-contract-staff-modal")].filter(
+      Boolean
+    );
 
-  selects.forEach((sel) => {
-    const first = sel.querySelector("option");
-    sel.innerHTML = "";
-    if (first) sel.appendChild(first);
+    selects.forEach((sel) => {
+      if (!sel) return;
+      const first = sel.querySelector("option");
+      sel.innerHTML = "";
+      if (first) sel.appendChild(first);
 
-    staffOptionsForContracts.forEach((s) => {
-      const opt = document.createElement("option");
-      opt.value = s.idNv || s.ID_NV || s.maNv || s.id;
-      opt.textContent = fullNameFromStaff(s);
-      sel.appendChild(opt);
+      staffOptionsForContracts.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s.idNv || s.ID_NV || s.maNv || s.id;
+        opt.textContent = fullNameFromStaff(s);
+        sel.appendChild(opt);
+      });
     });
-  });
+  } catch (err) {
+    console.error("Không thể tải danh sách nhân sự cho Hợp đồng:", err);
+  }
 }
 
 // ====== CONTRACT MODAL ======
@@ -887,8 +996,11 @@ async function onContractFormSubmit(e) {
   }
 }
 
+// Gợi ý: onDeleteContract vẫn giữ, nhưng hiện tại không gắn với nút UI.
 async function onDeleteContract(idHd) {
-  const ok = window.confirm("Bạn chắc chắn muốn xóa hợp đồng này?");
+  const ok = window.confirm(
+    "Bạn chắc chắn muốn xóa hợp đồng này?\n(Theo rule nghiệp vụ, nên thực hiện trong quy trình nghỉ việc nhân sự.)"
+  );
   if (!ok) return;
 
   try {
@@ -1025,6 +1137,11 @@ export async function initNhansuPage() {
     contractForm.addEventListener("submit", onContractFormSubmit);
   }
 
+  const accountSelect = $("#ns-staff-account-modal");
+  if (accountSelect) {
+    accountSelect.addEventListener("change", syncEmailFromSelectedAccount);
+  }
+
   initTabs();
   initStaffFilters();
   initContractFilters();
@@ -1039,6 +1156,7 @@ export async function initNhansuPage() {
 
   try {
     await loadDropdownData();
+    await fetchAccountOptionsIfNeeded(); // preload cho nhanh khi mở modal tạo nhân sự
     await refreshStaffList();
     await refreshContractList();
   } catch (err) {

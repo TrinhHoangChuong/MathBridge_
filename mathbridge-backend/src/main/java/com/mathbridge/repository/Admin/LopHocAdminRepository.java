@@ -13,6 +13,7 @@ public interface LopHocAdminRepository extends JpaRepository<LopHoc, String> {
 
     boolean existsByIdNv(String idNv);
 
-
     List<LopHoc> findByIdNv(String idNv);
+
+    List<LopHoc> findByIdLhIn(List<String> classIds);
 }

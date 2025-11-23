@@ -5,31 +5,83 @@ import com.mathbridge.dto.PortalAdmin.Response.HocSinhBaiTapResponse;
 
 public interface HocSinhBaiTapService {
 
-    // LIST + FILTER HỌC SINH (tab Học sinh - bảng trái)
+    // =========================================================
+    // 1. QUẢN LÝ HỌC SINH
+    // =========================================================
+
+    /**
+     * Tìm kiếm và lọc danh sách học sinh
+     */
     HocSinhBaiTapResponse searchStudents(HocSinhBaiTapRequest request);
 
-    // CHI TIẾT 1 HỌC SINH (bảng phải)
+    /**
+     * Lấy chi tiết 1 học sinh (thông tin + lớp học + thống kê)
+     */
     HocSinhBaiTapResponse getStudentDetail(String studentId);
 
-    // TẠO MỚI 1 HỌC SINH
+    /**
+     * Tạo mới học sinh
+     */
     HocSinhBaiTapResponse createStudent(HocSinhBaiTapRequest request);
 
-    // CẬP NHẬT 1 HỌC SINH
+    /**
+     * Cập nhật thông tin học sinh
+     */
     HocSinhBaiTapResponse updateStudent(String studentId, HocSinhBaiTapRequest request);
 
-    // THÊM HỌC SINH VÀO 1 LỚP (DangKyLH)
+    /**
+     * Thêm học sinh vào lớp
+     */
     HocSinhBaiTapResponse addStudentToClass(String studentId, HocSinhBaiTapRequest request);
 
-    // XOÁ HỌC SINH RA KHỎI 1 LỚP
+    /**
+     * Xóa học sinh khỏi lớp
+     */
     void removeStudentFromClass(String studentId, String classId);
 
-    // --------- TAB BÀI TẬP ----------
+    // =========================================================
+    // 2. TAB BÀI TẬP
+    // =========================================================
+
+    /**
+     * Tìm kiếm bài tập theo chương trình/lớp/khung thời gian
+     */
     HocSinhBaiTapResponse searchAssignments(HocSinhBaiTapRequest request);
 
-    // --------- TAB BÀI NỘP & CHẤM ĐIỂM ----------
+    // =========================================================
+    // 3. TAB BÀI NỘP & CHẤM ĐIỂM
+    // =========================================================
+
+    /**
+     * Tìm kiếm bài nộp theo bộ lọc
+     */
     HocSinhBaiTapResponse searchSubmissions(HocSinhBaiTapRequest request);
 
-    // --------- TAB ĐÁNH GIÁ & KẾT QUẢ ----------
+    /**
+     * Chấm điểm bài nộp
+     */
+    HocSinhBaiTapResponse gradeSubmission(String submissionId, HocSinhBaiTapRequest request);
+
+    // =========================================================
+    // 4. TAB ĐÁNH GIÁ & KẾT QUẢ
+    // =========================================================
+
+    /**
+     * Lấy đánh giá và kết quả của lớp học
+     */
     HocSinhBaiTapResponse getClassEvaluationAndResult(HocSinhBaiTapRequest request);
 
+    // =========================================================
+    // 5. API HỖ TRỢ FILTER COMBOBOX
+    // =========================================================
+
+    /**
+     * Lấy danh sách buổi học theo lớp (cho filter)
+     */
+    HocSinhBaiTapResponse getSessionsByClass(String classId);
+
+    /**
+     * Lấy danh sách bài tập theo lớp (cho filter)
+     */
+    HocSinhBaiTapResponse getAssignmentsByClass(String classId);
 }
