@@ -66,3 +66,50 @@ node_modules/
 # Temporary folders
 tmp/
 temp/
+
+# =========================
+# SECURITY: API Keys & Secrets
+# =========================
+# Application properties with sensitive data
+**/application.properties
+**/application-*.properties
+!**/application.properties.example
+!**/application-*.properties.example
+
+# Local configuration files
+**/application-local.properties
+**/application-dev.properties
+**/application-prod.properties
+
+# API Keys and Secrets
+*.key
+*.secret
+*.pem
+*.p12
+*.jks
+*.keystore
+*.truststore
+
+# Environment variables
+.env.local
+.env.*.local
+
+# Google Cloud credentials
+**/google-credentials.json
+**/service-account*.json
+**/*-credentials.json
+
+# AWS credentials
+.aws/
+**/aws-credentials
+
+# Azure credentials
+.azure/
+**/azure-credentials
+
+# Database credentials
+**/database.properties
+**/db.properties
+
+# MOMO Payment credentials (if separate file)
+**/momo-credentials.properties
