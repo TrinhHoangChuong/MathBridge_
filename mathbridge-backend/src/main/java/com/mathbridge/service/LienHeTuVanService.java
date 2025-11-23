@@ -1,12 +1,15 @@
 package com.mathbridge.service;
 
+import com.mathbridge.dto.LienHeTuVanDTO;
+import com.mathbridge.dto.portaltutor.TuLienHeTuVanResponseDTO;
 import com.mathbridge.entity.LienHeTuVan;
 import com.mathbridge.repository.LienHeTuVanRepository;
-import com.mathbridge.dto.LienHeTuVanDTO;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class LienHeTuVanService {
@@ -29,10 +32,43 @@ public class LienHeTuVanService {
         entity.setTieuDe(dto.getTieuDe());
         entity.setNoiDung(dto.getNoiDung());
         entity.setHinhThucTuVan(dto.getHinhThucTuVan() != null ? dto.getHinhThucTuVan() : "Liên hệ qua form");
+        
+        // Set thoiGianTuVan if provided
+        entity.setThoiGianTuVan(dto.getThoiGianTuVan());
 
         entity.setThoiDiemTao(LocalDateTime.now());
         entity.setTrangThai("Chưa xử lý");
 
         return lienHeTuVanRepository.save(entity);
+    }
+
+    public List<TuLienHeTuVanResponseDTO> getAllConsultationRequests() {
+        List<LienHeTuVan> requests = lienHeTuVanRepository.findAll();
+        return requests.stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public TuLienHeTuVanResponseDTO updateStatus(String idTv, String trangThai) {
+        LienHeTuVan entity = lienHeTuVanRepository.findById(idTv)
+                .orElseThrow(() -> new RuntimeException("Yêu cầu tư vấn không tồn tại"));
+        entity.setTrangThai(trangThai);
+        entity = lienHeTuVanRepository.save(entity);
+        return convertToResponseDTO(entity);
+    }
+
+    public TuLienHeTuVanResponseDTO convertToResponseDTO(LienHeTuVan entity) {
+        TuLienHeTuVanResponseDTO dto = new TuLienHeTuVanResponseDTO();
+        dto.setIdTv(entity.getIdTv());
+        dto.setHoTen(entity.getHoTen());
+        dto.setEmail(entity.getEmail());
+        dto.setSdt(entity.getSdt());
+        dto.setTieuDe(entity.getTieuDe());
+        dto.setNoiDung(entity.getNoiDung());
+        dto.setHinhThucTuVan(entity.getHinhThucTuVan());
+        dto.setThoiDiemTao(entity.getThoiDiemTao());
+        dto.setTrangThai(entity.getTrangThai());
+        dto.setThoiGianTuVan(entity.getThoiGianTuVan());
+        return dto;
     }
 }
