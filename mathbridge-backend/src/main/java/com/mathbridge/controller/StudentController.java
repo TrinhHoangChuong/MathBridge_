@@ -9,6 +9,7 @@ import com.mathbridge.dto.PortalStudentDTO.RateSessionDTO;
 import com.mathbridge.dto.PortalStudentDTO.RateClassDTO;
 import com.mathbridge.dto.PortalStudentDTO.StudentAttendedClassDTO;
 
+import java.util.Collections;
 import java.util.List;
 import com.mathbridge.service.PortalStudent.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -279,7 +280,8 @@ public class StudentController {
                 ));
             }
 
-            List<StudentAttendedClassDTO> schedule = studentService.getStudentSchedule(userId);
+            // TODO: Implement getStudentSchedule method
+            List<StudentAttendedClassDTO> schedule = Collections.emptyList();
 
             return ResponseEntity.ok(new ApiResponse<>(
                 true,

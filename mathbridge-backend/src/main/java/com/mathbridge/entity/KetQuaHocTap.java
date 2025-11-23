@@ -25,7 +25,13 @@ public class KetQuaHocTap {
     private String diemSo; // Format: "8.5,8,9" where 1st=15p, 2nd=45p, 3rd=HK
 
     @Column(name = "DiemTB", precision = 5, scale = 2)
-    private BigDecimal diemTB; // Điểm trung bình được tính từ 3 cột điểm
+    private BigDecimal diemTB; // Điểm trung bình được tính từ 3 cột điểm (deprecated, use DiemTrungBinh)
+
+    @Column(name = "DiemTrungBinh", precision = 5, scale = 2)
+    private BigDecimal diemTrungBinh; // Điểm trung bình: (15p + 45p + thi) / 3
+
+    @Column(name = "DiemTongKet", precision = 5, scale = 2)
+    private BigDecimal diemTongKet; // Điểm tổng kết: 20%*15p + 30%*45p + 50%*thi
 
     @Column(name = "XepLoai", length = 10, nullable = false)
     private String xepLoai;

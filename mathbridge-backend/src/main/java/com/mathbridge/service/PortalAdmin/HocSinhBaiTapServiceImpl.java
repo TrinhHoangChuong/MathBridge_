@@ -296,7 +296,9 @@ public class HocSinhBaiTapServiceImpl implements HocSinhBaiTapService {
         Optional<KetQuaHocTap> optKq = ketQuaHocTapAdminRepository.findFirstByIdHs(studentId);
         if (optKq.isPresent()) {
             KetQuaHocTap kq = optKq.get();
-            diemTb = kq.getDiemSo();
+            // Use DiemTrungBinh or DiemTongKet if available, otherwise fallback to DiemTB
+            diemTb = kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : 
+                     (kq.getDiemTongKet() != null ? kq.getDiemTongKet() : kq.getDiemTB());
             xepLoai = kq.getXepLoai();
         }
 
@@ -824,7 +826,8 @@ public class HocSinhBaiTapServiceImpl implements HocSinhBaiTapService {
                         return HocSinhBaiTapResponse.ClassResult.builder()
                                 .idHs(kq.getIdHs())
                                 .tenHs(fullName)
-                                .diemKetQua(kq.getDiemSo())
+                                .diemKetQua(kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : 
+                                           (kq.getDiemTongKet() != null ? kq.getDiemTongKet() : kq.getDiemTB()))
                                 .xepLoai(kq.getXepLoai())
                                 .build();
                     })
