@@ -32,11 +32,11 @@ public class BaiTap {
     @Column(name = "LoaiBT", length = 100)
     private String loaiBt;
 
-    @Column(name = "FileURL", length = 400)
-    private String fileUrl;
+    @Column(name = "ChoPhepLamBai")
+    private Boolean choPhepLamBai;
 
-    @Column(name = "TaiLieuURL", length = 400)
-    private String taiLieuUrl;
+    @Column(name = "HocSinhDuocPhep", length = 1000)
+    private String hocSinhDuocPhep; // JSON array of student IDs: ["HS001", "HS002"]
 
     @Column(name = "NgayBatDau", nullable = false)
     private LocalDateTime ngayBatDau;
@@ -47,15 +47,20 @@ public class BaiTap {
     @Column(name = "GhiChu", length = 200)
     private String ghiChu;
 
-    @Column(name = "ChoPhepLamBai")
-    private Boolean choPhepLamBai;
+    @Lob
+    @Column(name = "NoiDungJSON")
+    private String noiDungJson;
 
-    @Column(name = "HocSinhDuocPhep", length = 1000)
-    private String hocSinhDuocPhep;
+    @Column(name = "CanhBao", length = 500)
+    private String canhBao;
+
+    @Column(name = "ThoiLuongPhut")
+    private Integer thoiLuongPhut;
 
     @ManyToOne
     @JoinColumn(name = "ID_BH", insertable = false, updatable = false)
     private BuoiHocChiTiet buoiHocChiTiet;
+
 
     @OneToMany(mappedBy = "baiTap")
     private Set<BaiNop> baiNops = new HashSet<>();
