@@ -1,12 +1,16 @@
 // portal/admin/js/api/lichhoc.api.js
 import { CONFIG } from "../../../../assets/js/config.js";
+import { getAuthHeaders } from "../admin-auth-guard.js";
 
 const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/lichhoc`;
 
 /* ================== CLASS VIEW ================== */
 
 export async function apiGetClassOptions() {
-  const res = await fetch(`${BASE_URL}/classes/options`);
+  const res = await fetch(`${BASE_URL}/classes/options`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách lớp");
@@ -16,7 +20,11 @@ export async function apiGetClassOptions() {
 
 export async function apiGetClassDetail(idLh) {
   const res = await fetch(
-    `${BASE_URL}/classes/${encodeURIComponent(idLh)}`
+    `${BASE_URL}/classes/${encodeURIComponent(idLh)}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
   );
 
   if (!res.ok) {
@@ -28,8 +36,10 @@ export async function apiGetClassDetail(idLh) {
 export async function apiSearchClassSchedule(payload = {}) {
   const res = await fetch(`${BASE_URL}/class-schedule/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}),
   });
 
   if (!res.ok) {
@@ -41,8 +51,10 @@ export async function apiSearchClassSchedule(payload = {}) {
 export async function apiAutoGenerateSchedule(payload = {}) {
   const res = await fetch(`${BASE_URL}/class-schedule/auto-generate`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}),
   });
 
   if (!res.ok) {
@@ -51,29 +63,20 @@ export async function apiAutoGenerateSchedule(payload = {}) {
   return res.json();
 }
 
-/* ==== NEW: UPDATE 1 BUỔI HỌC ==== */
+/* ==== UPDATE 1 BUỔI HỌC ==== */
 /**
  * Cập nhật 1 buổi học (BuoiHocChiTiet)
  * PUT /class-schedule/{idBh}
- * body:
- * {
- *   idPhong,
- *   ngayHoc,       // "yyyy-MM-dd"
- *   gioBatDau,     // "HH:mm"
- *   gioKetThuc,    // "HH:mm"
- *   tenCaHoc,
- *   noiDung,
- *   ghiChu
- * }
- * BE trả về AutoGenerateResultResponse
  */
 export async function apiUpdateSession(idBh, payload = {}) {
   const res = await fetch(
     `${BASE_URL}/class-schedule/${encodeURIComponent(idBh)}`,
     {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify(payload || {}),
     }
   );
 
@@ -86,7 +89,10 @@ export async function apiUpdateSession(idBh, payload = {}) {
 /* ================== CAMPUS & ROOMS ================== */
 
 export async function apiGetCampuses() {
-  const res = await fetch(`${BASE_URL}/campuses`);
+  const res = await fetch(`${BASE_URL}/campuses`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách cơ sở");
@@ -96,7 +102,11 @@ export async function apiGetCampuses() {
 
 export async function apiGetRoomsByCampus(idCs) {
   const res = await fetch(
-    `${BASE_URL}/campuses/${encodeURIComponent(idCs)}/rooms`
+    `${BASE_URL}/campuses/${encodeURIComponent(idCs)}/rooms`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
   );
 
   if (!res.ok) {
@@ -108,7 +118,10 @@ export async function apiGetRoomsByCampus(idCs) {
 /* ================== TEACHER VIEW ================== */
 
 export async function apiGetTeacherOptions() {
-  const res = await fetch(`${BASE_URL}/teachers/options`);
+  const res = await fetch(`${BASE_URL}/teachers/options`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách giáo viên");
@@ -119,8 +132,10 @@ export async function apiGetTeacherOptions() {
 export async function apiSearchTeacherSchedule(payload = {}) {
   const res = await fetch(`${BASE_URL}/teacher-schedule/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}),
   });
 
   if (!res.ok) {
@@ -132,7 +147,10 @@ export async function apiSearchTeacherSchedule(payload = {}) {
 /* ================== STUDENT VIEW ================== */
 
 export async function apiGetStudentOptions() {
-  const res = await fetch(`${BASE_URL}/students/options`);
+  const res = await fetch(`${BASE_URL}/students/options`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách học sinh");
@@ -143,8 +161,10 @@ export async function apiGetStudentOptions() {
 export async function apiSearchStudentSchedule(payload = {}) {
   const res = await fetch(`${BASE_URL}/student-schedule/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}),
   });
 
   if (!res.ok) {

@@ -1,5 +1,6 @@
 // portal/admin/js/api/tuyendung.api.js
 import { CONFIG } from "../../../../assets/js/config.js";
+import { getAuthHeaders } from "../admin-auth-guard.js";
 
 const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/tuyendung`;
 
@@ -7,7 +8,10 @@ const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/tuyendung`;
 
 /** Lấy danh sách tất cả tin tuyển dụng */
 export async function apiGetAllJobs() {
-  const res = await fetch(`${BASE_URL}/jobs`);
+  const res = await fetch(`${BASE_URL}/jobs`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) {
     throw new Error("Không thể tải danh sách tin tuyển dụng");
   }
@@ -16,7 +20,13 @@ export async function apiGetAllJobs() {
 
 /** Lấy chi tiết 1 tin tuyển dụng theo ID_TD */
 export async function apiGetJobDetail(idTd) {
-  const res = await fetch(`${BASE_URL}/jobs/${encodeURIComponent(idTd)}`);
+  const res = await fetch(
+    `${BASE_URL}/jobs/${encodeURIComponent(idTd)}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
+  );
   if (!res.ok) {
     throw new Error("Không thể tải chi tiết tin tuyển dụng");
   }
@@ -27,8 +37,10 @@ export async function apiGetJobDetail(idTd) {
 export async function apiCreateJob(payload) {
   const res = await fetch(`${BASE_URL}/jobs`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload), // TuyenDungRequest.JobCreateOrUpdate
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}), // TuyenDungRequest.JobCreateOrUpdate
   });
   if (!res.ok) {
     throw new Error("Không thể tạo tin tuyển dụng");
@@ -38,11 +50,16 @@ export async function apiCreateJob(payload) {
 
 /** Cập nhật tin tuyển dụng */
 export async function apiUpdateJob(idTd, payload) {
-  const res = await fetch(`${BASE_URL}/jobs/${encodeURIComponent(idTd)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload), // TuyenDungRequest.JobCreateOrUpdate
-  });
+  const res = await fetch(
+    `${BASE_URL}/jobs/${encodeURIComponent(idTd)}`,
+    {
+      method: "PUT",
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify(payload || {}), // TuyenDungRequest.JobCreateOrUpdate
+    }
+  );
   if (!res.ok) {
     throw new Error("Không thể cập nhật tin tuyển dụng");
   }
@@ -51,9 +68,13 @@ export async function apiUpdateJob(idTd, payload) {
 
 /** Xóa tin tuyển dụng */
 export async function apiDeleteJob(idTd) {
-  const res = await fetch(`${BASE_URL}/jobs/${encodeURIComponent(idTd)}`, {
-    method: "DELETE",
-  });
+  const res = await fetch(
+    `${BASE_URL}/jobs/${encodeURIComponent(idTd)}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    }
+  );
   if (!res.ok) {
     throw new Error("Không thể xóa tin tuyển dụng");
   }
@@ -63,7 +84,10 @@ export async function apiDeleteJob(idTd) {
 
 /** Lấy danh sách tất cả ứng viên */
 export async function apiGetAllCandidates() {
-  const res = await fetch(`${BASE_URL}/candidates`);
+  const res = await fetch(`${BASE_URL}/candidates`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) {
     throw new Error("Không thể tải danh sách ứng viên");
   }
@@ -72,7 +96,13 @@ export async function apiGetAllCandidates() {
 
 /** Lấy chi tiết một ứng viên */
 export async function apiGetCandidateDetail(idUv) {
-  const res = await fetch(`${BASE_URL}/candidates/${encodeURIComponent(idUv)}`);
+  const res = await fetch(
+    `${BASE_URL}/candidates/${encodeURIComponent(idUv)}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
+  );
   if (!res.ok) {
     throw new Error("Không thể tải chi tiết ứng viên");
   }
@@ -83,8 +113,10 @@ export async function apiGetCandidateDetail(idUv) {
 export async function apiCreateCandidate(payload) {
   const res = await fetch(`${BASE_URL}/candidates`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload), // TuyenDungRequest.CandidateCreateOrUpdate
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload || {}), // TuyenDungRequest.CandidateCreateOrUpdate
   });
   if (!res.ok) {
     throw new Error("Không thể tạo ứng viên");
@@ -94,11 +126,16 @@ export async function apiCreateCandidate(payload) {
 
 /** Cập nhật ứng viên */
 export async function apiUpdateCandidate(idUv, payload) {
-  const res = await fetch(`${BASE_URL}/candidates/${encodeURIComponent(idUv)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload), // TuyenDungRequest.CandidateCreateOrUpdate
-  });
+  const res = await fetch(
+    `${BASE_URL}/candidates/${encodeURIComponent(idUv)}`,
+    {
+      method: "PUT",
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify(payload || {}), // TuyenDungRequest.CandidateCreateOrUpdate
+    }
+  );
   if (!res.ok) {
     throw new Error("Không thể cập nhật ứng viên");
   }
@@ -107,9 +144,13 @@ export async function apiUpdateCandidate(idUv, payload) {
 
 /** Xóa ứng viên */
 export async function apiDeleteCandidate(idUv) {
-  const res = await fetch(`${BASE_URL}/candidates/${encodeURIComponent(idUv)}`, {
-    method: "DELETE",
-  });
+  const res = await fetch(
+    `${BASE_URL}/candidates/${encodeURIComponent(idUv)}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    }
+  );
   if (!res.ok) {
     throw new Error("Không thể xóa ứng viên");
   }
@@ -120,7 +161,11 @@ export async function apiDeleteCandidate(idUv) {
 /** Lấy danh sách ứng viên của 1 tin tuyển dụng (Association_25 + UngVien) */
 export async function apiGetCandidatesOfJob(idTd) {
   const res = await fetch(
-    `${BASE_URL}/jobs/${encodeURIComponent(idTd)}/candidates`
+    `${BASE_URL}/jobs/${encodeURIComponent(idTd)}/candidates`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
   );
   if (!res.ok) {
     throw new Error("Không thể tải danh sách ứng viên của tin tuyển dụng");
@@ -138,7 +183,9 @@ export async function apiAddCandidatesToJob(idTd, candidateIds) {
     `${BASE_URL}/jobs/${encodeURIComponent(idTd)}/candidates`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
       body: JSON.stringify({ candidateIds }),
     }
   );
@@ -155,6 +202,7 @@ export async function apiRemoveCandidateFromJob(idTd, idUv) {
     )}/candidates/${encodeURIComponent(idUv)}`,
     {
       method: "DELETE",
+      headers: getAuthHeaders(),
     }
   );
   if (!res.ok) {

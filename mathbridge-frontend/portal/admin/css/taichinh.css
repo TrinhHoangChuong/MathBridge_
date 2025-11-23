@@ -1,4 +1,39 @@
-/* ===== TÀI CHÍNH & HỌC PHÍ (đồng bộ style HSHT / NS) ===== */
+/* =========================================================
+   0. THEME VARIABLES (đồng bộ dashboard / hocsinh / nhansu)
+   ========================================================= */
+
+:root {
+  --mb-bg: #f3f4f6;
+  --mb-card-bg: #ffffff;
+  --mb-border: #e5e7eb;
+  --mb-border-soft: #f3f4f6;
+  --mb-text-main: #111827;
+  --mb-text-sub: #6b7280;
+  --mb-text-mute: #9ca3af;
+
+  --mb-primary: #ec4899;
+  --mb-primary-soft: #fecdd3;
+  --mb-primary-soft2: #fdf2f8;
+
+  --mb-good: #16a34a;
+  --mb-good-soft: #dcfce7;
+
+  --mb-bad: #dc2626;
+  --mb-bad-soft: #fee2e2;
+
+  --mb-warn: #d97706;
+  --mb-warn-soft: #fef3c7;
+
+  --mb-radius: 18px;
+  --mb-radius-lg: 24px;
+
+  --mb-shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.06);
+  --mb-shadow-subtle: 0 3px 10px rgba(15, 23, 42, 0.04);
+
+  --mb-transition-fast: 0.18s ease-out;
+}
+
+/* ===== TÀI CHÍNH & HỌC PHÍ (đồng bộ style HSHT / NS / Dashboard) ===== */
 
 .tc-panel {
   background: #ffffff;
@@ -36,7 +71,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* có thể đổi sang xanh nếu muốn, tạm dùng gradient chung */
+  /* gradient hồng đồng bộ với dashboard */
   background: radial-gradient(circle at 0 0, #fb7185, #ec4899);
   color: #ffffff;
   font-size: 22px;
@@ -70,6 +105,7 @@
 }
 
 /* .btn.ghost dùng chung style với HSHT/NS */
+
 .tc-header-right .btn.ghost {
   background: #f9fafb;
   border-radius: 999px;

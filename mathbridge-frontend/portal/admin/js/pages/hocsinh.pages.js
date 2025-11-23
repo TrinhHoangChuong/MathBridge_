@@ -6,7 +6,7 @@ import {
   apiRemoveStudentFromClass,
   apiSearchAssignments,
   apiSearchSubmissions,
-  apiGetClassEvaluation, // dùng đúng tên trong hocsinh.api.js
+  apiGetClassEvaluation,
 } from "../api/hocsinh.api.js";
 
 import { apiGetAllPrograms } from "../api/programApi.js";

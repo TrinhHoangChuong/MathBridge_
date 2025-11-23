@@ -13,48 +13,78 @@ import java.util.List;
  */
 public class TkPhanQuyenRequest {
 
+    // =========================================================
+    // ACCOUNTS
+    // =========================================================
+
+    /**
+     * Request tìm kiếm / lọc danh sách tài khoản (bảng TaiKhoan).
+     * Mapping trực tiếp với FE:
+     * {
+     *   searchKeyword,
+     *   roleId,
+     *   ownerType, // ALL | HS | NV | OTHER
+     *   status,    // ALL | ACTIVE | INACTIVE | LOCKED
+     *   page,
+     *   size
+     * }
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class AccountSearchRequest {
-        private String searchKeyword; // ID_TK hoặc Email
-        private String roleId;        // lọc theo ID_Role
-        private String ownerType;     // ALL | HS | NV | OTHER (dựa ID_HS, ID_NV)
-        private String status;        // ALL | ACTIVE | INACTIVE | LOCKED (map TrangThai)
-
-        private Integer page;         // 0-based
-        private Integer size;         // số phần tử / trang
+        private String searchKeyword;
+        private String roleId;
+        private String ownerType;
+        private String status;
+        private Integer page;
+        private Integer size;
     }
 
     /**
-     * Request tạo / cập nhật tài khoản.
-     * Map đúng bảng TaiKhoan + TaiKhoan_VaiTro.
+     * Request tạo / cập nhật tài khoản (bảng TaiKhoan + TaiKhoan_VaiTro).
+     *
+     * FE gửi:
+     * {
+     *   email,
+     *   passWord,   // chỉ gửi khi tạo mới hoặc đổi mật khẩu
+     *   trangThai,  // ACTIVE | INACTIVE | LOCKED
+     *   roleIds: [] // list ID_Role gán cho tài khoản
+     * }
+     *
+     * Ở màn hình này, mapping HS/NV (idHs, idNv) chỉ đọc, không chỉnh sửa.
+     * Tuy nhiên vẫn để field nếu sau dùng API khác muốn set.
      */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class AccountUpsertRequest {
-        // ID_TK sẽ generate ở BE khi tạo mới, không bắt buộc truyền lên
-        private String email;         // TaiKhoan.Email
-        private String passWord;      // TaiKhoan.PassWord (BE có thể encode sau)
-        private String trangThai;     // TaiKhoan.TrangThai
+        private String email;          // TaiKhoan.Email
+        private String passWord;       // TaiKhoan.PassWord
+        private String trangThai;      // TaiKhoan.TrangThai
 
-        // Mapping với Học sinh / Nhân viên (chỉ hiển thị, không sửa ở đây)
-        private String idHs;          // TaiKhoan.ID_HS (optional)
-        private String idNv;          // TaiKhoan.ID_NV (optional)
+        // chỉ sử dụng nếu muốn điều chỉnh mapping HS / NV từ API này
+        private String idHs;           // TaiKhoan.ID_HS
+        private String idNv;           // TaiKhoan.ID_NV
 
-        // Danh sách role gán cho tài khoản (bảng TaiKhoan_VaiTro)
-        private List<String> roleIds; // list ID_Role
+        private List<String> roleIds;  // danh sách Role.ID_Role
     }
 
+    // =========================================================
+    // ROLES
+    // =========================================================
+
+    /**
+     * Request tìm kiếm / lọc danh sách Role.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class RoleSearchRequest {
-        private String searchKeyword; // ID_Role hoặc TenVaiTro
+        private String searchKeyword;
         private Integer page;
         private Integer size;
     }

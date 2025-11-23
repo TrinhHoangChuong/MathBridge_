@@ -1,5 +1,6 @@
 // portal/admin/js/api/nhansu.api.js
 import { CONFIG } from "../../../../assets/js/config.js";
+import { getAuthHeaders } from "../admin-auth-guard.js";
 
 const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/nhansu`;
 
@@ -10,7 +11,10 @@ const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/nhansu`;
  * GET /coso
  */
 export async function apiGetCampuses() {
-  const res = await fetch(`${BASE_URL}/coso`);
+  const res = await fetch(`${BASE_URL}/coso`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách cơ sở");
@@ -21,12 +25,36 @@ export async function apiGetCampuses() {
 /**
  * Lấy danh sách vai trò (bảng Role)
  * GET /roles
+ *
+ * Dùng cho:
+ *  - Lọc danh sách nhân sự theo role.
+ *  - Hiển thị cột "Vai trò" (từ backend trả về).
  */
 export async function apiGetRoles() {
-  const res = await fetch(`${BASE_URL}/roles`);
+  const res = await fetch(`${BASE_URL}/roles`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách vai trò");
+  }
+  return res.json();
+}
+
+/**
+ * Lấy danh sách tài khoản khả dụng để gán cho nhân sự mới.
+ *
+ * GET /accounts/available
+ */
+export async function apiGetAvailableAccounts() {
+  const res = await fetch(`${BASE_URL}/accounts/available`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error("Không thể tải danh sách tài khoản khả dụng");
   }
   return res.json();
 }
@@ -43,8 +71,10 @@ export async function apiGetRoles() {
 export async function apiSearchStaff(filterPayload = {}) {
   const res = await fetch(`${BASE_URL}/staff/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(filterPayload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(filterPayload || {}),
   });
 
   if (!res.ok) {
@@ -58,7 +88,10 @@ export async function apiSearchStaff(filterPayload = {}) {
  * GET /staff/{idNv}
  */
 export async function apiGetStaffDetail(idNv) {
-  const res = await fetch(`${BASE_URL}/staff/${encodeURIComponent(idNv)}`);
+  const res = await fetch(`${BASE_URL}/staff/${encodeURIComponent(idNv)}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải chi tiết nhân sự");
@@ -69,12 +102,13 @@ export async function apiGetStaffDetail(idNv) {
 /**
  * Tạo mới 1 nhân sự
  * POST /staff
- * body: NhanSuGiangVienRequest.StaffUpsert
  */
 export async function apiCreateStaff(payload) {
   const res = await fetch(`${BASE_URL}/staff`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
     body: JSON.stringify(payload || {}),
   });
 
@@ -87,12 +121,13 @@ export async function apiCreateStaff(payload) {
 /**
  * Cập nhật 1 nhân sự
  * PUT /staff/{idNv}
- * body: NhanSuGiangVienRequest.StaffUpsert
  */
 export async function apiUpdateStaff(idNv, payload) {
   const res = await fetch(`${BASE_URL}/staff/${encodeURIComponent(idNv)}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
     body: JSON.stringify(payload || {}),
   });
 
@@ -114,6 +149,7 @@ export async function apiUpdateStaffStatus(idNv, active) {
     }`,
     {
       method: "PATCH",
+      headers: getAuthHeaders(),
     }
   );
 
@@ -131,6 +167,7 @@ export async function apiUpdateStaffStatus(idNv, active) {
 export async function apiDeleteStaff(idNv) {
   const res = await fetch(`${BASE_URL}/staff/${encodeURIComponent(idNv)}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) {
@@ -151,8 +188,10 @@ export async function apiDeleteStaff(idNv) {
 export async function apiSearchContracts(filterPayload = {}) {
   const res = await fetch(`${BASE_URL}/contracts/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(filterPayload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(filterPayload || {}),
   });
 
   if (!res.ok) {
@@ -167,7 +206,11 @@ export async function apiSearchContracts(filterPayload = {}) {
  */
 export async function apiGetContractDetail(idHd) {
   const res = await fetch(
-    `${BASE_URL}/contracts/${encodeURIComponent(idHd)}`
+    `${BASE_URL}/contracts/${encodeURIComponent(idHd)}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+    }
   );
 
   if (!res.ok) {
@@ -179,12 +222,13 @@ export async function apiGetContractDetail(idHd) {
 /**
  * Tạo mới 1 hợp đồng
  * POST /contracts
- * body: NhanSuGiangVienRequest.ContractUpsert
  */
 export async function apiCreateContract(payload) {
   const res = await fetch(`${BASE_URL}/contracts`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
     body: JSON.stringify(payload || {}),
   });
 
@@ -197,14 +241,15 @@ export async function apiCreateContract(payload) {
 /**
  * Cập nhật 1 hợp đồng
  * PUT /contracts/{idHd}
- * body: NhanSuGiangVienRequest.ContractUpsert
  */
 export async function apiUpdateContract(idHd, payload) {
   const res = await fetch(
     `${BASE_URL}/contracts/${encodeURIComponent(idHd)}`,
     {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
       body: JSON.stringify(payload || {}),
     }
   );
@@ -225,6 +270,7 @@ export async function apiDeleteContract(idHd) {
     `${BASE_URL}/contracts/${encodeURIComponent(idHd)}`,
     {
       method: "DELETE",
+      headers: getAuthHeaders(),
     }
   );
 
@@ -233,15 +279,11 @@ export async function apiDeleteContract(idHd) {
   }
   // 204 → không có body
 }
+
 /**
- * Lấy danh sách nhân sự dùng cho DROPDOWN
- * Ý tưởng: gọi lại API search staff với page/size lớn, không filter gì
- * để lấy toàn bộ nhân sự đang có trong hệ thống.
- *
- * BE KHÔNG CẦN đổi schema, chỉ cần đảm bảo /staff/search hoạt động bình thường.
+ * Lấy danh sách nhân sự dùng cho DROPDOWN (Hợp đồng)
  */
 export async function apiGetStaffForDropdown() {
-  // payload tối thiểu, tùy BE đang dùng phân trang như thế nào
   const payload = {
     page: 0,
     size: 1000, // đủ lớn để cover hết nhân sự

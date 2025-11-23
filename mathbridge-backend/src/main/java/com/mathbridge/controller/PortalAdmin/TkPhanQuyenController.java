@@ -16,9 +16,9 @@ public class TkPhanQuyenController {
 
     private final TkPhanQuyenService tkPhanQuyenService;
 
-    // =======================
+    // =========================================================
     // ACCOUNTS
-    // =======================
+    // =========================================================
 
     /**
      * POST /accounts/search
@@ -43,7 +43,7 @@ public class TkPhanQuyenController {
 
     /**
      * POST /accounts
-     * Tạo mới tài khoản + phân quyền
+     * Tạo mới tài khoản đăng nhập cho nhân sự / đối tượng khác.
      */
     @PostMapping("/accounts")
     @ResponseStatus(HttpStatus.CREATED)
@@ -55,7 +55,7 @@ public class TkPhanQuyenController {
 
     /**
      * PUT /accounts/{idTk}
-     * Cập nhật tài khoản + phân quyền
+     * Cập nhật thông tin tài khoản (email, trạng thái, roles, mật khẩu nếu có).
      */
     @PutMapping("/accounts/{idTk}")
     public TkPhanQuyenResponse.AccountDto updateAccount(
@@ -65,21 +65,13 @@ public class TkPhanQuyenController {
         return tkPhanQuyenService.updateAccount(idTk, request);
     }
 
-    /**
-     * DELETE /accounts/{idTk}
-     */
-    @DeleteMapping("/accounts/{idTk}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteAccount(@PathVariable String idTk) {
-        tkPhanQuyenService.deleteAccount(idTk);
-    }
-
-    // =======================
+    // =========================================================
     // ROLES
-    // =======================
+    // =========================================================
 
     /**
      * POST /roles/search
+     * Body: RoleSearchRequest
      */
     @PostMapping("/roles/search")
     public TkPhanQuyenResponse.RolePage searchRoles(
@@ -90,7 +82,7 @@ public class TkPhanQuyenController {
 
     /**
      * GET /roles/all
-     * Lấy toàn bộ roles (dropdown filter + multiselect)
+     * Dùng cho dropdown filter + multiselect trong modal.
      */
     @GetMapping("/roles/all")
     public List<TkPhanQuyenResponse.RoleDto> getAllRoles() {
@@ -99,6 +91,7 @@ public class TkPhanQuyenController {
 
     /**
      * POST /roles
+     * Tạo role mới.
      */
     @PostMapping("/roles")
     @ResponseStatus(HttpStatus.CREATED)
@@ -110,6 +103,7 @@ public class TkPhanQuyenController {
 
     /**
      * PUT /roles/{idRole}
+     * Cập nhật thông tin role.
      */
     @PutMapping("/roles/{idRole}")
     public TkPhanQuyenResponse.RoleDto updateRole(

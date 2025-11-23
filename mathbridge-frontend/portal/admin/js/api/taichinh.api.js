@@ -1,5 +1,6 @@
 // portal/admin/js/api/taichinh.api.js
 import { CONFIG } from "../../../../assets/js/config.js";
+import { getAuthHeaders } from "../admin-auth-guard.js";
 
 const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/taichinh`;
 
@@ -13,8 +14,10 @@ const BASE_URL = `${CONFIG.BASE_URL}/api/portal/admin/taichinh`;
 export async function apiSearchHoaDon(filterPayload = {}) {
   const res = await fetch(`${BASE_URL}/hoadon/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(filterPayload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(filterPayload || {}),
   });
 
   if (!res.ok) {
@@ -31,7 +34,9 @@ export async function apiSearchHoaDon(filterPayload = {}) {
 export async function apiCreateHoaDon(payload) {
   const res = await fetch(`${BASE_URL}/hoadon`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
     body: JSON.stringify(payload || {}),
   });
 
@@ -50,7 +55,9 @@ export async function apiUpdateHoaDon(idHoaDon, payload) {
     `${BASE_URL}/hoadon/${encodeURIComponent(idHoaDon)}`,
     {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
       body: JSON.stringify(payload || {}),
     }
   );
@@ -71,6 +78,7 @@ export async function apiDeleteHoaDon(idHoaDon) {
     `${BASE_URL}/hoadon/${encodeURIComponent(idHoaDon)}`,
     {
       method: "DELETE",
+      headers: getAuthHeaders(),
     }
   );
 
@@ -90,8 +98,10 @@ export async function apiDeleteHoaDon(idHoaDon) {
 export async function apiSearchLichSuThanhToan(filterPayload = {}) {
   const res = await fetch(`${BASE_URL}/lichsu/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(filterPayload),
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(filterPayload || {}),
   });
 
   if (!res.ok) {
@@ -108,7 +118,9 @@ export async function apiSearchLichSuThanhToan(filterPayload = {}) {
 export async function apiCreateLichSuThanhToan(payload) {
   const res = await fetch(`${BASE_URL}/lichsu`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
     body: JSON.stringify(payload || {}),
   });
 
@@ -123,11 +135,16 @@ export async function apiCreateLichSuThanhToan(payload) {
  * PUT /lichsu/{idLs}
  */
 export async function apiUpdateLichSuThanhToan(idLs, payload) {
-  const res = await fetch(`${BASE_URL}/lichsu/${encodeURIComponent(idLs)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload || {}),
-  });
+  const res = await fetch(
+    `${BASE_URL}/lichsu/${encodeURIComponent(idLs)}`,
+    {
+      method: "PUT",
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
+      body: JSON.stringify(payload || {}),
+    }
+  );
 
   if (!res.ok) {
     throw new Error("Không thể cập nhật lịch sử thanh toán");
@@ -141,9 +158,13 @@ export async function apiUpdateLichSuThanhToan(idLs, payload) {
  * BE trả 204 No Content → không có body
  */
 export async function apiDeleteLichSuThanhToan(idLs) {
-  const res = await fetch(`${BASE_URL}/lichsu/${encodeURIComponent(idLs)}`, {
-    method: "DELETE",
-  });
+  const res = await fetch(
+    `${BASE_URL}/lichsu/${encodeURIComponent(idLs)}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    }
+  );
 
   if (!res.ok) {
     throw new Error("Không thể xoá lịch sử thanh toán");
@@ -158,7 +179,10 @@ export async function apiDeleteLichSuThanhToan(idLs) {
  * GET /phuongthuc
  */
 export async function apiGetPhuongThucThanhToanList() {
-  const res = await fetch(`${BASE_URL}/phuongthuc`);
+  const res = await fetch(`${BASE_URL}/phuongthuc`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách phương thức thanh toán");
@@ -174,7 +198,9 @@ export async function apiGetPhuongThucThanhToanList() {
 export async function apiCreatePhuongThucThanhToan(payload) {
   const res = await fetch(`${BASE_URL}/phuongthuc`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders({
+      "Content-Type": "application/json",
+    }),
     body: JSON.stringify(payload || {}),
   });
 
@@ -193,7 +219,9 @@ export async function apiUpdatePhuongThucThanhToan(idPt, payload) {
     `${BASE_URL}/phuongthuc/${encodeURIComponent(idPt)}`,
     {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAuthHeaders({
+        "Content-Type": "application/json",
+      }),
       body: JSON.stringify(payload || {}),
     }
   );
@@ -214,6 +242,7 @@ export async function apiDeletePhuongThucThanhToan(idPt) {
     `${BASE_URL}/phuongthuc/${encodeURIComponent(idPt)}`,
     {
       method: "DELETE",
+      headers: getAuthHeaders(),
     }
   );
 
@@ -231,7 +260,10 @@ export async function apiDeletePhuongThucThanhToan(idPt) {
  * response: [{ idLh, tenLop }]
  */
 export async function apiGetDropdownClasses() {
-  const res = await fetch(`${BASE_URL}/dropdowns/lophoc`);
+  const res = await fetch(`${BASE_URL}/dropdowns/lophoc`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách lớp học");
@@ -245,7 +277,10 @@ export async function apiGetDropdownClasses() {
  * response: [{ idHs, hoTen }]
  */
 export async function apiGetDropdownStudents() {
-  const res = await fetch(`${BASE_URL}/dropdowns/hocsinh`);
+  const res = await fetch(`${BASE_URL}/dropdowns/hocsinh`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     throw new Error("Không thể tải danh sách học sinh");

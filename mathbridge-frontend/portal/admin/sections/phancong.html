@@ -1,0 +1,397 @@
+<!-- ICONS (Remix Icon) -->
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+
+<div class="dash-card content-panel pc-panel" id="phancong-panel">
+    <!-- HEADER -->
+    <div class="pc-header">
+        <div class="pc-header-left">
+            <div class="pc-header-icon">
+                <i class="ri-user-heart-line"></i>
+            </div>
+            <div>
+                <h2 class="pc-title">Phân công cố vấn học sinh</h2>
+                <p class="pc-subtitle">
+                    Chọn nhân viên làm cố vấn và gán học sinh cho từng cố vấn, dựa trên
+                    các bảng NhanVien, HocSinh và CoVan_HocSinh.
+                </p>
+            </div>
+        </div>
+
+        <div class="pc-header-right">
+            <button class="btn ghost" id="pc-refresh-all" type="button">
+                <i class="ri-refresh-line"></i>
+                <span>Làm mới dữ liệu</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="pc-body">
+        <div class="pc-layout">
+            <!-- LEFT: DANH SÁCH CỐ VẤN -->
+            <section class="pc-left">
+                <div class="pc-section-head">
+                    <div>
+                        <h3 class="pc-section-title">Danh sách cố vấn</h3>
+                        <p class="pc-section-subtitle">
+                            Lấy từ bảng <strong>NhanVien</strong>, chỉ hiện nhân viên đang
+                            hoạt động (có thể lọc thêm theo chức vụ).
+                        </p>
+                    </div>
+                    <button class="btn ghost sm" id="pc-refresh-advisors" type="button">
+                        <i class="ri-refresh-line"></i>
+                    </button>
+                </div>
+
+                <!-- FILTERS FOR ADVISORS -->
+                <div class="pc-filters">
+                    <div class="pc-filter-group">
+                        <label for="pc-advisor-search-input" class="pc-filter-label">
+                            Tìm cố vấn
+                        </label>
+                        <div class="pc-input-with-icon">
+                            <i class="ri-search-line"></i>
+                            <input
+                                    id="pc-advisor-search-input"
+                                    type="text"
+                                    class="pc-input"
+                                    placeholder="Tìm theo tên, email, SĐT..."
+                            />
+                        </div>
+                    </div>
+
+                    <div class="pc-filter-inline">
+                        <div class="pc-filter-group">
+                            <label for="pc-advisor-filter-chucvu" class="pc-filter-label">
+                                Chức vụ
+                            </label>
+                            <select
+                                    id="pc-advisor-filter-chucvu"
+                                    class="pc-select"
+                            >
+                                <option value="">Tất cả</option>
+                                <!-- JS sẽ tự fill các ChucVu duy nhất từ NhanVien -->
+                            </select>
+                        </div>
+
+                        <div class="pc-filter-group">
+                            <label for="pc-advisor-filter-status" class="pc-filter-label">
+                                Trạng thái
+                            </label>
+                            <select
+                                    id="pc-advisor-filter-status"
+                                    class="pc-select"
+                            >
+                                <option value="active">Đang hoạt động</option>
+                                <option value="inactive">Ngưng hoạt động</option>
+                                <option value="">Tất cả</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADVISOR LIST -->
+                <div class="pc-advisor-list" id="pc-advisor-list">
+                    <!-- JS render từng item:
+                         - Tên: Ho + TenDem + Ten
+                         - Email, SDT
+                         - ChucVu, ChuyenMon, TrangThaiHoatDong
+                    -->
+                </div>
+            </section>
+
+            <!-- RIGHT: CHI TIẾT & PHÂN CÔNG -->
+            <section class="pc-right">
+                <!-- Nếu chưa chọn cố vấn -->
+                <div class="pc-empty-state" id="pc-empty-state">
+                    <div class="pc-empty-icon">
+                        <i class="ri-user-heart-line"></i>
+                    </div>
+                    <h3>Chưa chọn cố vấn</h3>
+                    <p>
+                        Vui lòng chọn một nhân viên ở danh sách bên trái để xem thông tin
+                        và phân công học sinh.
+                    </p>
+                </div>
+
+                <!-- Khi đã chọn cố vấn -->
+                <div class="pc-details" id="pc-details" hidden>
+                    <!-- ADVISOR SUMMARY -->
+                    <div class="pc-advisor-summary" id="pc-advisor-summary">
+                        <!-- JS fill thông tin cố vấn hiện tại -->
+                    </div>
+
+                    <!-- TABS -->
+                    <div class="pc-tabs">
+                        <button
+                                class="pc-tab-button active"
+                                type="button"
+                                data-tab="available"
+                                id="pc-tab-available"
+                        >
+                            <span>Học sinh khả dụng</span>
+                            <span class="pc-tab-badge" id="pc-count-available">0</span>
+                        </button>
+                        <button
+                                class="pc-tab-button"
+                                type="button"
+                                data-tab="assigned"
+                                id="pc-tab-assigned"
+                        >
+                            <span>Đang được cố vấn</span>
+                            <span class="pc-tab-badge" id="pc-count-assigned">0</span>
+                        </button>
+                    </div>
+
+                    <!-- TAB: AVAILABLE STUDENTS -->
+                    <div
+                            class="pc-tab-panel"
+                            id="pc-tab-panel-available"
+                            data-tab-panel="available"
+                    >
+                        <div class="pc-section-head">
+                            <div>
+                                <h3 class="pc-section-title">Học sinh khả dụng</h3>
+                                <p class="pc-section-subtitle">
+                                    Lấy từ bảng <strong>HocSinh</strong>, có thể lọc theo tên,
+                                    email, trạng thái. Dùng để gán mới vào bảng
+                                    <strong>CoVan_HocSinh</strong>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="pc-filters">
+                            <div class="pc-filter-group">
+                                <label for="pc-student-search-input" class="pc-filter-label">
+                                    Tìm học sinh
+                                </label>
+                                <div class="pc-input-with-icon">
+                                    <i class="ri-search-line"></i>
+                                    <input
+                                            id="pc-student-search-input"
+                                            type="text"
+                                            class="pc-input"
+                                            placeholder="Tìm theo tên, email, SĐT..."
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="pc-filter-inline">
+                                <div class="pc-filter-group">
+                                    <label
+                                            for="pc-student-filter-status"
+                                            class="pc-filter-label"
+                                    >
+                                        Trạng thái hoạt động
+                                    </label>
+                                    <select
+                                            id="pc-student-filter-status"
+                                            class="pc-select"
+                                    >
+                                        <option value="active">Đang hoạt động</option>
+                                        <option value="inactive">Ngưng hoạt động</option>
+                                        <option value="">Tất cả</option>
+                                    </select>
+                                </div>
+
+                                <div class="pc-filter-group pc-filter-checkbox">
+                                    <label class="pc-checkbox-label">
+                                        <input
+                                                type="checkbox"
+                                                id="pc-only-without-advisor"
+                                        />
+                                        <span>Chỉ hiện học sinh chưa có cố vấn</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AVAILABLE STUDENT LIST -->
+                        <div class="pc-list-wrapper">
+                            <div class="pc-list-header">
+                                <span>Học sinh</span>
+                                <span class="pc-list-header-meta">Liên hệ</span>
+                                <span class="pc-list-header-meta">Trạng thái</span>
+                                <span class="pc-list-header-actions"></span>
+                            </div>
+
+                            <div class="pc-student-list" id="pc-student-list">
+                                <!-- JS render:
+                                     - Ho + TenDem + Ten
+                                     - Email / SDT
+                                     - TrangThaiHoatDong
+                                     - Button "Gán làm cố vấn"
+                                -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: ASSIGNED STUDENTS -->
+                    <div
+                            class="pc-tab-panel"
+                            id="pc-tab-panel-assigned"
+                            data-tab-panel="assigned"
+                            hidden
+                    >
+                        <div class="pc-section-head">
+                            <div>
+                                <h3 class="pc-section-title">Danh sách học sinh đang được cố vấn</h3>
+                                <p class="pc-section-subtitle">
+                                    Dữ liệu lấy từ bảng <strong>CoVan_HocSinh</strong> join
+                                    <strong>HocSinh</strong>, hiển thị các mối quan hệ cố vấn
+                                    theo khoảng thời gian (NgayBatDau, NgayKetThuc, TrangThai,
+                                    GhiChu).
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="pc-filters">
+                            <div class="pc-filter-inline">
+                                <div class="pc-filter-group">
+                                    <label
+                                            for="pc-assignment-filter-status"
+                                            class="pc-filter-label"
+                                    >
+                                        Trạng thái phân công
+                                    </label>
+                                    <select
+                                            id="pc-assignment-filter-status"
+                                            class="pc-select"
+                                    >
+                                        <option value="active">Đang hiệu lực</option>
+                                        <option value="ended">Đã kết thúc</option>
+                                        <option value="">Tất cả</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ASSIGNMENT LIST -->
+                        <div class="pc-list-wrapper">
+                            <div class="pc-list-header">
+                                <span>Học sinh</span>
+                                <span class="pc-list-header-meta">Thời gian</span>
+                                <span class="pc-list-header-meta">Trạng thái</span>
+                                <span class="pc-list-header-actions"></span>
+                            </div>
+
+                            <div class="pc-assignment-list" id="pc-assignment-list">
+                                <!-- JS render:
+                                     - Thông tin HS
+                                     - NgayBatDau / NgayKetThuc
+                                     - TrangThai
+                                     - Button "Kết thúc" / "Chỉnh sửa"
+                                -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- MODAL: TẠO / CẬP NHẬT PHÂN CÔNG -->
+    <div class="pc-modal-backdrop" id="pc-assign-modal-backdrop" hidden>
+        <div class="pc-modal">
+            <div class="pc-modal-header">
+                <h3 id="pc-assign-modal-title">Gán học sinh cho cố vấn</h3>
+                <button
+                        type="button"
+                        class="pc-modal-close"
+                        id="pc-assign-modal-close"
+                >
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <div class="pc-modal-body">
+                <div class="pc-modal-summary" id="pc-assign-modal-summary">
+                    <!-- JS: hiển thị cố vấn + học sinh đang thao tác -->
+                </div>
+
+                <form id="pc-assign-form">
+                    <div class="pc-form-grid">
+                        <div class="pc-form-group">
+                            <label for="pc-input-ngaybatdau" class="pc-form-label">
+                                Ngày bắt đầu <span class="pc-required">*</span>
+                            </label>
+                            <input
+                                    type="datetime-local"
+                                    id="pc-input-ngaybatdau"
+                                    name="ngayBatDau"
+                                    class="pc-input"
+                                    required
+                            />
+                        </div>
+
+                        <div class="pc-form-group">
+                            <label for="pc-input-ngayketthuc" class="pc-form-label">
+                                Ngày kết thúc
+                            </label>
+                            <input
+                                    type="datetime-local"
+                                    id="pc-input-ngayketthuc"
+                                    name="ngayKetThuc"
+                                    class="pc-input"
+                            />
+                            <p class="pc-help-text">
+                                Để trống nếu phân công đang còn hiệu lực.
+                            </p>
+                        </div>
+
+                        <div class="pc-form-group">
+                            <label for="pc-input-trangthai" class="pc-form-label">
+                                Trạng thái
+                            </label>
+                            <select
+                                    id="pc-input-trangthai"
+                                    name="trangThai"
+                                    class="pc-select"
+                            >
+                                <option value="">(Không đặt)</option>
+                                <option value="Đang cố vấn">Đang cố vấn</option>
+                                <option value="Tạm dừng">Tạm dừng</option>
+                                <option value="Đã kết thúc">Đã kết thúc</option>
+                            </select>
+                            <p class="pc-help-text">
+                                Giá trị này map trực tiếp với cột
+                                <strong>TrangThai</strong> trong bảng
+                                <strong>CoVan_HocSinh</strong>.
+                            </p>
+                        </div>
+
+                        <div class="pc-form-group pc-form-group-full">
+                            <label for="pc-input-ghichu" class="pc-form-label">
+                                Ghi chú
+                            </label>
+                            <textarea
+                                    id="pc-input-ghichu"
+                                    name="ghiChu"
+                                    class="pc-textarea"
+                                    rows="3"
+                                    placeholder="VD: Lý do phân công, lưu ý đặc biệt..."
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <div class="pc-modal-footer">
+                        <button
+                                type="button"
+                                class="btn ghost"
+                                id="pc-assign-modal-cancel"
+                        >
+                            Hủy
+                        </button>
+                        <button type="submit" class="btn primary" id="pc-assign-modal-save">
+                            <i class="ri-check-line"></i>
+                            <span>Lưu phân công</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

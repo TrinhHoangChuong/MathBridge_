@@ -16,53 +16,87 @@ public class NhanSuGiangVienController {
 
     private final NhanSuGiangVienService nhanSuService;
 
-    // ===== DROPDOWN CƠ SỞ & VAI TRÒ =====
+    // ===== DROPDOWN =====
 
+    /**
+     * Danh sách cơ sở (CoSo) cho dropdown.
+     * GET /coso
+     */
     @GetMapping("/coso")
     public ResponseEntity<List<NhanSuGiangVienResponse.CampusOption>> getCampuses() {
         return ResponseEntity.ok(nhanSuService.getAllCampuses());
     }
 
+    /**
+     * Danh sách tất cả Role cho dropdown.
+     * GET /roles
+     */
     @GetMapping("/roles")
     public ResponseEntity<List<NhanSuGiangVienResponse.RoleOption>> getRoles() {
         return ResponseEntity.ok(nhanSuService.getAllRoles());
     }
 
+    /**
+     * Danh sách tài khoản khả dụng để gán cho nhân sự mới.
+     * GET /accounts/available
+     */
+    @GetMapping("/accounts/available")
+    public ResponseEntity<List<NhanSuGiangVienResponse.AccountOption>> getAvailableAccounts() {
+        return ResponseEntity.ok(nhanSuService.getAvailableAccounts());
+    }
+
     // ===== NHÂN SỰ =====
 
-    // Tìm kiếm / lọc danh sách nhân viên
+    /**
+     * Tìm kiếm / lọc danh sách nhân sự.
+     * POST /staff/search
+     */
     @PostMapping("/staff/search")
-    public ResponseEntity<List<NhanSuGiangVienResponse>> searchStaff(
-            @RequestBody NhanSuGiangVienRequest filter
+    public ResponseEntity<List<NhanSuGiangVienResponse.StaffInfo>> searchStaff(
+            @RequestBody(required = false) NhanSuGiangVienRequest filter
     ) {
         return ResponseEntity.ok(nhanSuService.searchStaff(filter));
     }
 
-    // Lấy chi tiết 1 nhân viên
+    /**
+     * Lấy chi tiết 1 nhân sự.
+     * GET /staff/{idNv}
+     */
     @GetMapping("/staff/{idNv}")
-    public ResponseEntity<NhanSuGiangVienResponse> getStaff(@PathVariable String idNv) {
-        return ResponseEntity.ok(nhanSuService.getStaffById(idNv));
+    public ResponseEntity<NhanSuGiangVienResponse.StaffInfo> getStaffDetail(
+            @PathVariable String idNv
+    ) {
+        return ResponseEntity.ok(nhanSuService.getStaffDetail(idNv));
     }
 
-    // Tạo mới nhân sự (auto tạo TK + gán role)
+    /**
+     * Tạo mới nhân sự.
+     * POST /staff
+     */
     @PostMapping("/staff")
-    public ResponseEntity<NhanSuGiangVienResponse> createStaff(
+    public ResponseEntity<NhanSuGiangVienResponse.StaffInfo> createStaff(
             @RequestBody NhanSuGiangVienRequest.StaffUpsert request
     ) {
         return ResponseEntity.ok(nhanSuService.createStaff(request));
     }
 
-    // Cập nhật thông tin nhân sự
+    /**
+     * Cập nhật nhân sự.
+     * PUT /staff/{idNv}
+     */
     @PutMapping("/staff/{idNv}")
-    public ResponseEntity<NhanSuGiangVienResponse> updateStaff(
+    public ResponseEntity<NhanSuGiangVienResponse.StaffInfo> updateStaff(
             @PathVariable String idNv,
             @RequestBody NhanSuGiangVienRequest.StaffUpsert request
     ) {
         return ResponseEntity.ok(nhanSuService.updateStaff(idNv, request));
     }
 
-    // Cập nhật trạng thái hoạt động
-    // PATCH /staff/{idNv}/status?active=true|false
+    /**
+     * Cập nhật trạng thái hoạt động của nhân sự.
+     * PATCH /staff/{idNv}/status?active=true|false
+     * Trả về 204 No Content.
+     */
     @PatchMapping("/staff/{idNv}/status")
     public ResponseEntity<Void> updateStaffStatus(
             @PathVariable String idNv,
@@ -72,7 +106,10 @@ public class NhanSuGiangVienController {
         return ResponseEntity.noContent().build();
     }
 
-    // Xóa nhân sự + xóa hợp đồng + tài khoản + mapping role theo đúng thứ tự
+    /**
+     * Xóa nhân sự (nghỉ việc).
+     * DELETE /staff/{idNv}
+     */
     @DeleteMapping("/staff/{idNv}")
     public ResponseEntity<Void> deleteStaff(@PathVariable String idNv) {
         nhanSuService.deleteStaff(idNv);
@@ -81,23 +118,32 @@ public class NhanSuGiangVienController {
 
     // ===== HỢP ĐỒNG =====
 
-    // Tìm kiếm danh sách hợp đồng
+    /**
+     * Tìm kiếm hợp đồng.
+     * POST /contracts/search
+     */
     @PostMapping("/contracts/search")
     public ResponseEntity<List<NhanSuGiangVienResponse.ContractInfo>> searchContracts(
-            @RequestBody NhanSuGiangVienRequest.ContractSearch filter
+            @RequestBody(required = false) NhanSuGiangVienRequest.ContractSearch filter
     ) {
         return ResponseEntity.ok(nhanSuService.searchContracts(filter));
     }
 
-    // Lấy chi tiết 1 hợp đồng
+    /**
+     * Lấy chi tiết 1 hợp đồng.
+     * GET /contracts/{idHd}
+     */
     @GetMapping("/contracts/{idHd}")
-    public ResponseEntity<NhanSuGiangVienResponse.ContractInfo> getContract(
+    public ResponseEntity<NhanSuGiangVienResponse.ContractInfo> getContractDetail(
             @PathVariable String idHd
     ) {
         return ResponseEntity.ok(nhanSuService.getContractById(idHd));
     }
 
-    // Tạo mới hợp đồng
+    /**
+     * Tạo mới hợp đồng.
+     * POST /contracts
+     */
     @PostMapping("/contracts")
     public ResponseEntity<NhanSuGiangVienResponse.ContractInfo> createContract(
             @RequestBody NhanSuGiangVienRequest.ContractUpsert request
@@ -105,7 +151,10 @@ public class NhanSuGiangVienController {
         return ResponseEntity.ok(nhanSuService.createContract(request));
     }
 
-    // Cập nhật hợp đồng
+    /**
+     * Cập nhật hợp đồng.
+     * PUT /contracts/{idHd}
+     */
     @PutMapping("/contracts/{idHd}")
     public ResponseEntity<NhanSuGiangVienResponse.ContractInfo> updateContract(
             @PathVariable String idHd,
@@ -114,7 +163,10 @@ public class NhanSuGiangVienController {
         return ResponseEntity.ok(nhanSuService.updateContract(idHd, request));
     }
 
-    // Xóa hợp đồng (không xóa nhân viên)
+    /**
+     * Xóa 1 hợp đồng.
+     * DELETE /contracts/{idHd}
+     */
     @DeleteMapping("/contracts/{idHd}")
     public ResponseEntity<Void> deleteContract(@PathVariable String idHd) {
         nhanSuService.deleteContract(idHd);

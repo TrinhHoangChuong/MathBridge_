@@ -7,7 +7,10 @@
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+    />
 
     <!-- CSS layout & components chung -->
     <link rel="stylesheet" href="css/admin.css" />
@@ -45,7 +48,7 @@
             <span class="nav-label">Dashboard</span>
         </button>
 
-        <button class="nav-item" data-section-target="lichoc">
+        <button class="nav-item" data-section-target="lichhoc">
         <span class="nav-ico">
           <svg class="icon-20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -127,6 +130,22 @@
         </span>
             <span class="nav-label">Tài khoản & Phân quyền</span>
         </button>
+
+        <button class="nav-item" data-section-target="phancong">
+            <span class="nav-ico">
+              <svg class="icon-20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="8" r="3" />
+                <circle cx="17" cy="8" r="3" />
+                <circle cx="12" cy="17" r="3" />
+                <path d="M10.5 9.5 9 11" />
+                <path d="M14.5 9.5 16 11" />
+                <path d="M10.5 15.5 9 14" />
+                <path d="M13.5 15.5 15 14" />
+              </svg>
+            </span>
+            <span class="nav-label">Phân công Cố Vấn_HS</span>
+        </button>
     </nav>
 </aside>
 <!-- /SIDEBAR -->
@@ -134,7 +153,7 @@
 <!-- ========== APP MAIN AREA ========== -->
 <div class="app-area">
 
-    <!-- HEADER rút gọn -->
+    <!-- HEADER -->
     <header class="app-header" role="banner">
         <div class="app-header-left">
             <h1 class="page-title" id="pageTitle">Dashboard</h1>
@@ -158,14 +177,20 @@
 
                 <div class="profile-menu" id="profileDropdown" role="menu">
                     <button class="profile-menu-item" role="menuitem">Hồ sơ cá nhân</button>
-                    <button class="profile-menu-item danger" role="menuitem">Đăng xuất</button>
+                    <button
+                            class="profile-menu-item danger"
+                            role="menuitem"
+                            id="btnAdminLogout"
+                    >
+                        Đăng xuất
+                    </button>
                 </div>
             </div>
         </div>
     </header>
     <!-- /HEADER -->
 
-    <!-- MAIN CONTENT: mỗi section là host để inject HTML riêng -->
+    <!-- MAIN CONTENT -->
     <main class="app-main">
         <section class="section" id="section-dashboard"></section>
         <section class="section hidden" id="section-lichhoc"></section>
@@ -175,7 +200,7 @@
         <section class="section hidden" id="section-tuyendung"></section>
         <section class="section hidden" id="section-taichinh"></section>
         <section class="section hidden" id="section-taikhoan"></section>
-
+        <section class="section hidden" id="section-phancong"></section>
     </main>
 </div>
 <!-- /APP AREA -->

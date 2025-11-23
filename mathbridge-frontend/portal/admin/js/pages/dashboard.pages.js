@@ -46,13 +46,55 @@ function renderTable(tableKey, rows, rowRenderer) {
   });
 }
 
+// Thông báo nhỏ phía trên dashboard
+function showDashboardMessage(message, type = "info") {
+  const msgEl = document.getElementById("dashboard-message");
+  if (!msgEl) return;
+
+  msgEl.textContent = message || "";
+  msgEl.classList.remove("error", "info", "show");
+
+  if (message) {
+    msgEl.classList.add(type === "error" ? "error" : "info", "show");
+  }
+}
+
+// Loading state cho toàn panel
+function setDashboardLoading(isLoading) {
+  const panel = document.getElementById("dashboard-panel");
+  if (!panel) return;
+  if (isLoading) {
+    panel.classList.add("is-loading");
+  } else {
+    panel.classList.remove("is-loading");
+  }
+}
+
+let refreshBound = false;
+
 // ================== KHỞI TẠO DASHBOARD ==================
 
 export async function initDashboardPage() {
+  // Gán sự kiện nút refresh 1 lần
+  if (!refreshBound) {
+    const btn = document.getElementById("dashdb-refresh");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        initDashboardPage();
+      });
+      refreshBound = true;
+    }
+  }
+
+  setDashboardLoading(true);
+  showDashboardMessage("Đang tải dữ liệu tổng quan...", "info");
+
   try {
     const data = await fetchDashboardOverview();
     if (!data) {
       console.error("[Dashboard] Không nhận được dữ liệu từ API");
+      showDashboardMessage("Không nhận được dữ liệu dashboard từ server.", "error");
+      setDashboardLoading(false);
       return;
     }
 
@@ -209,8 +251,12 @@ export async function initDashboardPage() {
       }
     );
 
+    showDashboardMessage("Đã cập nhật dữ liệu tổng quan mới nhất.", "info");
     console.log("[Dashboard] Render thành công");
   } catch (err) {
     console.error("[Dashboard] Lỗi khi load dữ liệu:", err);
+    showDashboardMessage("Lỗi khi tải dữ liệu dashboard. Vui lòng thử lại.", "error");
+  } finally {
+    setDashboardLoading(false);
   }
 }

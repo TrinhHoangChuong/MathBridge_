@@ -436,48 +436,81 @@ async function populateClassFormDropdowns() {
     }
   }
 
-  /* --------- 2. NHÂN VIÊN --------- */
-  if (staffSelect) {
-    try {
-      const currentStaffVal = staffSelect.value;
+    /* --------- 2. NHÂN VIÊN --------- */
+    if (staffSelect) {
+      try {
+        const currentStaffVal = staffSelect.value;
 
-      const staffList = await apiGetStaffForDropdown();
+        const staffList = await apiGetStaffForDropdown();
 
-      staffSelect.innerHTML = "";
-      const defaultOpt = document.createElement("option");
-      defaultOpt.value = "";
-      defaultOpt.textContent = "-- Chọn nhân viên --";
-      staffSelect.appendChild(defaultOpt);
+        staffSelect.innerHTML = "";
+        const defaultOpt = document.createElement("option");
+        defaultOpt.value = "";
+        defaultOpt.textContent = "-- Chọn nhân viên --";
+        staffSelect.appendChild(defaultOpt);
 
-      (staffList || []).forEach((nv) => {
-        if (!nv || !nv.idNv) return;
+        // CHỈ LẤY NHÂN VIÊN ĐANG HOẠT ĐỘNG (trạng thái = 1)
+        const activeStaff = (staffList || []).filter((nv) => {
+          if (!nv || !nv.idNv) return false;
 
-        const opt = document.createElement("option");
-        opt.value = nv.idNv;
+          // Ưu tiên dùng đúng field trạng thái mà BE đang trả về
+          const rawStatus =
+            nv.trangThaiHoatDong ?? // ví dụ BE trả "trangThaiHoatDong": 1
+            nv.trangThai ??
+            nv.status;
 
-        const tenDayDu =
-          nv.hoTenDayDu ||
-          nv.hoTen ||
-          nv.fullName ||
-          [nv.ho, nv.tenDem, nv.ten].filter(Boolean).join(" ");
+          // Nếu không có field trạng thái -> không lọc (cho qua luôn)
+          if (rawStatus === undefined || rawStatus === null || rawStatus === "") {
+            return true;
+          }
 
-        opt.textContent = tenDayDu
-          ? `${nv.idNv} - ${tenDayDu}`
-          : nv.idNv;
+          const num = Number(rawStatus);
+          if (!Number.isNaN(num)) {
+            return num === 1; // 1 = đang hoạt động
+          }
 
-        staffSelect.appendChild(opt);
-      });
+          // fallback nếu BE trả text
+          const normalized = rawStatus.toString().trim().toLowerCase();
+          return (
+            normalized === "1" ||
+            normalized === "đang hoạt động" ||
+            normalized === "dang hoat dong"
+          );
+        });
 
-      if (currentStaffVal) {
-        staffSelect.value = currentStaffVal;
+        // Nếu lọc xong trống → dùng lại danh sách gốc để tránh dropdown bị rỗng
+        const finalStaffList =
+          activeStaff.length > 0 ? activeStaff : (staffList || []);
+
+        finalStaffList.forEach((nv) => {
+          if (!nv || !nv.idNv) return;
+
+          const opt = document.createElement("option");
+          opt.value = nv.idNv;
+
+          const tenDayDu =
+            nv.hoTenDayDu ||
+            nv.hoTen ||
+            nv.fullName ||
+            [nv.ho, nv.tenDem, nv.ten].filter(Boolean).join(" ");
+
+          opt.textContent = tenDayDu
+            ? `${nv.idNv} - ${tenDayDu}`
+            : nv.idNv;
+
+          staffSelect.appendChild(opt);
+        });
+
+        if (currentStaffVal) {
+          staffSelect.value = currentStaffVal;
+        }
+      } catch (err) {
+        console.error(
+          "Không thể tải danh sách nhân viên cho dropdown lớp:",
+          err
+        );
       }
-    } catch (err) {
-      console.error(
-        "Không thể tải danh sách nhân viên cho dropdown lớp:",
-        err
-      );
     }
-  }
 
   /* --------- 3. HÌNH THỨC HỌC --------- */
   if (modeSelect && modeSelect.tagName === "SELECT") {
