@@ -45,8 +45,6 @@ public class YeuCauHoTro {
     @Column(name = "ThoiDiemDong")
     private LocalDateTime thoiDiemDong;
 
-    @Column(name = "ID_HS", length = 10)
-    private String idHs;
     // QUAN HỆ
 
     @ManyToOne
