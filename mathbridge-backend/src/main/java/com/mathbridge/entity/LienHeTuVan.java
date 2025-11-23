@@ -41,4 +41,7 @@ public class LienHeTuVan {
 
     @Column(name = "TrangThai", length = 60)
     private String trangThai;
+
+    @Column(name = "ThoiGianTuVan")
+    private LocalDateTime thoiGianTuVan;
 }

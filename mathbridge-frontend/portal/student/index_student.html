@@ -202,10 +202,6 @@
                         <option value="active">Đang học</option>
                         <option value="completed">Đã hoàn thành</option>
                     </select>
-                    <button class="btn btn-success" onclick="joinNewClass()">
-                        <i class="fas fa-plus"></i>
-                        Tham gia lớp mới
-                    </button>
                 </div>
             </div>
 
@@ -254,10 +250,6 @@
                         <option value="current">Học kỳ hiện tại</option>
                         <option value="previous">Học kỳ trước</option>
                     </select>
-                    <button class="btn btn-success" onclick="exportGrades()">
-                        <i class="fas fa-download"></i>
-                        Xuất điểm
-                    </button>
                 </div>
             </div>
 
@@ -330,10 +322,6 @@
                     <button class="btn btn-secondary" onclick="exportSchedule()">
                         <i class="fas fa-download"></i>
                         Xuất lịch
-                    </button>
-                    <button class="btn btn-info" onclick="viewWeeklySchedule()">
-                        <i class="fas fa-calendar-week"></i>
-                        Xem tuần
                     </button>
                 </div>
             </div>
@@ -829,6 +817,14 @@
                         <div class="form-group">
                             <label for="supportTitle">Tiêu đề yêu cầu *</label>
                             <input type="text" id="supportTitle" name="supportTitle" placeholder="Ví dụ: Cần hỗ trợ bài tập về phương trình bậc hai" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="supportClass">Chọn lớp học (tùy chọn)</label>
+                            <select id="supportClass" name="supportClass">
+                                <option value="">-- Chọn lớp học --</option>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
                         </div>
 
                         <div class="form-group">
