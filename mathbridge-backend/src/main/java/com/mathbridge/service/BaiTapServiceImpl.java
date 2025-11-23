@@ -100,7 +100,7 @@ public class BaiTapServiceImpl implements BaiTapService {
         baiTap.setTieuDe(baiTapDTO.getTieuDe());
         baiTap.setMoTa(baiTapDTO.getMoTa());
         baiTap.setLoaiBt(baiTapDTO.getLoaiBt());
-        baiTap.setChoPhepLamLai(baiTapDTO.getChoPhepLamLai());
+        baiTap.setChoPhepLamBai(baiTapDTO.getChoPhepLamLai());
         baiTap.setHocSinhDuocPhep(baiTapDTO.getHocSinhDuocPhep());
         baiTap.setNgayBatDau(baiTapDTO.getNgayBatDau());
         baiTap.setNgayKetThuc(baiTapDTO.getNgayKetThuc());
@@ -126,7 +126,7 @@ public class BaiTapServiceImpl implements BaiTapService {
         baiTap.setTieuDe(baiTapDTO.getTieuDe());
         baiTap.setMoTa(baiTapDTO.getMoTa());
         baiTap.setLoaiBt(baiTapDTO.getLoaiBt());
-        baiTap.setChoPhepLamLai(baiTapDTO.getChoPhepLamLai());
+        baiTap.setChoPhepLamBai(baiTapDTO.getChoPhepLamLai());
         baiTap.setHocSinhDuocPhep(baiTapDTO.getHocSinhDuocPhep());
         baiTap.setNgayBatDau(baiTapDTO.getNgayBatDau());
         baiTap.setNgayKetThuc(baiTapDTO.getNgayKetThuc());
@@ -191,40 +191,19 @@ public class BaiTapServiceImpl implements BaiTapService {
         if (diemSo != null) {
             try {
                 String idHs = saved.getHocSinh().getIdHs();
-                String idBt = saved.getBaiTap() != null ? saved.getBaiTap().getIdBt() : null;
                 String loaiBt = saved.getBaiTap() != null ? saved.getBaiTap().getLoaiBt() : null;
                 
                 if (loaiBt == null) {
                     return convertBaiNopToDTO(saved);
                 }
                 
-                // Find all submissions of this student for this assignment
-                List<BaiNop> allSubmissions = idBt != null 
-                    ? baiNopRepository.findAllByBaiTapAndHocSinh(idBt, idHs)
-                    : Collections.emptyList();
+                // Get all submissions of this student to calculate scores by type
+                List<BaiNop> allStudentSubmissions = baiNopRepository.findByHocSinhId(idHs);
                 
-                // Filter only graded submissions (have score and status is DA_CHAM or GRADED_AUTO)
-                List<BaiNop> gradedSubmissions = allSubmissions.stream()
-                    .filter(bn -> bn.getDiemSo() != null 
-                        && (bn.getTrangThai() != null && 
-                            (bn.getTrangThai().equals("DA_CHAM") || bn.getTrangThai().equals("GRADED_AUTO"))))
-                    .collect(Collectors.toList());
-                
-                // Calculate average score if multiple submissions, otherwise use single score
-                BigDecimal finalScore;
-                if (gradedSubmissions.size() > 1) {
-                    // Calculate average of all graded submissions
-                    BigDecimal sum = gradedSubmissions.stream()
-                        .map(BaiNop::getDiemSo)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    finalScore = sum.divide(BigDecimal.valueOf(gradedSubmissions.size()), 2, java.math.RoundingMode.HALF_UP);
-                } else if (gradedSubmissions.size() == 1) {
-                    // Use the single score
-                    finalScore = gradedSubmissions.get(0).getDiemSo();
-                } else {
-                    // Fallback to current score if no graded submissions found (shouldn't happen)
-                    finalScore = diemSo;
-                }
+                // Calculate average score for each type (15P, 45P, HK)
+                BigDecimal diem15 = tinhDiemTheoLoai(allStudentSubmissions, "KIEM_TRA_15P");
+                BigDecimal diem45 = tinhDiemTheoLoai(allStudentSubmissions, "KIEM_TRA_45P");
+                BigDecimal diemHK = tinhDiemTheoLoai(allStudentSubmissions, "THI_HK");
                 
                 // Find or create KetQuaHocTap
                 List<KetQuaHocTap> existing = ketQuaHocTapRepository.findByHocSinhId(idHs);
@@ -232,38 +211,58 @@ public class BaiTapServiceImpl implements BaiTapService {
                 
                 if (ketQua == null) {
                     ketQua = new KetQuaHocTap();
-                    ketQua.setIdKq("KQ" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                    // Generate ID based on student ID: HS001 -> KQ001
+                    String idKq;
+                    if (idHs != null && idHs.length() >= 2) {
+                        String numericPart = idHs.substring(2);
+                        while (numericPart.length() < 3) {
+                            numericPart = "0" + numericPart;
+                        }
+                        idKq = "KQ" + numericPart;
+                        while (idKq.length() < 10) {
+                            idKq += "0";
+                        }
+                        if (idKq.length() > 10) {
+                            idKq = idKq.substring(0, 10);
+                        }
+                    } else {
+                        String randomId = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+                        idKq = "KQ" + randomId;
+                        if (idKq.length() > 10) {
+                            idKq = idKq.substring(0, 10);
+                        } else if (idKq.length() < 10) {
+                            while (idKq.length() < 10) {
+                                idKq += "0";
+                            }
+                        }
+                    }
+                    ketQua.setIdKq(idKq);
                     ketQua.setIdHs(idHs);
-                    ketQua.setDiemSo("0,0,0");
-                    ketQua.setXepLoai("Chưa có");
+                    ketQua.setDiemTrungBinh(BigDecimal.ZERO);
+                    ketQua.setDiemTongKet(BigDecimal.ZERO);
+                    ketQua.setXepLoai("N");
                 }
                 
-                // Parse current DiemSo string (format: "8.5,8,9")
-                String[] diemParts = ketQua.getDiemSo() != null ? ketQua.getDiemSo().split(",") : new String[]{"0", "0", "0"};
-                if (diemParts.length != 3) {
-                    diemParts = new String[]{"0", "0", "0"};
+                // Calculate DiemTrungBinh = (15p + 45p + thi) / 3 (chỉ khi có đủ 3 điểm)
+                BigDecimal diemTrungBinh = tinhDiemTrungBinhCong(diem15, diem45, diemHK);
+                
+                // Calculate DiemTongKet = 20%*15p + 30%*45p + 50%*thi (chỉ khi có đủ 3 điểm)
+                BigDecimal diemTongKet = tinhDiemTongKet(diem15, diem45, diemHK);
+                
+                // Update KetQuaHocTap - chỉ lưu 2 giá trị đã tính
+                if (diemTrungBinh != null && diemTongKet != null) {
+                    ketQua.setDiemTrungBinh(diemTrungBinh);
+                    ketQua.setDiemTongKet(diemTongKet);
+                    // Xếp loại dựa vào DiemTongKet (theo yêu cầu)
+                    ketQua.setXepLoai(xepLoai(diemTongKet));
+                } else {
+                    // Chưa đủ 3 điểm: giữ giá trị cũ hoặc 0
+                    if (ketQua.getDiemTrungBinh() == null || ketQua.getDiemTrungBinh().compareTo(BigDecimal.ZERO) == 0) {
+                        ketQua.setDiemTrungBinh(BigDecimal.ZERO);
+                        ketQua.setDiemTongKet(BigDecimal.ZERO);
+                        ketQua.setXepLoai("N");
+                    }
                 }
-                
-                // Update based on loaiBt using the calculated final score
-                // KIEM_TRA_15P -> index 0, KIEM_TRA_45P -> index 1, THI_HK -> index 2
-                if (loaiBt.equals("KIEM_TRA_15P")) {
-                    diemParts[0] = finalScore.toString();
-                } else if (loaiBt.equals("KIEM_TRA_45P")) {
-                    diemParts[1] = finalScore.toString();
-                } else if (loaiBt.equals("THI_HK")) {
-                    diemParts[2] = finalScore.toString();
-                }
-                
-                // Reconstruct DiemSo string
-                ketQua.setDiemSo(String.join(",", diemParts));
-                
-                // Calculate average and classification
-                BigDecimal diem15 = parseScore(diemParts[0]);
-                BigDecimal diem45 = parseScore(diemParts[1]);
-                BigDecimal diemHK = parseScore(diemParts[2]);
-                BigDecimal diemTB = tinhDiemTrungBinh(diem15, diem45, diemHK);
-                ketQua.setDiemTB(diemTB);
-                ketQua.setXepLoai(xepLoai(diemTB));
                 
                 ketQuaHocTapRepository.save(ketQua);
             } catch (Exception e) {
@@ -276,52 +275,79 @@ public class BaiTapServiceImpl implements BaiTapService {
         return convertBaiNopToDTO(saved);
     }
     
-    private BigDecimal parseScore(String scoreStr) {
-        try {
-            if (scoreStr == null || scoreStr.trim().isEmpty() || scoreStr.equals("0")) {
-                return null;
-            }
-            return new BigDecimal(scoreStr.trim());
-        } catch (Exception e) {
+    /**
+     * Tính điểm trung bình theo loại bài tập (15P, 45P, HK)
+     * Lấy trung bình của tất cả bài nộp đã chấm của loại đó
+     */
+    private BigDecimal tinhDiemTheoLoai(List<BaiNop> baiNops, String loaiBt) {
+        List<BaiNop> filtered = baiNops.stream()
+                .filter(bn -> bn.getBaiTap() != null && 
+                             bn.getBaiTap().getLoaiBt() != null &&
+                             bn.getBaiTap().getLoaiBt().equals(loaiBt) &&
+                             bn.getDiemSo() != null &&
+                             (bn.getTrangThai() != null && 
+                              (bn.getTrangThai().equals("DA_CHAM") || bn.getTrangThai().equals("GRADED_AUTO"))))
+                .collect(Collectors.toList());
+        
+        if (filtered.isEmpty()) {
             return null;
         }
+        
+        BigDecimal tong = filtered.stream()
+                .map(BaiNop::getDiemSo)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        return tong.divide(BigDecimal.valueOf(filtered.size()), 2, java.math.RoundingMode.HALF_UP);
     }
     
-    private BigDecimal tinhDiemTrungBinh(BigDecimal diem15Phut, BigDecimal diem45Phut, BigDecimal diemThiHK) {
-        int count = 0;
-        BigDecimal tong = BigDecimal.ZERO;
-        
-        if (diem15Phut != null) {
-            tong = tong.add(diem15Phut.multiply(BigDecimal.valueOf(0.2)));
-            count++;
-        }
-        if (diem45Phut != null) {
-            tong = tong.add(diem45Phut.multiply(BigDecimal.valueOf(0.3)));
-            count++;
-        }
-        if (diemThiHK != null) {
-            tong = tong.add(diemThiHK.multiply(BigDecimal.valueOf(0.5)));
-            count++;
-        }
-        
-        if (count == 0) {
+    /**
+     * Tính điểm trung bình cộng đơn giản: (15p + 45p + thi) / 3
+     * Chỉ tính khi có đủ cả 3 loại điểm
+     */
+    private BigDecimal tinhDiemTrungBinhCong(BigDecimal diem15Phut, BigDecimal diem45Phut, BigDecimal diemThiHK) {
+        if (diem15Phut == null || diem45Phut == null || diemThiHK == null) {
             return null;
         }
+        
+        BigDecimal tong = diem15Phut.add(diem45Phut).add(diemThiHK);
+        return tong.divide(BigDecimal.valueOf(3), 2, java.math.RoundingMode.HALF_UP);
+    }
+    
+    /**
+     * Tính điểm tổng kết theo quy tắc:
+     * - 20% điểm 15 phút
+     * - 30% điểm 45 phút  
+     * - 50% điểm thi học kỳ
+     * 
+     * Chỉ tính khi có đủ cả 3 loại điểm
+     */
+    private BigDecimal tinhDiemTongKet(BigDecimal diem15Phut, BigDecimal diem45Phut, BigDecimal diemThiHK) {
+        if (diem15Phut == null || diem45Phut == null || diemThiHK == null) {
+            return null;
+        }
+        
+        BigDecimal tong = BigDecimal.ZERO;
+        tong = tong.add(diem15Phut.multiply(BigDecimal.valueOf(0.2)));  // 20%
+        tong = tong.add(diem45Phut.multiply(BigDecimal.valueOf(0.3)));  // 30%
+        tong = tong.add(diemThiHK.multiply(BigDecimal.valueOf(0.5)));   // 50%
         
         return tong.setScale(2, java.math.RoundingMode.HALF_UP);
     }
     
-    private String xepLoai(BigDecimal diemTB) {
-        if (diemTB == null) {
-            return "Chưa có";
+    /**
+     * Xếp loại dựa vào DiemTongKet (theo yêu cầu)
+     */
+    private String xepLoai(BigDecimal diemTongKet) {
+        if (diemTongKet == null || diemTongKet.compareTo(BigDecimal.ZERO) == 0) {
+            return "N";
         }
         
-        if (diemTB.compareTo(BigDecimal.valueOf(8.0)) >= 0) {
+        if (diemTongKet.compareTo(BigDecimal.valueOf(8.0)) >= 0) {
             return "Giỏi";
-        } else if (diemTB.compareTo(BigDecimal.valueOf(6.5)) >= 0) {
+        } else if (diemTongKet.compareTo(BigDecimal.valueOf(6.5)) >= 0) {
             return "Khá";
-        } else if (diemTB.compareTo(BigDecimal.valueOf(5.0)) >= 0) {
-            return "Trung bình";
+        } else if (diemTongKet.compareTo(BigDecimal.valueOf(5.0)) >= 0) {
+            return "TB";
         } else {
             return "Yếu";
         }
@@ -341,9 +367,9 @@ public class BaiTapServiceImpl implements BaiTapService {
         
         // Handle new fields - may be null if database columns don't exist yet
         try {
-            dto.setChoPhepLamLai(baiTap.getChoPhepLamLai());
+            dto.setChoPhepLamLai(baiTap.getChoPhepLamBai());
         } catch (Exception e) {
-            System.out.println("Warning: Could not get choPhepLamLai for BaiTap " + baiTap.getIdBt() + ": " + e.getMessage());
+            System.out.println("Warning: Could not get choPhepLamBai for BaiTap " + baiTap.getIdBt() + ": " + e.getMessage());
             dto.setChoPhepLamLai(false);
         }
         

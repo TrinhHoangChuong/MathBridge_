@@ -10,6 +10,7 @@ public class DiemSoDTO {
     private BigDecimal diem45Phut;
     private BigDecimal diemThiHK;
     private BigDecimal diemTrungBinh;
+    private BigDecimal diemTongKet;
     private String xepLoai;
     private Integer soBaiTap;
     private Integer soBaiDaNop;
@@ -71,6 +72,14 @@ public class DiemSoDTO {
 
     public void setDiemTrungBinh(BigDecimal diemTrungBinh) {
         this.diemTrungBinh = diemTrungBinh;
+    }
+
+    public BigDecimal getDiemTongKet() {
+        return diemTongKet;
+    }
+
+    public void setDiemTongKet(BigDecimal diemTongKet) {
+        this.diemTongKet = diemTongKet;
     }
 
     public String getXepLoai() {

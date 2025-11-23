@@ -370,7 +370,7 @@ public class StudentService {
             assignmentDTO.setAutoSubmit(resolveAutoSubmit(baiTap));
             assignmentDTO.setWarningMessage(resolveWarningMessage(baiTap));
             assignmentDTO.setRequiresManualReview(hasEssayQuestion(baiTap));
-            boolean allowRetry = Boolean.TRUE.equals(baiTap.getChoPhepLamLai());
+            boolean allowRetry = Boolean.TRUE.equals(baiTap.getChoPhepLamBai());
             assignmentDTO.setAllowRetry(allowRetry);
             long attemptCount = baiNopStudentRepository.countByBaiTap_IdBtAndHocSinh_IdHs(
                 baiTap.getIdBt(), studentId);
@@ -422,7 +422,9 @@ public class StudentService {
         for (KetQuaHocTap kq : ketQuaHocTaps) {
             StudentGradeDTO gradeDTO = new StudentGradeDTO();
             gradeDTO.setGradeId(kq.getIdKq());
-            gradeDTO.setScore(calculateKetQuaScore(kq.getDiemSo()));
+            // Use DiemTongKet (weighted average) for display, fallback to DiemTrungBinh if null
+            BigDecimal score = kq.getDiemTongKet() != null ? kq.getDiemTongKet() : kq.getDiemTrungBinh();
+            gradeDTO.setScore(score != null ? score.doubleValue() : 0.0);
             gradeDTO.setGradeType("Kết quả học tập");
             gradeDTO.setSubject("Toán học");
             gradeDTO.setFeedback(kq.getXepLoai());
@@ -687,8 +689,8 @@ public class StudentService {
                 return submission;
             }
             // Check if assignment allows retake (choPhepLamLai) - only if still within deadline
-            Boolean choPhepLamLai = assignment.getChoPhepLamLai();
-            if (choPhepLamLai != null && choPhepLamLai) {
+            Boolean choPhepLamBai = assignment.getChoPhepLamBai();
+            if (choPhepLamBai != null && choPhepLamBai) {
                 // Allow retake - create a new submission (this preserves history as each submission is a new BaiNop)
                 // The old submission remains in database as history
                 // Note: Deadline check already done above, so we can safely allow retake

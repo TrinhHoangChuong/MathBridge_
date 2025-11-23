@@ -58,6 +58,24 @@ window.toggleEditMode = function(event) {
                 input.disabled = false;
                 input.style.backgroundColor = '#fff';
                 input.style.cursor = 'text';
+                
+                // Thêm event listener để tính điểm TB ngay khi nhập
+                const studentId = input.getAttribute('data-student-id');
+                if (studentId) {
+                    // Remove existing listeners to avoid duplicates
+                    const newInput = input.cloneNode(true);
+                    input.parentNode.replaceChild(newInput, input);
+                    
+                    // Add input event listener để tính điểm TB real-time
+                    newInput.addEventListener('input', function() {
+                        updateDiemTBForStudent(studentId);
+                    });
+                    
+                    // Add blur event listener để tính lại khi rời khỏi ô
+                    newInput.addEventListener('blur', function() {
+                        updateDiemTBForStudent(studentId);
+                    });
+                }
             });
             
             if (editBtn) {
@@ -201,9 +219,69 @@ window.saveAllGrades = async function() {
                 console.log('Updating student:', update.studentId, update);
                 // Update all 3 scores together to ensure no data loss
                 // Always send all 3 scores (null if empty) to preserve existing values
-                await api.updateDiemSo(update.classId, update.studentId, '15P', update.diem15);
-                await api.updateDiemSo(update.classId, update.studentId, '45P', update.diem45);
-                await api.updateDiemSo(update.classId, update.studentId, 'HK', update.diemHK);
+                const result15 = await api.updateDiemSo(update.classId, update.studentId, '15P', update.diem15);
+                const result45 = await api.updateDiemSo(update.classId, update.studentId, '45P', update.diem45);
+                const resultHK = await api.updateDiemSo(update.classId, update.studentId, 'HK', update.diemHK);
+                
+                // Get the latest result (should have all 3 scores and calculated DiemTrungBinh)
+                const latestResult = resultHK || result45 || result15;
+                
+                // Update display immediately with the latest data
+                if (latestResult) {
+                    // Calculate DiemTrungBinh tạm thời nếu backend chưa có
+                    let diemTB = latestResult.diemTrungBinh || latestResult.diemTB;
+                    if (!diemTB || diemTB === 0) {
+                        const diem15Num = parseFloat(update.diem15 || 0);
+                        const diem45Num = parseFloat(update.diem45 || 0);
+                        const diemHKNum = parseFloat(update.diemHK || 0);
+                        const scores = [diem15Num, diem45Num, diemHKNum].filter(s => s > 0);
+                        if (scores.length > 0) {
+                            const sum = scores.reduce((a, b) => a + b, 0);
+                            diemTB = (sum / scores.length).toFixed(2);
+                        }
+                    }
+                    
+                    const xepLoai = latestResult.xepLoai;
+                    
+                    // Update the DiemTB cell in the table
+                    const diemTBCell = document.querySelector(`.diem-tb-cell[data-student-id="${update.studentId}"]`);
+                    if (diemTBCell) {
+                        const formattedTB = diemTB ? parseFloat(diemTB).toFixed(1) : '-';
+                        diemTBCell.textContent = formattedTB;
+                        console.log(`Updated DiemTB display for ${update.studentId}: ${formattedTB}`);
+                    }
+                    
+                    // Update xepLoai badge if needed
+                    const row = document.querySelector(`tr[data-student-id="${update.studentId}"]`) || 
+                               diemTBCell?.closest('tr');
+                    if (row) {
+                        // Update xepLoai if available from backend
+                        if (xepLoai) {
+                            const xepLoaiCell = row.querySelector('.xep-loai-badge, .badge, [class*="badge"]');
+                            if (xepLoaiCell && window.teacherDashboard) {
+                                xepLoaiCell.textContent = xepLoai;
+                                // Update badge class using teacherDashboard method
+                                const badgeClass = window.teacherDashboard.getGradeBadgeClass(xepLoai, diemTB || '0');
+                                xepLoaiCell.className = `badge ${badgeClass}`;
+                            }
+                        }
+                        
+                        // Also update xepLoai based on calculated diemTB if no xepLoai from backend
+                        if (!xepLoai && diemTB) {
+                            const diemTBNum = parseFloat(diemTB);
+                            if (!isNaN(diemTBNum) && window.teacherDashboard) {
+                                const calculatedXepLoai = window.teacherDashboard.classifyScore(diemTB);
+                                const xepLoaiCell = row.querySelector('.xep-loai-badge, .badge, [class*="badge"]');
+                                if (xepLoaiCell) {
+                                    xepLoaiCell.textContent = calculatedXepLoai;
+                                    const badgeClass = window.teacherDashboard.getGradeBadgeClass(calculatedXepLoai, diemTB);
+                                    xepLoaiCell.className = `badge ${badgeClass}`;
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 successCount++;
                 console.log('Successfully updated student:', update.studentId);
             } catch (error) {
@@ -233,10 +311,16 @@ window.saveAllGrades = async function() {
             showNotification(`Đã lưu ${successCount} học sinh, ${errorCount} học sinh lỗi.`, 'warning');
         }
         
-        // Refresh grades section
+        // Refresh grades section - force reload from server
         const firstUpdate = Array.from(updatesByStudent.values())[0];
         if (firstUpdate && window.teacherDashboard) {
             console.log('Refreshing grades section...');
+            // Add small delay to ensure backend has saved the data
+            await new Promise(resolve => setTimeout(resolve, 300));
+            // Force refresh by clearing cache
+            if (window.teacherDashboard.gradeDataByClass) {
+                window.teacherDashboard.gradeDataByClass.delete(String(firstUpdate.classId));
+            }
             await window.teacherDashboard.loadGradesSection(firstUpdate.classId, { preserveSelection: true });
         }
     } catch (error) {
@@ -2498,6 +2582,56 @@ window.saveEditGrade = async function(studentId, classId) {
         showNotification('Không thể cập nhật điểm số. Vui lòng thử lại sau.', 'error');
     }
 };
+
+// Function to calculate and update DiemTB for a student in real-time
+function updateDiemTBForStudent(studentId) {
+    try {
+        // Get all 3 input fields for this student
+        const diem15Input = document.querySelector(`.grade-input-small[data-student-id="${studentId}"][data-loai-diem="15P"]`);
+        const diem45Input = document.querySelector(`.grade-input-small[data-student-id="${studentId}"][data-loai-diem="45P"]`);
+        const diemHKInput = document.querySelector(`.grade-input-small[data-student-id="${studentId}"][data-loai-diem="HK"]`);
+        
+        if (!diem15Input || !diem45Input || !diemHKInput) {
+            return; // Không tìm thấy đủ 3 input
+        }
+        
+        // Get values from inputs
+        const diem15 = parseFloat(diem15Input.value) || 0;
+        const diem45 = parseFloat(diem45Input.value) || 0;
+        const diemHK = parseFloat(diemHKInput.value) || 0;
+        
+        // Tính điểm TB: (15p + 45p + thi) / 3 (chỉ tính các điểm > 0)
+        const scores = [diem15, diem45, diemHK].filter(s => s > 0);
+        let diemTB = null;
+        
+        if (scores.length > 0) {
+            const sum = scores.reduce((a, b) => a + b, 0);
+            diemTB = (sum / scores.length).toFixed(2);
+        }
+        
+        // Update DiemTB cell
+        const diemTBCell = document.querySelector(`.diem-tb-cell[data-student-id="${studentId}"]`);
+        if (diemTBCell) {
+            diemTBCell.textContent = diemTB ? parseFloat(diemTB).toFixed(1) : '-';
+        }
+        
+        // Update XepLoai badge
+        const row = document.querySelector(`tr[data-student-id="${studentId}"]`);
+        if (row && diemTB && window.teacherDashboard) {
+            const xepLoai = window.teacherDashboard.classifyScore(diemTB);
+            const xepLoaiCell = row.querySelector('.xep-loai-badge, .badge, [class*="badge"]');
+            if (xepLoaiCell) {
+                xepLoaiCell.textContent = xepLoai;
+                const badgeClass = window.teacherDashboard.getGradeBadgeClass(xepLoai, diemTB);
+                xepLoaiCell.className = `badge ${badgeClass}`;
+            }
+        }
+        
+        console.log(`Updated DiemTB for ${studentId}: ${diemTB} (15p: ${diem15}, 45p: ${diem45}, HK: ${diemHK})`);
+    } catch (error) {
+        console.error('Error updating DiemTB for student:', error);
+    }
+}
 
 // toggleEditMode is already defined at the top of the file
 
