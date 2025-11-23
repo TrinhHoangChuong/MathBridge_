@@ -47,8 +47,12 @@ public class ApplicationService {
                     + (original != null ? original.replaceAll("[^a-zA-Z0-9._-]", "_") : "resume");
             Path dest = uploadRoot.resolve(sanitized);
             Files.copy(resume.getInputStream(), dest, StandardCopyOption.REPLACE_EXISTING);
-            // set CV_URL column
-            u.setCvUrl(dest.toString());
+            // set CV_URL column - use absolute path for better portability
+            u.setCvUrl(dest.toAbsolutePath().toString());
+        } else {
+            // Set empty string as default if no file provided (database may not allow null)
+            // If database allows null, this will be null; otherwise empty string
+            u.setCvUrl("");
         }
 
         return repo.save(u);

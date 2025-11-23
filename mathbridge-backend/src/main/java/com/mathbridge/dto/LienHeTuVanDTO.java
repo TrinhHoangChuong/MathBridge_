@@ -9,6 +9,7 @@ public class LienHeTuVanDTO {
     private String tieuDe;
     private String noiDung;
     private String hinhThucTuVan;
+    private LocalDateTime thoiGianTuVan;
 
     public LienHeTuVanDTO() {}
 
@@ -29,4 +30,7 @@ public class LienHeTuVanDTO {
 
     public String getHinhThucTuVan() { return hinhThucTuVan; }
     public void setHinhThucTuVan(String hinhThucTuVan) { this.hinhThucTuVan = hinhThucTuVan; }
+
+    public LocalDateTime getThoiGianTuVan() { return thoiGianTuVan; }
+    public void setThoiGianTuVan(LocalDateTime thoiGianTuVan) { this.thoiGianTuVan = thoiGianTuVan; }
 }

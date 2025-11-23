@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tutor Dashboard - MathBridge</title>
-    <link rel="stylesheet" href="../assets/css/tutor-dashboard.css">
+    <link rel="stylesheet" href="./assets/css/tutor-dashboard.css">
     <style>
         /* Fallback styles if CSS doesn't load */
         .sidebar { background: #1e293b; color: white; }
@@ -61,10 +61,22 @@
                         <span>Hỗ trợ</span>
                     </a>
                 </li>
+                <li class="nav-item" data-section="consultations">
+                    <a href="#consultations">
+                        <i class="fas fa-envelope"></i>
+                        <span>Yêu cầu tư vấn</span>
+                    </a>
+                </li>
                 <li class="nav-item" data-section="messages">
                     <a href="#messages">
                         <i class="fas fa-comments"></i>
                         <span>Nhắn tin trực tiếp</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-section="recruitment">
+                    <a href="#recruitment">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Tuyển dụng</span>
                     </a>
                 </li>
             </ul>
@@ -115,1093 +127,52 @@
                         <span>Nguyễn Thị B</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-user-info">
+                                <div class="dropdown-user-avatar">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="dropdown-user-details">
+                                    <span class="dropdown-name" id="dropdownName">Nguyễn Thị B</span>
+                                    <span class="dropdown-email" id="dropdownEmail">tutor@mathbridge.vn</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="#" class="dropdown-item" onclick="tutorDashboard.openProfile(); tutorDashboard.closeUserDropdown();">
+                                <i class="fas fa-user"></i>
+                                <span>Hồ sơ cá nhân</span>
+                            </a>
+                            <a href="#" class="dropdown-item" onclick="tutorDashboard.openSettings(); tutorDashboard.closeUserDropdown();">
+                                <i class="fas fa-cog"></i>
+                                <span>Cài đặt</span>
+                            </a>
+                            <a href="#" class="dropdown-item" onclick="tutorDashboard.openHelp(); tutorDashboard.closeUserDropdown();">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Trợ giúp</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item logout-item" onclick="tutorDashboard.logout(); tutorDashboard.closeUserDropdown();">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Đăng xuất</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
 
         <!-- Content Sections -->
-        <main class="content">
-            <!-- Dashboard Section -->
-            <section class="content-section active" id="dashboard">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>156</h3>
-                            <p>Học sinh được phân công</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>3</h3>
-                            <p>Lịch tư vấn hôm nay</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-hands-helping"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>8</h3>
-                            <p>Hỗ trợ</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>25</h3>
-                            <p>Thanh toán chờ xử lý</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                            <h3>Học sinh cần hỗ trợ</h3>
-                            <button class="btn btn-primary btn-sm">Xem tất cả</button>
-                        </div>
-                        <div class="card-content">
-                            <div class="student-list">
-                                <div class="student-item">
-                                    <div class="student-info">
-                                        <h4>Trần Văn C</h4>
-                                        <p>Lớp 10A1 • Cần hỗ trợ Toán</p>
-                                    </div>
-                                    <div class="student-status">
-                                        <span class="status-badge urgent">Khẩn cấp</span>
-                                    </div>
-                                </div>
-                                <div class="student-item">
-                                    <div class="student-info">
-                                        <h4>Lê Thị D</h4>
-                                        <p>Lớp 11B2 • Cần tư vấn học tập</p>
-                                    </div>
-                                    <div class="student-status">
-                                        <span class="status-badge high">Ưu tiên cao</span>
-                                    </div>
-                                </div>
-                                <div class="student-item">
-                                    <div class="student-info">
-                                        <h4>Phạm Văn E</h4>
-                                        <p>Lớp 12C1 • Cần hỗ trợ đăng ký</p>
-                                    </div>
-                                    <div class="student-status">
-                                        <span class="status-badge normal">Bình thường</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                            <h3>Thanh toán gần đây</h3>
-                            <button class="btn btn-primary btn-sm">Xem tất cả</button>
-                        </div>
-                        <div class="card-content">
-                            <div class="payment-list">
-                                <div class="payment-item">
-                                    <div class="payment-info">
-                                        <h4>Nguyễn Văn F</h4>
-                                        <p>Thanh toán học phí tháng 12</p>
-                                    </div>
-                                    <div class="payment-amount">
-                                        <span class="amount">2,500,000đ</span>
-                                        <span class="status-badge success">Đã thanh toán</span>
-                                    </div>
-                                </div>
-                                <div class="payment-item">
-                                    <div class="payment-info">
-                                        <h4>Trần Thị G</h4>
-                                        <p>Thanh toán học phí tháng 12</p>
-                                    </div>
-                                    <div class="payment-amount">
-                                        <span class="amount">1,800,000đ</span>
-                                        <span class="status-badge pending">Chờ xử lý</span>
-                                    </div>
-                                </div>
-                                <div class="payment-item">
-                                    <div class="payment-info">
-                                        <h4>Lê Văn H</h4>
-                                        <p>Phí đăng ký khóa học</p>
-                                    </div>
-                                    <div class="payment-amount">
-                                        <span class="amount">500,000đ</span>
-                                        <span class="status-badge success">Đã thanh toán</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>Lịch làm việc tuần này</h3>
-                        <button class="btn btn-primary btn-sm">Xem lịch đầy đủ</button>
-                    </div>
-                    <div class="card-content">
-                        <div class="schedule-calendar">
-                            <div class="calendar-header">
-                                <h3>Tháng 12, 2024</h3>
-                                <div class="calendar-navigation">
-                                    <button class="btn-icon" id="prevWeek">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </button>
-                                    <button class="current-btn">Tuần này</button>
-                                    <button class="btn-icon" id="nextWeek">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="calendar-grid">
-                                <div class="calendar-day-header">T2</div>
-                                <div class="calendar-day-header">T3</div>
-                                <div class="calendar-day-header">T4</div>
-                                <div class="calendar-day-header">T5</div>
-                                <div class="calendar-day-header">T6</div>
-                                <div class="calendar-day-header">T7</div>
-                                <div class="calendar-day-header">CN</div>
-                                
-                                <div class="calendar-day">
-                                    <div class="calendar-day-number">16</div>
-                                    <div class="calendar-event">Hỗ trợ học sinh</div>
-                                </div>
-                                <div class="calendar-day">
-                                    <div class="calendar-day-number">17</div>
-                                    <div class="calendar-event">Tư vấn phụ huynh</div>
-                                </div>
-                                <div class="calendar-day today">
-                                    <div class="calendar-day-number">18</div>
-                                    <div class="calendar-event">Xử lý thanh toán</div>
-                                </div>
-                                <div class="calendar-day">
-                                    <div class="calendar-day-number">19</div>
-                                    <div class="calendar-event">Họp với gia sư</div>
-                                </div>
-                                <div class="calendar-day">
-                                    <div class="calendar-day-number">20</div>
-                                    <div class="calendar-event">Kiểm tra lớp học</div>
-                                </div>
-                                <div class="calendar-day">
-                                    <div class="calendar-day-number">21</div>
-                                    <div class="calendar-event">Báo cáo tuần</div>
-                                </div>
-                                <div class="calendar-day">
-                                    <div class="calendar-day-number">22</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Assigned Students Section -->
-            <section class="content-section" id="assigned-students">
-                <div class="section-header">
-                    <h2>Học sinh được phân công</h2>
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm kiếm học sinh...">
-                        </div>
-                        <div class="filter-buttons">
-                            <select class="form-select" id="statusFilter">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="good">Tốt</option>
-                                <option value="need-support">Cần hỗ trợ</option>
-                                <option value="at-risk">Nguy cơ thấp điểm</option>
-                            </select>
-                            <select class="form-select" id="classFilter">
-                                <option value="">Tất cả lớp</option>
-                                <option value="10">Lớp 10</option>
-                                <option value="11">Lớp 11</option>
-                                <option value="12">Lớp 12</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" id="exportBtn">
-                            <i class="fas fa-download"></i>
-                            Xuất danh sách
-                        </button>
-                    </div>
-                </div>
-
-                <div class="assigned-students-table-container">
-                    <div class="table-header">
-                        <div>Học sinh</div>
-                        <div>Lớp/Chương trình</div>
-                        <div>Tiến độ học tập</div>
-                        <div>Điểm TB</div>
-                        <div>Trạng thái</div>
-                        <div>Ghi chú</div>
-                        <div>Hành động</div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">TC</div>
-                            <div class="student-info">
-                                <div class="student-name">Trần Văn C</div>
-                                <div class="student-email">tranvanc@email.com</div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="class-info">Toán 10A1</div>
-                            <div class="program-info">Cambridge IGCSE</div>
-                        </div>
-                        <div class="progress-info">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%"></div>
-                            </div>
-                            <span class="progress-text">75%</span>
-                        </div>
-                        <div class="grade-info">
-                            <span class="grade-badge good">8.5</span>
-                        </div>
-                        <div>
-                            <span class="status-badge good">Tốt</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Học tập tích cực...</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewStudentDetails('TC')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="addNote('TC')">Ghi chú</button>
-                            <button class="btn btn-sm btn-info" onclick="generateReport('TC')">Báo cáo</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">LD</div>
-                            <div class="student-info">
-                                <div class="student-name">Lê Thị D</div>
-                                <div class="student-email">lethid@email.com</div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="class-info">Toán 11B2</div>
-                            <div class="program-info">IB Math HL</div>
-                        </div>
-                        <div class="progress-info">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 45%"></div>
-                            </div>
-                            <span class="progress-text">45%</span>
-                        </div>
-                        <div class="grade-info">
-                            <span class="grade-badge average">6.2</span>
-                        </div>
-                        <div>
-                            <span class="status-badge need-support">Cần hỗ trợ</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Cần hỗ trợ thêm...</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewStudentDetails('LD')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="addNote('LD')">Ghi chú</button>
-                            <button class="btn btn-sm btn-info" onclick="generateReport('LD')">Báo cáo</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">PE</div>
-                            <div class="student-info">
-                                <div class="student-name">Phạm Văn E</div>
-                                <div class="student-email">phamvane@email.com</div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="class-info">Toán 12C1</div>
-                            <div class="program-info">AP Calculus</div>
-                        </div>
-                        <div class="progress-info">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 30%"></div>
-                            </div>
-                            <span class="progress-text">30%</span>
-                        </div>
-                        <div class="grade-info">
-                            <span class="grade-badge poor">4.8</span>
-                        </div>
-                        <div>
-                            <span class="status-badge at-risk">Nguy cơ thấp điểm</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Cần can thiệp...</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewStudentDetails('PE')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="addNote('PE')">Ghi chú</button>
-                            <button class="btn btn-sm btn-info" onclick="generateReport('PE')">Báo cáo</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Consultation Schedule Section -->
-            <section class="content-section" id="consultation-schedule">
-                <div class="section-header">
-                    <h2>Lịch tư vấn</h2>
-                    <div class="header-actions">
-                        <button class="btn btn-secondary" onclick="exportConsultationSchedule()">
-                            <i class="fas fa-download"></i>
-                            Xuất lịch
-                        </button>
-                        <button class="btn btn-primary" onclick="addConsultationSchedule()">
-                            <i class="fas fa-plus"></i>
-                            Thêm lịch tư vấn
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="schedule-calendar">
-                    <div class="calendar-header">
-                        <button class="btn-icon" id="prevMonth" onclick="changeConsultationMonth(-1)">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <h3 id="currentMonth">Tháng 10, 2025</h3>
-                        <button class="btn-icon" id="nextMonth" onclick="changeConsultationMonth(1)">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                    <div class="calendar-grid" id="consultationCalendarGrid">
-                        <!-- Calendar headers -->
-                        <div class="calendar-day-header">CN</div>
-                        <div class="calendar-day-header">T2</div>
-                        <div class="calendar-day-header">T3</div>
-                        <div class="calendar-day-header">T4</div>
-                        <div class="calendar-day-header">T5</div>
-                        <div class="calendar-day-header">T6</div>
-                        <div class="calendar-day-header">T7</div>
-                        
-                        <!-- Calendar days -->
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">25</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">26</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">27</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">28</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">29</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">30</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">1</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">2</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">3</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">4</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">5</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">6</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">7</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">8</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">9</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">10</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">11</span>
-                        </div>
-                        <div class="calendar-day today">
-                            <span class="calendar-day-number">12</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">13</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">14</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">15</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">16</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">17</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">18</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">19</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">20</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">21</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">22</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">23</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">24</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">25</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">26</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">27</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">28</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">29</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">30</span>
-                        </div>
-                        <div class="calendar-day">
-                            <span class="calendar-day-number">31</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">1</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">2</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">3</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">4</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">5</span>
-                        </div>
-                        <div class="calendar-day other-month">
-                            <span class="calendar-day-number">6</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Today's Consultation Schedule -->
-                <div class="today-schedule">
-                    <h3><i class="fas fa-calendar-day"></i> Lịch tư vấn hôm nay (17/12/2024)</h3>
-                    <div class="schedule-list">
-                        <div class="schedule-item">
-                            <div class="schedule-time">
-                                <span class="time">9:00 - 10:00</span>
-                                <span class="duration">60 phút</span>
-                            </div>
-                            <div class="schedule-details">
-                                <h4>Tư vấn Trần Văn C - Định hướng học tập</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng tư vấn A201</p>
-                                <p><i class="fas fa-user-graduate"></i> Lớp 10A1 • Cambridge IGCSE</p>
-                                <span class="status-badge active">Đang tư vấn</span>
-                            </div>
-                            <div class="schedule-actions">
-                                <button class="btn btn-sm btn-primary" onclick="startConsultation(1)">
-                                    <i class="fas fa-play"></i> Bắt đầu
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="viewConsultationDetails(1)">
-                                    <i class="fas fa-info"></i> Chi tiết
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="schedule-item">
-                            <div class="schedule-time">
-                                <span class="time">14:00 - 15:00</span>
-                                <span class="duration">60 phút</span>
-                            </div>
-                            <div class="schedule-details">
-                                <h4>Tư vấn Lê Thị D - Chuẩn bị thi IB</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng tư vấn B205</p>
-                                <p><i class="fas fa-user-graduate"></i> Lớp 11B2 • IB Math HL</p>
-                                <span class="status-badge upcoming">Sắp tới</span>
-                            </div>
-                            <div class="schedule-actions">
-                                <button class="btn btn-sm btn-primary" onclick="startConsultation(2)">
-                                    <i class="fas fa-play"></i> Bắt đầu
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="viewConsultationDetails(2)">
-                                    <i class="fas fa-info"></i> Chi tiết
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="schedule-item">
-                            <div class="schedule-time">
-                                <span class="time">16:00 - 17:00</span>
-                                <span class="duration">60 phút</span>
-                            </div>
-                            <div class="schedule-details">
-                                <h4>Tư vấn Phạm Văn E - Chọn lớp nâng cao</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> Phòng tư vấn C301</p>
-                                <p><i class="fas fa-user-graduate"></i> Lớp 12C1 • AP Calculus</p>
-                                <span class="status-badge completed">Đã hoàn thành</span>
-                            </div>
-                            <div class="schedule-actions">
-                                <button class="btn btn-sm btn-success" onclick="viewConsultationDetails(3)">
-                                    <i class="fas fa-check"></i> Xem kết quả
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="reviewConsultation(3)">
-                                    <i class="fas fa-eye"></i> Đánh giá
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Weekly Overview -->
-                <div class="weekly-overview">
-                    <h3><i class="fas fa-calendar-week"></i> Tổng quan tuần</h3>
-                    <div class="week-stats">
-                        <div class="week-stat">
-                            <span class="stat-number">12</span>
-                            <span class="stat-label">Buổi tư vấn</span>
-                        </div>
-                        <div class="week-stat">
-                            <span class="stat-number">12</span>
-                            <span class="stat-label">Giờ tư vấn</span>
-                        </div>
-                        <div class="week-stat">
-                            <span class="stat-number">15</span>
-                            <span class="stat-label">Học sinh</span>
-                        </div>
-                        <div class="week-stat">
-                            <span class="stat-number">4</span>
-                            <span class="stat-label">Loại tư vấn</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Payment Processing Section -->
-            <section class="content-section" id="payments">
-                <div class="section-header">
-                    <h2>Thanh toán tại trung tâm</h2>
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm kiếm thanh toán...">
-                        </div>
-                        <div class="filter-buttons">
-                            <select class="form-select" id="paymentStatusFilter">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="pending">Chờ xử lý</option>
-                                <option value="confirmed">Đã xác nhận</option>
-                                <option value="reported">Đã báo cáo</option>
-                                <option value="verified">Đã đối chiếu</option>
-                            </select>
-                            <select class="form-select" id="paymentDateFilter">
-                                <option value="">Tất cả ngày</option>
-                                <option value="today">Hôm nay</option>
-                                <option value="week">Tuần này</option>
-                                <option value="month">Tháng này</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" id="addPaymentBtn">
-                            <i class="fas fa-plus"></i>
-                            Ghi nhận thanh toán
-                        </button>
-                        <button class="btn btn-secondary" id="verifyPaymentsBtn">
-                            <i class="fas fa-check-double"></i>
-                            Đối chiếu
-                        </button>
-                    </div>
-                </div>
-
-                <div class="payment-form-section">
-                    <div class="form-card">
-                        <h3>Ghi nhận thanh toán học phí tại trung tâm</h3>
-                        <form id="paymentForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="studentSelect">Học sinh <span class="required">*</span></label>
-                                    <select class="form-select" id="studentSelect" required>
-                                        <option value="">Chọn học sinh</option>
-                                        <option value="TC">Trần Văn C - Lớp 10A1 - Cambridge IGCSE</option>
-                                        <option value="LD">Lê Thị D - Lớp 11B2 - IB Math HL</option>
-                                        <option value="PE">Phạm Văn E - Lớp 12C1 - AP Calculus</option>
-                                        <option value="NF">Nguyễn Văn F - Lớp 10A2 - Cambridge IGCSE</option>
-                                        <option value="TG">Trần Thị G - Lớp 11B1 - IB Math SL</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="amount">Số tiền (VNĐ) <span class="required">*</span></label>
-                                    <input type="number" class="form-control" id="amount" placeholder="Nhập số tiền" min="0" step="1000" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="paymentDate">Ngày thanh toán <span class="required">*</span></label>
-                                    <input type="date" class="form-control" id="paymentDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="paymentTime">Giờ thanh toán <span class="required">*</span></label>
-                                    <input type="time" class="form-control" id="paymentTime" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="paymentType">Loại thanh toán <span class="required">*</span></label>
-                                    <select class="form-select" id="paymentType" required>
-                                        <option value="">Chọn loại thanh toán</option>
-                                        <option value="tuition">Học phí tháng</option>
-                                        <option value="registration">Phí đăng ký</option>
-                                        <option value="exam">Phí thi</option>
-                                        <option value="material">Phí tài liệu</option>
-                                        <option value="other">Khác</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="receiptNumber">Số biên lai</label>
-                                    <input type="text" class="form-control" id="receiptNumber" placeholder="Nhập số biên lai (nếu có)">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="notes">Ghi chú</label>
-                                <textarea class="form-control" id="notes" rows="3" placeholder="Ghi chú về thanh toán (ví dụ: thanh toán học phí tháng 12, phụ huynh: Nguyễn Văn A...)"></textarea>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i>
-                                    Lưu giao dịch
-                                </button>
-                                <button type="reset" class="btn btn-secondary">
-                                    <i class="fas fa-undo"></i>
-                                    Làm mới
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="payments-table-container">
-                    <div class="table-header">
-                        <div>Học sinh</div>
-                        <div>Số tiền</div>
-                        <div>Loại</div>
-                        <div>Ngày/Giờ</div>
-                        <div>Biên lai</div>
-                        <div>Trạng thái</div>
-                        <div>Ghi chú</div>
-                        <div>Hành động</div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">TC</div>
-                            <div class="student-info">
-                                <div class="student-name">Trần Văn C</div>
-                                <div class="student-email">Lớp 10A1 • Cambridge IGCSE</div>
-                            </div>
-                        </div>
-                        <div class="amount-info">
-                            <span class="amount-value">2,500,000</span>
-                            <span class="currency">VNĐ</span>
-                        </div>
-                        <div>
-                            <span class="payment-type tuition">Học phí tháng</span>
-                        </div>
-                        <div class="datetime-info">
-                            <div class="date">18/12/2024</div>
-                            <div class="time">14:30</div>
-                        </div>
-                        <div class="receipt-info">
-                            <span class="receipt-number">BL001234</span>
-                        </div>
-                        <div>
-                            <span class="status-badge verified">Đã đối chiếu</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Thanh toán học phí tháng 12, phụ huynh: Trần Văn A</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewPaymentDetails('TC001')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="editPayment('TC001')">Sửa</button>
-                            <button class="btn btn-sm btn-info" onclick="printReceipt('TC001')">In biên lai</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">LD</div>
-                            <div class="student-info">
-                                <div class="student-name">Lê Thị D</div>
-                                <div class="student-email">Lớp 11B2 • IB Math HL</div>
-                            </div>
-                        </div>
-                        <div class="amount-info">
-                            <span class="amount-value">3,000,000</span>
-                            <span class="currency">VNĐ</span>
-                        </div>
-                        <div>
-                            <span class="payment-type tuition">Học phí tháng</span>
-                        </div>
-                        <div class="datetime-info">
-                            <div class="date">17/12/2024</div>
-                            <div class="time">10:15</div>
-                        </div>
-                        <div class="receipt-info">
-                            <span class="receipt-number">BL001235</span>
-                        </div>
-                        <div>
-                            <span class="status-badge reported">Đã báo cáo</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Thanh toán học phí tháng 12, phụ huynh: Lê Thị B</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewPaymentDetails('LD001')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="editPayment('LD001')">Sửa</button>
-                            <button class="btn btn-sm btn-info" onclick="printReceipt('LD001')">In biên lai</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">PE</div>
-                            <div class="student-info">
-                                <div class="student-name">Phạm Văn E</div>
-                                <div class="student-email">Lớp 12C1 • AP Calculus</div>
-                            </div>
-                        </div>
-                        <div class="amount-info">
-                            <span class="amount-value">500,000</span>
-                            <span class="currency">VNĐ</span>
-                        </div>
-                        <div>
-                            <span class="payment-type exam">Phí thi</span>
-                        </div>
-                        <div class="datetime-info">
-                            <div class="date">16/12/2024</div>
-                            <div class="time">16:45</div>
-                        </div>
-                        <div class="receipt-info">
-                            <span class="receipt-number">BL001236</span>
-                        </div>
-                        <div>
-                            <span class="status-badge confirmed">Đã xác nhận</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Phí thi AP Calculus, phụ huynh: Phạm Văn C</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewPaymentDetails('PE001')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="editPayment('PE001')">Sửa</button>
-                            <button class="btn btn-sm btn-info" onclick="printReceipt('PE001')">In biên lai</button>
-                        </div>
-                    </div>
-                    <div class="table-row">
-                        <div class="col-name">
-                            <div class="student-avatar">NF</div>
-                            <div class="student-info">
-                                <div class="student-name">Nguyễn Văn F</div>
-                                <div class="student-email">Lớp 10A2 • Cambridge IGCSE</div>
-                            </div>
-                        </div>
-                        <div class="amount-info">
-                            <span class="amount-value">1,200,000</span>
-                            <span class="currency">VNĐ</span>
-                        </div>
-                        <div>
-                            <span class="payment-type registration">Phí đăng ký</span>
-                        </div>
-                        <div class="datetime-info">
-                            <div class="date">15/12/2024</div>
-                            <div class="time">09:30</div>
-                        </div>
-                        <div class="receipt-info">
-                            <span class="receipt-number">BL001237</span>
-                        </div>
-                        <div>
-                            <span class="status-badge pending">Chờ xử lý</span>
-                        </div>
-                        <div class="notes-info">
-                            <span class="notes-preview">Phí đăng ký khóa học mới, phụ huynh: Nguyễn Văn D</span>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-primary" onclick="viewPaymentDetails('NF001')">Xem</button>
-                            <button class="btn btn-sm btn-secondary" onclick="editPayment('NF001')">Sửa</button>
-                            <button class="btn btn-sm btn-info" onclick="printReceipt('NF001')">In biên lai</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="payment-summary-section">
-                    <div class="summary-card">
-                        <h3>Tổng kết thanh toán hôm nay</h3>
-                        <div class="summary-stats">
-                            <div class="stat-item">
-                                <div class="stat-value">4</div>
-                                <div class="stat-label">Giao dịch</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">7,200,000</div>
-                                <div class="stat-label">Tổng tiền (VNĐ)</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">3</div>
-                                <div class="stat-label">Đã đối chiếu</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">1</div>
-                                <div class="stat-label">Chờ xử lý</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="verification-section">
-                    <div class="verification-card">
-                        <h3>Đối chiếu với hệ thống quản lý tài chính</h3>
-                        <div class="verification-content">
-                            <div class="verification-status">
-                                <div class="status-item">
-                                    <i class="fas fa-check-circle text-success"></i>
-                                    <span>Đã đồng bộ với hệ thống tài chính</span>
-                                </div>
-                                <div class="status-item">
-                                    <i class="fas fa-clock text-warning"></i>
-                                    <span>Lần đồng bộ cuối: 18/12/2024 17:30</span>
-                                </div>
-                                <div class="status-item">
-                                    <i class="fas fa-sync text-info"></i>
-                                    <span>Tự động đồng bộ mỗi 30 phút</span>
-                                </div>
-                            </div>
-                            <div class="verification-actions">
-                                <button class="btn btn-primary" onclick="syncWithFinanceSystem()">
-                                    <i class="fas fa-sync"></i>
-                                    Đồng bộ ngay
-                                </button>
-                                <button class="btn btn-secondary" onclick="exportPaymentReport()">
-                                    <i class="fas fa-download"></i>
-                                    Xuất báo cáo
-                                </button>
-                                <button class="btn btn-info" onclick="viewFinanceSystem()">
-                                    <i class="fas fa-external-link-alt"></i>
-                                    Xem hệ thống tài chính
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="payment-policy-section">
-                    <div class="policy-card">
-                        <h3>Quy trình xử lý thanh toán tại trung tâm</h3>
-                        <div class="policy-content">
-                            <div class="policy-item">
-                                <h4>Bước 1: Ghi nhận thanh toán</h4>
-                                <ul>
-                                    <li>Xác nhận thông tin học sinh</li>
-                                    <li>Kiểm tra số tiền và loại thanh toán</li>
-                                    <li>Ghi chú chi tiết về giao dịch</li>
-                                    <li>Lưu vào hệ thống</li>
-                                </ul>
-                            </div>
-                            <div class="policy-item">
-                                <h4>Bước 2: Xác nhận và báo cáo</h4>
-                                <ul>
-                                    <li>Xác nhận giao dịch với phụ huynh</li>
-                                    <li>In biên lai thanh toán</li>
-                                    <li>Báo cáo lên bộ phận kế toán</li>
-                                    <li>Đối chiếu với hệ thống tài chính</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Support Section -->
-            <section class="content-section" id="support">
-                <div class="section-header">
-                    <h2>Hỗ trợ học tập</h2>
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm kiếm yêu cầu hỗ trợ...">
-                        </div>
-                        <button class="btn btn-primary">
-                            <i class="fas fa-plus"></i>
-                            Tạo yêu cầu hỗ trợ
-                        </button>
-                    </div>
-                </div>
-
-                <div class="support-grid">
-                    <div class="support-card">
-                        <div class="support-header">
-                            <h3>Hỗ trợ học tập</h3>
-                            <span class="status-badge urgent">Khẩn cấp</span>
-                        </div>
-                        <div class="support-body">
-                            <div class="support-info">
-                                <p><strong>Học sinh:</strong> Trần Văn C</p>
-                                <p><strong>Lớp:</strong> Toán 10A1</p>
-                                <p><strong>Vấn đề:</strong> Cần hỗ trợ giải bài tập khó</p>
-                                <p><strong>Thời gian:</strong> 18/12/2024 14:30</p>
-                            </div>
-                            <div class="support-actions">
-                                <button class="btn btn-sm btn-primary">Xử lý</button>
-                                <button class="btn btn-sm btn-secondary">Chi tiết</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="support-card">
-                        <div class="support-header">
-                            <h3>Tư vấn học tập</h3>
-                            <span class="status-badge high">Ưu tiên cao</span>
-                        </div>
-                        <div class="support-body">
-                            <div class="support-info">
-                                <p><strong>Học sinh:</strong> Lê Thị D</p>
-                                <p><strong>Lớp:</strong> Toán 11B2</p>
-                                <p><strong>Vấn đề:</strong> Cần tư vấn phương pháp học</p>
-                                <p><strong>Thời gian:</strong> 17/12/2024 16:00</p>
-                            </div>
-                            <div class="support-actions">
-                                <button class="btn btn-sm btn-primary">Xử lý</button>
-                                <button class="btn btn-sm btn-secondary">Chi tiết</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="support-card">
-                        <div class="support-header">
-                            <h3>Hỗ trợ đăng ký</h3>
-                            <span class="status-badge normal">Bình thường</span>
-                        </div>
-                        <div class="support-body">
-                            <div class="support-info">
-                                <p><strong>Học sinh:</strong> Phạm Văn E</p>
-                                <p><strong>Lớp:</strong> Toán 12C1</p>
-                                <p><strong>Vấn đề:</strong> Cần hỗ trợ đăng ký khóa học</p>
-                                <p><strong>Thời gian:</strong> 16/12/2024 10:00</p>
-                            </div>
-                            <div class="support-actions">
-                                <button class="btn btn-sm btn-primary">Xử lý</button>
-                                <button class="btn btn-sm btn-secondary">Chi tiết</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Messages Section -->
-            <section class="content-section" id="messages">
-                <div class="section-header">
-                    <h2>Nhắn tin trực tiếp</h2>
-                    <div class="header-actions">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Tìm kiếm tin nhắn...">
-                        </div>
-                        <button class="btn btn-primary">
-                            <i class="fas fa-plus"></i>
-                            Tin nhắn mới
-                        </button>
-                    </div>
-                </div>
-
-                <div class="messages-container">
-                    <div class="message-item unread">
-                        <div class="message-avatar">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <div class="message-content">
-                            <div class="message-header">
-                                <h4>Trần Văn C</h4>
-                                <span class="message-time">14:30</span>
-                            </div>
-                            <div class="message-subject">Cần hỗ trợ bài tập</div>
-                            <div class="message-preview">Em không hiểu cách giải bài tập số 15 trong sách...</div>
-                            <div class="message-actions">
-                                <button class="btn btn-sm btn-primary">Trả lời</button>
-                                <button class="btn btn-sm btn-secondary">Xem chi tiết</button>
-                            </div>
-                        </div>
-                        <div class="message-status">
-                            <div class="status-dot unread"></div>
-                        </div>
-                    </div>
-
-                    <div class="message-item">
-                        <div class="message-avatar">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                        </div>
-                        <div class="message-content">
-                            <div class="message-header">
-                                <h4>Nguyễn Văn A</h4>
-                                <span class="message-time">13:45</span>
-                            </div>
-                            <div class="message-subject">Báo cáo lớp học</div>
-                            <div class="message-preview">Lớp Toán 10A1 hôm nay có 2 học sinh vắng mặt...</div>
-                            <div class="message-actions">
-                                <button class="btn btn-sm btn-primary">Trả lời</button>
-                                <button class="btn btn-sm btn-secondary">Xem chi tiết</button>
-                            </div>
-                        </div>
-                        <div class="message-status">
-                            <div class="status-dot"></div>
-                        </div>
-                    </div>
-
-                    <div class="message-item">
-                        <div class="message-avatar">
-                            <i class="fas fa-user-friends"></i>
-                        </div>
-                        <div class="message-content">
-                            <div class="message-header">
-                                <h4>Phụ huynh Lê Thị D</h4>
-                                <span class="message-time">12:20</span>
-                            </div>
-                            <div class="message-subject">Thắc mắc về học phí</div>
-                            <div class="message-preview">Tôi muốn hỏi về cách tính học phí cho con...</div>
-                            <div class="message-actions">
-                                <button class="btn btn-sm btn-primary">Trả lời</button>
-                                <button class="btn btn-sm btn-secondary">Xem chi tiết</button>
-                            </div>
-                        </div>
-                        <div class="message-status">
-                            <div class="status-dot"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        <main class="content" id="tutorSectionsHost">
+            <div class="section-placeholder" data-section-src="./sections/dashboard.html"></div>
+            <div class="section-placeholder" data-section-src="./sections/assigned-students.html"></div>
+            <div class="section-placeholder" data-section-src="./sections/consultation-schedule.html"></div>
+            <div class="section-placeholder" data-section-src="./sections/payments.html"></div>
+            <div class="section-placeholder" data-section-src="./sections/support.html"></div>
+            <div class="section-placeholder" data-section-src="./sections/consultations.html"></div>
+            <div class="section-placeholder" data-section-src="./sections/messages.html"></div>
+            <div class="section-placeholder" data-section-src="./sections/recruitment.html"></div>
         </main>
     </div>
 
@@ -1221,31 +192,42 @@
                             <i class="fas fa-user-graduate"></i>
                         </div>
                         <div class="student-info-content">
-                            <h4>Trần Văn C</h4>
-                            <p>Lớp: Toán 10A1</p>
-                            <p>Email: tranvanc@email.com</p>
-                            <p>SĐT: 0123456789</p>
+                            <h4 id="studentModalName">-</h4>
+                            <p id="studentModalPrimaryClass">Lớp: -</p>
+                            <p>Email: <span id="studentModalEmail">-</span></p>
+                            <p>SĐT: <span id="studentModalPhone">-</span></p>
+                            <p>Địa chỉ: <span id="studentModalAddress">-</span></p>
                         </div>
                     </div>
                     <div class="student-stats">
                         <div class="stat-item">
-                            <span class="stat-number">85</span>
+                            <span class="stat-number" id="studentStatAvg">-</span>
                             <span class="stat-label">Điểm TB</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-number">12</span>
+                            <span class="stat-number" id="studentStatSessions">-</span>
                             <span class="stat-label">Buổi học</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-number">95%</span>
+                            <span class="stat-number" id="studentStatAttendance">-</span>
                             <span class="stat-label">Tham gia</span>
                         </div>
                     </div>
                 </div>
+
+                <div class="student-detail-sections">
+                    <h4>Danh sách lớp</h4>
+                    <ul id="studentModalClasses" class="student-detail-list"> </ul>
+
+                    <h4>Tiến trình & Bài tập</h4>
+                    <ul id="studentModalAssignments" class="student-detail-list"> </ul>
+
+                    <h4>Kết quả học tập</h4>
+                    <ul id="studentModalGrades" class="student-detail-list"> </ul>
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="closeStudentModalBtn">Đóng</button>
-                <button class="btn btn-primary">Chỉnh sửa</button>
+                <button class="btn btn-secondary" id="closeStudentModalBtn">Xong</button>
             </div>
         </div>
     </div>
@@ -1294,7 +276,74 @@
         </div>
     </div>
 
-    <script src="../assets/js/api/tutor.api.js"></script>
-    <script src="../assets/js/tutor-main.js"></script>
+    <!-- Support Details Modal -->
+    <div class="modal-overlay" id="supportDetailsModal" style="display: none;">
+        <div class="modal-container support-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-headset"></i> Chi tiết yêu cầu hỗ trợ</h3>
+                <button class="modal-close" id="closeSupportModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="supportModalBody">
+                <!-- Content will be loaded dynamically -->
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Đang tải thông tin...</p>
+                </div>
+            </div>
+            <div class="modal-footer" id="supportModalFooter">
+                <button class="btn btn-secondary" id="closeSupportModalBtn">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div class="modal-overlay" id="updateStatusModal" style="display: none;">
+        <div class="modal-container status-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Cập nhật trạng thái</h3>
+                <button class="modal-close" id="closeStatusModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm">
+                    <input type="hidden" id="statusRequestId" name="idYc">
+                    <div class="form-group">
+                        <label for="statusSelect">
+                            <i class="fas fa-tag"></i> Trạng thái
+                        </label>
+                        <select class="form-select" id="statusSelect" name="trangThai" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="Chưa xử lý">Chưa xử lý</option>
+                            <option value="Đang xử lý">Đang xử lý</option>
+                            <option value="Đã xử lý">Đã xử lý</option>
+                            <option value="Đã đóng">Đã đóng</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="statusNote">
+                            <i class="fas fa-comment"></i> Ghi chú (tùy chọn)
+                        </label>
+                        <textarea class="form-control" id="statusNote" name="ghiChu" rows="3" 
+                                  placeholder="Nhập ghi chú về việc cập nhật trạng thái..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeStatusModalBtn">Hủy</button>
+                <button class="btn btn-primary" id="saveStatusBtn">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/js/sections-loader.js"></script>
+    <script src="./assets/js/api/tutor.api.js"></script>
+    <script src="./assets/js/tutor-main.js"></script>
+    <script src="./assets/js/sections/recruitment.js"></script>
 </body>
 </html>
+

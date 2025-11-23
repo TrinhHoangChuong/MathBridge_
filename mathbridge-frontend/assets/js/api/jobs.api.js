@@ -15,7 +15,19 @@ async function httpPost(path, data, isFormData = false) {
     body: isFormData ? data : JSON.stringify(data),
   };
   const r = await fetch(CONFIG.BASE_URL + path, opts);
-  if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
+  if (!r.ok) {
+    // Try to parse error response body for better error messages
+    let errorMessage = `HTTP error! Status: ${r.status}`;
+    try {
+      const errorBody = await r.json();
+      if (errorBody && errorBody.message) {
+        errorMessage = errorBody.message;
+      }
+    } catch (e) {
+      // If response is not JSON, use default message
+    }
+    throw new Error(errorMessage);
+  }
   return r.json();
 }
 

@@ -32,8 +32,14 @@ public class BaiTap {
     @Column(name = "LoaiBT", length = 100)
     private String loaiBt;
 
-    @Column(name = "ChoPhepLamLai")
-    private Boolean choPhepLamLai;
+    @Column(name = "FileURL", length = 400)
+    private String fileUrl;
+
+    @Column(name = "TaiLieuURL", length = 400)
+    private String taiLieuUrl;
+
+    @Column(name = "ChoPhepLamBai")
+    private Boolean choPhepLamBai;
 
     @Column(name = "HocSinhDuocPhep", length = 1000)
     private String hocSinhDuocPhep; // JSON array of student IDs: ["HS001", "HS002"]
