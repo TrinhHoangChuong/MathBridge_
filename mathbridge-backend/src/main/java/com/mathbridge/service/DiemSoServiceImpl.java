@@ -14,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +25,10 @@ public class DiemSoServiceImpl implements DiemSoService {
     private final DangKyLHRepository dangKyLHRepository;
     private final BaiNopRepository baiNopRepository;
     private final KetQuaHocTapRepository ketQuaHocTapRepository;
+    
+    // Temporary storage for scores while teacher is entering them (in-memory)
+    // Key: studentId, Value: Map with keys "15P", "45P", "HK"
+    private final Map<String, Map<String, BigDecimal>> tempScores = new ConcurrentHashMap<>();
 
     public DiemSoServiceImpl(DangKyLHRepository dangKyLHRepository,
                             BaiNopRepository baiNopRepository,
@@ -56,29 +62,43 @@ public class DiemSoServiceImpl implements DiemSoService {
                     
                     if (!ketQuaList.isEmpty()) {
                         KetQuaHocTap ketQua = ketQuaList.get(0);
-                        if (ketQua.getDiemSo() != null && !ketQua.getDiemSo().isEmpty()) {
-                            String[] diemParts = ketQua.getDiemSo().split(",");
-                            if (diemParts.length >= 1) diem15Phut = parseScore(diemParts[0]);
-                            if (diemParts.length >= 2) diem45Phut = parseScore(diemParts[1]);
-                            if (diemParts.length >= 3) diemThiHK = parseScore(diemParts[2]);
+                        
+                        // Get scores from temp storage (if teacher is currently entering)
+                        Map<String, BigDecimal> tempStudentScores = tempScores.get(hs.getIdHs());
+                        if (tempStudentScores != null) {
+                            diem15Phut = tempStudentScores.get("15P");
+                            diem45Phut = tempStudentScores.get("45P");
+                            diemThiHK = tempStudentScores.get("HK");
                         }
                         
-                        // Get DiemTB directly from KetQuaHocTap if available
-                        if (ketQua.getDiemTB() != null) {
-                            dto.setDiemTrungBinh(ketQua.getDiemTB());
-                        } else {
-                            // Calculate if not stored
-                            BigDecimal diemTB = tinhDiemTrungBinh(diem15Phut, diem45Phut, diemThiHK);
-                            dto.setDiemTrungBinh(diemTB);
+                        // Luôn lấy điểm từ BaiNop để hiển thị trong 3 cột (ưu tiên temp scores nếu có)
+                        // Nếu không có temp scores, lấy từ BaiNop
+                        if (diem15Phut == null) {
+                            List<BaiNop> baiNops = baiNopRepository.findByHocSinhId(hs.getIdHs());
+                            diem15Phut = tinhDiemTheoLoai(baiNops, "KIEM_TRA_15P");
+                        }
+                        if (diem45Phut == null) {
+                            List<BaiNop> baiNops = baiNopRepository.findByHocSinhId(hs.getIdHs());
+                            diem45Phut = tinhDiemTheoLoai(baiNops, "KIEM_TRA_45P");
+                        }
+                        if (diemThiHK == null) {
+                            List<BaiNop> baiNops = baiNopRepository.findByHocSinhId(hs.getIdHs());
+                            diemThiHK = tinhDiemTheoLoai(baiNops, "THI_HK");
                         }
                         
-                        // Get XepLoai from KetQuaHocTap
-                        if (ketQua.getXepLoai() != null) {
-                            dto.setXepLoai(ketQua.getXepLoai());
-                        } else {
-                            BigDecimal diemTB = dto.getDiemTrungBinh();
-                            dto.setXepLoai(xepLoai(diemTB));
-                        }
+                        // Set individual scores to DTO
+                        dto.setDiem15Phut(diem15Phut);
+                        dto.setDiem45Phut(diem45Phut);
+                        dto.setDiemThiHK(diemThiHK);
+                        
+                        // Get DiemTrungBinh directly from KetQuaHocTap (đã tính: (15p + 45p + thi) / 3)
+                        dto.setDiemTrungBinh(ketQua.getDiemTrungBinh());
+                        
+                        // Get DiemTongKet directly from KetQuaHocTap (đã tính: 20%*15p + 30%*45p + 50%*thi)
+                        dto.setDiemTongKet(ketQua.getDiemTongKet());
+                        
+                        // Get XepLoai from KetQuaHocTap (dựa vào DiemTrungBinh)
+                        dto.setXepLoai(ketQua.getXepLoai());
                     } else {
                         // Fallback: Calculate from BaiNop if KetQuaHocTap is empty
                         List<BaiNop> baiNops = baiNopRepository.findByHocSinhId(hs.getIdHs());
@@ -86,14 +106,27 @@ public class DiemSoServiceImpl implements DiemSoService {
                         diem45Phut = tinhDiemTheoLoai(baiNops, "KIEM_TRA_45P");
                         diemThiHK = tinhDiemTheoLoai(baiNops, "THI_HK");
                         
-                        BigDecimal diemTB = tinhDiemTrungBinh(diem15Phut, diem45Phut, diemThiHK);
+                        // Set individual scores to DTO
+                        dto.setDiem15Phut(diem15Phut);
+                        dto.setDiem45Phut(diem45Phut);
+                        dto.setDiemThiHK(diemThiHK);
+                        
+                        // Calculate DiemTrungBinh from BaiNop scores
+                        BigDecimal diemTB = tinhDiemTrungBinhCong(diem15Phut, diem45Phut, diemThiHK);
                         dto.setDiemTrungBinh(diemTB);
                         dto.setXepLoai(xepLoai(diemTB));
                     }
                     
-                    dto.setDiem15Phut(diem15Phut);
-                    dto.setDiem45Phut(diem45Phut);
-                    dto.setDiemThiHK(diemThiHK);
+                    // Đảm bảo luôn set 3 điểm vào DTO (có thể null nếu chưa có)
+                    if (dto.getDiem15Phut() == null) {
+                        dto.setDiem15Phut(diem15Phut);
+                    }
+                    if (dto.getDiem45Phut() == null) {
+                        dto.setDiem45Phut(diem45Phut);
+                    }
+                    if (dto.getDiemThiHK() == null) {
+                        dto.setDiemThiHK(diemThiHK);
+                    }
                     
                     // Count assignments
                     List<BaiNop> baiNops = baiNopRepository.findByHocSinhId(hs.getIdHs());
@@ -155,79 +188,117 @@ public class DiemSoServiceImpl implements DiemSoService {
             }
             ketQua.setIdKq(idKq);
             ketQua.setIdHs(idHs);
-            ketQua.setDiemSo(",,,"); // Initialize with empty strings (will be parsed as null)
-            ketQua.setDiemTB(null); // No average score yet
+            ketQua.setDiemTrungBinh(BigDecimal.ZERO);
+            ketQua.setDiemTongKet(BigDecimal.ZERO);
             ketQua.setXepLoai("N");
         }
         
-        // Parse current DiemSo string (format: "10,8,9" where 1st=15p, 2nd=45p, 3rd=HK)
-        String[] diemParts;
-        if (ketQua.getDiemSo() != null && !ketQua.getDiemSo().trim().isEmpty()) {
-            diemParts = ketQua.getDiemSo().split(",");
-            // Ensure we have exactly 3 parts
-            if (diemParts.length != 3) {
-                diemParts = new String[]{"", "", ""};
-            }
-        } else {
-            diemParts = new String[]{"", "", ""};
-        }
-        
-        // Update the appropriate score based on loaiDiem
-        // loaiDiem: "15P" or "DIEM_15P" -> index 0, "45P" or "DIEM_45P" -> index 1, "HK" or "DIEM_THI_HK" -> index 2
-        // Use empty string "" to represent null (will be parsed as null later)
+        // Store the score temporarily in memory (giáo viên nhập từng điểm một)
         String loaiDiemUpper = loaiDiem.toUpperCase();
+        String scoreKey;
         if (loaiDiemUpper.contains("15") || loaiDiemUpper.equals("15P") || loaiDiemUpper.equals("DIEM_15P")) {
-            diemParts[0] = diemSo != null ? diemSo.toString() : "";
+            scoreKey = "15P";
         } else if (loaiDiemUpper.contains("45") || loaiDiemUpper.equals("45P") || loaiDiemUpper.equals("DIEM_45P")) {
-            diemParts[1] = diemSo != null ? diemSo.toString() : "";
+            scoreKey = "45P";
         } else if (loaiDiemUpper.contains("HK") || loaiDiemUpper.contains("THI") || loaiDiemUpper.equals("DIEM_THI_HK")) {
-            diemParts[2] = diemSo != null ? diemSo.toString() : "";
+            scoreKey = "HK";
+        } else {
+            scoreKey = loaiDiemUpper;
         }
         
-        // Reconstruct DiemSo string
-        String newDiemSo = String.join(",", diemParts);
-        ketQua.setDiemSo(newDiemSo);
+        // Get or create temp scores map for this student
+        Map<String, BigDecimal> studentScores = tempScores.computeIfAbsent(idHs, k -> new ConcurrentHashMap<>());
+        studentScores.put(scoreKey, diemSo);
         
-        // Calculate average and classification
-        BigDecimal diem15 = parseScore(diemParts[0]);
-        BigDecimal diem45 = parseScore(diemParts[1]);
-        BigDecimal diemHK = parseScore(diemParts[2]);
+        // Get all 3 scores from temp storage
+        BigDecimal diem15 = studentScores.get("15P");
+        BigDecimal diem45 = studentScores.get("45P");
+        BigDecimal diemHK = studentScores.get("HK");
         
-        // Calculate average if at least one score is provided (not null)
-        BigDecimal diemTB = null;
-        if (diem15 != null || diem45 != null || diemHK != null) {
-            diemTB = tinhDiemTrungBinh(diem15, diem45, diemHK);
+        // Calculate DiemTrungBinh = (15p + 45p + thi) / 3 (chỉ khi có đủ 3 điểm)
+        BigDecimal diemTrungBinh = tinhDiemTrungBinhCong(diem15, diem45, diemHK);
+        
+        // Calculate DiemTongKet = 20%*15p + 30%*45p + 50%*thi (chỉ khi có đủ 3 điểm)
+        BigDecimal diemTongKet = tinhDiemTongKet(diem15, diem45, diemHK);
+        
+        // Update KetQuaHocTap - chỉ lưu 2 giá trị đã tính (DiemTrungBinh và DiemTongKet)
+        if (diemTrungBinh != null && diemTongKet != null) {
+            // Có đủ 3 điểm: lưu giá trị đã tính
+            // DiemTrungBinh = (15p + 45p + thi) / 3 → lưu vào cột DiemTrungBinh
+            ketQua.setDiemTrungBinh(diemTrungBinh);
+            // DiemTongKet = 20%*15p + 30%*45p + 50%*thi → lưu vào cột DiemTongKet
+            ketQua.setDiemTongKet(diemTongKet);
+            // Xếp loại dựa vào DiemTrungBinh (không phải DiemTongKet)
+            ketQua.setXepLoai(xepLoai(diemTrungBinh));
+            
+            System.out.println("=== SAVING SCORES ===");
+            System.out.println("Student: " + idHs);
+            System.out.println("Diem15: " + diem15);
+            System.out.println("Diem45: " + diem45);
+            System.out.println("DiemHK: " + diemHK);
+            System.out.println("DiemTrungBinh (calculated): " + diemTrungBinh + " → Saving to DiemTrungBinh column");
+            System.out.println("DiemTongKet (calculated): " + diemTongKet + " → Saving to DiemTongKet column");
+            System.out.println("XepLoai (based on DiemTrungBinh): " + ketQua.getXepLoai());
+            System.out.println("====================");
+            
+            // Clear temp scores after saving
+            tempScores.remove(idHs);
+        } else {
+            // Chưa đủ 3 điểm: giữ giá trị cũ hoặc 0
+            // Không cập nhật DiemTrungBinh và DiemTongKet cho đến khi có đủ 3 điểm
+            if (ketQua.getDiemTrungBinh() == null || ketQua.getDiemTrungBinh().compareTo(BigDecimal.ZERO) == 0) {
+                ketQua.setDiemTrungBinh(BigDecimal.ZERO);
+                ketQua.setDiemTongKet(BigDecimal.ZERO);
+                ketQua.setXepLoai("N");
+            }
+            // Giữ nguyên giá trị hiện tại, không cập nhật
         }
         
-        ketQua.setDiemTB(diemTB);
-        ketQua.setXepLoai(xepLoai(diemTB));
-        
-        // Save to database
+        // Save to database (luôn lưu để đảm bảo không mất dữ liệu)
         ketQuaHocTapRepository.save(ketQua);
         
-        // Return updated DTO
+        // Return updated DTO - trả về cả DiemTrungBinh và DiemTongKet để frontend hiển thị
         DiemSoDTO dto = new DiemSoDTO();
         dto.setIdHs(idHs);
         dto.setDiem15Phut(diem15);
         dto.setDiem45Phut(diem45);
         dto.setDiemThiHK(diemHK);
-        dto.setDiemTrungBinh(diemTB);
+        
+        // DiemTrungBinh = (15p + 45p + thi) / 3
+        // Nếu đã tính được thì dùng, nếu chưa đủ 3 điểm thì tính tạm thời từ các điểm đã có
+        if (diemTrungBinh != null) {
+            dto.setDiemTrungBinh(diemTrungBinh);
+        } else {
+            // Tính tạm thời nếu có ít nhất 1 điểm
+            int count = 0;
+            BigDecimal sum = BigDecimal.ZERO;
+            if (diem15 != null && diem15.compareTo(BigDecimal.ZERO) > 0) {
+                sum = sum.add(diem15);
+                count++;
+            }
+            if (diem45 != null && diem45.compareTo(BigDecimal.ZERO) > 0) {
+                sum = sum.add(diem45);
+                count++;
+            }
+            if (diemHK != null && diemHK.compareTo(BigDecimal.ZERO) > 0) {
+                sum = sum.add(diemHK);
+                count++;
+            }
+            if (count > 0) {
+                BigDecimal tempAvg = sum.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP);
+                dto.setDiemTrungBinh(tempAvg);
+            } else {
+                dto.setDiemTrungBinh(ketQua.getDiemTrungBinh());
+            }
+        }
+        
+        // DiemTongKet = 20%*15p + 30%*45p + 50%*thi (chỉ tính khi có đủ 3 điểm)
+        dto.setDiemTongKet(diemTongKet != null ? diemTongKet : ketQua.getDiemTongKet());
         dto.setXepLoai(ketQua.getXepLoai());
         
         return dto;
     }
     
-    private BigDecimal parseScore(String scoreStr) {
-        try {
-            if (scoreStr == null || scoreStr.trim().isEmpty()) {
-                return null;
-            }
-            // Allow 0 as a valid score (teacher can input 0)
-            return new BigDecimal(scoreStr.trim());
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
     @Override
     public void exportBaoCaoDiemSo(String idLh) {
@@ -254,7 +325,24 @@ public class DiemSoServiceImpl implements DiemSoService {
     }
 
     /**
-     * Tính điểm trung bình theo quy tắc:
+     * Tính điểm trung bình cộng đơn giản: (15p + 45p + thi) / 3
+     * Chỉ tính khi có đủ cả 3 loại điểm
+     */
+    private BigDecimal tinhDiemTrungBinhCong(BigDecimal diem15Phut, BigDecimal diem45Phut, BigDecimal diemThiHK) {
+        // Chỉ tính điểm TB khi có đủ cả 3 loại điểm
+        if (diem15Phut == null || diem45Phut == null || diemThiHK == null) {
+            return null; // Chưa đủ điểm để tính
+        }
+        
+        // Tính điểm trung bình cộng: (15p + 45p + thi) / 3
+        BigDecimal tong = diem15Phut.add(diem45Phut).add(diemThiHK);
+        BigDecimal diemTB = tong.divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP);
+        
+        return diemTB;
+    }
+    
+    /**
+     * Tính điểm tổng kết theo quy tắc:
      * - 20% điểm 15 phút
      * - 30% điểm 45 phút  
      * - 50% điểm thi học kỳ
@@ -262,14 +350,14 @@ public class DiemSoServiceImpl implements DiemSoService {
      * Chỉ tính khi có đủ cả 3 loại điểm để đảm bảo tổng trọng số = 100%
      * Nếu thiếu bất kỳ điểm nào, trả về null (chưa đủ điểm để tính)
      */
-    private BigDecimal tinhDiemTrungBinh(BigDecimal diem15Phut, BigDecimal diem45Phut, BigDecimal diemThiHK) {
-        // Chỉ tính điểm TB khi có đủ cả 3 loại điểm
+    private BigDecimal tinhDiemTongKet(BigDecimal diem15Phut, BigDecimal diem45Phut, BigDecimal diemThiHK) {
+        // Chỉ tính điểm tổng kết khi có đủ cả 3 loại điểm
         // Đảm bảo tổng trọng số = 20% + 30% + 50% = 100%
         if (diem15Phut == null || diem45Phut == null || diemThiHK == null) {
             return null; // Chưa đủ điểm để tính
         }
         
-        // Tính điểm trung bình có trọng số
+        // Tính điểm tổng kết có trọng số
         BigDecimal tong = BigDecimal.ZERO;
         tong = tong.add(diem15Phut.multiply(BigDecimal.valueOf(0.2)));  // 20%
         tong = tong.add(diem45Phut.multiply(BigDecimal.valueOf(0.3)));  // 30%
@@ -279,16 +367,16 @@ public class DiemSoServiceImpl implements DiemSoService {
     }
 
     private String xepLoai(BigDecimal diemTB) {
-        if (diemTB == null) {
+        if (diemTB == null || diemTB.compareTo(BigDecimal.ZERO) == 0) {
             return "N";
         }
         
         if (diemTB.compareTo(BigDecimal.valueOf(8.0)) >= 0) {
-            return "Giỏi";
+            return "Giỏi"; // Unicode: Giỏi (not "Gi?i")
         } else if (diemTB.compareTo(BigDecimal.valueOf(6.5)) >= 0) {
             return "Khá";
         } else if (diemTB.compareTo(BigDecimal.valueOf(5.0)) >= 0) {
-            return "TB";
+            return "TB"; // Trung bình -> TB
         } else {
             return "Yếu";
         }

@@ -100,7 +100,7 @@ public class BaiTapServiceImpl implements BaiTapService {
         baiTap.setTieuDe(baiTapDTO.getTieuDe());
         baiTap.setMoTa(baiTapDTO.getMoTa());
         baiTap.setLoaiBt(baiTapDTO.getLoaiBt());
-        baiTap.setChoPhepLamBai(baiTapDTO.getChoPhepLamBai());
+        baiTap.setChoPhepLamLai(baiTapDTO.getChoPhepLamLai());
         baiTap.setHocSinhDuocPhep(baiTapDTO.getHocSinhDuocPhep());
         baiTap.setNgayBatDau(baiTapDTO.getNgayBatDau());
         baiTap.setNgayKetThuc(baiTapDTO.getNgayKetThuc());
@@ -126,7 +126,7 @@ public class BaiTapServiceImpl implements BaiTapService {
         baiTap.setTieuDe(baiTapDTO.getTieuDe());
         baiTap.setMoTa(baiTapDTO.getMoTa());
         baiTap.setLoaiBt(baiTapDTO.getLoaiBt());
-        baiTap.setChoPhepLamBai(baiTapDTO.getChoPhepLamBai());
+        baiTap.setChoPhepLamLai(baiTapDTO.getChoPhepLamLai());
         baiTap.setHocSinhDuocPhep(baiTapDTO.getHocSinhDuocPhep());
         baiTap.setNgayBatDau(baiTapDTO.getNgayBatDau());
         baiTap.setNgayKetThuc(baiTapDTO.getNgayKetThuc());
@@ -341,10 +341,10 @@ public class BaiTapServiceImpl implements BaiTapService {
         
         // Handle new fields - may be null if database columns don't exist yet
         try {
-            dto.setChoPhepLamBai(baiTap.getChoPhepLamBai());
+            dto.setChoPhepLamLai(baiTap.getChoPhepLamLai());
         } catch (Exception e) {
-            System.out.println("Warning: Could not get choPhepLamBai for BaiTap " + baiTap.getIdBt() + ": " + e.getMessage());
-            dto.setChoPhepLamBai(false);
+            System.out.println("Warning: Could not get choPhepLamLai for BaiTap " + baiTap.getIdBt() + ": " + e.getMessage());
+            dto.setChoPhepLamLai(false);
         }
         
         try {

@@ -1208,8 +1208,23 @@ class TeacherDashboard {
             }
 
             this.currentGradeClassId = String(selectedClassId);
+            // Force refresh: clear cache and fetch fresh data
+            this.gradeDataByClass.delete(String(selectedClassId));
             const diemSos = await this.api.getDiemSoByLopHoc(selectedClassId);
             this.gradeDataByClass.set(String(selectedClassId), diemSos || []);
+            
+            console.log('Loaded grades data:', diemSos?.length || 0, 'students');
+            if (diemSos && diemSos.length > 0) {
+                console.log('Sample grade data:', {
+                    student: diemSos[0].hoTen,
+                    diem15: diemSos[0].diem15Phut,
+                    diem45: diemSos[0].diem45Phut,
+                    diemHK: diemSos[0].diemThiHK,
+                    diemTrungBinh: diemSos[0].diemTrungBinh,
+                    diemTongKet: diemSos[0].diemTongKet,
+                    xepLoai: diemSos[0].xepLoai
+                });
+            }
 
             this.renderGradeStats(diemSos);
             // this.renderGradeChart(diemSos); // Removed chart
@@ -1298,7 +1313,7 @@ class TeacherDashboard {
 
         const list = Array.isArray(diemSos) ? diemSos : [];
         const trungBinhList = list
-            .map((item) => parseFloat(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet))
+            .map((item) => parseFloat(item.diemTrungBinh ?? item.diemTB))
             .filter((value) => !Number.isNaN(value));
 
         const average = trungBinhList.length > 0
@@ -1307,13 +1322,13 @@ class TeacherDashboard {
 
         const excellentCount = list.filter((item) => {
             const rank = (item.xepLoai || '').toLowerCase();
-            const score = parseFloat(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet);
+            const score = parseFloat(item.diemTrungBinh ?? item.diemTB);
             return rank.includes('giỏi') || rank.includes('gioi') || (!Number.isNaN(score) && score >= 8);
         }).length;
 
         const needsSupportCount = list.filter((item) => {
             const rank = (item.xepLoai || '').toLowerCase();
-            const score = parseFloat(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet);
+            const score = parseFloat(item.diemTrungBinh ?? item.diemTB);
             return rank.includes('yếu') || rank.includes('yeu') || rank.includes('kém') || rank.includes('kem')
                 || (!Number.isNaN(score) && score < 5);
         }).length;
@@ -1414,7 +1429,27 @@ class TeacherDashboard {
             const diem15 = this.formatScore(item.diem15Phut ?? item.diem15p);
             const diem45 = this.formatScore(item.diem45Phut ?? item.diem45p);
             const diemHK = this.formatScore(item.diemThiHK ?? item.diemThiHocKy ?? item.diemThi);
-            const diemTB = this.formatScore(item.diemTrungBinh ?? item.diemTB ?? item.diemTongKet);
+            
+            // Tính DiemTrungBinh tạm thời nếu backend chưa có (khi giáo viên vừa nhập)
+            let diemTB = item.diemTrungBinh ?? item.diemTB;
+            if (!diemTB || diemTB === '-' || diemTB === 0) {
+                // Tính tạm thời từ 3 điểm đã nhập: (15p + 45p + thi) / 3
+                const diem15Num = parseFloat(item.diem15Phut ?? item.diem15p ?? 0);
+                const diem45Num = parseFloat(item.diem45Phut ?? item.diem45p ?? 0);
+                const diemHKNum = parseFloat(item.diemThiHK ?? item.diemThiHocKy ?? item.diemThi ?? 0);
+                
+                // Chỉ tính nếu có ít nhất 1 điểm
+                const scores = [diem15Num, diem45Num, diemHKNum].filter(s => s > 0);
+                if (scores.length > 0) {
+                    const sum = scores.reduce((a, b) => a + b, 0);
+                    diemTB = (sum / scores.length).toFixed(2);
+                } else {
+                    diemTB = null;
+                }
+            }
+            
+            // Format để hiển thị
+            diemTB = this.formatScore(diemTB);
             let xepLoai = item.xepLoai || this.classifyScore(diemTB);
             // Normalize xepLoai: fix encoding issues and convert variations
             if (xepLoai) {
@@ -1431,7 +1466,7 @@ class TeacherDashboard {
             const initials = getInitials(studentName, studentEmail);
 
             return `
-                <tr>
+                <tr data-student-id="${studentId}">
                     <td>
                         <div class="student-info">
                             <div class="student-avatar">${this.escapeHtml(initials)}</div>
