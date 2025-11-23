@@ -32,7 +32,7 @@ public class BaiTap {
     @Column(name = "LoaiBT", length = 100)
     private String loaiBt;
 
-    @Column(name = "ChoPhepLamLai")
+    @Column(name = "ChoPhepLamBai")
     private Boolean choPhepLamLai;
 
     @Column(name = "HocSinhDuocPhep", length = 1000)
