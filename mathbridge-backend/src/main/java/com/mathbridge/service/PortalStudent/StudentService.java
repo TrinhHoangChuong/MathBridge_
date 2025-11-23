@@ -422,7 +422,7 @@ public class StudentService {
         for (KetQuaHocTap kq : ketQuaHocTaps) {
             StudentGradeDTO gradeDTO = new StudentGradeDTO();
             gradeDTO.setGradeId(kq.getIdKq());
-            gradeDTO.setScore(calculateKetQuaScore(kq.getDiemSo()));
+            gradeDTO.setScore(calculateKetQuaScore(String.valueOf(kq.getDiemTongKet())));
             gradeDTO.setGradeType("Kết quả học tập");
             gradeDTO.setSubject("Toán học");
             gradeDTO.setFeedback(kq.getXepLoai());
