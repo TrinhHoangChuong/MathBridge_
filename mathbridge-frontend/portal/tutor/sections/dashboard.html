@@ -1,0 +1,236 @@
+<section class="content-section active" id="dashboard">
+    <!-- Welcome Section -->
+    <div class="dashboard-welcome">
+        <div class="welcome-content">
+            <h1 class="welcome-title">
+                <i class="fas fa-graduation-cap"></i>
+                Chào mừng trở lại, <span id="tutorWelcomeName">Cố vấn</span>!
+            </h1>
+            <p class="welcome-subtitle">Hôm nay là <span id="dashboardCurrentDate"></span></p>
+        </div>
+        <div class="welcome-actions">
+            <button class="btn btn-primary" onclick="tutorDashboard.switchSection('assigned-students')">
+                <i class="fas fa-user-graduate"></i>
+                Xem học sinh
+            </button>
+            <button class="btn btn-outline-primary" onclick="tutorDashboard.switchSection('consultation-schedule')">
+                <i class="fas fa-calendar-check"></i>
+                Lịch tư vấn
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="statAssignedStudents">0</h3>
+                <p>Học sinh đang phụ trách</p>
+                <div class="stat-trend">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Hoạt động tích cực</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="statTodayConsultations">0</h3>
+                <p>Lịch tư vấn hôm nay</p>
+                <div class="stat-trend">
+                    <i class="fas fa-clock"></i>
+                    <span id="statNextConsultation">Chưa có lịch</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="statOpenSupport">0</h3>
+                <p>Yêu cầu hỗ trợ mở</p>
+                <div class="stat-trend">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Cần xử lý</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-credit-card"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="statPendingPayments">0</h3>
+                <p>Thanh toán chờ xử lý</p>
+                <div class="stat-trend">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span>Đang chờ</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Students Needing Support -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <h3><i class="fas fa-hands-helping"></i> Học sinh cần hỗ trợ</h3>
+                    <p class="card-subtitle">Danh sách học sinh cần được quan tâm</p>
+                </div>
+                <button class="btn btn-sm btn-primary" onclick="tutorDashboard.switchSection('assigned-students')">
+                    Xem tất cả
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            <div class="card-content">
+                <div class="student-list" id="dashboardStudentsNeedingSupport">
+                    <div class="loading-state-small">
+                        <div class="spinner-small"></div>
+                        <p>Đang tải...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Support Requests -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <h3><i class="fas fa-comments"></i> Yêu cầu hỗ trợ gần đây</h3>
+                    <p class="card-subtitle">Các yêu cầu mới nhất</p>
+                </div>
+                <button class="btn btn-sm btn-primary" onclick="tutorDashboard.switchSection('support')">
+                    Xem tất cả
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            <div class="card-content">
+                <div class="support-requests-list" id="dashboardRecentSupport">
+                    <div class="loading-state-small">
+                        <div class="spinner-small"></div>
+                        <p>Đang tải...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Grid -->
+    <div class="dashboard-grid-secondary">
+        <!-- Weekly Schedule -->
+        <div class="dashboard-card card-large">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <h3><i class="fas fa-calendar-week"></i> Lịch làm việc tuần này</h3>
+                    <p class="card-subtitle">Tổng quan các hoạt động trong tuần</p>
+                </div>
+                <div class="calendar-controls">
+                    <button class="btn-icon" id="prevWeekBtn" onclick="tutorDashboard.navigateWeek(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn-text" id="currentWeekBtn" onclick="tutorDashboard.goToCurrentWeek()">
+                        Tuần này
+                    </button>
+                    <button class="btn-icon" id="nextWeekBtn" onclick="tutorDashboard.navigateWeek(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="weekly-schedule" id="dashboardWeeklySchedule">
+                    <div class="loading-state-small">
+                        <div class="spinner-small"></div>
+                        <p>Đang tải lịch làm việc...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Recent Activity -->
+        <div class="dashboard-sidebar">
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bolt"></i> Thao tác nhanh</h3>
+                </div>
+                <div class="card-content">
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="tutorDashboard.switchSection('assigned-students')">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <span>Thêm học sinh</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="tutorDashboard.switchSection('consultation-schedule')">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-calendar-plus"></i>
+                            </div>
+                            <span>Tạo lịch tư vấn</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="tutorDashboard.switchSection('support')">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <span>Xem hỗ trợ</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="tutorDashboard.switchSection('payments')">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <span>Xử lý thanh toán</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-history"></i> Hoạt động gần đây</h3>
+                </div>
+                <div class="card-content">
+                    <div class="activity-list" id="dashboardRecentActivity">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>Đã phân công</strong> học sinh mới</p>
+                                <span class="activity-time">2 giờ trước</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>Đã xử lý</strong> yêu cầu hỗ trợ</p>
+                                <span class="activity-time">5 giờ trước</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>Đã tạo</strong> lịch tư vấn</p>
+                                <span class="activity-time">Hôm qua</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<link rel="stylesheet" href="assets/css/sections/dashboard.css">
+<script src="assets/js/sections/dashboard.js"></script>

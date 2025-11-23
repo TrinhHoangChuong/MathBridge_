@@ -21,6 +21,9 @@ public class YeuCauHoTro {
     @Column(name = "ID_LH", length = 10)
     private String idLh;
 
+    @Column(name = "ID_HS", length = 10)
+    private String idHs;
+
     @Column(name = "TieuDe", length = 100, nullable = false)
     private String tieuDe;
 
@@ -42,8 +45,6 @@ public class YeuCauHoTro {
     @Column(name = "ThoiDiemDong")
     private LocalDateTime thoiDiemDong;
 
-    @Column(name = "ID_HS", length = 10)
-    private String idHs;
     // QUAN HỆ
 
     @ManyToOne

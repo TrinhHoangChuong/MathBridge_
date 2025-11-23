@@ -175,13 +175,20 @@ function setupApplyFormValidation() {
       clearInvalid("linkProfile");
     }
 
-    if (file && file.files && file.files[0]) {
+    // Validate file is required
+    if (!file || !file.files || !file.files[0]) {
+      markInvalid("file");
+      alert("Vui lòng tải lên hồ sơ CV / Bằng cấp");
+      valid = false;
+    } else {
       const f = file.files[0];
       const max = 2 * 1024 * 1024; // 2MB
       const okType = /(jpg|jpeg|png|pdf)$/i.test(f.name);
       if (!okType || f.size > max) {
         alert("File không hợp lệ. Chỉ nhận JPG, JPEG, PNG, PDF và <= 2MB");
         valid = false;
+      } else {
+        clearInvalid("file");
       }
     }
 
@@ -250,15 +257,35 @@ function setupApplyFormValidation() {
 }
 
 function markInvalid(field) {
-  const el = document.querySelector(`.field[data-field="${field}"] input`);
+  // Try to find input in .field container first, then try direct ID
+  let el = document.querySelector(`.field[data-field="${field}"] input`);
+  if (!el && field === "file") {
+    el = document.getElementById("ap-file");
+  }
   if (el) {
     el.style.borderColor = "#ef4444";
+    if (field === "file") {
+      // Also highlight the upload zone
+      const uploadZone = document.getElementById("upload-zone");
+      if (uploadZone) {
+        uploadZone.style.borderColor = "#ef4444";
+      }
+    }
   }
 }
 function clearInvalid(field) {
-  const el = document.querySelector(`.field[data-field="${field}"] input`);
+  let el = document.querySelector(`.field[data-field="${field}"] input`);
+  if (!el && field === "file") {
+    el = document.getElementById("ap-file");
+  }
   if (el) {
     el.style.borderColor = "#e5e7eb";
+    if (field === "file") {
+      const uploadZone = document.getElementById("upload-zone");
+      if (uploadZone) {
+        uploadZone.style.borderColor = "";
+      }
+    }
   }
 }
 
