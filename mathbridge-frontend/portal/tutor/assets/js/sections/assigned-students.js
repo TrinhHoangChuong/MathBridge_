@@ -27,7 +27,7 @@
 
   function getStatusText(status) {
     if (!status) return "Chưa xác định";
-    if (status.includes("Dang phu trach")) return "Đang phụ trách";
+    if (status.includes("Dang phu trach")) return "Đang cố vấn";
     if (status.includes("Tam dung")) return "Tạm dừng";
     if (status.includes("Ket thuc")) return "Kết thúc";
     return status;

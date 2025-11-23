@@ -22,12 +22,13 @@ public class TuAssignedStudentService {
 
     /**
      * Lấy danh sách học sinh đang được phân công cho cố vấn
-     * Chỉ lấy những học sinh có TrangThai = "Dang phu trach"
+     * Chỉ lấy những học sinh có TrangThai = "Đang cố vấn" hoặc "Dang phu trach"
      * và chưa kết thúc (NgayKetThuc IS NULL hoặc > hiện tại)
      */
     public List<TuAssignedStudentResponseDTO> getActiveAssignedStudents(String idNv) {
         LocalDateTime now = LocalDateTime.now();
-        List<CoVanHocSinh> assignments = coVanHocSinhRepository.findActiveStudentsByTutorId(idNv, now);
+        List<CoVanHocSinh> assignments = coVanHocSinhRepository.findActiveStudentsByTutorId(
+            idNv, now, "Đang cố vấn", "Dang phu trach");
         return assignments.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -58,7 +59,8 @@ public class TuAssignedStudentService {
      */
     public Long countActiveAssignedStudents(String idNv) {
         LocalDateTime now = LocalDateTime.now();
-        return coVanHocSinhRepository.countActiveStudentsByTutorId(idNv, now);
+        return coVanHocSinhRepository.countActiveStudentsByTutorId(
+            idNv, now, "Đang cố vấn", "Dang phu trach");
     }
 
     /**
@@ -99,7 +101,7 @@ public class TuAssignedStudentService {
         LocalDateTime now = LocalDateTime.now();
         return list.stream().anyMatch(cv -> {
             String tt = cv.getTrangThai();
-            boolean statusOk = (tt == null) || tt.contains("Dang phu trach") || tt.contains("Đang")
+            boolean statusOk = (tt == null) || tt.contains("Đang cố vấn") || tt.contains("Dang phu trach") || tt.contains("Đang")
                     || tt.toLowerCase().contains("dang");
             boolean notEnded = cv.getNgayKetThuc() == null || cv.getNgayKetThuc().isAfter(now);
             return statusOk && notEnded;
@@ -147,7 +149,7 @@ public class TuAssignedStudentService {
             dto.setNgayBatDau(entity.getId().getNgayBatDau());
         }
         dto.setNgayKetThuc(entity.getNgayKetThuc());
-        dto.setTrangThai(entity.getTrangThai() != null ? entity.getTrangThai() : "Dang phu trach");
+        dto.setTrangThai(entity.getTrangThai() != null ? entity.getTrangThai() : "Đang cố vấn");
         dto.setGhiChu(entity.getGhiChu());
 
         // Thông tin học sinh
