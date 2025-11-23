@@ -617,10 +617,44 @@ class TutorAPI {
   }
 
   async getStudentDetails(studentId, idNv = null) {
-    let endpoint = `/assigned-students/${studentId}`;
-    if (idNv) {
-      endpoint += `?idNv=${encodeURIComponent(idNv)}`;
+    // Backend requires idNv as query parameter
+    // If idNv is not provided, try to get it from tutorInfo
+    if (!idNv && window.tutorDashboard) {
+      idNv = window.tutorDashboard.currentTutorId || 
+             (window.tutorDashboard.tutorInfo && window.tutorDashboard.tutorInfo.idNv);
     }
+    
+    // If still no idNv, try to get from auth data
+    if (!idNv) {
+      try {
+        const authData = localStorage.getItem("mb_auth");
+        if (authData) {
+          const data = JSON.parse(authData);
+          const user = data.user || data.account || {};
+          idNv = user.idNv;
+        }
+      } catch (e) {
+        console.error("Error parsing auth data:", e);
+      }
+    }
+    
+    // If idNv looks like an account ID (starts with TK), convert it
+    if (idNv && idNv.startsWith('TK')) {
+      try {
+        const tutorIdResponse = await this.getTutorIdFromAccountId(idNv);
+        if (tutorIdResponse && tutorIdResponse.idNv) {
+          idNv = tutorIdResponse.idNv;
+        }
+      } catch (error) {
+        console.error("Error converting TK to idNv:", error);
+      }
+    }
+    
+    if (!idNv) {
+      throw new Error("Không xác định được ID cố vấn. Vui lòng đăng nhập lại.");
+    }
+    
+    const endpoint = `/assigned-students/${encodeURIComponent(studentId)}?idNv=${encodeURIComponent(idNv)}`;
     return await this.request(endpoint);
   }
 

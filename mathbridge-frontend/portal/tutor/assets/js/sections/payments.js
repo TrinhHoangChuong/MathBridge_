@@ -25,6 +25,7 @@
     allInvoices: [],
     currentSortField: null,
     currentSortDirection: "asc",
+    isProcessingPayment: false,
 
     async loadData() {
       // Load unpaid invoices and payment methods
@@ -50,7 +51,14 @@
     async loadUnpaidInvoices() {
       try {
         const invoices = await window.tutorAPI.getUnpaidInvoices();
-        this.populateInvoiceSelect(invoices || []);
+        // Filter để chỉ lấy hóa đơn chưa thanh toán (ngayThanhToan null và trangThai không phải "Da Thanh Toan")
+        const unpaidInvoices = (invoices || []).filter(invoice => {
+          const isUnpaid = !invoice.ngayThanhToan && 
+                          invoice.trangThai !== 'Da Thanh Toan' &&
+                          invoice.trangThai !== 'Đã Thanh Toán';
+          return isUnpaid;
+        });
+        this.populateInvoiceSelect(unpaidInvoices);
       } catch (error) {
         console.error("Error loading unpaid invoices:", error);
         if (window.tutorAPI && window.tutorAPI.handleError) {
@@ -104,7 +112,27 @@
       if (!list) return;
 
       list.innerHTML = "";
-      invoices.forEach((invoice) => {
+      
+      // Filter lại để đảm bảo chỉ hiển thị hóa đơn chưa thanh toán
+      const unpaidInvoices = invoices.filter(invoice => {
+        const isUnpaid = !invoice.ngayThanhToan && 
+                        invoice.trangThai !== 'Da Thanh Toan' &&
+                        invoice.trangThai !== 'Đã Thanh Toán';
+        return isUnpaid;
+      });
+      
+      if (unpaidInvoices.length === 0) {
+        const emptyMessage = document.createElement("div");
+        emptyMessage.className = "custom-select-option";
+        emptyMessage.style.padding = "1rem";
+        emptyMessage.style.textAlign = "center";
+        emptyMessage.style.color = "var(--text-secondary)";
+        emptyMessage.textContent = "Không có hóa đơn chưa thanh toán";
+        list.appendChild(emptyMessage);
+        return;
+      }
+      
+      unpaidInvoices.forEach((invoice) => {
         const option = document.createElement("div");
         option.className = "custom-select-option";
         option.dataset.value = invoice.idHoaDon;
@@ -341,9 +369,17 @@
     },
 
     async handlePaymentSubmit() {
+      // Prevent double submission
+      if (this.isProcessingPayment) {
+        console.log("Payment is already being processed, ignoring duplicate request");
+        return;
+      }
+
       const hiddenInput = document.getElementById("invoiceSelect");
       const paymentMethodSelect = document.getElementById("paymentMethod");
       const notesTextarea = document.getElementById("notes");
+      const submitButton = document.querySelector("#paymentForm button[type='submit']") || 
+                          document.querySelector("#paymentForm .btn-primary");
 
       if (!hiddenInput || !hiddenInput.value) {
         showNotification("Vui lòng chọn hóa đơn!", "error");
@@ -376,7 +412,31 @@
         return;
       }
 
+      // Set processing flag and disable button
+      this.isProcessingPayment = true;
+      if (submitButton) {
+        submitButton.disabled = true;
+        const originalText = submitButton.textContent;
+        submitButton.textContent = "Đang xử lý...";
+        submitButton.dataset.originalText = originalText;
+      }
+
       console.log("Sending payment data:", paymentData);
+
+      // Check if invoice is already paid before processing
+      try {
+        const invoiceDetails = await window.tutorAPI.getPaymentDetails(paymentData.idHoaDon);
+        if (invoiceDetails && invoiceDetails.ngayThanhToan) {
+          showNotification("Hóa đơn này đã được thanh toán rồi. Vui lòng làm mới trang để xem danh sách mới nhất.", "warning");
+          await this.loadUnpaidInvoices();
+          await this.loadAllInvoices();
+          this.resetForm();
+          return;
+        }
+      } catch (checkError) {
+        console.warn("Could not check invoice status, proceeding anyway:", checkError);
+        // Continue with payment processing even if check fails
+      }
 
       try {
         const result = await window.tutorAPI.processPayment(paymentData);
@@ -405,11 +465,24 @@
         });
 
         let errorMessage = "Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.";
+        let shouldReload = false;
         
         // Extract error message từ errorData (đã được parse trong API request)
         if (error.errorData) {
           if (error.errorData.message) {
-            errorMessage = error.errorData.message;
+            const msg = error.errorData.message;
+            // Check for specific database errors
+            if (msg.includes("Violation of PRIMARY KEY") || msg.includes("PRIMARY KEY constraint")) {
+              errorMessage = "Lỗi: Mã thanh toán đã tồn tại. Hóa đơn này có thể đã được thanh toán. Vui lòng làm mới trang và kiểm tra lại.";
+              shouldReload = true;
+            } else if (msg.includes("Hóa đơn không tồn tại")) {
+              errorMessage = "Hóa đơn không tồn tại hoặc đã bị xóa. Vui lòng chọn hóa đơn khác.";
+              shouldReload = true;
+            } else if (msg.includes("Phương thức thanh toán không tồn tại")) {
+              errorMessage = "Phương thức thanh toán không hợp lệ. Vui lòng chọn lại.";
+            } else {
+              errorMessage = msg;
+            }
           } else if (error.errorData.error) {
             errorMessage = error.errorData.error;
           }
@@ -417,16 +490,44 @@
         
         // Extract error message từ error object nếu chưa có
         if (error.message && !error.message.includes("HTTP error") && errorMessage === "Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.") {
-          errorMessage = error.message;
+          const msg = error.message;
+          if (msg.includes("PRIMARY KEY") || msg.includes("constraint") || msg.includes("duplicate key")) {
+            errorMessage = "Lỗi: Mã thanh toán đã tồn tại. Hóa đơn này có thể đã được thanh toán. Vui lòng làm mới trang và kiểm tra lại.";
+            shouldReload = true;
+          } else {
+            errorMessage = msg;
+          }
         } else if (error.status === 400 && errorMessage === "Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.") {
-          errorMessage = "Dữ liệu thanh toán không hợp lệ. Vui lòng kiểm tra:\n- Hóa đơn đã được chọn đúng chưa\n- Phương thức thanh toán đã được chọn chưa\n- Hóa đơn có thể đã được thanh toán rồi";
+          errorMessage = "Dữ liệu thanh toán không hợp lệ. Vui lòng kiểm tra:\n- Hóa đơn đã được chọn đúng chưa\n- Phương thức thanh toán đã được chọn chưa\n- Hóa đơn có thể đã được thanh toán rồi\n\nVui lòng làm mới trang và thử lại.";
+          shouldReload = true;
         } else if (error.status === 500 && errorMessage === "Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.") {
           errorMessage = "Lỗi máy chủ. Vui lòng thử lại sau.";
         }
 
         showNotification(errorMessage, "error");
+        
+        // Reload unpaid invoices to refresh the list if needed
+        if (shouldReload) {
+          try {
+            await this.loadUnpaidInvoices();
+            await this.loadAllInvoices();
+            this.resetForm();
+          } catch (e) {
+            console.error("Error reloading invoices:", e);
+          }
+        }
+        
         if (window.tutorAPI && window.tutorAPI.handleError) {
           window.tutorAPI.handleError(error);
+        }
+      } finally {
+        // Always reset processing flag and enable button
+        this.isProcessingPayment = false;
+        if (submitButton) {
+          submitButton.disabled = false;
+          if (submitButton.dataset.originalText) {
+            submitButton.textContent = submitButton.dataset.originalText;
+          }
         }
       }
     },

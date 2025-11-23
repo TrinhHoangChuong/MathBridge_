@@ -1868,6 +1868,58 @@ class TutorDashboard {
     if (modal) {
       modal.style.display = "flex";
       document.body.style.overflow = "hidden"; // Prevent background scrolling
+      
+      // Setup close button event listeners when modal opens (in case they weren't set up before)
+      // Use setTimeout to ensure DOM is ready
+      setTimeout(() => {
+        const closeModalBtn = document.getElementById("closeInvoiceModal");
+        const closeModalBtnFooter = document.getElementById("closeInvoiceModalBtn");
+        
+        // Setup header close button
+        if (closeModalBtn) {
+          // Remove existing listeners by cloning the button
+          const newCloseBtn = closeModalBtn.cloneNode(true);
+          closeModalBtn.parentNode.replaceChild(newCloseBtn, closeModalBtn);
+          newCloseBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.closeInvoiceModal();
+          });
+        }
+        
+        // Setup footer close button
+        if (closeModalBtnFooter) {
+          // Remove existing listeners by cloning the button
+          const newCloseBtnFooter = closeModalBtnFooter.cloneNode(true);
+          closeModalBtnFooter.parentNode.replaceChild(newCloseBtnFooter, closeModalBtnFooter);
+          newCloseBtnFooter.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.closeInvoiceModal();
+          });
+        }
+        
+        // Setup overlay click to close
+        const handleOverlayClick = (e) => {
+          if (e.target === modal) {
+            this.closeInvoiceModal();
+          }
+        };
+        // Remove old listener if exists and add new one
+        modal.removeEventListener("click", this._overlayClickHandler);
+        this._overlayClickHandler = handleOverlayClick;
+        modal.addEventListener("click", handleOverlayClick);
+        
+        // Setup Escape key to close
+        const handleEscapeKey = (e) => {
+          if (e.key === "Escape" && modal.style.display === "flex") {
+            this.closeInvoiceModal();
+          }
+        };
+        document.removeEventListener("keydown", this._escapeKeyHandler);
+        this._escapeKeyHandler = handleEscapeKey;
+        document.addEventListener("keydown", handleEscapeKey);
+      }, 50);
     }
   }
 
