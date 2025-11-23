@@ -32,12 +32,6 @@ public class BaiTap {
     @Column(name = "LoaiBT", length = 100)
     private String loaiBt;
 
-    @Column(name = "FileURL", length = 400)
-    private String fileUrl;
-
-    @Column(name = "TaiLieuURL", length = 400)
-    private String taiLieuUrl;
-
     @Column(name = "ChoPhepLamBai")
     private Boolean choPhepLamBai;
 
@@ -63,21 +57,10 @@ public class BaiTap {
     @Column(name = "ThoiLuongPhut")
     private Integer thoiLuongPhut;
 
-    // Removed: TuDongNop and CheDoChamDiem - these fields exist in BaiNop table
-    // @Column(name = "TuDongNop")
-    // private Boolean tuDongNop;
-    // @Column(name = "CheDoChamDiem", length = 50)
-    // private String cheDoChamDiem;
-
-    // QUAN HỆ
-
     @ManyToOne
     @JoinColumn(name = "ID_BH", insertable = false, updatable = false)
     private BuoiHocChiTiet buoiHocChiTiet;
 
-    // Removed: @OneToOne relationship with BaiTapNoiDung - data now in BaiTap table
-    // @OneToOne(mappedBy = "baiTap", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private BaiTapNoiDung noiDungChiTiet;
 
     @OneToMany(mappedBy = "baiTap")
     private Set<BaiNop> baiNops = new HashSet<>();
