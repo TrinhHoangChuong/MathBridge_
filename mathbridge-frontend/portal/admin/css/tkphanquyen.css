@@ -1,0 +1,463 @@
+/* =========================================================
+   TKPHANQUYEN – TÀI KHOẢN & PHÂN QUYỀN
+   Đồng bộ phong cách với Lịch học (lh-*)
+   ========================================================= */
+
+/* 1. PANEL & HEADER
+   ----------------------------------------------------- */
+
+.tkpq-panel {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+.tkpq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tkpq-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tkpq-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 0 0, #6366f1, #ec4899);
+  color: #ffffff;
+  font-size: 22px;
+  box-shadow:
+    0 0 0 1px rgba(129, 140, 248, 0.3),
+    0 18px 30px rgba(236, 72, 153, 0.45);
+}
+
+.tkpq-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #020617;
+}
+
+.tkpq-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.tkpq-header-right .btn.ghost {
+  background: #f9fafb;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.tkpq-header-right .btn.ghost i {
+  font-size: 15px;
+}
+
+.tkpq-header-right .btn.ghost:hover {
+  border-color: #d1d5db;
+  color: #111827;
+  background: #f3f4f6;
+}
+
+/* 2. TABS (ACCOUNTS / ROLES)
+   ----------------------------------------------------- */
+
+.tkpq-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  align-self: flex-start;
+}
+
+.tkpq-tab {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.tkpq-tab i {
+  font-size: 16px;
+}
+
+.tkpq-tab.active {
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  color: #f9fafb;
+  box-shadow: 0 10px 25px rgba(129, 140, 248, 0.4);
+}
+
+.tkpq-tab:not(.active):hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* 3. VIEW WRAPPER
+   ----------------------------------------------------- */
+
+.tkpq-views {
+  margin-top: 10px;
+}
+
+.tkpq-view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tkpq-view.hidden {
+  display: none;
+}
+
+/* 4. FILTERS – giống filter bar sáng
+   ----------------------------------------------------- */
+
+.tkpq-filters {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tkpq-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tkpq-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.tkpq-filter-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* Text / select input trong filter */
+.tkpq-filters .input-text,
+.tkpq-filters .input-select {
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 12px;
+  padding: 0 12px;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.tkpq-filters .input-text:focus,
+.tkpq-filters .input-select:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+/* Ô search có icon */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon i {
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.input-with-icon .input-text {
+  padding-left: 28px;
+  width: 100%;
+}
+
+/* Actions */
+.tkpq-filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* 5. SECTION CARD & TABLE
+   (section-head / section-card / table-wrapper / mb-table đã dùng chung,
+    chỉ thêm phần empty state / actions riêng của tkpq)
+   ----------------------------------------------------- */
+
+.section-card {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Empty state cho tài khoản / vai trò */
+.tkpq-empty-state {
+  padding: 14px 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.tkpq-empty-state i {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+/* cột hành động */
+.tkpq-col-actions {
+  text-align: center;
+  width: 100px;
+}
+
+/* có thể dùng icon button trong cột hành động nếu muốn */
+.tkpq-action-btn {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+  transition: all 0.16s ease;
+}
+
+.tkpq-action-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* 6. PAGINATION
+   ----------------------------------------------------- */
+
+.tkpq-pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Nếu bạn render nút paginate trong tkpq-pagination,
+   có thể dùng sẵn .btn.ghost/.btn.primary hoặc thêm: */
+.tkpq-pagination button {
+  font-size: 12px;
+}
+
+/* 7. MODAL (ACCOUNT + ROLE)
+   phong cách sáng giống lh-modal
+   ----------------------------------------------------- */
+
+.tkpq-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.tkpq-modal-backdrop[hidden] {
+  display: none;
+}
+
+.tkpq-modal {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 14px 16px;
+  width: 720px;
+  max-width: 94vw;
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(15, 23, 42, 0.03);
+  border: 1px solid #e5e7eb;
+  color: #0f172a;
+}
+
+.tkpq-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.tkpq-modal-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tkpq-modal-close {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.16s ease;
+}
+
+.tkpq-modal-close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.tkpq-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tkpq-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+.tkpq-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tkpq-form-group label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* owner info (ID_HS / ID_NV) */
+.tkpq-owner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.tkpq-owner-label {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.tkpq-help {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* multiselect roles */
+.tkpq-multiselect {
+  width: 100%;
+  min-height: 90px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  font-size: 12px;
+  outline: none;
+  background: #ffffff;
+  transition: all 0.16s ease;
+}
+
+.tkpq-multiselect:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+/* Modal footer */
+.tkpq-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* 8. RESPONSIVE
+   ----------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .tkpq-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .tkpq-filter-row {
+    flex-direction: column;
+  }
+
+  .tkpq-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .tkpq-tab span {
+    display: none;
+  }
+
+  .tkpq-tab {
+    justify-content: center;
+    padding-inline: 8px;
+  }
+
+  .tkpq-modal {
+    width: 100%;
+  }
+}

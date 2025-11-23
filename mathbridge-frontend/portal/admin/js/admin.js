@@ -58,19 +58,26 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
   if (!host) return;
 
   if (!__moduleLoaded.has(sectionId)) {
-    if (cssPath) ensureCssLoaded(cssPath);
+    try {
+      if (cssPath) ensureCssLoaded(cssPath);
 
-    if (htmlPath) {
-      const resp = await fetch(htmlPath, { cache: "no-store" });
-      const html = await resp.text();
-      host.innerHTML = html;
+      if (htmlPath) {
+        const resp = await fetch(htmlPath, { cache: "no-store" });
+        if (!resp.ok) {
+          throw new Error(`Không thể load HTML cho section: ${sectionId}`);
+        }
+        const html = await resp.text();
+        host.innerHTML = html;
+      }
+
+      if (typeof afterLoad === "function") {
+        await afterLoad();
+      }
+
+      __moduleLoaded.add(sectionId);
+    } catch (err) {
+      console.error(`Lỗi khi load module cho section ${sectionId}:`, err);
     }
-
-    if (typeof afterLoad === "function") {
-      await afterLoad();
-    }
-
-    __moduleLoaded.add(sectionId);
   }
 }
 
@@ -78,15 +85,15 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
 (function () {
   const navItems = document.querySelectorAll(".nav-item");
   const pageTitle = document.getElementById("pageTitle");
+
   const sections = {
     dashboard: document.getElementById("section-dashboard"),
-    tuyensinh: document.getElementById("section-tuyensinh"),
+    lichoc: document.getElementById("section-lichhoc"),
     chuongtrinh: document.getElementById("section-chuongtrinh"),
     hocsinh: document.getElementById("section-hocsinh"),
     nhansu: document.getElementById("section-nhansu"),
     tuyendung: document.getElementById("section-tuyendung"),
     taichinh: document.getElementById("section-taichinh"),
-    hotro: document.getElementById("section-hotro"),
     taikhoan: document.getElementById("section-taikhoan"),
     cauhinh: document.getElementById("section-cauhinh"),
   };
@@ -138,68 +145,103 @@ async function loadSectionModule(sectionId, htmlPath, cssPath, afterLoad) {
             }
           }
         );
-      } else if (target === "tuyensinh") {
+      } else if (target === "lichoc") {
         await loadSectionModule(
-          "section-tuyensinh",
-          "sections/tuyensinh.html",
-          null,
-          null
+          "section-lichhoc",
+          "sections/lichhoc.html",
+          "css/lichhoc.css",
+          async () => {
+            const module = await import("./pages/lichhoc.pages.js");
+            if (module && typeof module.initLichHocPage === "function") {
+              await module.initLichHocPage();
+            }
+          }
         );
       } else if (target === "chuongtrinh") {
         await loadSectionModule(
           "section-chuongtrinh",
           "sections/chuongtrinh.html",
-          null,
-          null
+          "css/chuongtrinh.css",
+          async () => {
+            const module = await import("./pages/chuongtrinhPage.js");
+            if (module && typeof module.initChuongTrinhPage === "function") {
+              await module.initChuongTrinhPage();
+            }
+          }
         );
       } else if (target === "hocsinh") {
         await loadSectionModule(
           "section-hocsinh",
           "sections/hocsinh.html",
-          null,
-          null
+          "css/hocsinh.css",
+          async () => {
+            const module = await import("./pages/hocsinh.pages.js");
+            if (module && typeof module.initHocSinhPage === "function") {
+              await module.initHocSinhPage();
+            }
+          }
         );
       } else if (target === "nhansu") {
         await loadSectionModule(
           "section-nhansu",
           "sections/nhansu.html",
-          null,
-          null
+          "css/nhansu.css",
+          async () => {
+            const module = await import("./pages/nhansu.pages.js");
+            // 🔥 Dùng đúng tên hàm đã export
+            if (module && typeof module.initNhansuPage === "function") {
+              await module.initNhansuPage();
+            }
+          }
         );
       } else if (target === "tuyendung") {
         await loadSectionModule(
           "section-tuyendung",
           "sections/tuyendung.html",
-          null,
-          null
+          "css/tuyendung.css",
+          async () => {
+            const module = await import("./pages/tuyendung.pages.js");
+            if (module && typeof module.initTuyenDungPage === "function") {
+              await module.initTuyenDungPage();
+            }
+          }
         );
       } else if (target === "taichinh") {
         await loadSectionModule(
           "section-taichinh",
           "sections/taichinh.html",
-          null,
-          null
-        );
-      } else if (target === "hotro") {
-        await loadSectionModule(
-          "section-hotro",
-          "sections/hotro.html",
-          null,
-          null
+          "css/taichinh.css",
+          async () => {
+            const module = await import("./pages/taichinhpages.js");
+            // nhớ export hàm này trong taichinh.pages.js
+            if (module && typeof module.initTaiChinhPage === "function") {
+              await module.initTaiChinhPage();
+            }
+          }
         );
       } else if (target === "taikhoan") {
         await loadSectionModule(
           "section-taikhoan",
-          "sections/taikhoan.html",
-          null,
-          null
+          "sections/tkphanquyen.html",
+          "css/tkphanquyen.css",
+          async () => {
+            const module = await import("./pages/tkphanquyen.pages.js");
+            if (module && typeof module.initTaiKhoanPage === "function") {
+              await module.initTaiKhoanPage();
+            }
+          }
         );
       } else if (target === "cauhinh") {
         await loadSectionModule(
           "section-cauhinh",
           "sections/cauhinh.html",
-          null,
-          null
+          "css/cauhinh.css",
+          async () => {
+            const module = await import("./pages/cauhinh.pages.js");
+            if (module && typeof module.initCauHinhPage === "function") {
+              await module.initCauHinhPage();
+            }
+          }
         );
       }
 

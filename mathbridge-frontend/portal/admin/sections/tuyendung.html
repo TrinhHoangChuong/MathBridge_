@@ -1,11 +1,683 @@
-<div class="dash-card content-panel">
-    <div class="content-head">
-        <div>
-            <div class="content-title">Tuyển dụng</div>
-            <div class="content-sub">Ứng viên, pipeline phỏng vấn</div>
+<!-- ICONS (Remixicon) - có thể chuyển lên layout chung nếu muốn -->
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+
+<div class="td-panel content-panel" id="tuyendung-panel">
+    <!-- HEADER -->
+    <div class="td-header">
+        <div class="td-header-left">
+            <div class="td-header-icon">
+                <i class="ri-pushpin-2-line"></i>
+            </div>
+            <div>
+                <h2 class="td-title">Tuyển dụng</h2>
+                <p class="td-subtitle">
+                    Quản lý tin tuyển dụng, ứng viên và gán ứng viên cho từng tin.
+                </p>
+            </div>
+        </div>
+
+        <div class="td-header-right">
+            <button class="btn ghost" id="td-btn-add-job" type="button">
+                <i class="ri-file-add-line"></i>
+                <span>Thêm tin tuyển dụng</span>
+            </button>
+            <button class="btn ghost" id="td-btn-add-candidate" type="button">
+                <i class="ri-user-add-line"></i>
+                <span>Thêm ứng viên</span>
+            </button>
         </div>
     </div>
-    <p class="placeholder-desc">
-        (Theo dõi ứng viên, trạng thái phỏng vấn...)
-    </p>
+
+    <!-- MAIN TABS (chỉ còn 2 tab) -->
+    <div class="td-main-tabs">
+        <button class="td-main-tab is-active" type="button" data-tab="jobs">
+            <i class="td-main-tab-icon ri-briefcase-line"></i>
+            <span>Tin tuyển dụng</span>
+        </button>
+        <button class="td-main-tab" type="button" data-tab="candidates">
+            <i class="td-main-tab-icon ri-user-3-line"></i>
+            <span>Ứng viên</span>
+        </button>
+    </div>
+
+    <!-- ============================
+         VIEW 1: TIN TUYỂN DỤNG
+         ============================ -->
+    <div class="td-main-view is-active" data-view="jobs">
+        <!-- Bộ lọc tin tuyển dụng -->
+        <section class="section-card">
+            <div class="section-head">
+                <div>
+                    <div class="section-title">Bộ lọc tin tuyển dụng</div>
+                    <div class="section-sub">
+                        Lọc theo từ khóa, vị trí, cấp bậc, hình thức và hạn nộp.
+                    </div>
+                </div>
+                <span class="pill">Tùy chọn lọc</span>
+            </div>
+
+            <div class="td-filters">
+                <div class="td-filters-row">
+                    <div class="form-group">
+                        <label for="td-job-keyword">Từ khóa</label>
+                        <div class="input-with-icon">
+                            <i class="ri-search-line"></i>
+                            <input
+                                    id="td-job-keyword"
+                                    type="text"
+                                    class="input-text"
+                                    placeholder="Tiêu đề, vị trí, mô tả..."
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="td-job-position">Vị trí</label>
+                        <select id="td-job-position" class="input-select">
+                            <option value="">Tất cả vị trí</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="td-job-level">Cấp bậc</label>
+                        <select id="td-job-level" class="input-select">
+                            <option value="">Tất cả cấp bậc</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="td-job-type">Hình thức làm việc</label>
+                        <select id="td-job-type" class="input-select">
+                            <option value="">Tất cả hình thức</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="td-job-status">Trạng thái</label>
+                        <select id="td-job-status" class="input-select">
+                            <option value="">Tất cả trạng thái</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="td-job-deadline">Hạn nộp đến</label>
+                        <input
+                                id="td-job-deadline"
+                                type="date"
+                                class="input-text"
+                        />
+                    </div>
+
+                    <div class="td-filter-actions">
+                        <button class="btn primary" type="button" id="td-job-filter-btn">
+                            <i class="ri-filter-3-line"></i>
+                            <span>Lọc</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Danh sách tin tuyển dụng -->
+        <section class="section-card">
+            <div class="section-head">
+                <div>
+                    <div class="section-title">Danh sách tin tuyển dụng</div>
+                    <div class="section-sub">
+                        Dữ liệu đọc từ bảng <strong>TinTuyenDung</strong>.
+                    </div>
+                </div>
+                <span class="pill" id="td-job-count-pill">Hiện 0 tin</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="mb-table td-job-table">
+                    <thead>
+                    <tr>
+                        <th>ID_TD</th>
+                        <th>Tiêu đề</th>
+                        <th>Vị trí</th>
+                        <th>Cấp bậc</th>
+                        <th>Mức lương</th>
+                        <th>Kinh nghiệm</th>
+                        <th>Số lượng tuyển</th>
+                        <th>Hạn nộp</th>
+                        <th>Trạng thái</th>
+                        <th>Ứng viên</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody id="td-job-tbody">
+                    <tr class="empty-row">
+                        <td colspan="11">
+                            Chưa có dữ liệu tin tuyển dụng. Nhấn
+                            <strong>“Thêm tin tuyển dụng”</strong> để tạo mới.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- ============================
+         VIEW 2: ỨNG VIÊN
+         ============================ -->
+    <div class="td-main-view" data-view="candidates">
+        <!-- Bộ lọc ứng viên -->
+        <section class="section-card">
+            <div class="section-head">
+                <div>
+                    <div class="section-title">Bộ lọc ứng viên</div>
+                    <div class="section-sub">
+                        Lọc theo họ tên, email, số điện thoại và trạng thái hồ sơ.
+                    </div>
+                </div>
+                <span class="pill">Tìm kiếm nhanh</span>
+            </div>
+
+            <div class="td-filters">
+                <div class="td-filters-row">
+                    <div class="form-group">
+                        <label for="td-candidate-keyword">Từ khóa</label>
+                        <div class="input-with-icon">
+                            <i class="ri-search-line"></i>
+                            <input
+                                    id="td-candidate-keyword"
+                                    type="text"
+                                    class="input-text"
+                                    placeholder="Họ tên, email, số điện thoại..."
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="td-candidate-status">Trạng thái hồ sơ</label>
+                        <select id="td-candidate-status" class="input-select">
+                            <option value="">Tất cả trạng thái</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="td-candidate-link">Liên kết tin</label>
+                        <select id="td-candidate-link" class="input-select">
+                            <option value="">Tất cả</option>
+                            <option value="linked">Đã gán vào tin</option>
+                            <option value="unlinked">Chưa gán vào tin</option>
+                        </select>
+                    </div>
+
+                    <div class="td-filter-actions">
+                        <button
+                                class="btn primary"
+                                type="button"
+                                id="td-candidate-filter-btn"
+                        >
+                            <i class="ri-filter-3-line"></i>
+                            <span>Lọc</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Danh sách ứng viên -->
+        <section class="section-card">
+            <div class="section-head">
+                <div>
+                    <div class="section-title">Danh sách ứng viên</div>
+                    <div class="section-sub">
+                        Dữ liệu đọc từ bảng <strong>UngVien</strong>.
+                    </div>
+                </div>
+                <span class="pill" id="td-candidate-count-pill">Hiện 0 ứng viên</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="mb-table td-candidate-table">
+                    <thead>
+                    <tr>
+                        <th>ID_UV</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>CV</th>
+                        <th>Profile</th>
+                        <th>Trạng thái hồ sơ</th>
+                        <th>Ghi chú</th>
+                        <th>Tin đã ứng tuyển</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody id="td-candidate-tbody">
+                    <tr class="empty-row">
+                        <td colspan="10">
+                            Chưa có dữ liệu ứng viên. Nhấn
+                            <strong>“Thêm ứng viên”</strong> để tạo mới.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- ============================
+         MODAL: THÊM / SỬA TIN TUYỂN DỤNG
+         ============================ -->
+    <div class="td-modal-backdrop" id="td-job-modal-backdrop" hidden>
+        <div class="td-modal">
+            <div class="td-modal-header">
+                <h3 class="td-modal-title" id="td-job-modal-title">
+                    Thêm tin tuyển dụng
+                </h3>
+                <button type="button" class="td-modal-close" id="td-job-modal-close">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <form id="td-job-form" class="td-modal-body">
+                <div class="td-modal-grid">
+                    <!-- ID_TD -->
+                    <div class="form-group">
+                        <label for="td-job-id">Mã tin (ID_TD) *</label>
+                        <input
+                                type="text"
+                                id="td-job-id"
+                                class="input-text"
+                                placeholder="VD: TD001"
+                                required
+                        />
+                    </div>
+
+                    <!-- Tiêu đề -->
+                    <div class="form-group">
+                        <label for="td-job-title">Tiêu đề *</label>
+                        <input
+                                type="text"
+                                id="td-job-title"
+                                class="input-text"
+                                placeholder="Lập trình viên Java"
+                                required
+                        />
+                    </div>
+
+                    <!-- Vị trí -->
+                    <div class="form-group">
+                        <label for="td-job-position-input">Vị trí (ViTri)</label>
+                        <input
+                                type="text"
+                                id="td-job-position-input"
+                                class="input-text"
+                                placeholder="Backend / Frontend / HR..."
+                        />
+                    </div>
+
+                    <!-- Cấp bậc -->
+                    <div class="form-group">
+                        <label for="td-job-level-input">Cấp bậc (CapBac)</label>
+                        <input
+                                type="text"
+                                id="td-job-level-input"
+                                class="input-text"
+                                placeholder="Intern / Junior / Senior..."
+                        />
+                    </div>
+
+                    <!-- Hình thức -->
+                    <div class="form-group">
+                        <label for="td-job-type-input"
+                        >Hình thức làm việc (HinhThucLamViec)</label
+                        >
+                        <input
+                                type="text"
+                                id="td-job-type-input"
+                                class="input-text"
+                                placeholder="Full-time / Part-time / Remote..."
+                        />
+                    </div>
+
+                    <!-- Trạng thái -->
+                    <div class="form-group">
+                        <label for="td-job-status-input">Trạng thái (TrangThai)</label>
+                        <input
+                                type="text"
+                                id="td-job-status-input"
+                                class="input-text"
+                                placeholder="Đang tuyển / Đã đóng..."
+                        />
+                    </div>
+
+                    <!-- Mức lương từ -->
+                    <div class="form-group">
+                        <label for="td-job-salary-from">Mức lương từ (MucLuongTu)</label>
+                        <input
+                                type="text"
+                                id="td-job-salary-from"
+                                class="input-text"
+                                placeholder="VD: 15tr"
+                        />
+                    </div>
+
+                    <!-- Mức lương đến -->
+                    <div class="form-group">
+                        <label for="td-job-salary-to">Mức lương đến (MucLuongDen)</label>
+                        <input
+                                type="text"
+                                id="td-job-salary-to"
+                                class="input-text"
+                                placeholder="VD: 25tr"
+                        />
+                    </div>
+
+                    <!-- Kinh nghiệm -->
+                    <div class="form-group">
+                        <label for="td-job-experience">Kinh nghiệm (KinhNghiem)</label>
+                        <input
+                                type="number"
+                                id="td-job-experience"
+                                class="input-text"
+                                placeholder="Số năm kinh nghiệm"
+                                min="0"
+                        />
+                    </div>
+
+                    <!-- Số lượng tuyển -->
+                    <div class="form-group">
+                        <label for="td-job-headcount">Số lượng tuyển (SoLuongTuyen)</label>
+                        <input
+                                type="number"
+                                id="td-job-headcount"
+                                class="input-text"
+                                placeholder="VD: 2"
+                                min="1"
+                        />
+                    </div>
+
+                    <!-- Hạn nộp -->
+                    <div class="form-group">
+                        <label for="td-job-deadline-input">Hạn nộp (HanNop)</label>
+                        <input
+                                type="date"
+                                id="td-job-deadline-input"
+                                class="input-text"
+                        />
+                    </div>
+                </div>
+
+                <!-- Mô tả ngắn -->
+                <div class="form-group">
+                    <label for="td-job-shortdesc">Mô tả ngắn (MoTaNgan)</label>
+                    <textarea
+                            id="td-job-shortdesc"
+                            class="td-textarea"
+                            rows="2"
+                            placeholder="Tóm tắt ngắn gọn job..."
+                    ></textarea>
+                </div>
+
+                <!-- Mô tả chi tiết -->
+                <div class="form-group">
+                    <label for="td-job-desc">Mô tả chi tiết (MoTa)</label>
+                    <textarea
+                            id="td-job-desc"
+                            class="td-textarea"
+                            rows="3"
+                            placeholder="Mô tả chi tiết công việc..."
+                    ></textarea>
+                </div>
+
+                <!-- Yêu cầu -->
+                <div class="form-group">
+                    <label for="td-job-requirements">Yêu cầu (YeuCau)</label>
+                    <textarea
+                            id="td-job-requirements"
+                            class="td-textarea"
+                            rows="3"
+                            placeholder="Yêu cầu ứng viên..."
+                    ></textarea>
+                </div>
+            </form>
+
+            <div class="td-modal-footer">
+                <button type="button" class="btn ghost" id="td-job-modal-cancel">
+                    Hủy
+                </button>
+                <button type="submit" form="td-job-form" class="btn primary">
+                    Lưu tin tuyển dụng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================
+         MODAL: CHI TIẾT TIN TUYỂN DỤNG (+ GHÉP ỨNG VIÊN)
+         ============================ -->
+    <div class="td-modal-backdrop" id="td-job-detail-backdrop" hidden>
+        <div class="td-modal td-modal-detail">
+            <div class="td-modal-header">
+                <h3 class="td-modal-title" id="td-job-detail-title">
+                    Chi tiết tin tuyển dụng
+                </h3>
+                <button type="button" class="td-modal-close" id="td-job-detail-close-btn">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <div class="td-modal-body td-detail-body">
+                <div class="td-detail-grid">
+                    <div class="td-detail-item">
+                        <div class="detail-label">Mã tin (ID_TD)</div>
+                        <div class="detail-value" id="td-detail-idTd">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Tiêu đề</div>
+                        <div class="detail-value" id="td-detail-title">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Vị trí</div>
+                        <div class="detail-value" id="td-detail-viTri">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Cấp bậc</div>
+                        <div class="detail-value" id="td-detail-capBac">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Hình thức</div>
+                        <div class="detail-value" id="td-detail-hinhThuc">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Mức lương</div>
+                        <div class="detail-value" id="td-detail-mucLuong">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Kinh nghiệm</div>
+                        <div class="detail-value" id="td-detail-kinhNghiem">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Số lượng tuyển</div>
+                        <div class="detail-value" id="td-detail-soLuongTuyen">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Hạn nộp</div>
+                        <div class="detail-value" id="td-detail-hanNop">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Trạng thái</div>
+                        <div class="detail-value" id="td-detail-trangThai">—</div>
+                    </div>
+                    <div class="td-detail-item">
+                        <div class="detail-label">Số ứng viên</div>
+                        <div class="detail-value" id="td-detail-soUngVien">0</div>
+                    </div>
+                </div>
+
+                <div class="td-detail-block">
+                    <div class="detail-label">Mô tả ngắn</div>
+                    <div class="detail-value" id="td-detail-moTaNgan">—</div>
+                </div>
+
+                <div class="td-detail-block">
+                    <div class="detail-label">Mô tả chi tiết</div>
+                    <div class="detail-value" id="td-detail-moTa">—</div>
+                </div>
+
+                <div class="td-detail-block">
+                    <div class="detail-label">Yêu cầu</div>
+                    <div class="detail-value" id="td-detail-yeuCau">—</div>
+                </div>
+
+                <div class="td-detail-block">
+                    <div class="td-detail-candidate-header">
+                        <div class="detail-label">Ứng viên đã apply</div>
+                        <button
+                                type="button"
+                                class="btn ghost"
+                                id="td-detail-add-mapping"
+                        >
+                            <i class="ri-user-follow-line"></i>
+                            <span>Thêm ứng viên vào tin này</span>
+                        </button>
+                    </div>
+
+                    <div class="table-wrapper td-detail-candidate-table-wrapper">
+                        <table class="mb-table">
+                            <thead>
+                            <tr>
+                                <th>ID_UV</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>SĐT</th>
+                                <th>Trạng thái HS</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody id="td-detail-candidate-tbody">
+                            <tr class="empty-row">
+                                <td colspan="6">Chưa có ứng viên nào apply tin này.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="td-modal-footer">
+                <button type="button" class="btn ghost" id="td-job-detail-close-btn-bottom">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================
+         MODAL: THÊM / SỬA ỨNG VIÊN
+         ============================ -->
+    <div class="td-modal-backdrop" id="td-candidate-modal-backdrop" hidden>
+        <div class="td-modal">
+            <div class="td-modal-header">
+                <h3 class="td-modal-title" id="td-candidate-modal-title">
+                    Thêm ứng viên
+                </h3>
+                <button type="button" class="td-modal-close" id="td-candidate-modal-close">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <form id="td-candidate-form" class="td-modal-body">
+                <div class="td-modal-grid">
+                    <div class="form-group">
+                        <label for="td-candidate-id">Mã ứng viên (ID_UV) *</label>
+                        <input
+                                type="text"
+                                id="td-candidate-id"
+                                class="input-text"
+                                placeholder="VD: UV001"
+                                required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="td-candidate-name">Họ tên (HoTen) *</label>
+                        <input
+                                type="text"
+                                id="td-candidate-name"
+                                class="input-text"
+                                placeholder="Nguyễn Văn A"
+                                required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="td-candidate-email">Email *</label>
+                        <input
+                                type="email"
+                                id="td-candidate-email"
+                                class="input-text"
+                                placeholder="email@example.com"
+                                required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="td-candidate-phone">Số điện thoại (SDT) *</label>
+                        <input
+                                type="text"
+                                id="td-candidate-phone"
+                                class="input-text"
+                                placeholder="Số điện thoại"
+                                required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="td-candidate-cv">CV_URL *</label>
+                        <input
+                                type="text"
+                                id="td-candidate-cv"
+                                class="input-text"
+                                placeholder="Link CV"
+                                required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="td-candidate-profile">Link profile</label>
+                        <input
+                                type="text"
+                                id="td-candidate-profile"
+                                class="input-text"
+                                placeholder="LinkedIn / Github..."
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="td-candidate-status">Trạng thái hồ sơ (TrangThaiHoSo)</label>
+                        <input
+                                type="text"
+                                id="td-candidate-status"
+                                class="input-text"
+                                placeholder="Mới / Đang phỏng vấn / Đậu / Rớt..."
+                        />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="td-candidate-note">Ghi chú (GhiChu)</label>
+                    <textarea
+                            id="td-candidate-note"
+                            class="td-textarea"
+                            rows="3"
+                            placeholder="Ghi chú thêm về ứng viên..."
+                    ></textarea>
+                </div>
+            </form>
+
+            <div class="td-modal-footer">
+                <button type="button" class="btn ghost" id="td-candidate-modal-cancel">
+                    Hủy
+                </button>
+                <button type="submit" form="td-candidate-form" class="btn primary">
+                    Lưu ứng viên
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

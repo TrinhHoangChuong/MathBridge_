@@ -21,11 +21,11 @@ public class KetQuaHocTap {
     @Column(name = "ID_HS", length = 10, nullable = false)
     private String idHs;
 
-    @Column(name = "DiemTrungBinh", precision = 18, scale = 0, nullable = false)
-    private BigDecimal diemTrungBinh; // Điểm trung bình = (15p + 45p + thi) / 3
+    @Column(name = "DiemSo", length = 50)
+    private String diemSo; // Format: "8.5,8,9" where 1st=15p, 2nd=45p, 3rd=HK
 
-    @Column(name = "DiemTongKet", precision = 18, scale = 0, nullable = false)
-    private BigDecimal diemTongKet; // Điểm tổng kết = 20%*15p + 30%*45p + 50%*thi
+    @Column(name = "DiemTB", precision = 5, scale = 2)
+    private BigDecimal diemTB; // Điểm trung bình được tính từ 3 cột điểm
 
     @Column(name = "XepLoai", length = 10, nullable = false)
     private String xepLoai;

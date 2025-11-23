@@ -1,11 +1,526 @@
-<div class="dash-card content-panel">
-    <div class="content-head">
-        <div>
-            <div class="content-title">Tài chính</div>
-            <div class="content-sub">Doanh thu, công nợ, hoá đơn</div>
+<!-- ICONS (Remix Icon) -->
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+
+<div class="dash-card content-panel tc-panel" id="taichinh-panel">
+    <!-- HEADER -->
+    <div class="tc-header">
+        <div class="tc-header-left">
+            <div class="tc-header-icon">
+                <i class="ri-money-dollar-circle-line"></i>
+            </div>
+            <div>
+                <h2 class="tc-title">Tài chính &amp; Học phí</h2>
+                <p class="tc-subtitle">
+                    Quản lý hóa đơn, lịch sử thanh toán và phương thức thanh toán của trung tâm.
+                </p>
+            </div>
+        </div>
+
+        <div class="tc-header-right">
+            <button class="btn ghost" id="tc-refresh-all" type="button">
+                <i class="ri-refresh-line"></i>
+                <span>Làm mới dữ liệu</span>
+            </button>
         </div>
     </div>
-    <p class="placeholder-desc">
-        (Báo cáo doanh thu, hoá đơn chưa thanh toán...)
-    </p>
+
+    <!-- TABS -->
+    <div class="tc-tabs">
+        <button class="tc-tab active" data-tc-view="hoadon" type="button">
+            <i class="ri-bill-line"></i>
+            <span>Hóa đơn</span>
+        </button>
+        <button class="tc-tab" data-tc-view="lichsu" type="button">
+            <i class="ri-history-line"></i>
+            <span>Lịch sử thanh toán</span>
+        </button>
+        <button class="tc-tab" data-tc-view="phuongthuc" type="button">
+            <i class="ri-wallet-3-line"></i>
+            <span>Phương thức thanh toán</span>
+        </button>
+    </div>
+
+    <!-- VIEWS WRAPPER -->
+    <div class="tc-views">
+        <!-- ========== VIEW 1: HÓA ĐƠN ========== -->
+        <section class="tc-view active" id="tc-view-hoadon">
+            <!-- FILTER BAR -->
+            <div class="tc-toolbar">
+                <div class="tc-filters">
+                    <div class="tc-filter-group">
+                        <label for="tc-filter-hoadon-student">Học sinh</label>
+                        <select id="tc-filter-hoadon-student">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+
+                    <div class="tc-filter-group">
+                        <label for="tc-filter-hoadon-class">Lớp học</label>
+                        <select id="tc-filter-hoadon-class">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+
+                    <div class="tc-filter-group">
+                        <label for="tc-filter-hoadon-status">Trạng thái</label>
+                        <select id="tc-filter-hoadon-status">
+                            <option value="">Tất cả</option>
+                            <option value="CHO_THANH_TOAN">Chờ thanh toán</option>
+                            <option value="DA_THANH_TOAN">Đã thanh toán</option>
+                            <option value="QUA_HAN">Quá hạn</option>
+                        </select>
+                    </div>
+
+                    <div class="tc-filter-group tc-filter-dates">
+                        <div>
+                            <label for="tc-filter-hoadon-from">Từ ngày ĐK</label>
+                            <input type="date" id="tc-filter-hoadon-from" />
+                        </div>
+                        <div>
+                            <label for="tc-filter-hoadon-to">Đến ngày ĐK</label>
+                            <input type="date" id="tc-filter-hoadon-to" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tc-toolbar-actions">
+                    <button class="btn ghost" id="tc-filter-hoadon-apply" type="button">
+                        <i class="ri-filter-line"></i>
+                        <span>Lọc</span>
+                    </button>
+                    <button class="btn primary" id="tc-hoadon-btn-add" type="button">
+                        <i class="ri-add-line"></i>
+                        <span>Thêm hóa đơn</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="tc-table-wrapper">
+                <table class="tc-table">
+                    <thead>
+                    <tr>
+                        <th>Mã HĐ</th>
+                        <th>Học sinh</th>
+                        <th>Lớp học</th>
+                        <th>Số tháng</th>
+                        <th>Tổng tiền</th>
+                        <th>Đăng ký</th>
+                        <th>Hạn thanh toán</th>
+                        <th>Thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th style="width: 90px;">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tc-hoadon-tbody">
+                    <tr>
+                        <td colspan="10" class="tc-empty-row">Đang tải dữ liệu...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========== VIEW 2: LỊCH SỬ THANH TOÁN ========== -->
+        <section class="tc-view" id="tc-view-lichsu">
+            <!-- FILTER BAR -->
+            <div class="tc-toolbar">
+                <div class="tc-filters">
+                    <div class="tc-filter-group">
+                        <label for="tc-filter-ls-status">Trạng thái</label>
+                        <select id="tc-filter-ls-status">
+                            <option value="">Tất cả</option>
+                            <option value="DA_THANH_TOAN">Đã thanh toán</option>
+                            <option value="HOAN_TIEN">Hoàn tiền</option>
+                            <option value="HUY">Hủy</option>
+                        </select>
+                    </div>
+
+                    <div class="tc-filter-group">
+                        <label for="tc-filter-ls-method">Phương thức</label>
+                        <select id="tc-filter-ls-method">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+
+                    <div class="tc-filter-group">
+                        <label for="tc-filter-ls-month">Tháng (kỳ)</label>
+                        <input
+                                type="text"
+                                id="tc-filter-ls-month"
+                                placeholder="VD: 2025-11 hoặc Tháng 11/2025"
+                        />
+                    </div>
+                </div>
+
+                <div class="tc-toolbar-actions">
+                    <button class="btn ghost" id="tc-filter-ls-apply" type="button">
+                        <i class="ri-filter-line"></i>
+                        <span>Lọc</span>
+                    </button>
+                    <button class="btn primary" id="tc-ls-btn-add" type="button">
+                        <i class="ri-add-line"></i>
+                        <span>Thêm lịch sử TT</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="tc-table-wrapper">
+                <table class="tc-table">
+                    <thead>
+                    <tr>
+                        <th>Mã LS</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Phương thức</th>
+                        <th>Hình thức</th>
+                        <th>Tháng</th>
+                        <th>Ghi chú</th>
+                        <th style="width: 90px;">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tc-ls-tbody">
+                    <tr>
+                        <td colspan="8" class="tc-empty-row">Đang tải dữ liệu...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========== VIEW 3: PHƯƠNG THỨC THANH TOÁN ========== -->
+        <section class="tc-view" id="tc-view-phuongthuc">
+            <div class="tc-toolbar">
+                <div class="tc-filters">
+                    <p class="tc-help-text">
+                        Quản lý danh mục phương thức thanh toán (Tiền mặt, Chuyển khoản, Momo,...).
+                    </p>
+                </div>
+                <div class="tc-toolbar-actions">
+                    <button class="btn primary" id="tc-pt-btn-add" type="button">
+                        <i class="ri-add-line"></i>
+                        <span>Thêm phương thức</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="tc-table-wrapper">
+                <table class="tc-table">
+                    <thead>
+                    <tr>
+                        <th>Mã PT</th>
+                        <th>Tên phương thức</th>
+                        <th>Hình thức TT</th>
+                        <th>Ghi chú</th>
+                        <th style="width: 90px;">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tc-pt-tbody">
+                    <tr>
+                        <td colspan="5" class="tc-empty-row">Đang tải dữ liệu...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- ========== MODALS ========== -->
+
+<!-- Modal HÓA ĐƠN -->
+<div class="tc-modal" id="tc-hoadon-modal" aria-hidden="true">
+    <div class="tc-modal-backdrop" data-tc-close-modal="tc-hoadon-modal"></div>
+    <div class="tc-modal-dialog">
+        <div class="tc-modal-header">
+            <h3 id="tc-hoadon-modal-title">Thêm hóa đơn</h3>
+            <button
+                    type="button"
+                    class="tc-modal-close"
+                    data-tc-close-modal="tc-hoadon-modal"
+            >
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div class="tc-modal-body">
+            <form id="tc-hoadon-form">
+                <div class="tc-form-grid">
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-id">Mã hóa đơn</label>
+                        <input
+                                type="text"
+                                id="tc-hoadon-id"
+                                name="idHoaDon"
+                                placeholder="Tự sinh hoặc nhập theo quy tắc"
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-student">Học sinh</label>
+                        <select id="tc-hoadon-student" name="idHs" required></select>
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-class">Lớp học</label>
+                        <select id="tc-hoadon-class" name="idLh" required></select>
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-so-thang">Số tháng</label>
+                        <input
+                                type="number"
+                                min="1"
+                                id="tc-hoadon-so-thang"
+                                name="soThang"
+                                required
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-tong-tien">Tổng tiền</label>
+                        <input
+                                type="number"
+                                min="0"
+                                step="1000"
+                                id="tc-hoadon-tong-tien"
+                                name="tongTien"
+                                required
+                        />
+                        <small class="tc-hint">
+                            Có thể tự động tính = học phí tháng * số tháng ở BE.
+                        </small>
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-ngay-dk">Ngày đăng ký</label>
+                        <input
+                                type="date"
+                                id="tc-hoadon-ngay-dk"
+                                name="ngayDangKy"
+                                required
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-han-tt">Hạn thanh toán</label>
+                        <input
+                                type="date"
+                                id="tc-hoadon-han-tt"
+                                name="hanThanhToan"
+                                required
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-ngay-tt">Ngày thanh toán</label>
+                        <input type="date" id="tc-hoadon-ngay-tt" name="ngayThanhToan" />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-hoadon-status">Trạng thái</label>
+                        <select id="tc-hoadon-status" name="trangThai" required>
+                            <option value="CHO_THANH_TOAN">Chờ thanh toán</option>
+                            <option value="DA_THANH_TOAN">Đã thanh toán</option>
+                            <option value="QUA_HAN">Quá hạn</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="tc-modal-footer">
+                    <button
+                            type="button"
+                            class="btn ghost"
+                            data-tc-close-modal="tc-hoadon-modal"
+                    >
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn primary">
+                        <span>Lưu</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal LỊCH SỬ THANH TOÁN -->
+<div class="tc-modal" id="tc-ls-modal" aria-hidden="true">
+    <div class="tc-modal-backdrop" data-tc-close-modal="tc-ls-modal"></div>
+    <div class="tc-modal-dialog">
+        <div class="tc-modal-header">
+            <h3 id="tc-ls-modal-title">Thêm lịch sử thanh toán</h3>
+            <button
+                    type="button"
+                    class="tc-modal-close"
+                    data-tc-close-modal="tc-ls-modal"
+            >
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div class="tc-modal-body">
+            <form id="tc-ls-form">
+                <div class="tc-form-grid">
+                    <div class="tc-form-group">
+                        <label for="tc-ls-id">Mã lịch sử</label>
+                        <input
+                                type="text"
+                                id="tc-ls-id"
+                                name="idLs"
+                                placeholder="Tự sinh hoặc nhập theo quy tắc"
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-ls-pt">Phương thức thanh toán</label>
+                        <select id="tc-ls-pt" name="idPt" required></select>
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-ls-tong-tien">Tổng tiền</label>
+                        <input
+                                type="number"
+                                id="tc-ls-tong-tien"
+                                name="tongTien"
+                                min="0"
+                                step="1000"
+                                required
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-ls-status">Trạng thái thanh toán</label>
+                        <select id="tc-ls-status" name="trangThaiThanhToan" required>
+                            <option value="DA_THANH_TOAN">Đã thanh toán</option>
+                            <option value="HOAN_TIEN">Hoàn tiền</option>
+                            <option value="HUY">Hủy</option>
+                        </select>
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-ls-hinh-thuc">Hình thức</label>
+                        <input
+                                type="text"
+                                id="tc-ls-hinh-thuc"
+                                name="hinhThuc"
+                                placeholder="VD: Chuyển khoản Vietcombank..."
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-ls-thang">Tháng (kỳ)</label>
+                        <input
+                                type="text"
+                                id="tc-ls-thang"
+                                name="thang"
+                                placeholder="VD: 2025-11 hoặc Tháng 11/2025"
+                        />
+                    </div>
+
+                    <div class="tc-form-group tc-form-group-full">
+                        <label for="tc-ls-ghi-chu">Ghi chú</label>
+                        <textarea
+                                id="tc-ls-ghi-chu"
+                                name="ghiChu"
+                                rows="2"
+                                placeholder="Ghi chú thêm..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="tc-modal-footer">
+                    <button
+                            type="button"
+                            class="btn ghost"
+                            data-tc-close-modal="tc-ls-modal"
+                    >
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn primary">
+                        <span>Lưu</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal PHƯƠNG THỨC THANH TOÁN -->
+<div class="tc-modal" id="tc-pt-modal" aria-hidden="true">
+    <div class="tc-modal-backdrop" data-tc-close-modal="tc-pt-modal"></div>
+    <div class="tc-modal-dialog">
+        <div class="tc-modal-header">
+            <h3 id="tc-pt-modal-title">Thêm phương thức thanh toán</h3>
+            <button
+                    type="button"
+                    class="tc-modal-close"
+                    data-tc-close-modal="tc-pt-modal"
+            >
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div class="tc-modal-body">
+            <form id="tc-pt-form">
+                <div class="tc-form-grid">
+                    <div class="tc-form-group">
+                        <label for="tc-pt-id">Mã phương thức</label>
+                        <input
+                                type="text"
+                                id="tc-pt-id"
+                                name="idPt"
+                                placeholder="Tự sinh hoặc nhập theo quy tắc"
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-pt-ten">Tên phương thức</label>
+                        <input
+                                type="text"
+                                id="tc-pt-ten"
+                                name="tenPt"
+                                required
+                                placeholder="VD: Tiền mặt, Chuyển khoản..."
+                        />
+                    </div>
+
+                    <div class="tc-form-group">
+                        <label for="tc-pt-hinhthuc">Hình thức TT</label>
+                        <input
+                                type="text"
+                                id="tc-pt-hinhthuc"
+                                name="hinhThucTt"
+                                required
+                                placeholder="VD: Trực tiếp tại quầy, Online..."
+                        />
+                    </div>
+
+                    <div class="tc-form-group tc-form-group-full">
+                        <label for="tc-pt-ghi-chu">Ghi chú</label>
+                        <textarea
+                                id="tc-pt-ghi-chu"
+                                name="ghiChu"
+                                rows="2"
+                                placeholder="Ghi chú thêm..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="tc-modal-footer">
+                    <button
+                            type="button"
+                            class="btn ghost"
+                            data-tc-close-modal="tc-pt-modal"
+                    >
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn primary">
+                        <span>Lưu</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

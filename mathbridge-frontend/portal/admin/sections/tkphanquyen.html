@@ -1,0 +1,415 @@
+<!-- ICONS (Remix Icon) -->
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+
+<div class="dash-card content-panel tkpq-panel" id="tkphanquyen-panel">
+    <!-- HEADER -->
+    <div class="tkpq-header">
+        <div class="tkpq-header-left">
+            <div class="tkpq-header-icon">
+                <i class="ri-user-settings-line"></i>
+            </div>
+            <div>
+                <h2 class="tkpq-title">Tài khoản &amp; Phân quyền</h2>
+                <p class="tkpq-subtitle">
+                    Quản lý tài khoản đăng nhập và phân quyền dựa trên bảng TaiKhoan, Role,
+                    TaiKhoan_VaiTro.
+                </p>
+            </div>
+        </div>
+
+        <div class="tkpq-header-right">
+            <button class="btn ghost" id="tkpq-refresh-all" type="button">
+                <i class="ri-refresh-line"></i>
+                <span>Làm mới dữ liệu</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tkpq-tabs">
+        <button class="tkpq-tab active" data-view="accounts" type="button">
+            <i class="ri-user-line"></i>
+            <span>Tài khoản</span>
+        </button>
+        <button class="tkpq-tab" data-view="roles" type="button">
+            <i class="ri-shield-keyhole-line"></i>
+            <span>Vai trò</span>
+        </button>
+    </div>
+
+    <!-- VIEWS WRAPPER -->
+    <div class="tkpq-views">
+        <!-- ===== VIEW: ACCOUNTS ===== -->
+        <div class="tkpq-view" data-view="accounts">
+            <!-- SECTION TITLE GIỐNG HSHT -->
+            <div class="section-head">
+                <div>
+                    <div class="section-title">Quản lý tài khoản</div>
+                    <div class="section-sub">
+                        Danh sách tài khoản từ bảng TaiKhoan, lọc theo vai trò, loại và trạng thái.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD CHÍNH: FILTER + TABLE + PAGINATION -->
+            <div class="section-card">
+                <!-- FILTERS -->
+                <div class="tkpq-filters">
+                    <div class="tkpq-filter-group">
+                        <label class="tkpq-filter-label" for="tkpq-account-search">
+                            Tìm kiếm
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="ri-search-line"></i>
+                            <input
+                                    id="tkpq-account-search"
+                                    type="text"
+                                    class="input-text"
+                                    placeholder="Tìm theo ID_TK, Email..."
+                            />
+                        </div>
+                    </div>
+
+                    <div class="tkpq-filter-row">
+                        <div class="tkpq-filter-group">
+                            <label class="tkpq-filter-label" for="tkpq-filter-role">
+                                Vai trò
+                            </label>
+                            <select id="tkpq-filter-role" class="input-select">
+                                <option value="">Tất cả vai trò</option>
+                                <!-- fill bằng JS từ bảng Role -->
+                            </select>
+                        </div>
+
+                        <div class="tkpq-filter-group">
+                            <label class="tkpq-filter-label" for="tkpq-filter-type">
+                                Loại tài khoản
+                            </label>
+                            <select id="tkpq-filter-type" class="input-select">
+                                <option value="ALL">Tất cả</option>
+                                <option value="HS">Học sinh (có ID_HS)</option>
+                                <option value="NV">Nhân viên (có ID_NV)</option>
+                                <option value="OTHER">Khác (không gắn HS/NV)</option>
+                            </select>
+                        </div>
+
+                        <div class="tkpq-filter-group">
+                            <label class="tkpq-filter-label" for="tkpq-filter-status">
+                                Trạng thái
+                            </label>
+                            <select id="tkpq-filter-status" class="input-select">
+                                <option value="ALL">Tất cả</option>
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                                <option value="LOCKED">LOCKED</option>
+                            </select>
+                        </div>
+
+                        <div class="tkpq-filter-actions">
+                            <button
+                                    class="btn ghost"
+                                    id="tkpq-btn-refresh-accounts"
+                                    type="button"
+                            >
+                                <i class="ri-refresh-line"></i>
+                                <span>Làm mới</span>
+                            </button>
+                            <button
+                                    class="btn primary"
+                                    id="tkpq-btn-add-account"
+                                    type="button"
+                            >
+                                <i class="ri-user-add-line"></i>
+                                <span>Thêm tài khoản</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABLE: ACCOUNTS -->
+                <div class="table-wrapper">
+                    <table class="mb-table tkpq-table">
+                        <thead>
+                        <tr>
+                            <th>ID_TK</th>
+                            <th>Email</th>
+                            <th>Loại</th>
+                            <th>Chủ sở hữu</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Thời điểm tạo</th>
+                            <th class="tkpq-col-actions">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tkpq-accounts-tbody">
+                        <!-- render bằng JS -->
+                        </tbody>
+                    </table>
+
+                    <div class="tkpq-empty-state" id="tkpq-accounts-empty" hidden>
+                        <i class="ri-database-2-line"></i>
+                        <p>Không tìm thấy tài khoản nào.</p>
+                    </div>
+                </div>
+
+                <!-- PAGINATION -->
+                <div class="tkpq-pagination" id="tkpq-accounts-pagination">
+                    <!-- render bằng JS nếu BE trả về dạng phân trang -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== VIEW: ROLES ===== -->
+        <div class="tkpq-view hidden" data-view="roles">
+            <!-- SECTION TITLE -->
+            <div class="section-head">
+                <div>
+                    <div class="section-title">Quản lý vai trò</div>
+                    <div class="section-sub">
+                        Danh sách vai trò từ bảng Role và dùng để phân quyền cho tài khoản.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD CHÍNH: FILTER + TABLE + PAGINATION -->
+            <div class="section-card">
+                <!-- FILTERS -->
+                <div class="tkpq-filters">
+                    <div class="tkpq-filter-group">
+                        <label class="tkpq-filter-label" for="tkpq-role-search">
+                            Tìm kiếm vai trò
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="ri-search-line"></i>
+                            <input
+                                    id="tkpq-role-search"
+                                    type="text"
+                                    class="input-text"
+                                    placeholder="Tìm theo ID_Role, Tên vai trò..."
+                            />
+                        </div>
+                    </div>
+
+                    <div class="tkpq-filter-actions">
+                        <button class="btn primary" id="tkpq-btn-add-role" type="button">
+                            <i class="ri-shield-user-line"></i>
+                            <span>Thêm vai trò</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TABLE: ROLES -->
+                <div class="table-wrapper">
+                    <table class="mb-table tkpq-table">
+                        <thead>
+                        <tr>
+                            <th>ID_Role</th>
+                            <th>Tên vai trò</th>
+                            <th>Ghi chú</th>
+                            <th class="tkpq-col-actions">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tkpq-roles-tbody">
+                        <!-- render bằng JS -->
+                        </tbody>
+                    </table>
+
+                    <div class="tkpq-empty-state" id="tkpq-roles-empty" hidden>
+                        <i class="ri-database-2-line"></i>
+                        <p>Không tìm thấy vai trò nào.</p>
+                    </div>
+                </div>
+
+                <!-- PAGINATION -->
+                <div class="tkpq-pagination" id="tkpq-roles-pagination">
+                    <!-- render bằng JS nếu dùng phân trang -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ACCOUNT -->
+    <div class="tkpq-modal-backdrop" id="tkpq-account-modal" hidden>
+        <div class="tkpq-modal">
+            <div class="tkpq-modal-header">
+                <h3 id="tkpq-account-modal-title">Thêm tài khoản</h3>
+                <button
+                        type="button"
+                        class="tkpq-modal-close"
+                        data-close-modal="tkpq-account-modal"
+                >
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <form id="tkpq-account-form" class="tkpq-modal-body">
+                <input type="hidden" id="tkpq-account-idTk" />
+
+                <div class="tkpq-form-grid">
+                    <div class="tkpq-form-group">
+                        <label for="tkpq-account-email">Email (bảng TaiKhoan.Email)</label>
+                        <input
+                                id="tkpq-account-email"
+                                type="email"
+                                required
+                                class="input-text"
+                                placeholder="VD: admin@mathbridge.edu"
+                        />
+                    </div>
+
+                    <div class="tkpq-form-group">
+                        <label for="tkpq-account-password">
+                            Mật khẩu (bảng TaiKhoan.PassWord)
+                        </label>
+                        <input
+                                id="tkpq-account-password"
+                                type="password"
+                                class="input-text"
+                                placeholder="Nhập mật khẩu"
+                        />
+                        <small class="tkpq-help">
+                            Khi chỉnh sửa: để trống nếu không muốn đổi mật khẩu
+                            (BE tự xử lý logic này).
+                        </small>
+                    </div>
+
+                    <div class="tkpq-form-group">
+                        <label for="tkpq-account-status">
+                            Trạng thái (bảng TaiKhoan.TrangThai)
+                        </label>
+                        <select id="tkpq-account-status" class="input-select">
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                            <option value="LOCKED">LOCKED</option>
+                        </select>
+                    </div>
+
+                    <div class="tkpq-form-group">
+                        <label>Gắn với Học sinh / Nhân viên</label>
+                        <div class="tkpq-owner-info">
+                            <div>
+                                <span class="tkpq-owner-label">ID_HS:</span>
+                                <span id="tkpq-account-idHs">-</span>
+                            </div>
+                            <div>
+                                <span class="tkpq-owner-label">ID_NV:</span>
+                                <span id="tkpq-account-idNv">-</span>
+                            </div>
+                        </div>
+                        <small class="tkpq-help">
+                            Hai cột này đọc từ bảng TaiKhoan (ID_HS, ID_NV). Sửa mapping ở
+                            module Học sinh / Nhân sự để đồng bộ.
+                        </small>
+                    </div>
+
+                    <div class="tkpq-form-group">
+                        <label for="tkpq-account-roles">
+                            Vai trò (bảng Role, liên kết TaiKhoan_VaiTro)
+                        </label>
+                        <select
+                                id="tkpq-account-roles"
+                                multiple
+                                size="4"
+                                class="tkpq-multiselect"
+                        >
+                            <!-- fill bằng JS từ bảng Role -->
+                        </select>
+                        <small class="tkpq-help">
+                            Giữ Ctrl (Windows) hoặc Cmd (macOS) để chọn nhiều vai trò.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="tkpq-modal-footer">
+                    <button
+                            type="button"
+                            class="btn ghost"
+                            data-close-modal="tkpq-account-modal"
+                    >
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn primary">
+                        <i class="ri-save-3-line"></i>
+                        <span>Lưu</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ROLE -->
+    <div class="tkpq-modal-backdrop" id="tkpq-role-modal" hidden>
+        <div class="tkpq-modal">
+            <div class="tkpq-modal-header">
+                <h3 id="tkpq-role-modal-title">Thêm vai trò</h3>
+                <button
+                        type="button"
+                        class="tkpq-modal-close"
+                        data-close-modal="tkpq-role-modal"
+                >
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <form id="tkpq-role-form" class="tkpq-modal-body">
+                <div class="tkpq-form-group">
+                    <label for="tkpq-role-id">
+                        ID_Role (PK của bảng Role)
+                    </label>
+                    <input
+                            id="tkpq-role-id"
+                            type="text"
+                            maxlength="10"
+                            class="input-text"
+                            placeholder="VD: R001"
+                            required
+                    />
+                </div>
+
+                <div class="tkpq-form-group">
+                    <label for="tkpq-role-name">
+                        Tên vai trò (Role.TenVaiTro)
+                    </label>
+                    <input
+                            id="tkpq-role-name"
+                            type="text"
+                            maxlength="100"
+                            class="input-text"
+                            required
+                            placeholder="VD: ADMIN, STAFF, STUDENT..."
+                    />
+                </div>
+
+                <div class="tkpq-form-group">
+                    <label for="tkpq-role-note">
+                        Ghi chú (Role.GhiChu)
+                    </label>
+                    <textarea
+                            id="tkpq-role-note"
+                            maxlength="200"
+                            rows="3"
+                            class="input-text"
+                            placeholder="Mô tả phạm vi quyền..."
+                    ></textarea>
+                </div>
+
+                <div class="tkpq-modal-footer">
+                    <button
+                            type="button"
+                            class="btn ghost"
+                            data-close-modal="tkpq-role-modal"
+                    >
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn primary">
+                        <i class="ri-save-3-line"></i>
+                        <span>Lưu</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

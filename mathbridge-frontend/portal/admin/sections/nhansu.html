@@ -1,11 +1,408 @@
-<div class="dash-card content-panel">
-    <div class="content-head">
-        <div>
-            <div class="content-title">Nhân sự & Giảng viên</div>
-            <div class="content-sub">Phân công GV, hợp đồng, cảnh báo hết hạn</div>
+<!-- ICONS (Remix Icon) -->
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+
+<div class="dash-card content-panel ns-panel" id="nhansu-panel">
+    <!-- HEADER -->
+    <div class="ns-header">
+        <div class="ns-header-left">
+            <div class="ns-header-icon">
+                <i class="ri-team-line"></i>
+            </div>
+            <div>
+                <h2 class="ns-title">Nhân sự &amp; Giảng viên</h2>
+                <p class="ns-subtitle">
+                    Quản lý nhân viên, giảng viên và hợp đồng làm việc.
+                </p>
+            </div>
+        </div>
+
+        <div class="ns-header-right">
+            <button
+                    class="btn ghost"
+                    id="ns-btn-refresh"
+                    type="button"
+                    title="Làm mới dữ liệu"
+            >
+                <i class="ri-refresh-line"></i>
+                <span>Làm mới</span>
+            </button>
         </div>
     </div>
-    <p class="placeholder-desc">
-        (Danh sách GV, tình trạng hợp đồng (HopDong), lịch dạy...)
-    </p>
+
+    <!-- TABS -->
+    <div class="ns-tabs">
+        <button
+                class="ns-tab active"
+                data-view="staff"
+                type="button"
+                id="ns-tab-staff"
+        >
+            <i class="ri-user-settings-line"></i>
+            <span>Nhân sự</span>
+        </button>
+        <button
+                class="ns-tab"
+                data-view="contracts"
+                type="button"
+                id="ns-tab-contracts"
+        >
+            <i class="ri-file-list-3-line"></i>
+            <span>Hợp đồng</span>
+        </button>
+    </div>
+
+    <!-- VIEW: STAFF -->
+    <div class="ns-view" id="ns-view-staff">
+        <!-- FILTER BAR -->
+        <div class="ns-filters">
+            <div class="ns-filter-group">
+                <div class="ns-filter-item">
+                    <label for="ns-staff-search">Từ khóa</label>
+                    <div class="ns-input-icon">
+                        <i class="ri-search-line"></i>
+                        <input
+                                type="text"
+                                id="ns-staff-search"
+                                placeholder="Tìm theo tên, email, SĐT..."
+                        />
+                    </div>
+                </div>
+
+                <div class="ns-filter-item">
+                    <label for="ns-staff-campus">Cơ sở</label>
+                    <select id="ns-staff-campus">
+                        <option value="">Tất cả cơ sở</option>
+                    </select>
+                </div>
+
+                <div class="ns-filter-item">
+                    <label for="ns-staff-role">Vai trò</label>
+                    <select id="ns-staff-role">
+                        <option value="">Tất cả vai trò</option>
+                    </select>
+                </div>
+
+                <div class="ns-filter-item">
+                    <label for="ns-staff-status">Trạng thái</label>
+                    <select id="ns-staff-status">
+                        <option value="">Tất cả</option>
+                        <option value="active">Đang hoạt động</option>
+                        <option value="inactive">Ngưng hoạt động</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="ns-filter-actions">
+                <button class="btn ghost" type="button" id="ns-staff-filter-btn">
+                    <i class="ri-filter-3-line"></i>
+                    <span>Lọc</span>
+                </button>
+                <button class="btn secondary" type="button" id="ns-staff-clear-btn">
+                    <i class="ri-eraser-line"></i>
+                    <span>Xóa lọc</span>
+                </button>
+                <button class="btn primary" type="button" id="ns-staff-create-btn">
+                    <i class="ri-user-add-line"></i>
+                    <span>Thêm nhân sự</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLE: STAFF -->
+        <div class="ns-table-wrapper">
+            <table class="ns-table" id="ns-staff-table">
+                <thead>
+                <tr>
+                    <th>Mã NV</th>
+                    <th>Họ tên</th>
+                    <th>Cơ sở</th>
+                    <th>Email</th>
+                    <th>SĐT</th>
+                    <th>Chức vụ</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 110px;">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Render bằng JS -->
+                </tbody>
+            </table>
+            <div class="ns-empty-state" id="ns-staff-empty" hidden>
+                <i class="ri-user-search-line"></i>
+                <p>Không tìm thấy nhân sự phù hợp.</p>
+            </div>
+        </div>
+
+        <!-- PAGINATION: STAFF -->
+        <div class="ns-pagination" id="ns-staff-pagination"></div>
+    </div>
+
+    <!-- VIEW: CONTRACTS -->
+    <div class="ns-view hidden" id="ns-view-contracts">
+        <!-- FILTER BAR -->
+        <div class="ns-filters">
+            <div class="ns-filter-group">
+                <div class="ns-filter-item">
+                    <label for="ns-contract-search">Từ khóa</label>
+                    <div class="ns-input-icon">
+                        <i class="ri-search-line"></i>
+                        <input
+                                type="text"
+                                id="ns-contract-search"
+                                placeholder="Tìm theo mã HĐ, nhân viên..."
+                        />
+                    </div>
+                </div>
+
+                <div class="ns-filter-item">
+                    <label for="ns-contract-staff">Nhân viên</label>
+                    <select id="ns-contract-staff">
+                        <option value="">Tất cả nhân viên</option>
+                    </select>
+                </div>
+
+                <div class="ns-filter-item">
+                    <label for="ns-contract-type">Loại HĐ</label>
+                    <select id="ns-contract-type">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+
+                <div class="ns-filter-item">
+                    <label for="ns-contract-status">Trạng thái</label>
+                    <select id="ns-contract-status">
+                        <option value="">Tất cả</option>
+                        <option value="active">Đang hiệu lực</option>
+                        <option value="expired">Hết hạn</option>
+                        <option value="terminated">Đã chấm dứt</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="ns-filter-actions">
+                <button class="btn ghost" type="button" id="ns-contract-filter-btn">
+                    <i class="ri-filter-3-line"></i>
+                    <span>Lọc</span>
+                </button>
+                <button class="btn secondary" type="button" id="ns-contract-clear-btn">
+                    <i class="ri-eraser-line"></i>
+                    <span>Xóa lọc</span>
+                </button>
+                <button class="btn primary" type="button" id="ns-contract-create-btn">
+                    <i class="ri-file-add-line"></i>
+                    <span>Thêm hợp đồng</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLE: CONTRACTS -->
+        <div class="ns-table-wrapper">
+            <table class="ns-table" id="ns-contract-table">
+                <thead>
+                <tr>
+                    <th>Mã HĐ</th>
+                    <th>Nhân viên</th>
+                    <th>Loại HĐ</th>
+                    <th>Hình thức dạy</th>
+                    <th>Ngày hiệu lực</th>
+                    <th>Ngày kết thúc</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 110px;">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Render bằng JS -->
+                </tbody>
+            </table>
+            <div class="ns-empty-state" id="ns-contract-empty" hidden>
+                <i class="ri-file-search-line"></i>
+                <p>Không tìm thấy hợp đồng phù hợp.</p>
+            </div>
+        </div>
+
+        <!-- PAGINATION: CONTRACTS -->
+        <div class="ns-pagination" id="ns-contract-pagination"></div>
+    </div>
+</div>
+
+<!-- ===== MODAL: STAFF ===== -->
+<div class="ns-modal-backdrop hidden" id="ns-staff-modal">
+    <div class="ns-modal">
+        <div class="ns-modal-header">
+            <h3 id="ns-staff-modal-title">Thêm nhân sự</h3>
+            <button class="ns-modal-close" type="button" data-close-staff>
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+
+        <form id="ns-staff-form">
+            <input type="hidden" id="ns-staff-id" />
+
+            <div class="ns-modal-body ns-grid-2">
+                <div class="ns-field">
+                    <label for="ns-staff-ho">Họ <span>*</span></label>
+                    <input type="text" id="ns-staff-ho" required />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-tendem">Tên đệm</label>
+                    <input type="text" id="ns-staff-tendem" />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-ten">Tên <span>*</span></label>
+                    <input type="text" id="ns-staff-ten" required />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-email">Email <span>*</span></label>
+                    <input type="email" id="ns-staff-email" required />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-sdt">Số điện thoại <span>*</span></label>
+                    <input type="text" id="ns-staff-sdt" required />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-gioitinh">Giới tính</label>
+                    <select id="ns-staff-gioitinh">
+                        <option value="">-- Chọn --</option>
+                        <option value="male">Nam</option>
+                        <option value="female">Nữ</option>
+                    </select>
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-campus-modal">Cơ sở <span>*</span></label>
+                    <select id="ns-staff-campus-modal" required>
+                        <option value="">Chọn cơ sở</option>
+                    </select>
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-chucvu">Chức vụ</label>
+                    <input type="text" id="ns-staff-chucvu" placeholder="Giảng viên, Trợ giảng..." />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-chuyenmon">Chuyên môn</label>
+                    <input type="text" id="ns-staff-chuyenmon" />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-kinhnghiem">Kinh nghiệm (năm)</label>
+                    <input type="number" min="0" id="ns-staff-kinhnghiem" />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-staff-role-modal">Vai trò hệ thống</label>
+                    <select id="ns-staff-role-modal">
+                        <option value="">Chọn vai trò</option>
+                    </select>
+                    <small class="ns-field-hint">
+                        Vai trò dùng để gán quyền trong hệ thống (bảng Role + TaiKhoan_VaiTro).
+                    </small>
+                </div>
+                <div class="ns-field ns-field-inline">
+                    <label for="ns-staff-active">Đang hoạt động</label>
+                    <label class="ns-switch">
+                        <input type="checkbox" id="ns-staff-active" checked />
+                        <span class="ns-switch-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="ns-modal-footer">
+                <button
+                        class="btn ghost"
+                        type="button"
+                        data-close-staff
+                >
+                    Hủy
+                </button>
+                <button class="btn primary" type="submit" id="ns-staff-save-btn">
+                    <i class="ri-save-3-line"></i>
+                    <span>Lưu</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== MODAL: CONTRACT ===== -->
+<div class="ns-modal-backdrop hidden" id="ns-contract-modal">
+    <div class="ns-modal">
+        <div class="ns-modal-header">
+            <h3 id="ns-contract-modal-title">Thêm hợp đồng</h3>
+            <button class="ns-modal-close" type="button" data-close-contract>
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+
+        <form id="ns-contract-form">
+            <input type="hidden" id="ns-contract-id" />
+
+            <div class="ns-modal-body ns-grid-2">
+                <div class="ns-field">
+                    <label for="ns-contract-staff-modal">Nhân viên <span>*</span></label>
+                    <select id="ns-contract-staff-modal" required>
+                        <option value="">Chọn nhân viên</option>
+                    </select>
+                </div>
+                <div class="ns-field">
+                    <label for="ns-contract-loaihd">Loại hợp đồng <span>*</span></label>
+                    <input type="text" id="ns-contract-loaihd" required />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-contract-hinhthuc">Hình thức dạy <span>*</span></label>
+                    <input
+                            type="text"
+                            id="ns-contract-hinhthuc"
+                            placeholder="Offline, Online, Hybrid..."
+                            required
+                    />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-contract-ngayky">Ngày ký <span>*</span></label>
+                    <input type="date" id="ns-contract-ngayky" required />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-contract-ngayhl">Ngày hiệu lực <span>*</span></label>
+                    <input type="date" id="ns-contract-ngayhl" required />
+                </div>
+                <div class="ns-field">
+                    <label for="ns-contract-ngaykt">Ngày kết thúc <span>*</span></label>
+                    <input type="date" id="ns-contract-ngaykt" required />
+                </div>
+                <div class="ns-field ns-field-full">
+                    <label for="ns-contract-phamvi">Phạm vi công việc</label>
+                    <textarea
+                            id="ns-contract-phamvi"
+                            rows="3"
+                            placeholder="Mô tả phạm vi công việc chính..."
+                    ></textarea>
+                </div>
+                <div class="ns-field ns-field-inline">
+                    <label for="ns-contract-chamdut">Đã chấm dứt hợp đồng</label>
+                    <label class="ns-switch">
+                        <input type="checkbox" id="ns-contract-chamdut" />
+                        <span class="ns-switch-slider"></span>
+                    </label>
+                </div>
+                <div class="ns-field">
+                    <label for="ns-contract-ngaychamdut">Ngày chấm dứt</label>
+                    <input type="date" id="ns-contract-ngaychamdut" />
+                </div>
+            </div>
+
+            <div class="ns-modal-footer">
+                <button
+                        class="btn ghost"
+                        type="button"
+                        data-close-contract
+                >
+                    Hủy
+                </button>
+                <button class="btn primary" type="submit" id="ns-contract-save-btn">
+                    <i class="ri-save-3-line"></i>
+                    <span>Lưu</span>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>

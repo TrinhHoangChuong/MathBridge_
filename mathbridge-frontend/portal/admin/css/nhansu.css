@@ -1,0 +1,599 @@
+/* ===== Nhân sự & Hợp đồng (đồng bộ style HSHT) ===== */
+
+.ns-panel {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+/* HEADER */
+
+.ns-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ns-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ns-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 0 0, #fb7185, #ec4899);
+  color: #ffffff;
+  font-size: 22px;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.25),
+    0 18px 30px rgba(236, 72, 153, 0.45);
+}
+
+.ns-header-icon i {
+  font-size: 1.4rem;
+}
+
+.ns-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #020617;
+}
+
+.ns-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.ns-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ns-header-right .btn.ghost {
+  background: #f9fafb;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.ns-header-right .btn.ghost i {
+  font-size: 15px;
+}
+
+.ns-header-right .btn.ghost:hover {
+  border-color: #d1d5db;
+  color: #111827;
+  background: #f3f4f6;
+}
+
+/* TABS (giống hsht-main-tabs) */
+
+.ns-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  align-self: flex-start;
+}
+
+.ns-tab {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.ns-tab i {
+  font-size: 16px;
+}
+
+.ns-tab span {
+  white-space: nowrap;
+}
+
+.ns-tab.active {
+  background: linear-gradient(135deg, #fb7185, #ec4899);
+  color: #f9fafb;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+}
+
+.ns-tab:not(.active):hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* VIEWS */
+
+.ns-view.hidden {
+  display: none;
+}
+
+/* FILTER BAR (giống hsht-filters) */
+
+.ns-filters {
+  margin-top: 10px;
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ns-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ns-filter-item {
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ns-filter-item label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* input + icon search */
+
+.ns-input-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ns-input-icon i {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.ns-input-icon input {
+  padding-left: 28px;
+}
+
+/* form controls trong filter */
+
+.ns-filters input,
+.ns-filters select {
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 12px;
+  padding: 0 12px;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.ns-filters input:focus,
+.ns-filters select:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+.ns-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Nút secondary (nhẹ) */
+
+.btn.secondary {
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: #4b5563;
+  transition: all 0.12s ease;
+}
+
+.btn.secondary:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+/* TABLES – đồng bộ với mb-table */
+
+.ns-table-wrapper {
+  margin-top: 10px;
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.ns-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ns-table thead {
+  background: #f9fafb;
+}
+
+.ns-table thead th {
+  text-align: left;
+  padding: 9px 10px;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.ns-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ns-table tbody td {
+  padding: 8px 10px;
+  color: #111827;
+}
+
+.ns-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.ns-table tbody tr:hover {
+  background: #e0f2fe;
+}
+
+.ns-table td.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* EMPTY STATE */
+
+.ns-empty-state {
+  padding: 14px;
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.ns-empty-state i {
+  font-size: 20px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* BADGES + STATUS (dùng trong cột trạng thái nếu cần) */
+
+.ns-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.ns-badge-success {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #4ade80;
+}
+
+.ns-badge-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #f87171;
+}
+
+.ns-badge-warning {
+  background: #fef9c3;
+  color: #854d0e;
+  border-color: #facc15;
+}
+
+.ns-badge-muted {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+
+/* PAGINATION */
+
+.ns-pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.ns-page-btn {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #4b5563;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-width: 30px;
+  text-align: center;
+  transition: all 0.12s ease;
+}
+
+.ns-page-btn:hover {
+  background: #f3f4f6;
+}
+
+.ns-page-btn.active {
+  background: linear-gradient(135deg, #fb7185, #ec4899);
+  border-color: transparent;
+  color: #f9fafb;
+  box-shadow: 0 10px 20px rgba(236, 72, 153, 0.4);
+}
+
+.ns-page-btn[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* MODAL BACKDROP */
+
+.ns-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.ns-modal-backdrop.hidden {
+  display: none;
+}
+
+/* MODAL */
+
+.ns-modal {
+  width: min(760px, 100% - 40px);
+  max-height: calc(100vh - 60px);
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.26);
+  display: flex;
+  flex-direction: column;
+}
+
+.ns-modal-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ns-modal-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.ns-modal-close {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.ns-modal-close:hover {
+  color: #111827;
+}
+
+.ns-modal-body {
+  padding: 10px 14px;
+  overflow-y: auto;
+  max-height: 60vh;
+  display: grid;
+  gap: 10px;
+}
+
+.ns-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ns-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ns-field-full {
+  grid-column: 1 / -1;
+}
+
+.ns-field label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.ns-field label span {
+  color: #f97316;
+}
+
+.ns-field input,
+.ns-field select,
+.ns-field textarea {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.ns-field textarea {
+  resize: vertical;
+}
+
+.ns-field input:focus,
+.ns-field select:focus,
+.ns-field textarea:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+.ns-field-hint {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.ns-field-inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* SWITCH */
+
+.ns-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.ns-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ns-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #e5e7eb;
+  border-radius: 999px;
+  transition: 0.2s;
+}
+
+.ns-switch-slider::before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  border-radius: 999px;
+  background-color: #ffffff;
+  transition: 0.2s;
+}
+
+.ns-switch input:checked + .ns-switch-slider {
+  background: #22c55e;
+}
+
+.ns-switch input:checked + .ns-switch-slider::before {
+  transform: translateX(20px);
+}
+
+/* MODAL FOOTER */
+
+.ns-modal-footer {
+  padding: 8px 14px 10px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 960px) {
+  .ns-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ns-filter-actions {
+    justify-content: flex-start;
+  }
+
+  .ns-modal-body.ns-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .ns-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .ns-tab span {
+    display: none;
+  }
+
+  .ns-tab {
+    justify-content: center;
+    padding-inline: 8px;
+  }
+}

@@ -1,0 +1,519 @@
+/* =========================================================
+   1. LAYOUT & SURFACE COLORS
+   ========================================================= */
+
+.hsht-panel {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: #0f172a;
+    border: 1px solid #e5e7eb;
+    box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.06),
+        0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+/* =========================================================
+   2. HEADER (ICON + TITLE + ACTION)
+   ========================================================= */
+
+.hsht-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.hsht-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hsht-header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 0 0, #fb7185, #ec4899);
+    color: #ffffff;
+    font-size: 22px;
+    box-shadow:
+        0 0 0 1px rgba(248, 113, 113, 0.25),
+        0 18px 30px rgba(236, 72, 153, 0.45);
+}
+
+.hsht-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #020617;
+}
+
+.hsht-subtitle {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.hsht-header-right .btn.ghost {
+    background: #f9fafb;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    padding: 6px 12px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.16s ease;
+}
+
+.hsht-header-right .btn.ghost i {
+    font-size: 15px;
+}
+
+.hsht-header-right .btn.ghost:hover {
+    border-color: #d1d5db;
+    color: #111827;
+    background: #f3f4f6;
+}
+
+/* =========================================================
+   3. MAIN VIEW TABS
+   ========================================================= */
+
+.hsht-main-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f3f4f6;
+    border-radius: 999px;
+    padding: 4px;
+    border: 1px solid #e5e7eb;
+    align-self: flex-start;
+}
+
+.hsht-main-tab {
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.16s ease;
+}
+
+.hsht-main-tab-icon {
+    font-size: 16px;
+}
+
+.hsht-main-tab.is-active {
+    background: linear-gradient(135deg, #fb7185, #ec4899);
+    color: #f9fafb;
+    box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+}
+
+.hsht-main-tab:not(.is-active):hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+/* Hiển thị / ẩn từng view */
+.hsht-main-view {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.hsht-main-view.is-active {
+    display: flex;
+}
+
+/* =========================================================
+   4. FILTER BAR
+   ========================================================= */
+
+.hsht-filters {
+    background: #f9fafb;
+    border-radius: 18px;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+}
+
+.hsht-filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+}
+
+.form-group label {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.input-text,
+.input-select {
+    height: 32px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #111827;
+    font-size: 12px;
+    padding: 0 12px;
+    outline: none;
+    transition: all 0.16s ease;
+}
+
+.input-text:focus,
+.input-select:focus {
+    border-color: #ec4899;
+    box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+.input-text::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+}
+
+.hsht-filter-actions {
+    display: flex;
+    align-items: flex-end;
+}
+
+/* Nút chính màu hồng */
+.btn.primary {
+    background: linear-gradient(135deg, #fb7185, #ec4899);
+    border-radius: 999px;
+    padding: 6px 16px;
+    border: none;
+    color: #f9fafb;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 16px 35px rgba(236, 72, 153, 0.55);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn.primary i {
+    font-size: 15px;
+}
+
+.btn.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 20px 45px rgba(236, 72, 153, 0.7);
+}
+
+/* =========================================================
+   5. SECTION CARD & META
+   ========================================================= */
+
+.section-card {
+    background: #f9fafb;
+    border-radius: 18px;
+    padding: 14px 14px 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.section-head.compact {
+    margin-bottom: 8px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.section-title.small {
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.section-sub {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.pill {
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+}
+
+/* =========================================================
+   6. TABLES
+   ========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow: auto;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.mb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.mb-table thead {
+    background: #f9fafb;
+}
+
+.mb-table thead th {
+    text-align: left;
+    padding: 9px 10px;
+    font-weight: 500;
+    color: #6b7280;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.mb-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.mb-table tbody td {
+    padding: 8px 10px;
+    color: #111827;
+}
+
+.mb-table tbody tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+.mb-table tbody tr:hover {
+    background: #e0f2fe;
+}
+
+.empty-row td {
+    text-align: center;
+    color: #9ca3af;
+}
+
+/* =========================================================
+   7. LAYOUT: STUDENT / EVAL / ETC
+   ========================================================= */
+
+.hsht-student-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr);
+    gap: 12px;
+}
+
+.hsht-eval-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr);
+    gap: 12px;
+}
+
+.hsht-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hsht-student-info,
+.hsht-result-block,
+.hsht-eval-block {
+    font-size: 12px;
+}
+
+.muted {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+/* ô tìm kiếm có icon */
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+.input-with-icon .input-text {
+    padding-left: 28px;
+}
+
+/* =========================================================
+   8. RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+    .hsht-student-layout,
+    .hsht-eval-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .hsht-filters-row {
+        flex-direction: column;
+    }
+
+    .hsht-main-tabs {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .hsht-main-tab span {
+        display: none;
+    }
+
+    .hsht-main-tab {
+        justify-content: center;
+        padding-inline: 8px;
+    }
+}
+/* Thông tin học sinh */
+.hs-info-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.hs-info-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.hs-info-id {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.hs-info-id span {
+  font-weight: 500;
+  color: #111827;
+}
+
+.hs-info-status {
+  align-self: flex-start;
+}
+
+.hs-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+}
+
+.hs-info-item .info-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.hs-info-item .info-value {
+  font-size: 13px;
+  color: #111827;
+}
+
+/* Panel thêm lớp */
+.hs-add-class-panel {
+  display: none;
+  margin: 8px 0 6px;
+}
+
+.hs-add-class-panel.is-open {
+  display: block;
+}
+
+.hs-add-class-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.hs-add-class-inner .input-select {
+  min-width: 220px;
+}
+
+.btn-link-danger {
+  color: #dc2626;
+}
+
+/* Tóm tắt bài tập & kết quả */
+.hs-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hs-summary-item {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.hs-summary-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.hs-summary-value {
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+@media (max-width: 1100px) {
+  .hs-info-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hs-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .hs-summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

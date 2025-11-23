@@ -1,0 +1,575 @@
+/* =========================================================
+   1. LAYOUT & HEADER – đồng bộ với hsht-panel
+   ========================================================= */
+
+.lh-panel {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+.lh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lh-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lh-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 0 0, #fb7185, #ec4899);
+  color: #ffffff;
+  font-size: 22px;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.25),
+    0 18px 30px rgba(236, 72, 153, 0.45);
+}
+
+.lh-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #020617;
+}
+
+.lh-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.lh-header-right .btn.ghost {
+  background: #f9fafb;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.lh-header-right .btn.ghost i {
+  font-size: 15px;
+}
+
+.lh-header-right .btn.ghost:hover {
+  border-color: #d1d5db;
+  color: #111827;
+  background: #f3f4f6;
+}
+
+/* =========================================================
+   2. MAIN TABS – giống hsht-main-tabs
+   ========================================================= */
+
+.lh-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  align-self: flex-start;
+}
+
+.lh-tab {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.lh-tab i {
+  font-size: 16px;
+  margin-right: 4px; /* icon cách text một chút cho đẹp */
+}
+
+.lh-tab.active {
+  background: linear-gradient(135deg, #fb7185, #ec4899);
+  color: #f9fafb;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+}
+
+.lh-tab:not(.active):hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* View switching */
+.lh-views {
+  margin-top: 10px;
+}
+
+.lh-view {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lh-view.active {
+  display: flex;
+}
+
+/* =========================================================
+   3. FILTER BAR – giống hsht-filters
+   ========================================================= */
+
+.lh-filter-row {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.lh-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.lh-filter-group label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.lh-input,
+.lh-select {
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 12px;
+  padding: 0 12px;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.lh-input:focus,
+.lh-select:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+.lh-input::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+}
+
+.lh-filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* =========================================================
+   4. SECTION CARD & META – map sang section-card
+   ========================================================= */
+
+.lh-section-card {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.lh-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.lh-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.lh-section-subtitle {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Auto-generate card nổi bật nhưng vẫn sáng */
+.lh-auto-card {
+  border-style: dashed;
+  border-color: rgba(236, 72, 153, 0.6);
+  background: #fef2f2;
+}
+
+/* =========================================================
+   5. TABLES – giống table-wrapper + mb-table
+   ========================================================= */
+
+.lh-table-wrapper {
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  position: relative;
+}
+
+.lh-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.lh-table thead {
+  background: #f9fafb;
+}
+
+.lh-table thead th {
+  text-align: left;
+  padding: 9px 10px;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.lh-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.lh-table tbody td {
+  padding: 8px 10px;
+  color: #111827;
+}
+
+.lh-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.lh-table tbody tr:hover {
+  background: #e0f2fe;
+}
+
+/* Empty state trong wrapper */
+.lh-empty-state {
+  display: none;
+  padding: 14px 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.lh-empty-state i {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.lh-table-wrapper.empty .lh-empty-state {
+  display: block;
+}
+
+.lh-table-wrapper.empty table tbody {
+  display: none;
+}
+
+/* Cột hành động (nút sửa buổi) */
+.lh-table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.lh-action-btn {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+  transition: all 0.16s ease;
+}
+
+.lh-action-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* =========================================================
+   6. AUTO-GENERATE GRID
+   ========================================================= */
+
+.lh-auto-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin-top: 6px;
+}
+
+.lh-auto-col {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lh-auto-col-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lh-auto-col-head i {
+  font-size: 18px;
+  color: #ec4899;
+}
+
+.lh-auto-col-head h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.lh-auto-col-head p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.lh-auto-two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.lh-hint {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.lh-auto-actions {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.lh-auto-status {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.lh-auto-status.success {
+  color: #16a34a;
+}
+
+.lh-auto-status.error {
+  color: #dc2626;
+}
+
+/* =========================================================
+   7. MODAL EDIT BUỔI HỌC – nền sáng
+   ========================================================= */
+
+.lh-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.lh-modal-backdrop[hidden] {
+  display: none;
+}
+
+.lh-modal {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 14px 16px;
+  width: 720px;
+  max-width: 94vw;
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(15, 23, 42, 0.03);
+  border: 1px solid #e5e7eb;
+  color: #0f172a;
+}
+
+.lh-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.lh-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.lh-modal-title i {
+  color: #ec4899;
+  font-size: 18px;
+}
+
+.lh-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.lh-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.lh-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+.lh-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lh-form-group label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.lh-form-full {
+  grid-column: 1 / -1;
+}
+
+.lh-textarea {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  min-height: 60px;
+  resize: vertical;
+  transition: all 0.16s ease;
+}
+
+.lh-textarea:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.25);
+}
+
+.icon-btn.lh-modal-close {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.16s ease;
+}
+
+.icon-btn.lh-modal-close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* =========================================================
+   8. RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .lh-auto-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lh-modal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .lh-filter-row {
+    flex-direction: column;
+  }
+
+  .lh-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lh-tab span {
+    display: none;
+  }
+
+  .lh-tab {
+    justify-content: center;
+    padding-inline: 8px;
+  }
+
+  .lh-modal-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

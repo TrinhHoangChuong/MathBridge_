@@ -1,0 +1,609 @@
+<!-- ICONS (Remix Icon) -->
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+
+<div class="dash-card content-panel lh-panel" id="lichhoc-panel">
+    <!-- HEADER -->
+    <div class="lh-header">
+        <div class="lh-header-left">
+            <div class="lh-header-icon">
+                <i class="ri-calendar-schedule-line"></i>
+            </div>
+            <div>
+                <h2 class="lh-title">Lịch học &amp; Lịch làm</h2>
+                <p class="lh-subtitle">
+                    Quản lý lịch buổi học theo lớp, theo giáo viên và theo học sinh.
+                </p>
+            </div>
+        </div>
+
+        <div class="lh-header-right">
+            <button class="btn ghost" id="lh-btn-auto-generate" type="button">
+                <i class="ri-magic-line"></i>
+                <span>Tự động tạo lịch cho lớp</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="lh-tabs">
+        <button class="lh-tab active" data-view="class" type="button">
+            <i class="ri-menu-line"></i>
+            <span>Lịch theo lớp</span>
+        </button>
+        <button class="lh-tab" data-view="teacher" type="button">
+            <i class="ri-user-voice-line"></i>
+            <span>Lịch làm giáo viên</span>
+        </button>
+        <button class="lh-tab" data-view="student" type="button">
+            <i class="ri-user-line"></i>
+            <span>Lịch học học sinh</span>
+        </button>
+    </div>
+
+    <div class="lh-views">
+        <!-- ========== VIEW: CLASS ========== -->
+        <div class="lh-view active" data-view="class">
+            <!-- FILTER BAR -->
+            <div class="lh-filter-row">
+                <div class="lh-filter-group">
+                    <label for="lh-class-filter">Lớp học</label>
+                    <select id="lh-class-filter" class="lh-select">
+                        <option value="">-- Chọn lớp --</option>
+                    </select>
+                </div>
+
+                <div class="lh-filter-group">
+                    <label for="lh-class-from-date">Từ ngày</label>
+                    <input
+                            type="date"
+                            id="lh-class-from-date"
+                            class="lh-input"
+                    />
+                </div>
+
+                <div class="lh-filter-group">
+                    <label for="lh-class-to-date">Đến ngày</label>
+                    <input
+                            type="date"
+                            id="lh-class-to-date"
+                            class="lh-input"
+                    />
+                </div>
+
+                <div class="lh-filter-actions">
+                    <button
+                            type="button"
+                            class="btn primary"
+                            id="lh-class-filter-btn"
+                    >
+                        <i class="ri-search-line"></i>
+                        <span>Lọc lịch</span>
+                    </button>
+                    <button
+                            type="button"
+                            class="btn ghost"
+                            id="lh-class-reset-btn"
+                    >
+                        <i class="ri-refresh-line"></i>
+                        <span>Đặt lại</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CLASS SCHEDULE TABLE -->
+            <div class="lh-section-card">
+                <div class="lh-section-head">
+                    <div>
+                        <h3 class="lh-section-title">Lịch buổi học theo lớp</h3>
+                        <p class="lh-section-subtitle">
+                            Dữ liệu lấy từ bảng BuoiHocChiTiet, hiển thị theo lớp &amp; khoảng ngày.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lh-table-wrapper">
+                    <table
+                            id="lh-class-schedule-table"
+                            class="lh-table"
+                    >
+                        <thead>
+                        <tr>
+                            <th>Buổi</th>
+                            <th>Ngày học</th>
+                            <th>Giờ</th>
+                            <th>Ca học</th>
+                            <th>Phòng</th>
+                            <th>Cơ sở</th>
+                            <th>Nội dung</th>
+                            <th>Ghi chú</th>
+                            <th>Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <div
+                            id="lh-class-empty-state"
+                            class="lh-empty-state"
+                    >
+                        <i class="ri-calendar-event-line"></i>
+                        <p>Chưa có lịch cho lớp / khoảng ngày đang chọn.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUTO GENERATE SECTION -->
+            <div
+                    class="lh-section-card lh-auto-card"
+                    id="lh-auto-section"
+            >
+                <div class="lh-section-head">
+                    <div>
+                        <h3 class="lh-section-title">Tự động tạo lịch cho lớp</h3>
+                        <p class="lh-section-subtitle">
+                            Dựa trên thông tin lớp (SốBuoi, LoaiNgay, NgayBatDau, HinhThucHoc),
+                            chọn ca học &amp; phòng để hệ thống sinh hàng loạt bản ghi
+                            <strong>BuoiHocChiTiet</strong>. Dữ liệu 100% theo CSDL hiện tại.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lh-auto-grid">
+                    <!-- THÔNG TIN LỚP -->
+                    <div class="lh-auto-col">
+                        <div class="lh-auto-col-head">
+                            <i class="ri-book-open-line"></i>
+                            <div>
+                                <h4>Thông tin lớp</h4>
+                                <p>Dữ liệu lấy từ bảng LopHoc</p>
+                            </div>
+                        </div>
+
+                        <div class="lh-form-group">
+                            <label for="lh-auto-class">Chọn lớp</label>
+                            <select id="lh-auto-class" class="lh-select">
+                                <option value="">-- Chọn lớp --</option>
+                            </select>
+                        </div>
+
+                        <div class="lh-auto-two-cols">
+                            <div class="lh-form-group">
+                                <label for="lh-auto-so-buoi">Số buổi (SoBuoi)</label>
+                                <input
+                                        type="number"
+                                        min="1"
+                                        id="lh-auto-so-buoi"
+                                        class="lh-input"
+                                        placeholder="Ví dụ: 12"
+                                />
+                            </div>
+
+                            <div class="lh-form-group">
+                                <label for="lh-auto-loai-ngay">Loại ngày (LoaiNgay)</label>
+                                <input
+                                        type="text"
+                                        id="lh-auto-loai-ngay"
+                                        class="lh-input"
+                                        placeholder="Ví dụ: 2-4-6 hoặc 3-5-7"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="lh-auto-two-cols">
+                            <div class="lh-form-group">
+                                <label for="lh-auto-ngay-bat-dau">Ngày bắt đầu (NgayBatDau)</label>
+                                <input
+                                        type="date"
+                                        id="lh-auto-ngay-bat-dau"
+                                        class="lh-input"
+                                />
+                            </div>
+
+                            <div class="lh-form-group">
+                                <label for="lh-auto-hinh-thuc">Hình thức học (HinhThucHoc)</label>
+                                <input
+                                        type="text"
+                                        id="lh-auto-hinh-thuc"
+                                        class="lh-input"
+                                        placeholder="Offline / Online..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CA HỌC & THỜI GIAN -->
+                    <div class="lh-auto-col">
+                        <div class="lh-auto-col-head">
+                            <i class="ri-time-line"></i>
+                            <div>
+                                <h4>Ca học &amp; thời gian</h4>
+                                <p>FE map ca học thành GioBatDau &amp; GioKetThuc</p>
+                            </div>
+                        </div>
+
+                        <div class="lh-form-group">
+                            <label for="lh-auto-shift">Chọn ca học</label>
+                            <select id="lh-auto-shift" class="lh-select">
+                                <option value="">-- Chọn ca --</option>
+                                <option value="SANG_08_10">Sáng (08:00 - 10:00)</option>
+                                <option value="CHIEU_14_16">Chiều (14:00 - 16:00)</option>
+                                <option value="TOI_18_20">Tối (18:00 - 20:00)</option>
+                            </select>
+                        </div>
+
+                        <div class="lh-auto-two-cols">
+                            <div class="lh-form-group">
+                                <label for="lh-auto-gio-bat-dau">Giờ bắt đầu (GioBatDau)</label>
+                                <input
+                                        type="time"
+                                        id="lh-auto-gio-bat-dau"
+                                        class="lh-input"
+                                />
+                            </div>
+
+                            <div class="lh-form-group">
+                                <label for="lh-auto-gio-ket-thuc">Giờ kết thúc (GioKetThuc)</label>
+                                <input
+                                        type="time"
+                                        id="lh-auto-gio-ket-thuc"
+                                        class="lh-input"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CƠ SỞ & PHÒNG -->
+                    <div class="lh-auto-col">
+                        <div class="lh-auto-col-head">
+                            <i class="ri-building-2-line"></i>
+                            <div>
+                                <h4>Cơ sở &amp; phòng</h4>
+                                <p>Dữ liệu từ CoSo &amp; Phong</p>
+                            </div>
+                        </div>
+
+                        <div class="lh-form-group">
+                            <label for="lh-auto-campus">Cơ sở (CoSo)</label>
+                            <select id="lh-auto-campus" class="lh-select">
+                                <option value="">-- Chọn cơ sở --</option>
+                            </select>
+                            <small class="lh-hint">
+                                Dữ liệu từ bảng CoSo (ID_CS, TENCOSO, DIACHI2,...)
+                            </small>
+                        </div>
+
+                        <div class="lh-form-group">
+                            <label for="lh-auto-room">Phòng học (Phong)</label>
+                            <select id="lh-auto-room" class="lh-select" disabled>
+                                <option value="">-- Chọn phòng --</option>
+                            </select>
+                            <small class="lh-hint">
+                                Dữ liệu từ bảng Phong theo ID_CS đã chọn.
+                            </small>
+                        </div>
+
+                        <div class="lh-auto-actions">
+                            <button
+                                    type="button"
+                                    class="btn primary"
+                                    id="lh-auto-generate-submit"
+                            >
+                                <i class="ri-sparkling-2-line"></i>
+                                <span>Tạo lịch tự động</span>
+                            </button>
+                            <p
+                                    id="lh-auto-status"
+                                    class="lh-auto-status"
+                            ></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== VIEW: TEACHER ========== -->
+        <div class="lh-view" data-view="teacher">
+            <div class="lh-filter-row">
+                <div class="lh-filter-group">
+                    <label for="lh-teacher-filter">Giáo viên</label>
+                    <select id="lh-teacher-filter" class="lh-select">
+                        <option value="">-- Chọn giáo viên --</option>
+                    </select>
+                </div>
+
+                <div class="lh-filter-group">
+                    <label for="lh-teacher-from-date">Từ ngày</label>
+                    <input
+                            type="date"
+                            id="lh-teacher-from-date"
+                            class="lh-input"
+                    />
+                </div>
+
+                <div class="lh-filter-group">
+                    <label for="lh-teacher-to-date">Đến ngày</label>
+                    <input
+                            type="date"
+                            id="lh-teacher-to-date"
+                            class="lh-input"
+                    />
+                </div>
+
+                <div class="lh-filter-actions">
+                    <button
+                            type="button"
+                            class="btn primary"
+                            id="lh-teacher-filter-btn"
+                    >
+                        <i class="ri-search-line"></i>
+                        <span>Lọc lịch</span>
+                    </button>
+                    <button
+                            type="button"
+                            class="btn ghost"
+                            id="lh-teacher-reset-btn"
+                    >
+                        <i class="ri-refresh-line"></i>
+                        <span>Đặt lại</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lh-section-card">
+                <div class="lh-section-head">
+                    <div>
+                        <h3 class="lh-section-title">Lịch làm của giáo viên</h3>
+                        <p class="lh-section-subtitle">
+                            Dựa trên các buổi học của tất cả lớp mà giáo viên phụ trách.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lh-table-wrapper">
+                    <table
+                            id="lh-teacher-schedule-table"
+                            class="lh-table"
+                    >
+                        <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Giờ</th>
+                            <th>Lớp</th>
+                            <th>Chương trình</th>
+                            <th>Phòng</th>
+                            <th>Cơ sở</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <div
+                            id="lh-teacher-empty-state"
+                            class="lh-empty-state"
+                    >
+                        <i class="ri-calendar-event-line"></i>
+                        <p>Chưa có lịch dạy cho giáo viên / khoảng ngày đang chọn.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== VIEW: STUDENT ========== -->
+        <div class="lh-view" data-view="student">
+            <div class="lh-filter-row">
+                <div class="lh-filter-group">
+                    <label for="lh-student-filter">Học sinh</label>
+                    <select id="lh-student-filter" class="lh-select">
+                        <option value="">-- Chọn học sinh --</option>
+                    </select>
+                </div>
+
+                <div class="lh-filter-group">
+                    <label for="lh-student-from-date">Từ ngày</label>
+                    <input
+                            type="date"
+                            id="lh-student-from-date"
+                            class="lh-input"
+                    />
+                </div>
+
+                <div class="lh-filter-group">
+                    <label for="lh-student-to-date">Đến ngày</label>
+                    <input
+                            type="date"
+                            id="lh-student-to-date"
+                            class="lh-input"
+                    />
+                </div>
+
+                <div class="lh-filter-actions">
+                    <button
+                            type="button"
+                            class="btn primary"
+                            id="lh-student-filter-btn"
+                    >
+                        <i class="ri-search-line"></i>
+                        <span>Lọc lịch</span>
+                    </button>
+                    <button
+                            type="button"
+                            class="btn ghost"
+                            id="lh-student-reset-btn"
+                    >
+                        <i class="ri-refresh-line"></i>
+                        <span>Đặt lại</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lh-section-card">
+                <div class="lh-section-head">
+                    <div>
+                        <h3 class="lh-section-title">Lịch học của học sinh</h3>
+                        <p class="lh-section-subtitle">
+                            Dựa trên các lớp mà học sinh đã đăng ký (DangKyLH).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lh-table-wrapper">
+                    <table
+                            id="lh-student-schedule-table"
+                            class="lh-table"
+                    >
+                        <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Giờ</th>
+                            <th>Lớp</th>
+                            <th>Chương trình</th>
+                            <th>Phòng</th>
+                            <th>Cơ sở</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <div
+                            id="lh-student-empty-state"
+                            class="lh-empty-state"
+                    >
+                        <i class="ri-calendar-event-line"></i>
+                        <p>Chưa có lịch học cho học sinh / khoảng ngày đang chọn.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODAL: CHỈNH SỬA BUỔI HỌC ========== -->
+<div
+        class="lh-modal-backdrop"
+        id="lh-edit-modal-backdrop"
+        hidden
+>
+    <div class="lh-modal">
+        <div class="lh-modal-header">
+            <div class="lh-modal-title">
+                <i class="ri-edit-line"></i>
+                <span>Chỉnh sửa buổi học</span>
+            </div>
+            <button
+                    type="button"
+                    class="icon-btn lh-modal-close"
+                    id="lh-edit-modal-close"
+                    aria-label="Đóng"
+            >
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+
+        <div class="lh-modal-body">
+            <form id="lh-edit-session-form">
+                <input type="hidden" id="lh-edit-idBh" />
+
+                <div class="lh-modal-grid">
+                    <div class="lh-form-group">
+                        <label for="lh-edit-date">Ngày học</label>
+                        <input
+                                type="date"
+                                id="lh-edit-date"
+                                class="lh-input"
+                                required
+                        />
+                    </div>
+
+                    <div class="lh-form-group">
+                        <label for="lh-edit-start">Giờ bắt đầu</label>
+                        <input
+                                type="time"
+                                id="lh-edit-start"
+                                class="lh-input"
+                                required
+                        />
+                    </div>
+
+                    <div class="lh-form-group">
+                        <label for="lh-edit-end">Giờ kết thúc</label>
+                        <input
+                                type="time"
+                                id="lh-edit-end"
+                                class="lh-input"
+                                required
+                        />
+                    </div>
+
+                    <div class="lh-form-group">
+                        <label for="lh-edit-campus">Cơ sở</label>
+                        <select id="lh-edit-campus" class="lh-select">
+                            <option value="">-- Chọn cơ sở --</option>
+                        </select>
+                        <small class="lh-hint">
+                            Dữ liệu từ CoSo (ID_CS, TENCOSO,...)
+                        </small>
+                    </div>
+
+                    <div class="lh-form-group">
+                        <label for="lh-edit-room">Phòng học</label>
+                        <select id="lh-edit-room" class="lh-select">
+                            <option value="">-- Chọn phòng --</option>
+                        </select>
+                        <small class="lh-hint">
+                            Dữ liệu từ Phong theo ID_CS.
+                        </small>
+                    </div>
+
+                    <div class="lh-form-group lh-form-full">
+                        <label for="lh-edit-tenCa">Ca học (TenCaHoc)</label>
+                        <input
+                                type="text"
+                                id="lh-edit-tenCa"
+                                class="lh-input"
+                                placeholder="Ví dụ: Ca tối 19:00 - 21:00"
+                        />
+                    </div>
+
+                    <div class="lh-form-group lh-form-full">
+                        <label for="lh-edit-noiDung">Nội dung buổi học</label>
+                        <textarea
+                                id="lh-edit-noiDung"
+                                class="lh-textarea"
+                                rows="2"
+                        ></textarea>
+                    </div>
+
+                    <div class="lh-form-group lh-form-full">
+                        <label for="lh-edit-ghiChu">Ghi chú</label>
+                        <textarea
+                                id="lh-edit-ghiChu"
+                                class="lh-textarea"
+                                rows="2"
+                        ></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="lh-modal-footer">
+            <button
+                    type="button"
+                    class="btn ghost"
+                    id="lh-edit-modal-cancel"
+            >
+                Hủy
+            </button>
+            <button
+                    type="button"
+                    class="btn primary"
+                    id="lh-edit-modal-save"
+            >
+                Lưu thay đổi
+            </button>
+        </div>
+    </div>
+</div>
+<!-- ========== END MODAL ========== -->
