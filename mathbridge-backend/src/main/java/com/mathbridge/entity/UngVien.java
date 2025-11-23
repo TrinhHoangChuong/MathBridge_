@@ -28,7 +28,7 @@ public class UngVien {
     @Column(name = "SDT", length = 100, nullable = false)
     private String sdt;
 
-    @Column(name = "CV_URL", length = 255, nullable = false)
+    @Column(name = "CV_URL", length = 255)
     private String cvUrl;
 
     @Column(name = "TrangThaiHoSo", length = 100)
