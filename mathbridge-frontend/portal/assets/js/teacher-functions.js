@@ -4,6 +4,254 @@
 // This MUST be defined before any other code that might reference it
 window.__teacherFunctionsLoaded = false;
 
+// Define toggleEditMode early to ensure it's available when HTML loads
+window.toggleEditMode = function(event) {
+    console.log('toggleEditMode called', event);
+    
+    // Prevent default behavior
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    try {
+        const editBtn = document.getElementById('editGradesBtn');
+        console.log('editBtn found:', editBtn);
+        
+        if (!editBtn) {
+            console.error('editBtn not found!');
+            alert('Không tìm thấy nút chỉnh sửa. Vui lòng tải lại trang.');
+            return;
+        }
+        
+        const gradeInputs = document.querySelectorAll('.grade-input-small');
+        console.log('gradeInputs found:', gradeInputs.length);
+        
+        const btnText = editBtn.textContent || editBtn.innerHTML || '';
+        const isEditMode = btnText.includes('Lưu điểm');
+        console.log('isEditMode:', isEditMode, 'btnText:', btnText);
+        
+        if (isEditMode) {
+            // Save mode: Save all grades
+            console.log('Entering save mode...');
+            if (typeof window.saveAllGrades === 'function') {
+                window.saveAllGrades();
+            } else {
+                console.error('saveAllGrades function not found');
+                alert('Lỗi: Không tìm thấy hàm lưu điểm. Vui lòng tải lại trang.');
+            }
+        } else {
+            // Enter edit mode: Enable all inputs
+            console.log('Entering edit mode...');
+            if (gradeInputs.length === 0) {
+                console.warn('No grade inputs found');
+                if (typeof showNotification === 'function') {
+                    showNotification('Không có điểm số để chỉnh sửa.', 'warning');
+                } else {
+                    alert('Không có điểm số để chỉnh sửa.');
+                }
+                return;
+            }
+            
+            gradeInputs.forEach((input, index) => {
+                console.log(`Enabling input ${index}:`, input);
+                input.disabled = false;
+                input.style.backgroundColor = '#fff';
+                input.style.cursor = 'text';
+            });
+            
+            if (editBtn) {
+                editBtn.innerHTML = '<i class="fas fa-save"></i> Lưu điểm';
+                editBtn.setAttribute('onclick', 'toggleEditMode(event)');
+                console.log('Button updated to "Lưu điểm"');
+            }
+        }
+    } catch (error) {
+        console.error('Error in toggleEditMode:', error);
+        alert('Có lỗi xảy ra: ' + error.message);
+    }
+};
+
+// Define saveAllGrades early as well
+window.saveAllGrades = async function() {
+    console.log('saveAllGrades called');
+    try {
+        if (typeof TeacherAPI === 'undefined') {
+            throw new Error('TeacherAPI không khả dụng');
+        }
+        
+        const api = new TeacherAPI();
+        const gradeInputs = document.querySelectorAll('.grade-input-small');
+        const editBtn = document.getElementById('editGradesBtn');
+        
+        console.log('Found inputs:', gradeInputs.length);
+        
+        if (gradeInputs.length === 0) {
+            showNotification('Không có điểm số để lưu.', 'warning');
+            return;
+        }
+        
+        // Disable button and show loading
+        if (editBtn) {
+            editBtn.disabled = true;
+            editBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+        }
+        
+        // Group updates by student - collect all 3 scores for each student with changes
+        const updatesByStudent = new Map();
+        const studentsWithChanges = new Set();
+        
+        // First pass: identify students with changes
+        gradeInputs.forEach(input => {
+            const studentId = input.getAttribute('data-student-id');
+            const classId = input.getAttribute('data-class-id');
+            const loaiDiem = input.getAttribute('data-loai-diem');
+            const originalValue = input.getAttribute('data-original-value') || '';
+            const currentValue = input.value.trim();
+            
+            if (!studentId || !classId || !loaiDiem) {
+                console.warn('Missing attributes:', { studentId, classId, loaiDiem });
+                return;
+            }
+            
+            // Check if value has changed
+            if (currentValue !== originalValue) {
+                const key = `${classId}_${studentId}`;
+                studentsWithChanges.add(key);
+            }
+        });
+        
+        // Second pass: collect ALL 3 scores for students with changes
+        gradeInputs.forEach(input => {
+            const studentId = input.getAttribute('data-student-id');
+            const classId = input.getAttribute('data-class-id');
+            const loaiDiem = input.getAttribute('data-loai-diem');
+            const currentValue = input.value.trim();
+            
+            if (!studentId || !classId || !loaiDiem) {
+                return;
+            }
+            
+            const key = `${classId}_${studentId}`;
+            
+            // Only process students with changes
+            if (!studentsWithChanges.has(key)) {
+                return;
+            }
+            
+            if (!updatesByStudent.has(key)) {
+                updatesByStudent.set(key, {
+                    classId,
+                    studentId,
+                    diem15: null,
+                    diem45: null,
+                    diemHK: null,
+                    hasChanges: true
+                });
+            }
+            
+            const update = updatesByStudent.get(key);
+            const diemValue = currentValue === '' ? null : parseFloat(currentValue);
+            
+            // Validate
+            if (diemValue !== null && (isNaN(diemValue) || diemValue < 0 || diemValue > 10)) {
+                throw new Error(`Điểm số không hợp lệ cho học sinh ${studentId}: ${currentValue}`);
+            }
+            
+            // Collect all 3 scores (not just changed ones)
+            if (loaiDiem === '15P') {
+                update.diem15 = diemValue;
+            } else if (loaiDiem === '45P') {
+                update.diem45 = diemValue;
+            } else if (loaiDiem === 'HK') {
+                update.diemHK = diemValue;
+            }
+        });
+        
+        // Filter to only students with changes
+        const studentsToUpdate = Array.from(updatesByStudent.values()).filter(u => u.hasChanges);
+        
+        console.log('Students to update:', studentsToUpdate.length, studentsToUpdate);
+        
+        if (studentsToUpdate.length === 0) {
+            showNotification('Không có thay đổi nào để lưu.', 'info');
+            
+            // Exit edit mode
+            const allGradeInputs = document.querySelectorAll('.grade-input-small');
+            allGradeInputs.forEach(input => {
+                input.disabled = true;
+                input.style.backgroundColor = '#f8fafc';
+                input.style.cursor = 'not-allowed';
+            });
+            
+            if (editBtn) {
+                editBtn.disabled = false;
+                editBtn.innerHTML = '<i class="fas fa-edit"></i> Chỉnh sửa';
+                editBtn.setAttribute('onclick', 'toggleEditMode(event)');
+            }
+            return;
+        }
+        
+        // Update only students with changes
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (const update of studentsToUpdate) {
+            try {
+                console.log('Updating student:', update.studentId, update);
+                // Update all 3 scores together to ensure no data loss
+                // Always send all 3 scores (null if empty) to preserve existing values
+                await api.updateDiemSo(update.classId, update.studentId, '15P', update.diem15);
+                await api.updateDiemSo(update.classId, update.studentId, '45P', update.diem45);
+                await api.updateDiemSo(update.classId, update.studentId, 'HK', update.diemHK);
+                successCount++;
+                console.log('Successfully updated student:', update.studentId);
+            } catch (error) {
+                console.error(`Error updating grades for student ${update.studentId}:`, error);
+                errorCount++;
+            }
+        }
+        
+        // Exit edit mode: Disable all inputs and change button back
+        const allGradeInputs = document.querySelectorAll('.grade-input-small');
+        
+        allGradeInputs.forEach(input => {
+            input.disabled = true;
+            input.style.backgroundColor = '#f8fafc';
+            input.style.cursor = 'not-allowed';
+        });
+        
+        if (editBtn) {
+            editBtn.disabled = false;
+            editBtn.innerHTML = '<i class="fas fa-edit"></i> Chỉnh sửa';
+            editBtn.setAttribute('onclick', 'toggleEditMode(event)');
+        }
+        
+        if (errorCount === 0) {
+            showNotification(`Đã lưu điểm số cho ${successCount} học sinh thành công!`, 'success');
+        } else {
+            showNotification(`Đã lưu ${successCount} học sinh, ${errorCount} học sinh lỗi.`, 'warning');
+        }
+        
+        // Refresh grades section
+        const firstUpdate = Array.from(updatesByStudent.values())[0];
+        if (firstUpdate && window.teacherDashboard) {
+            console.log('Refreshing grades section...');
+            await window.teacherDashboard.loadGradesSection(firstUpdate.classId, { preserveSelection: true });
+        }
+    } catch (error) {
+        console.error('Error saving all grades:', error);
+        showNotification(error.message || 'Không thể lưu điểm số. Vui lòng thử lại sau.', 'error');
+        
+        const editBtn = document.getElementById('editGradesBtn');
+        if (editBtn) {
+            editBtn.disabled = false;
+            editBtn.innerHTML = '<i class="fas fa-save"></i> Lưu điểm';
+            editBtn.setAttribute('onclick', 'toggleEditMode(event)');
+        }
+    }
+};
+
 window.loadAssignmentsSection = async function() {
     console.log('=== loadAssignmentsSection called ===');
     console.log('Function dependencies check:');
@@ -1608,9 +1856,9 @@ window.gradeAssignment = async function(assignmentId) {
         const baiNops = await api.getBaiNopByBaiTap(assignmentId);
         
         const modal = document.createElement('div');
-        modal.className = 'modal active large-modal';
+        modal.className = 'modal active';
         modal.innerHTML = `
-            <div class="modal-content grading-modal-content">
+            <div class="modal-content large-modal grading-modal-content">
                 <div class="modal-header">
                     <div class="modal-header-content">
                         <div class="modal-icon-wrapper">
@@ -1642,10 +1890,27 @@ window.gradeAssignment = async function(assignmentId) {
                                 </thead>
                                 <tbody>
                                     ${baiNops.map((bn, index) => {
-                                        const statusClass = bn.trangThai === 'DA_CHAM' || bn.trangThai === 'GRADED_AUTO' ? 'graded' : 
-                                                           bn.trangThai === 'IN_PROGRESS' ? 'in-progress' : 'pending';
-                                        const statusText = bn.trangThai === 'DA_CHAM' || bn.trangThai === 'GRADED_AUTO' ? 'Đã chấm' : 
-                                                          bn.trangThai === 'IN_PROGRESS' ? 'Đang làm' : 'Chờ chấm';
+                                        // Check if assignment is expired
+                                        const now = new Date();
+                                        const ngayKetThuc = bn.ngayKetThuc ? new Date(bn.ngayKetThuc) : null;
+                                        const isExpired = ngayKetThuc && now > ngayKetThuc;
+                                        
+                                        // Determine status: if IN_PROGRESS but expired, show "Hết hạn"
+                                        let statusClass, statusText;
+                                        if (bn.trangThai === 'DA_CHAM' || bn.trangThai === 'GRADED_AUTO') {
+                                            statusClass = 'graded';
+                                            statusText = 'Đã chấm';
+                                        } else if (bn.trangThai === 'IN_PROGRESS' && isExpired) {
+                                            statusClass = 'expired';
+                                            statusText = 'Hết hạn';
+                                        } else if (bn.trangThai === 'IN_PROGRESS') {
+                                            statusClass = 'in-progress';
+                                            statusText = 'Đang làm';
+                                        } else {
+                                            statusClass = 'pending';
+                                            statusText = 'Chờ chấm';
+                                        }
+                                        
                                         const avatar = (bn.hoTen || 'HS').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                                         return `
                                             <tr class="grading-row ${statusClass}">
@@ -1681,7 +1946,7 @@ window.gradeAssignment = async function(assignmentId) {
                                                 </td>
                                                 <td class="col-status">
                                                     <span class="status-badge-modern ${statusClass}">
-                                                        <i class="fas ${statusClass === 'graded' ? 'fa-check-circle' : statusClass === 'in-progress' ? 'fa-spinner fa-spin' : 'fa-clock'}"></i>
+                                                        <i class="fas ${statusClass === 'graded' ? 'fa-check-circle' : statusClass === 'in-progress' ? 'fa-spinner fa-spin' : statusClass === 'expired' ? 'fa-exclamation-triangle' : 'fa-clock'}"></i>
                                                         ${statusText}
                                                     </span>
                                                 </td>
@@ -1721,13 +1986,47 @@ window.gradeAssignment = async function(assignmentId) {
         
         document.body.appendChild(modal);
         
-        // Add enter key support for quick grading
+        // Add enter key support for quick grading and input change handlers
         modal.querySelectorAll('.grade-input-modern').forEach(input => {
+            // Enter key to save
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const baiNopId = input.id.replace('grade_', '');
                     saveGrade(baiNopId);
+                }
+            });
+            
+            // Real-time validation and visual feedback
+            input.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                const baiNopId = input.id.replace('grade_', '');
+                const row = input.closest('tr');
+                
+                // Remove previous validation classes
+                input.classList.remove('input-invalid', 'input-valid');
+                
+                if (e.target.value.trim() === '') {
+                    return; // Empty input is OK
+                }
+                
+                if (isNaN(value) || value < 0 || value > 10) {
+                    input.classList.add('input-invalid');
+                } else {
+                    input.classList.add('input-valid');
+                }
+            });
+            
+            // Blur event to auto-save if value changed
+            let originalValue = input.value;
+            input.addEventListener('blur', (e) => {
+                if (e.target.value !== originalValue && e.target.value.trim() !== '') {
+                    const value = parseFloat(e.target.value);
+                    if (!isNaN(value) && value >= 0 && value <= 10) {
+                        // Auto-save on blur if valid
+                        const baiNopId = input.id.replace('grade_', '');
+                        saveGrade(baiNopId);
+                    }
                 }
             });
         });
@@ -1767,39 +2066,56 @@ window.saveGrade = async function(baiNopId) {
         }
         
         const diemSoValue = gradeInput.value.trim();
-        if (!diemSoValue) {
-            showNotification('Vui lòng nhập điểm số!', 'error');
-            gradeInput.focus();
+        const nhanXet = commentInput ? commentInput.value.trim() : '';
+        
+        // Allow saving comment even without score
+        if (!diemSoValue && !nhanXet) {
+            showNotification('Vui lòng nhập điểm số hoặc nhận xét!', 'error');
             return;
         }
         
-        const diemSo = parseFloat(diemSoValue);
-        const nhanXet = commentInput ? commentInput.value : '';
-        
-        if (isNaN(diemSo) || diemSo < 0 || diemSo > 10) {
-            showNotification('Điểm số phải từ 0 đến 10!', 'error');
-            gradeInput.focus();
-            return;
+        // Validate score if provided
+        let diemSo = null;
+        if (diemSoValue) {
+            diemSo = parseFloat(diemSoValue);
+            if (isNaN(diemSo) || diemSo < 0 || diemSo > 10) {
+                showNotification('Điểm số phải từ 0 đến 10!', 'error');
+                gradeInput.focus();
+                return;
+            }
         }
         
         await api.chamDiemBaiNop(baiNopId, diemSo, nhanXet);
         
-        // Update status badge
+        // Update status badge and input styling
         const row = gradeInput.closest('tr');
         if (row) {
-            row.classList.remove('pending', 'in-progress');
-            row.classList.add('graded');
-            const statusBadge = row.querySelector('.status-badge-modern');
-            if (statusBadge) {
-                statusBadge.className = 'status-badge-modern graded';
-                statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Đã chấm';
+            // Only mark as graded if score is provided
+            if (diemSo != null) {
+                row.classList.remove('pending', 'in-progress');
+                row.classList.add('graded');
+                const statusBadge = row.querySelector('.status-badge-modern');
+                if (statusBadge) {
+                    statusBadge.className = 'status-badge-modern graded';
+                    statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Đã chấm';
+                }
+            }
+            
+            // Update input styling to show it's saved
+            if (diemSo != null) {
+                gradeInput.classList.remove('input-invalid', 'input-valid');
+                gradeInput.classList.add('input-saved');
+                gradeInput.dataset.savedValue = diemSoValue;
             }
         }
         
-        showNotification('Đã lưu điểm thành công!', 'success');
+        const message = diemSo != null 
+            ? 'Đã lưu điểm và nhận xét thành công!' 
+            : 'Đã lưu nhận xét thành công!';
+        showNotification(message, 'success');
     } catch (error) {
         console.error('Error saving grade:', error);
-        showNotification(error.message || 'Không thể lưu điểm. Vui lòng thử lại sau.', 'error');
+        showNotification(error.message || 'Không thể lưu. Vui lòng thử lại sau.', 'error');
     }
 };
 
@@ -1829,26 +2145,31 @@ window.bulkSaveGrades = async function(assignmentId) {
             const baiNopId = input.id.replace('grade_', '');
             const commentInput = document.getElementById(`comment_${baiNopId}`);
             const diemSoValue = input.value.trim();
+            const nhanXet = commentInput ? commentInput.value.trim() : '';
             
-            if (!diemSoValue) {
-                continue; // Skip empty grades
-            }
-            
-            const diemSo = parseFloat(diemSoValue);
-            if (isNaN(diemSo) || diemSo < 0 || diemSo > 10) {
-                errorCount++;
-                errors.push(`Điểm số không hợp lệ cho học sinh: ${input.closest('tr')?.querySelector('.student-name')?.textContent || 'N/A'}`);
+            // Skip if both score and comment are empty
+            if (!diemSoValue && !nhanXet) {
                 continue;
             }
             
+            // Validate score if provided
+            let diemSo = null;
+            if (diemSoValue) {
+                diemSo = parseFloat(diemSoValue);
+                if (isNaN(diemSo) || diemSo < 0 || diemSo > 10) {
+                    errorCount++;
+                    errors.push(`Điểm số không hợp lệ cho học sinh: ${input.closest('tr')?.querySelector('.student-name')?.textContent || 'N/A'}`);
+                    continue;
+                }
+            }
+            
             try {
-                const nhanXet = commentInput ? commentInput.value : '';
                 await api.chamDiemBaiNop(baiNopId, diemSo, nhanXet);
                 savedCount++;
                 
-                // Update status badge
+                // Update status badge only if score is provided
                 const row = input.closest('tr');
-                if (row) {
+                if (row && diemSo != null) {
                     row.classList.remove('pending', 'in-progress');
                     row.classList.add('graded');
                     const statusBadge = row.querySelector('.status-badge-modern');
@@ -1859,7 +2180,7 @@ window.bulkSaveGrades = async function(assignmentId) {
                 }
             } catch (error) {
                 errorCount++;
-                errors.push(error.message || `Lỗi khi lưu điểm cho học sinh: ${input.closest('tr')?.querySelector('.student-name')?.textContent || 'N/A'}`);
+                errors.push(error.message || `Lỗi khi lưu cho học sinh: ${input.closest('tr')?.querySelector('.student-name')?.textContent || 'N/A'}`);
             }
         }
         
@@ -1939,11 +2260,16 @@ window.filterGradesByClass = async function(classId) {
 window.updateDiemSo = async function(classId, studentId, loaiDiem, diemSo) {
     try {
         const api = new TeacherAPI();
-        const diem = parseFloat(diemSo);
         
-        if (Number.isNaN(diem) || diem < 0 || diem > 10) {
-            showNotification('Điểm số phải từ 0 đến 10!', 'error');
-            return;
+        // Allow empty value to clear the score (will be sent as null)
+        let diem = null;
+        if (diemSo !== null && diemSo !== undefined && diemSo !== '') {
+            diem = parseFloat(diemSo);
+            
+            if (Number.isNaN(diem) || diem < 0 || diem > 10) {
+                showNotification('Điểm số phải từ 0 đến 10!', 'error');
+                return;
+            }
         }
         
         await api.updateDiemSo(classId, studentId, loaiDiem, diem);
@@ -1959,7 +2285,13 @@ window.updateDiemSo = async function(classId, studentId, loaiDiem, diemSo) {
 };
 
 // Edit grade for a student
-window.editGrade = async function(studentId, classId) {
+window.editGrade = async function(studentId, classId, event) {
+    // Prevent default behavior if event is provided
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
     try {
         const api = new TeacherAPI();
         
@@ -2043,7 +2375,12 @@ window.editGrade = async function(studentId, classId) {
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-weight: 600; color: #0f172a;">Xếp loại:</span>
-                            <span id="editXepLoai" style="font-weight: 600; color: #64748b;">${studentGrade.xepLoai || 'Chưa có'}</span>
+                            <span id="editXepLoai" style="font-weight: 600; color: #64748b;">${(() => {
+                                let xl = studentGrade.xepLoai || 'Chưa có';
+                                if (xl.includes('Gi?i') || xl === 'Gi?i') xl = 'Giỏi';
+                                if (xl.toLowerCase().includes('trung bình') || xl.toLowerCase().includes('trung binh')) xl = 'TB';
+                                return xl;
+                            })()}</span>
                         </div>
                     </div>
                 </div>
@@ -2095,7 +2432,7 @@ window.editGrade = async function(studentId, classId) {
                 let xepLoai = 'Chưa có';
                 if (tb >= 8.0) xepLoai = 'Giỏi';
                 else if (tb >= 6.5) xepLoai = 'Khá';
-                else if (tb >= 5.0) xepLoai = 'Trung bình';
+                else if (tb >= 5.0) xepLoai = 'TB';
                 else xepLoai = 'Yếu';
                 xepLoaiDisplay.textContent = xepLoai;
             } else {
@@ -2118,28 +2455,31 @@ window.saveEditGrade = async function(studentId, classId) {
     try {
         const api = new TeacherAPI();
         
-        const diem15 = parseFloat(document.getElementById('editDiem15').value) || 0;
-        const diem45 = parseFloat(document.getElementById('editDiem45').value) || 0;
-        const diemHK = parseFloat(document.getElementById('editDiemHK').value) || 0;
+        const diem15Input = document.getElementById('editDiem15');
+        const diem45Input = document.getElementById('editDiem45');
+        const diemHKInput = document.getElementById('editDiemHK');
         
-        // Validate scores
-        if ((diem15 > 0 && (diem15 < 0 || diem15 > 10)) ||
-            (diem45 > 0 && (diem45 < 0 || diem45 > 10)) ||
-            (diemHK > 0 && (diemHK < 0 || diemHK > 10))) {
+        // Get values (allow empty/null to clear scores)
+        const diem15Val = diem15Input.value.trim();
+        const diem45Val = diem45Input.value.trim();
+        const diemHKVal = diemHKInput.value.trim();
+        
+        const diem15 = diem15Val === '' ? null : parseFloat(diem15Val);
+        const diem45 = diem45Val === '' ? null : parseFloat(diem45Val);
+        const diemHK = diemHKVal === '' ? null : parseFloat(diemHKVal);
+        
+        // Validate scores (if provided, must be between 0 and 10)
+        if ((diem15 !== null && (isNaN(diem15) || diem15 < 0 || diem15 > 10)) ||
+            (diem45 !== null && (isNaN(diem45) || diem45 < 0 || diem45 > 10)) ||
+            (diemHK !== null && (isNaN(diemHK) || diemHK < 0 || diemHK > 10))) {
             showNotification('Điểm số phải từ 0 đến 10!', 'error');
             return;
         }
         
-        // Update all three scores
-        if (diem15 > 0) {
-            await api.updateDiemSo(classId, studentId, '15P', diem15);
-        }
-        if (diem45 > 0) {
-            await api.updateDiemSo(classId, studentId, '45P', diem45);
-        }
-        if (diemHK > 0) {
-            await api.updateDiemSo(classId, studentId, 'HK', diemHK);
-        }
+        // Update all three scores (including 0 and null)
+        await api.updateDiemSo(classId, studentId, '15P', diem15);
+        await api.updateDiemSo(classId, studentId, '45P', diem45);
+        await api.updateDiemSo(classId, studentId, 'HK', diemHK);
         
         // Close modal
         const modal = document.getElementById('editGradeModal');
@@ -2158,6 +2498,10 @@ window.saveEditGrade = async function(studentId, classId) {
         showNotification('Không thể cập nhật điểm số. Vui lòng thử lại sau.', 'error');
     }
 };
+
+// toggleEditMode is already defined at the top of the file
+
+// saveAllGrades is already defined at the top of the file
 
 // Export grade report (PDF or Excel)
 window.exportGrades = async function() {
@@ -2325,7 +2669,12 @@ window.exportGradesAsPDF = async function(classId) {
                             <td>${diem45}</td>
                             <td>${diemHK}</td>
                             <td><strong>${diemTB}</strong></td>
-                            <td>${escapeHtml(ds.xepLoai || 'Chưa có')}</td>
+                            <td>${(() => {
+                                let xl = ds.xepLoai || 'Chưa có';
+                                if (xl.includes('Gi?i') || xl === 'Gi?i') xl = 'Giỏi';
+                                if (xl.toLowerCase().includes('trung bình') || xl.toLowerCase().includes('trung binh')) xl = 'TB';
+                                return xl;
+                            })()}</td>
                         </tr>
             `;
         });

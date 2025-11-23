@@ -8,7 +8,6 @@ import com.mathbridge.dto.BaiTapDTO;
 import com.mathbridge.dto.BaiNopDTO;
 import com.mathbridge.entity.BaiTap;
 import com.mathbridge.entity.BaiNop;
-import com.mathbridge.entity.BaiTapNoiDung;
 import com.mathbridge.entity.BuoiHocChiTiet;
 import com.mathbridge.entity.HocSinh;
 import com.mathbridge.entity.KetQuaHocTap;
@@ -164,62 +163,114 @@ public class BaiTapServiceImpl implements BaiTapService {
         BaiNop baiNop = baiNopRepository.findById(idBn)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài nộp"));
         
-        baiNop.setDiemSo(diemSo);
-        baiNop.setNhanXet(nhanXet);
-        baiNop.setTrangThai("DA_CHAM");
+        // Always update nhận xét if provided (ưu tiên cao nhất)
+        if (nhanXet != null && !nhanXet.trim().isEmpty()) {
+            // Trim và lưu nhận xét
+            baiNop.setNhanXet(nhanXet.trim());
+        } else if (nhanXet != null && nhanXet.trim().isEmpty()) {
+            // Nếu gửi chuỗi rỗng, cho phép xóa nhận xét
+            baiNop.setNhanXet(null);
+        }
+        // Nếu nhanXet == null, giữ nguyên giá trị hiện tại
+        
+        // Update điểm số if provided
+        if (diemSo != null) {
+            baiNop.setDiemSo(diemSo);
+            baiNop.setTrangThai("DA_CHAM");
+        } else {
+            // If only updating comment, keep existing status or set to appropriate status
+            // Don't change status if only updating comment
+            if (baiNop.getTrangThai() == null || baiNop.getTrangThai().isEmpty()) {
+                baiNop.setTrangThai("IN_PROGRESS");
+            }
+        }
         
         BaiNop saved = baiNopRepository.save(baiNop);
         
-        // Save score to KetQuaHocTap
-        try {
-            String idHs = saved.getHocSinh().getIdHs();
-            String loaiBt = saved.getBaiTap().getLoaiBt();
-            
-            // Find or create KetQuaHocTap
-            List<KetQuaHocTap> existing = ketQuaHocTapRepository.findByHocSinhId(idHs);
-            KetQuaHocTap ketQua = existing.isEmpty() ? null : existing.get(0);
-            
-            if (ketQua == null) {
-                ketQua = new KetQuaHocTap();
-                ketQua.setIdKq("KQ" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-                ketQua.setIdHs(idHs);
-                ketQua.setDiemSo("0,0,0");
-                ketQua.setXepLoai("Chưa có");
-            }
-            
-            // Parse current DiemSo string
-            String[] diemParts = ketQua.getDiemSo() != null ? ketQua.getDiemSo().split(",") : new String[]{"0", "0", "0"};
-            if (diemParts.length != 3) {
-                diemParts = new String[]{"0", "0", "0"};
-            }
-            
-            // Update based on loaiBt
-            // KIEM_TRA_15P -> index 0, KIEM_TRA_45P -> index 1, THI_HK -> index 2
-            if (loaiBt != null) {
-                if (loaiBt.equals("KIEM_TRA_15P")) {
-                    diemParts[0] = diemSo != null ? diemSo.toString() : "0";
-                } else if (loaiBt.equals("KIEM_TRA_45P")) {
-                    diemParts[1] = diemSo != null ? diemSo.toString() : "0";
-                } else if (loaiBt.equals("THI_HK")) {
-                    diemParts[2] = diemSo != null ? diemSo.toString() : "0";
+        // Update KetQuaHocTap when score is provided
+        if (diemSo != null) {
+            try {
+                String idHs = saved.getHocSinh().getIdHs();
+                String idBt = saved.getBaiTap() != null ? saved.getBaiTap().getIdBt() : null;
+                String loaiBt = saved.getBaiTap() != null ? saved.getBaiTap().getLoaiBt() : null;
+                
+                if (loaiBt == null) {
+                    return convertBaiNopToDTO(saved);
                 }
+                
+                // Find all submissions of this student for this assignment
+                List<BaiNop> allSubmissions = idBt != null 
+                    ? baiNopRepository.findAllByBaiTapAndHocSinh(idBt, idHs)
+                    : Collections.emptyList();
+                
+                // Filter only graded submissions (have score and status is DA_CHAM or GRADED_AUTO)
+                List<BaiNop> gradedSubmissions = allSubmissions.stream()
+                    .filter(bn -> bn.getDiemSo() != null 
+                        && (bn.getTrangThai() != null && 
+                            (bn.getTrangThai().equals("DA_CHAM") || bn.getTrangThai().equals("GRADED_AUTO"))))
+                    .collect(Collectors.toList());
+                
+                // Calculate average score if multiple submissions, otherwise use single score
+                BigDecimal finalScore;
+                if (gradedSubmissions.size() > 1) {
+                    // Calculate average of all graded submissions
+                    BigDecimal sum = gradedSubmissions.stream()
+                        .map(BaiNop::getDiemSo)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    finalScore = sum.divide(BigDecimal.valueOf(gradedSubmissions.size()), 2, java.math.RoundingMode.HALF_UP);
+                } else if (gradedSubmissions.size() == 1) {
+                    // Use the single score
+                    finalScore = gradedSubmissions.get(0).getDiemSo();
+                } else {
+                    // Fallback to current score if no graded submissions found (shouldn't happen)
+                    finalScore = diemSo;
+                }
+                
+                // Find or create KetQuaHocTap
+                List<KetQuaHocTap> existing = ketQuaHocTapRepository.findByHocSinhId(idHs);
+                KetQuaHocTap ketQua = existing.isEmpty() ? null : existing.get(0);
+                
+                if (ketQua == null) {
+                    ketQua = new KetQuaHocTap();
+                    ketQua.setIdKq("KQ" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                    ketQua.setIdHs(idHs);
+                    ketQua.setDiemSo("0,0,0");
+                    ketQua.setXepLoai("Chưa có");
+                }
+                
+                // Parse current DiemSo string (format: "8.5,8,9")
+                String[] diemParts = ketQua.getDiemSo() != null ? ketQua.getDiemSo().split(",") : new String[]{"0", "0", "0"};
+                if (diemParts.length != 3) {
+                    diemParts = new String[]{"0", "0", "0"};
+                }
+                
+                // Update based on loaiBt using the calculated final score
+                // KIEM_TRA_15P -> index 0, KIEM_TRA_45P -> index 1, THI_HK -> index 2
+                if (loaiBt.equals("KIEM_TRA_15P")) {
+                    diemParts[0] = finalScore.toString();
+                } else if (loaiBt.equals("KIEM_TRA_45P")) {
+                    diemParts[1] = finalScore.toString();
+                } else if (loaiBt.equals("THI_HK")) {
+                    diemParts[2] = finalScore.toString();
+                }
+                
+                // Reconstruct DiemSo string
+                ketQua.setDiemSo(String.join(",", diemParts));
+                
+                // Calculate average and classification
+                BigDecimal diem15 = parseScore(diemParts[0]);
+                BigDecimal diem45 = parseScore(diemParts[1]);
+                BigDecimal diemHK = parseScore(diemParts[2]);
+                BigDecimal diemTB = tinhDiemTrungBinh(diem15, diem45, diemHK);
+                ketQua.setDiemTB(diemTB);
+                ketQua.setXepLoai(xepLoai(diemTB));
+                
+                ketQuaHocTapRepository.save(ketQua);
+            } catch (Exception e) {
+                System.err.println("Error saving to KetQuaHocTap: " + e.getMessage());
+                e.printStackTrace();
+                // Don't fail the entire operation if KetQuaHocTap save fails
             }
-            
-            // Reconstruct DiemSo string
-            ketQua.setDiemSo(String.join(",", diemParts));
-            
-            // Calculate average and classification
-            BigDecimal diem15 = parseScore(diemParts[0]);
-            BigDecimal diem45 = parseScore(diemParts[1]);
-            BigDecimal diemHK = parseScore(diemParts[2]);
-            BigDecimal diemTB = tinhDiemTrungBinh(diem15, diem45, diemHK);
-            ketQua.setXepLoai(xepLoai(diemTB));
-            
-            ketQuaHocTapRepository.save(ketQua);
-        } catch (Exception e) {
-            System.err.println("Error saving to KetQuaHocTap: " + e.getMessage());
-            e.printStackTrace();
-            // Don't fail the entire operation if KetQuaHocTap save fails
         }
         
         return convertBaiNopToDTO(saved);
@@ -317,13 +368,14 @@ public class BaiTapServiceImpl implements BaiTapService {
             }
         }
 
-        if (baiTap.getNoiDungChiTiet() != null) {
-            BaiTapNoiDung content = baiTap.getNoiDungChiTiet();
-            dto.setThoiLuongPhut(content.getThoiLuongPhut());
-            dto.setTuDongNop(content.getTuDongNop());
-            dto.setCanhBao(content.getCanhBao());
-            dto.setCheDoChamDiem(content.getCheDoChamDiem());
-            dto.setQuestions(deserializeQuestions(content.getNoiDungJson()));
+        // Read directly from BaiTap entity (moved from BaiTapNoiDung)
+        dto.setThoiLuongPhut(baiTap.getThoiLuongPhut());
+        // Removed: TuDongNop and CheDoChamDiem - these fields exist in BaiNop table
+        // dto.setTuDongNop(baiTap.getTuDongNop());
+        // dto.setCheDoChamDiem(baiTap.getCheDoChamDiem());
+        dto.setCanhBao(baiTap.getCanhBao());
+        if (baiTap.getNoiDungJson() != null && !baiTap.getNoiDungJson().trim().isEmpty()) {
+            dto.setQuestions(deserializeQuestions(baiTap.getNoiDungJson()));
         } else {
             dto.setQuestions(Collections.emptyList());
         }
@@ -355,8 +407,15 @@ public class BaiTapServiceImpl implements BaiTapService {
         dto.setNhanXet(baiNop.getNhanXet());
         dto.setTrangThai(baiNop.getTrangThai());
         dto.setGhiChu(baiNop.getGhiChu());
+        dto.setNgayNop(baiNop.getThoiGianNop());
+        dto.setThoiGianNop(baiNop.getThoiGianNop());
         dto.setTongSoCau(baiNop.getTongSoCau());
         dto.setSoCauDung(baiNop.getSoCauDung());
+        
+        // Set ngayKetThuc from BaiTap
+        if (baiNop.getBaiTap() != null) {
+            dto.setNgayKetThuc(baiNop.getBaiTap().getNgayKetThuc());
+        }
         
         return dto;
     }
@@ -366,37 +425,13 @@ public class BaiTapServiceImpl implements BaiTapService {
             return;
         }
 
-        boolean hasContent =
-                dto.getThoiLuongPhut() != null ||
-                dto.getTuDongNop() != null ||
-                (dto.getCanhBao() != null && !dto.getCanhBao().isBlank()) ||
-                (dto.getCheDoChamDiem() != null && !dto.getCheDoChamDiem().isBlank()) ||
-                (dto.getQuestions() != null && !dto.getQuestions().isEmpty());
-
-        if (!hasContent) {
-            if (baiTap.getNoiDungChiTiet() != null) {
-                baiTap.getNoiDungChiTiet().setNoiDungJson(null);
-                baiTap.getNoiDungChiTiet().setThoiLuongPhut(null);
-                baiTap.getNoiDungChiTiet().setTuDongNop(null);
-                baiTap.getNoiDungChiTiet().setCanhBao(null);
-                baiTap.getNoiDungChiTiet().setCheDoChamDiem(null);
-            }
-            return;
-        }
-
-        BaiTapNoiDung content = baiTap.getNoiDungChiTiet();
-        if (content == null) {
-            content = new BaiTapNoiDung();
-            content.setBaiTap(baiTap);
-            content.setIdBt(baiTap.getIdBt());
-        }
-
-        content.setThoiLuongPhut(dto.getThoiLuongPhut());
-        content.setTuDongNop(dto.getTuDongNop());
-        content.setCanhBao(dto.getCanhBao());
-        content.setCheDoChamDiem(dto.getCheDoChamDiem());
-        content.setNoiDungJson(serializeQuestions(dto.getQuestions()));
-        baiTap.setNoiDungChiTiet(content);
+        // Write directly to BaiTap entity (moved from BaiTapNoiDung)
+        baiTap.setThoiLuongPhut(dto.getThoiLuongPhut());
+        // Removed: TuDongNop and CheDoChamDiem - these fields exist in BaiNop table
+        // baiTap.setTuDongNop(dto.getTuDongNop());
+        // baiTap.setCheDoChamDiem(dto.getCheDoChamDiem());
+        baiTap.setCanhBao(dto.getCanhBao());
+        baiTap.setNoiDungJson(serializeQuestions(dto.getQuestions()));
     }
 
     private String serializeQuestions(List<AssignmentQuestionDTO> questions) {

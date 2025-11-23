@@ -20,6 +20,9 @@ public interface BaiNopRepository extends JpaRepository<BaiNop, String> {
     
     @Query("SELECT bn FROM BaiNop bn WHERE bn.baiTap.idBt = :idBt AND bn.hocSinh.idHs = :idHs")
     Optional<BaiNop> findByBaiTapAndHocSinh(@Param("idBt") String idBt, @Param("idHs") String idHs);
+    
+    @Query("SELECT bn FROM BaiNop bn WHERE bn.baiTap.idBt = :idBt AND bn.hocSinh.idHs = :idHs ORDER BY bn.thoiGianNop DESC")
+    List<BaiNop> findAllByBaiTapAndHocSinh(@Param("idBt") String idBt, @Param("idHs") String idHs);
 
     Optional<BaiNop> findFirstByBaiTap_IdBtAndHocSinh_IdHs(String idBt, String idHs);
 

@@ -3,6 +3,8 @@ package com.mathbridge.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,7 +22,10 @@ public class KetQuaHocTap {
     private String idHs;
 
     @Column(name = "DiemSo", length = 50)
-    private String diemSo; // Format: "1,2,3" where 1=15p, 2=45p, 3=HK
+    private String diemSo; // Format: "8.5,8,9" where 1st=15p, 2nd=45p, 3rd=HK
+
+    @Column(name = "DiemTB", precision = 5, scale = 2)
+    private BigDecimal diemTB; // Điểm trung bình được tính từ 3 cột điểm
 
     @Column(name = "XepLoai", length = 10, nullable = false)
     private String xepLoai;

@@ -84,7 +84,7 @@ public class GiaoVienController {
 
     @PutMapping("/bainop/{idBn}/chamdiem")
     public ResponseEntity<BaiNopDTO> chamDiemBaiNop(@PathVariable String idBn,
-                                                    @RequestParam BigDecimal diemSo,
+                                                    @RequestParam(required = false) BigDecimal diemSo,
                                                     @RequestParam(required = false) String nhanXet) {
         BaiNopDTO updated = baiTapService.chamDiemBaiNop(idBn, diemSo, nhanXet);
         return ResponseEntity.ok(updated);
@@ -99,9 +99,9 @@ public class GiaoVienController {
 
     @PutMapping("/lophoc/{idLh}/hocsinh/{idHs}/diemso")
     public ResponseEntity<DiemSoDTO> updateDiemSo(@PathVariable String idLh,
-                                                   @PathVariable String idHs,
-                                                   @RequestParam String loaiDiem,
-                                                   @RequestParam BigDecimal diemSo) {
+                                                       @PathVariable String idHs,
+                                                       @RequestParam String loaiDiem,
+                                                       @RequestParam(required = false) BigDecimal diemSo) {
         DiemSoDTO updated = diemSoService.updateDiemSo(idHs, idLh, loaiDiem, diemSo);
         return ResponseEntity.ok(updated);
     }

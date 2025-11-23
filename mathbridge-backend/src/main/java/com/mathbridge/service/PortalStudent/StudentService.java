@@ -170,6 +170,8 @@ public class StudentService {
 
         HocSinh student = getHocSinhByUserId(userId);
         BaiTap assignment = getAssignmentById(assignmentId);
+        // Check if assignment window is still open before allowing submission
+        ensureAssignmentWindowIsOpen(assignment);
         ensureStudentInAssignment(student, assignment);
 
         List<AssignmentQuestionDTO> questions = loadQuestions(assignment);
@@ -520,10 +522,10 @@ public class StudentService {
     }
 
     private int resolveDurationMinutes(BaiTap assignment) {
-        if (assignment.getNoiDungChiTiet() != null &&
-            assignment.getNoiDungChiTiet().getThoiLuongPhut() != null &&
-            assignment.getNoiDungChiTiet().getThoiLuongPhut() > 0) {
-            return assignment.getNoiDungChiTiet().getThoiLuongPhut();
+        // Read directly from BaiTap (moved from BaiTapNoiDung)
+        if (assignment.getThoiLuongPhut() != null &&
+            assignment.getThoiLuongPhut() > 0) {
+            return assignment.getThoiLuongPhut();
         }
 
         String type = assignment.getLoaiBt() != null ? assignment.getLoaiBt().toUpperCase() : "";
@@ -540,28 +542,25 @@ public class StudentService {
     }
 
     private boolean resolveAutoSubmit(BaiTap assignment) {
-        if (assignment.getNoiDungChiTiet() != null &&
-            assignment.getNoiDungChiTiet().getTuDongNop() != null) {
-            return assignment.getNoiDungChiTiet().getTuDongNop();
-        }
+        // TuDongNop is now in BaiNop table, not BaiTap
+        // Default to true (auto-submit enabled)
         return true;
     }
 
     private String resolveWarningMessage(BaiTap assignment) {
-        if (assignment.getNoiDungChiTiet() != null) {
-            String warning = assignment.getNoiDungChiTiet().getCanhBao();
-            if (warning != null && !warning.isBlank()) {
-                return warning;
-            }
+        // Read directly from BaiTap (moved from BaiTapNoiDung)
+        if (assignment.getCanhBao() != null && !assignment.getCanhBao().trim().isEmpty()) {
+            return assignment.getCanhBao();
         }
         return DEFAULT_ASSIGNMENT_WARNING;
     }
 
     private List<AssignmentQuestionDTO> loadQuestions(BaiTap assignment) {
-        if (assignment.getNoiDungChiTiet() == null) {
+        // Read directly from BaiTap (moved from BaiTapNoiDung)
+        if (assignment.getNoiDungJson() == null || assignment.getNoiDungJson().trim().isEmpty()) {
             return Collections.emptyList();
         }
-        String raw = assignment.getNoiDungChiTiet().getNoiDungJson();
+        String raw = assignment.getNoiDungJson();
         if (raw == null || raw.isBlank()) {
             return Collections.emptyList();
         }
@@ -677,18 +676,25 @@ public class StudentService {
                                             BaiNop submission,
                                             List<AssignmentQuestionDTO> questions,
                                             int durationMinutes) {
+        // First check if assignment window is still open (must check before allowing retake)
+        LocalDateTime now = LocalDateTime.now();
+        if (assignment.getNgayKetThuc() != null && now.isAfter(assignment.getNgayKetThuc())) {
+            throw new RuntimeException("Bài tập đã hết hạn. Không thể làm lại bài sau khi hết hạn.");
+        }
+        
         if (submission != null) {
             if ("IN_PROGRESS".equalsIgnoreCase(submission.getTrangThai())) {
                 return submission;
             }
-            // Check if assignment allows retake (choPhepLamLai)
+            // Check if assignment allows retake (choPhepLamLai) - only if still within deadline
             Boolean choPhepLamLai = assignment.getChoPhepLamLai();
             if (choPhepLamLai != null && choPhepLamLai) {
                 // Allow retake - create a new submission (this preserves history as each submission is a new BaiNop)
                 // The old submission remains in database as history
+                // Note: Deadline check already done above, so we can safely allow retake
                 System.out.println("Assignment allows retake. Creating new submission for student: " + student.getIdHs());
             } else {
-            throw new RuntimeException("Bạn đã hoàn thành hoặc đã nộp bài tập này.");
+                throw new RuntimeException("Bạn đã hoàn thành hoặc đã nộp bài tập này.");
             }
         }
 

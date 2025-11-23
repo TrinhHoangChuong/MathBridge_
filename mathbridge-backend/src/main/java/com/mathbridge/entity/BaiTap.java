@@ -46,14 +46,32 @@ public class BaiTap {
 
     @Column(name = "GhiChu", length = 200)
     private String ghiChu;
+
+    @Lob
+    @Column(name = "NoiDungJSON")
+    private String noiDungJson;
+
+    @Column(name = "CanhBao", length = 500)
+    private String canhBao;
+
+    @Column(name = "ThoiLuongPhut")
+    private Integer thoiLuongPhut;
+
+    // Removed: TuDongNop and CheDoChamDiem - these fields exist in BaiNop table
+    // @Column(name = "TuDongNop")
+    // private Boolean tuDongNop;
+    // @Column(name = "CheDoChamDiem", length = 50)
+    // private String cheDoChamDiem;
+
     // QUAN HỆ
 
     @ManyToOne
     @JoinColumn(name = "ID_BH", insertable = false, updatable = false)
     private BuoiHocChiTiet buoiHocChiTiet;
 
-    @OneToOne(mappedBy = "baiTap", cascade = CascadeType.ALL, orphanRemoval = true)
-    private BaiTapNoiDung noiDungChiTiet;
+    // Removed: @OneToOne relationship with BaiTapNoiDung - data now in BaiTap table
+    // @OneToOne(mappedBy = "baiTap", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private BaiTapNoiDung noiDungChiTiet;
 
     @OneToMany(mappedBy = "baiTap")
     private Set<BaiNop> baiNops = new HashSet<>();
