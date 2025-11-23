@@ -3,8 +3,6 @@ package com.mathbridge.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,8 +19,8 @@ public class KetQuaHocTap {
     @Column(name = "ID_HS", length = 10, nullable = false)
     private String idHs;
 
-    @Column(name = "DiemSo", precision = 18, scale = 0, nullable = false)
-    private BigDecimal diemSo;
+    @Column(name = "DiemSo", length = 50)
+    private String diemSo; // Format: "1,2,3" where 1=15p, 2=45p, 3=HK
 
     @Column(name = "XepLoai", length = 10, nullable = false)
     private String xepLoai;

@@ -1,0 +1,60 @@
+<section class="content-section" id="consultation-schedule">
+    <div class="section-header consultation-header">
+        <div>
+            <h2>Lịch tư vấn theo tuần</h2>
+            <p class="section-subtitle">Theo dõi toàn bộ buổi tư vấn của bạn trong tuần, điều hướng nhanh bằng lịch mini.</p>
+        </div>
+        <div class="consultation-actions">
+            <button class="btn btn-secondary" onclick="(window.consultationScheduleModule && window.consultationScheduleModule.exportSchedule ? window.consultationScheduleModule.exportSchedule() : (typeof exportConsultationSchedule === 'function' ? exportConsultationSchedule() : null))">
+                <i class="fas fa-download"></i>
+                Xuất lịch
+            </button>
+            <button class="btn btn-primary" onclick="(window.consultationScheduleModule && window.consultationScheduleModule.addSchedule ? window.consultationScheduleModule.addSchedule() : (typeof addConsultationSchedule === 'function' ? addConsultationSchedule() : null))">
+                <i class="fas fa-plus"></i>
+                Tạo buổi tư vấn
+            </button>
+        </div>
+    </div>
+
+    <div class="consultation-toolbar">
+        <div class="week-picker">
+            <label for="consultationWeekPicker">Chọn ngày bất kỳ trong tuần</label>
+            <div class="picker-field">
+                <i class="fas fa-calendar-alt"></i>
+                <input type="date" id="consultationWeekPicker">
+            </div>
+        </div>
+        <div class="week-navigation">
+            <button class="btn btn-icon" id="consultationPrevWeek" title="Lùi 1 tuần">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="week-range" id="consultationWeekRange">--</div>
+            <button class="btn btn-icon" id="consultationNextWeek" title="Tiến 1 tuần">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <button class="btn btn-secondary" id="consultationTodayBtn">
+                <i class="fas fa-dot-circle"></i>
+                Hiện tại
+            </button>
+        </div>
+    </div>
+
+
+    <div class="consultation-week-wrapper">
+        <div class="consultation-week">
+            <div class="week-grid" id="consultationWeekGrid"></div>
+            <div class="schedule-state" id="consultationScheduleLoading">
+                <div class="spinner"></div>
+                <p>Đang tải lịch tư vấn...</p>
+            </div>
+            <div class="schedule-state error" id="consultationScheduleError" style="display: none;">
+                <i class="fas fa-triangle-exclamation"></i>
+                <p>Không thể tải lịch tư vấn. Vui lòng thử lại sau.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<link rel="stylesheet" href="assets/css/sections/consultation-schedule.css">
+<script src="assets/js/sections/consultation-schedule.js"></script>
+

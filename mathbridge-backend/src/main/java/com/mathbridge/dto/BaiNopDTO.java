@@ -14,6 +14,8 @@ public class BaiNopDTO {
     private String trangThai;
     private String ghiChu;
     private LocalDateTime ngayNop;
+    private Integer tongSoCau;
+    private Integer soCauDung;
 
     public BaiNopDTO() {
     }
@@ -96,6 +98,22 @@ public class BaiNopDTO {
 
     public void setNgayNop(LocalDateTime ngayNop) {
         this.ngayNop = ngayNop;
+    }
+
+    public Integer getTongSoCau() {
+        return tongSoCau;
+    }
+
+    public void setTongSoCau(Integer tongSoCau) {
+        this.tongSoCau = tongSoCau;
+    }
+
+    public Integer getSoCauDung() {
+        return soCauDung;
+    }
+
+    public void setSoCauDung(Integer soCauDung) {
+        this.soCauDung = soCauDung;
     }
 }
 

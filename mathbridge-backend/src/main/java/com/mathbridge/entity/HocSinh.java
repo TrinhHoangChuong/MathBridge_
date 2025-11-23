@@ -87,7 +87,4 @@ public class HocSinh {
     @OneToMany(mappedBy = "hocSinh")
     private Set<KetQuaHocTap> ketQuaHocTaps = new HashSet<>();
 
-    // Mới thêm: danh sách yêu cầu hỗ trợ của học sinh này
-    @OneToMany(mappedBy = "hocSinh")
-    private Set<YeuCauHoTro> yeuCauHoTros = new HashSet<>();
 }

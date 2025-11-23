@@ -21,7 +21,6 @@ public class YeuCauHoTro {
     @Column(name = "ID_LH", length = 10)
     private String idLh;
 
-    // Mới thêm: liên kết tới Học sinh
     @Column(name = "ID_HS", length = 10)
     private String idHs;
 
@@ -46,6 +45,8 @@ public class YeuCauHoTro {
     @Column(name = "ThoiDiemDong")
     private LocalDateTime thoiDiemDong;
 
+    @Column(name = "ID_HS", length = 10)
+    private String idHs;
     // QUAN HỆ
 
     @ManyToOne

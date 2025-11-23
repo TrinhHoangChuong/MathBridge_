@@ -58,4 +58,58 @@ public class JwtUtil {
     public long getExpirationMs() {
         return jwtExpirationMs;
     }
+
+    public String extractUserId(String token) {
+        try {
+            var claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.get("uid", String.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid token", e);
+        }
+    }
+
+    public String extractUsername(String token) {
+        try {
+            var claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.getSubject();
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid token", e);
+        }
+    }
+
+    public List<String> extractRoles(String token) {
+        try {
+            var claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.get("roles", List.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid token", e);
+        }
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

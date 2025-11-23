@@ -1,6 +1,9 @@
 package com.mathbridge.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.mathbridge.dto.AssignmentQuestionDTO;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class BaiTapDTO {
     private String idBt;
@@ -9,15 +12,24 @@ public class BaiTapDTO {
     private String tieuDe;
     private String moTa;
     private String loaiBt; // BAI_TAP, KIEM_TRA_15P, KIEM_TRA_45P, THI_HK
-    private String fileUrl;
-    private String taiLieuUrl;
+    private Boolean choPhepLamBai;
+    private String hocSinhDuocPhep; // JSON array of student IDs: ["HS001", "HS002"]
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
     private LocalDateTime ngayBatDau;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
     private LocalDateTime ngayKetThuc;
     private String ghiChu;
     private Integer soBaiNop;
     private Integer soBaiDaCham;
     private String tenLop;
     private String tenCaHoc;
+    private Integer thoiLuongPhut;
+    private Boolean tuDongNop;
+    private String canhBao;
+    private String cheDoChamDiem;
+    private List<AssignmentQuestionDTO> questions;
 
     public BaiTapDTO() {
     }
@@ -70,20 +82,20 @@ public class BaiTapDTO {
         this.loaiBt = loaiBt;
     }
 
-    public String getFileUrl() {
-        return fileUrl;
+    public Boolean getChoPhepLamBai() {
+        return choPhepLamBai;
     }
 
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
+    public void setChoPhepLamBai(Boolean choPhepLamBai) {
+        this.choPhepLamBai = choPhepLamBai;
     }
 
-    public String getTaiLieuUrl() {
-        return taiLieuUrl;
+    public String getHocSinhDuocPhep() {
+        return hocSinhDuocPhep;
     }
 
-    public void setTaiLieuUrl(String taiLieuUrl) {
-        this.taiLieuUrl = taiLieuUrl;
+    public void setHocSinhDuocPhep(String hocSinhDuocPhep) {
+        this.hocSinhDuocPhep = hocSinhDuocPhep;
     }
 
     public LocalDateTime getNgayBatDau() {
@@ -140,6 +152,46 @@ public class BaiTapDTO {
 
     public void setTenCaHoc(String tenCaHoc) {
         this.tenCaHoc = tenCaHoc;
+    }
+
+    public Integer getThoiLuongPhut() {
+        return thoiLuongPhut;
+    }
+
+    public void setThoiLuongPhut(Integer thoiLuongPhut) {
+        this.thoiLuongPhut = thoiLuongPhut;
+    }
+
+    public Boolean getTuDongNop() {
+        return tuDongNop;
+    }
+
+    public void setTuDongNop(Boolean tuDongNop) {
+        this.tuDongNop = tuDongNop;
+    }
+
+    public String getCanhBao() {
+        return canhBao;
+    }
+
+    public void setCanhBao(String canhBao) {
+        this.canhBao = canhBao;
+    }
+
+    public String getCheDoChamDiem() {
+        return cheDoChamDiem;
+    }
+
+    public void setCheDoChamDiem(String cheDoChamDiem) {
+        this.cheDoChamDiem = cheDoChamDiem;
+    }
+
+    public List<AssignmentQuestionDTO> getQuestions() {
+        return questions;
+    }
+
+    public void setQuestions(List<AssignmentQuestionDTO> questions) {
+        this.questions = questions;
     }
 }
 
