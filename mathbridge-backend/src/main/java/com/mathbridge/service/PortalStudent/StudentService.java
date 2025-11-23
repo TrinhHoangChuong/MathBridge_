@@ -422,7 +422,11 @@ public class StudentService {
         for (KetQuaHocTap kq : ketQuaHocTaps) {
             StudentGradeDTO gradeDTO = new StudentGradeDTO();
             gradeDTO.setGradeId(kq.getIdKq());
-            gradeDTO.setScore(calculateKetQuaScore(String.valueOf(kq.getDiemTongKet())));
+            // Use DiemTrungBinh or DiemTongKet instead of DiemSo
+            BigDecimal score = kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : 
+                              (kq.getDiemTongKet() != null ? kq.getDiemTongKet() : 
+                               (kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : BigDecimal.ZERO));
+            gradeDTO.setScore(score.doubleValue());
             gradeDTO.setGradeType("Kết quả học tập");
             gradeDTO.setSubject("Toán học");
             gradeDTO.setFeedback(kq.getXepLoai());
