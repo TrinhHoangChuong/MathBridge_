@@ -425,7 +425,7 @@ public class StudentService {
             // Use DiemTrungBinh or DiemTongKet instead of DiemSo
             BigDecimal score = kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : 
                               (kq.getDiemTongKet() != null ? kq.getDiemTongKet() : 
-                               (kq.getDiemTB() != null ? kq.getDiemTB() : BigDecimal.ZERO));
+                               (kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : BigDecimal.ZERO));
             gradeDTO.setScore(score.doubleValue());
             gradeDTO.setGradeType("Kết quả học tập");
             gradeDTO.setSubject("Toán học");
