@@ -4,16 +4,25 @@ import {
   getCoursesByFilter,
   enrollCourse,
   createMomoPayment,
+  createCashInvoice,
   updatePaymentStatusManually,
-} from "../api/courses.api.js";
+  getAllCourses,
+} from "../api/courses.api.js?v=20251130";
 import { getAuth, isAuthenticated, getToken } from "../utils/auth.js";
 
 let ALL_COURSES = [];
 let CURRENT_GRADE = "9";
-let FILTER_SESSION = "all";
+let FILTER_TEACHER = "all";
 let FILTER_DAY = "all";
 let FILTER_METHOD = "all";
 let IS_LOADING = false;
+let TEACHER_OPTIONS = [{ value: "all", label: "Tất cả giáo viên" }];
+
+const PAYMENT_SUCCESS_DEFAULT = {
+  title: "Chúc mừng em đã đăng ký khóa học thành công!",
+  message:
+    "Em đã thanh toán thành công. Hãy theo dõi thời khóa biểu và chuẩn bị cho khóa học sắp tới.<br><strong>Chúc em học tốt!</strong> 🎉",
+};
 
 function setEnrollTab(target) {
   const tabButtons = document.querySelectorAll(".mb-tab-btn[data-tab]");
@@ -95,12 +104,65 @@ function updateHeaderByGrade(grade) {
   if (descEl) descEl.textContent = info.desc;
 }
 
+function slugifyTeacher(value = "") {
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function buildTeacherOptions(courses = []) {
+  const teacherMap = new Map();
+
+  courses.forEach((course) => {
+    const name = (course.giaoVien || "").trim();
+    if (!name) return;
+    const slug = slugifyTeacher(name);
+    if (!slug || teacherMap.has(slug)) return;
+    teacherMap.set(slug, name);
+  });
+
+  if (!teacherMap.size) {
+    TEACHER_OPTIONS = [{ value: "all", label: "Tất cả giáo viên" }];
+    return;
+  }
+
+  const sorted = Array.from(teacherMap.entries()).sort((a, b) =>
+    a[1].localeCompare(b[1], "vi", { sensitivity: "base" })
+  );
+
+  TEACHER_OPTIONS = [{ value: "all", label: "Tất cả giáo viên" }, ...sorted.map(([value, label]) => ({ value, label }))];
+}
+
+function renderTeacherSelectOptions() {
+  const select = document.getElementById("session-filter");
+  if (!select) return;
+
+  const previousValue = select.value || FILTER_TEACHER || "all";
+  select.innerHTML = "";
+
+  TEACHER_OPTIONS.forEach((opt) => {
+    const option = document.createElement("option");
+    option.value = opt.value;
+    option.textContent = opt.label;
+    select.appendChild(option);
+  });
+
+  const hasPrev = TEACHER_OPTIONS.some((opt) => opt.value === previousValue);
+  const valueToApply = hasPrev ? previousValue : "all";
+  select.value = valueToApply;
+  FILTER_TEACHER = valueToApply;
+}
+
 /* --------- filter logic --------- */
 function courseMatchFilters(course) {
-  // filter ca học
-  if (FILTER_SESSION !== "all") {
-    const ca = (course.caHoc || "").toString();
-    if (!ca || ca !== FILTER_SESSION) return false;
+  // filter giáo viên
+  if (FILTER_TEACHER !== "all") {
+    const teacherSlug = slugifyTeacher(course.giaoVien || "");
+    if (!teacherSlug || teacherSlug !== FILTER_TEACHER) return false;
   }
 
   // filter ngày học
@@ -182,13 +244,15 @@ function renderCourseList() {
 
 /* --------- filters --------- */
 function initFilters() {
-  const sessionSel = document.getElementById("session-filter");
+  const teacherSel = document.getElementById("session-filter");
   const daySel = document.getElementById("day-filter");
   const methodSel = document.getElementById("method-filter");
 
-  if (sessionSel) {
-    sessionSel.addEventListener("change", () => {
-      FILTER_SESSION = sessionSel.value;
+  renderTeacherSelectOptions();
+
+  if (teacherSel) {
+    teacherSel.addEventListener("change", () => {
+      FILTER_TEACHER = teacherSel.value;
       renderCourseList();
     });
   }
@@ -374,9 +438,20 @@ function closePaymentMethodModal() {
   modal.setAttribute("aria-hidden", "true");
 }
 
-function openPaymentSuccessModal() {
+function openPaymentSuccessModal(options = {}) {
   const modal = document.getElementById("payment-success-modal");
   if (!modal) return;
+
+  const titleEl = document.getElementById("payment-success-title");
+  const messageEl = document.getElementById("payment-success-message");
+
+  if (titleEl) {
+    titleEl.textContent = options.title || PAYMENT_SUCCESS_DEFAULT.title;
+  }
+  if (messageEl) {
+    messageEl.innerHTML = options.message || PAYMENT_SUCCESS_DEFAULT.message;
+  }
+
   modal.style.display = "flex";
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
@@ -590,8 +665,27 @@ function initPaymentConfirmButton() {
           confirmBtn.disabled = false;
           confirmBtn.textContent = oldText;
         } else if (selectedPaymentMethod === "cash") {
-          // TODO: Xử lý thanh toán tiền mặt
-          alert(`Chức năng thanh toán tiền mặt đang được phát triển.`);
+          const result = await createCashInvoice(currentCourse.id, selectedMonths);
+          if (result?.success) {
+            closePaymentMethodModal();
+            const data = result.data || {};
+            const amountText = data.amount
+              ? new Intl.NumberFormat("vi-VN").format(Number(data.amount)) + " VNĐ"
+              : "";
+            const dueText = data.dueDate ? `Hạn thanh toán: <strong>${data.dueDate}</strong><br>` : "";
+            openPaymentSuccessModal({
+              title: "Đã ghi nhận thanh toán tiền mặt",
+              message: `
+                Đã tạo hóa đơn <strong>${data.idHoaDon || ""}</strong> cho khóa học ${
+                data.courseName || currentCourse.ten || ""
+              }. <br>
+                ${dueText}${amountText ? `Số tiền: <strong>${amountText}</strong><br>` : ""}
+                Vui lòng thanh toán trực tiếp tại trung tâm để hoàn tất đăng ký!
+              `,
+            });
+          } else {
+            alert(result?.message || "Không thể ghi nhận hóa đơn tiền mặt. Vui lòng thử lại.");
+          }
           confirmBtn.disabled = false;
           confirmBtn.textContent = oldText;
         }
@@ -753,6 +847,18 @@ async function loadCourses() {
   renderCourseList();
 }
 
+async function preloadTeacherOptions() {
+  try {
+    const allCourses = await getAllCourses();
+    if (Array.isArray(allCourses) && allCourses.length) {
+      buildTeacherOptions(allCourses);
+      renderTeacherSelectOptions();
+    }
+  } catch (error) {
+    console.error("[Courses] preloadTeacherOptions error:", error);
+  }
+}
+
 export async function initCoursesPage() {
   CURRENT_GRADE = getQueryParam("grade", "9");
   updateHeaderByGrade(CURRENT_GRADE);
@@ -770,6 +876,7 @@ export async function initCoursesPage() {
     });
   }
 
+  preloadTeacherOptions();
   initFilters();
   initModalEvents();
   initCourseListEvents();

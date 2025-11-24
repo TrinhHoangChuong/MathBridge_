@@ -1,5 +1,5 @@
 // file: assets/js/pages/register.page.js
-import { enrollCourse } from "../api/courses.api.js";
+import { enrollCourse } from "../api/courses.api.js?v=20251130";
 
 document.addEventListener("DOMContentLoaded", () => {
   // Đợi một chút để đảm bảo DOM đã render xong

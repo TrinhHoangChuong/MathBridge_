@@ -88,6 +88,14 @@ public class BaiTapServiceImpl implements BaiTapService {
     }
 
     @Override
+    public List<BaiTapDTO> getBaiTapByBuoiHoc(String idBh) {
+        List<BaiTap> baiTaps = baiTapRepository.findByBuoiHocId(idBh);
+        return baiTaps.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public BaiTapDTO createBaiTap(BaiTapDTO baiTapDTO) {
         BaiTap baiTap = new BaiTap();

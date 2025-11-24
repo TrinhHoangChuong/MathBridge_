@@ -1,12 +1,17 @@
 package com.mathbridge.controller;
 
 import com.mathbridge.dto.*;
+import com.mathbridge.dto.portalteacher.TeacherClassEvaluationDTO;
+import com.mathbridge.dto.portalteacher.TeacherScheduleResponseDTO;
+import com.mathbridge.dto.portalteacher.TeacherSessionDetailDTO;
 import com.mathbridge.service.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -18,15 +23,18 @@ public class GiaoVienController {
     private final BaiTapService baiTapService;
     private final DiemSoService diemSoService;
     private final BuoiHocChiTietService buoiHocChiTietService;
+    private final PortalTeacherService portalTeacherService;
 
     public GiaoVienController(HocSinhLopHocService hocSinhLopHocService,
                               BaiTapService baiTapService,
                               DiemSoService diemSoService,
-                              BuoiHocChiTietService buoiHocChiTietService) {
+                              BuoiHocChiTietService buoiHocChiTietService,
+                              PortalTeacherService portalTeacherService) {
         this.hocSinhLopHocService = hocSinhLopHocService;
         this.baiTapService = baiTapService;
         this.diemSoService = diemSoService;
         this.buoiHocChiTietService = buoiHocChiTietService;
+        this.portalTeacherService = portalTeacherService;
     }
 
     // ===== HỌC SINH =====
@@ -123,6 +131,24 @@ public class GiaoVienController {
     public ResponseEntity<List<BuoiHocChiTietDTO>> getBuoiHocByGiaoVien(@PathVariable String idNv) {
         List<BuoiHocChiTietDTO> buoiHocs = buoiHocChiTietService.getBuoiHocByGiaoVien(idNv);
         return ResponseEntity.ok(buoiHocs);
+    }
+
+    @GetMapping("/{idNv}/schedule")
+    public ResponseEntity<TeacherScheduleResponseDTO> getTeacherSchedule(
+            @PathVariable String idNv,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false, defaultValue = "1") Integer days) {
+        return ResponseEntity.ok(portalTeacherService.getTeacherSchedule(idNv, date, days != null ? days : 1));
+    }
+
+    @GetMapping("/buoihoc/{idBh}/details")
+    public ResponseEntity<TeacherSessionDetailDTO> getSessionDetail(@PathVariable String idBh) {
+        return ResponseEntity.ok(portalTeacherService.getSessionDetail(idBh));
+    }
+
+    @GetMapping("/lophoc/{idLh}/danhgia")
+    public ResponseEntity<List<TeacherClassEvaluationDTO>> getClassEvaluations(@PathVariable String idLh) {
+        return ResponseEntity.ok(portalTeacherService.getClassEvaluations(idLh));
     }
 
     @PostMapping("/buoihoc")
