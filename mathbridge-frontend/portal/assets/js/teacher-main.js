@@ -558,6 +558,22 @@ class TeacherAPI {
         return this.get(`/public/giaovien/${idNv}/buoihoc`);
     }
 
+    async getTeacherSchedule(idNv, { date, days } = {}) {
+        const params = new URLSearchParams();
+        if (date) params.append('date', date);
+        if (days) params.append('days', days);
+        const query = params.toString();
+        return this.get(`/public/giaovien/${idNv}/schedule${query ? `?${query}` : ''}`);
+    }
+
+    async getSessionDetail(idBh) {
+        return this.get(`/public/giaovien/buoihoc/${idBh}/details`);
+    }
+
+    async getClassEvaluations(idLh) {
+        return this.get(`/public/giaovien/lophoc/${idLh}/danhgia`);
+    }
+
     async createBuoiHoc(buoiHocData) {
         return this.post(`/public/giaovien/buoihoc`, buoiHocData);
     }
@@ -732,9 +748,9 @@ class NotificationManager {
     createNotification(message, type) {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
-        
+
         const icon = this.getIcon(type);
-        
+
         notification.innerHTML = `
             <div class="notification-content">
                 <i class="${icon}"></i>
@@ -744,7 +760,7 @@ class NotificationManager {
                 <i class="fas fa-times"></i>
             </button>
         `;
-        
+
         return notification;
     }
 
@@ -795,7 +811,7 @@ class TeacherDashboard {
         } catch (error) {
             console.error('Failed to preload classes section:', error);
         }
-        
+
         // Preload key sections so dữ liệu thật xuất hiện ngay khi chuyển tab
         if (typeof window.loadAssignmentsSection === 'function') {
             try {
@@ -820,7 +836,7 @@ class TeacherDashboard {
         } catch (error) {
             console.error('Failed to preload grades section:', error);
         }
-        
+
         this.initializeCharts();
     }
 
@@ -912,7 +928,7 @@ class TeacherDashboard {
 
         if (sidebarToggle && !sidebarToggle._toggleBound) {
             sidebarToggle._toggleBound = true;
-            
+
             sidebarToggle.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -975,20 +991,20 @@ class TeacherDashboard {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('mainContent');
             const toggleBtn = document.getElementById('sidebarToggle');
-            
+
             if (!sidebar) {
                 console.error('Sidebar element not found');
                 return;
             }
-            
+
             if (!mainContent) {
                 console.error('Main content element not found');
                 return;
             }
-            
+
             // Toggle collapsed state
             this.sidebarCollapsed = !this.sidebarCollapsed;
-            
+
             // Toggle classes
             if (this.sidebarCollapsed) {
                 sidebar.classList.add('collapsed');
@@ -1047,7 +1063,7 @@ class TeacherDashboard {
         if (targetSection) {
             targetSection.style.display = 'block';
             this.currentSection = sectionId;
-            
+
             // Load data for specific sections
             if (sectionId === 'classes') {
                 this.loadClassesSection();
@@ -1055,7 +1071,7 @@ class TeacherDashboard {
                 console.log('=== Navigate to assignments section ===');
                 console.log('loadAssignmentsSection type:', typeof loadAssignmentsSection);
                 console.log('window.loadAssignmentsSection type:', typeof window.loadAssignmentsSection);
-                
+
                 if (typeof window.loadAssignmentsSection === 'function') {
                     console.log('Calling window.loadAssignmentsSection()');
                     window.loadAssignmentsSection();
@@ -1092,7 +1108,7 @@ class TeacherDashboard {
 
             // Load classes from API
             const classes = await this.api.getTeacherClasses(authContext.payload.user.idNv);
-            
+
             if (!classes || classes.length === 0) {
                 this.cacheClasses([]);
                 const classesGrid = document.querySelector('.classes-grid');
@@ -1101,7 +1117,7 @@ class TeacherDashboard {
                 }
                 return;
             }
-            
+
             // Update classes grid
             const classesGrid = document.querySelector('.classes-grid');
             if (classesGrid && classes) {
@@ -1110,22 +1126,22 @@ class TeacherDashboard {
                     try {
                         // Load diem so to calculate average
                         const diemSos = await this.api.getDiemSoByLopHoc(cls.idLh);
-                        const diemTB = diemSos && diemSos.length > 0 
+                        const diemTB = diemSos && diemSos.length > 0
                             ? (diemSos.reduce((sum, ds) => sum + (parseFloat(ds.diemTrungBinh) || 0), 0) / diemSos.length).toFixed(1)
                             : '-';
-                        
+
                         return { ...cls, diemTB };
                     } catch (error) {
                         console.error(`Error loading stats for class ${cls.idLh}:`, error);
                         return { ...cls, diemTB: '-' };
                     }
                 }));
-                
+
                 this.cacheClasses(classesWithStats);
                 classesGrid.innerHTML = classesWithStats.map(cls => {
                     const startDate = cls.ngayBatDau ? new Date(cls.ngayBatDau) : null;
                     const dateStr = startDate ? startDate.toLocaleDateString('vi-VN') : 'Chưa có';
-                    
+
                     return `
                         <div class="class-card">
                             <div class="class-header">
@@ -1212,7 +1228,7 @@ class TeacherDashboard {
             this.gradeDataByClass.delete(String(selectedClassId));
             const diemSos = await this.api.getDiemSoByLopHoc(selectedClassId);
             this.gradeDataByClass.set(String(selectedClassId), diemSos || []);
-            
+
             console.log('Loaded grades data:', diemSos?.length || 0, 'students');
             if (diemSos && diemSos.length > 0) {
                 console.log('Sample grade data:', {
@@ -1429,7 +1445,7 @@ class TeacherDashboard {
             const diem15 = this.formatScore(item.diem15Phut ?? item.diem15p);
             const diem45 = this.formatScore(item.diem45Phut ?? item.diem45p);
             const diemHK = this.formatScore(item.diemThiHK ?? item.diemThiHocKy ?? item.diemThi);
-            
+
             // Tính DiemTrungBinh tạm thời nếu backend chưa có (khi giáo viên vừa nhập)
             let diemTB = item.diemTrungBinh ?? item.diemTB;
             if (!diemTB || diemTB === '-' || diemTB === 0) {
@@ -1437,7 +1453,7 @@ class TeacherDashboard {
                 const diem15Num = parseFloat(item.diem15Phut ?? item.diem15p ?? 0);
                 const diem45Num = parseFloat(item.diem45Phut ?? item.diem45p ?? 0);
                 const diemHKNum = parseFloat(item.diemThiHK ?? item.diemThiHocKy ?? item.diemThi ?? 0);
-                
+
                 // Chỉ tính nếu có ít nhất 1 điểm
                 const scores = [diem15Num, diem45Num, diemHKNum].filter(s => s > 0);
                 if (scores.length > 0) {
@@ -1447,7 +1463,7 @@ class TeacherDashboard {
                     diemTB = null;
                 }
             }
-            
+
             // Format để hiển thị
             diemTB = this.formatScore(diemTB);
             let xepLoai = item.xepLoai || this.classifyScore(diemTB);
@@ -1477,9 +1493,9 @@ class TeacherDashboard {
                     </td>
                     <td>${this.escapeHtml(classLabel)}</td>
                     <td>
-                        <input type="number" class="grade-input-small" 
-                               data-student-id="${studentId}" 
-                               data-class-id="${classId}" 
+                        <input type="number" class="grade-input-small"
+                               data-student-id="${studentId}"
+                               data-class-id="${classId}"
                                data-loai-diem="15P"
                                data-original-value="${diem15 || ''}"
                                value="${diem15}"
@@ -1489,8 +1505,8 @@ class TeacherDashboard {
                     </td>
                     <td>
                         <input type="number" class="grade-input-small"
-                               data-student-id="${studentId}" 
-                               data-class-id="${classId}" 
+                               data-student-id="${studentId}"
+                               data-class-id="${classId}"
                                data-loai-diem="45P"
                                data-original-value="${diem45 || ''}"
                                value="${diem45}"
@@ -1500,8 +1516,8 @@ class TeacherDashboard {
                     </td>
                     <td>
                         <input type="number" class="grade-input-small"
-                               data-student-id="${studentId}" 
-                               data-class-id="${classId}" 
+                               data-student-id="${studentId}"
+                               data-class-id="${classId}"
                                data-loai-diem="HK"
                                data-original-value="${diemHK || ''}"
                                value="${diemHK}"
@@ -1603,18 +1619,18 @@ class TeacherDashboard {
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
-        
+
         // Update calendar header
         const monthNames = [
             'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
             'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
         ];
-        
+
         const calendarHeader = document.querySelector('.calendar-header h3');
         if (calendarHeader) {
             calendarHeader.textContent = `${monthNames[currentMonth]} ${currentYear}`;
         }
-        
+
         // Update all schedule headers to current date
         const scheduleHeaders = document.querySelectorAll('h3');
         scheduleHeaders.forEach(header => {
@@ -1631,23 +1647,23 @@ class TeacherDashboard {
         await this.loadUpcomingClasses();
         await this.loadUngradedAssignments();
     }
-    
+
     async loadUngradedAssignments() {
         try {
             const authContext = getAuthContext();
             if (!authContext?.payload?.user?.idNv) {
                 return;
             }
-            
+
             // Load all assignments
             const baiTaps = await this.api.getBaiTapByGiaoVien(authContext.payload.user.idNv);
-            
+
             // Count ungraded assignments
             const ungradedCount = baiTaps.reduce((sum, bt) => {
                 const ungraded = (bt.soBaiNop || 0) - (bt.soBaiDaCham || 0);
                 return sum + (ungraded > 0 ? ungraded : 0);
             }, 0);
-            
+
             // Update ungraded assignments card
             const statCards = document.querySelectorAll('.stat-card');
             if (statCards.length >= 3) {
@@ -1657,7 +1673,7 @@ class TeacherDashboard {
                     ungradedCountEl.textContent = ungradedCount;
                 }
             }
-            
+
             // Update assignments to grade section
             const assignmentList = document.querySelector('.assignment-list');
             if (assignmentList) {
@@ -1665,7 +1681,7 @@ class TeacherDashboard {
                 const ungradedAssignments = baiTaps
                     .filter(bt => (bt.soBaiNop || 0) > (bt.soBaiDaCham || 0))
                     .slice(0, 2);
-                
+
                 if (ungradedAssignments.length === 0) {
                     assignmentList.innerHTML = '<div class="empty-state"><p>Không có bài tập cần chấm</p></div>';
                 } else {
@@ -1673,7 +1689,7 @@ class TeacherDashboard {
                         const progress = bt.soBaiNop > 0 ? Math.round((bt.soBaiDaCham / bt.soBaiNop) * 100) : 0;
                         const endDate = bt.ngayKetThuc ? new Date(bt.ngayKetThuc) : null;
                         const endStr = endDate ? endDate.toLocaleDateString('vi-VN') : 'Chưa có';
-                        
+
                         return `
                             <div class="assignment-item">
                                 <div class="assignment-info">
@@ -1706,12 +1722,12 @@ class TeacherDashboard {
 
             // Load classes from API
             const classes = await this.api.getTeacherClasses(authContext.payload.user.idNv);
-            
+
             // Calculate statistics
             const totalClasses = classes?.length || 0;
             const totalStudents = classes?.reduce((sum, cls) => sum + (cls.soHocSinh || 0), 0) || 0;
             this.cacheClasses(classes);
-            
+
             // Update dashboard stats cards
             const statCards = document.querySelectorAll('.stat-card');
             if (statCards.length >= 2) {
@@ -1721,7 +1737,7 @@ class TeacherDashboard {
                 if (classCount) {
                     classCount.textContent = totalClasses;
                 }
-                
+
                 // Update "Học sinh" card
                 const studentCard = statCards[1];
                 const studentCount = studentCard.querySelector('h3');
@@ -1732,7 +1748,7 @@ class TeacherDashboard {
 
             // Load recent classes
             this.loadRecentClasses(classes);
-            
+
         } catch (error) {
             console.error('Error loading class statistics:', error);
             showNotification('Không thể tải thống kê lớp học. Vui lòng thử lại sau.', 'error');
@@ -1758,16 +1774,16 @@ class TeacherDashboard {
         const classList = document.querySelector('.class-list');
         if (classList) {
             const now = new Date();
-            
+
             classList.innerHTML = recentClasses.map(cls => {
                 const startDate = cls.ngayBatDau ? new Date(cls.ngayBatDau) : null;
                 let statusClass = 'completed';
                 let statusText = 'Đã hoàn thành';
-                
+
                 if (startDate) {
                     const diffTime = startDate - now;
                     const diffHours = diffTime / (1000 * 60 * 60);
-                    
+
                     if (diffHours > 0 && diffHours < 24) {
                         statusClass = 'upcoming';
                         statusText = 'Sắp tới';
@@ -1776,15 +1792,15 @@ class TeacherDashboard {
                         statusText = 'Đang dạy';
                     }
                 }
-                
+
                 // Format date
                 const dateStr = startDate ? startDate.toLocaleDateString('vi-VN') : 'Chưa có';
-                const timeStr = startDate ? startDate.toLocaleTimeString('vi-VN', { 
-                    hour: '2-digit', 
+                const timeStr = startDate ? startDate.toLocaleTimeString('vi-VN', {
+                    hour: '2-digit',
                     minute: '2-digit',
-                    hour12: false 
+                    hour12: false
                 }) : '';
-                
+
                 return `
                     <div class="class-item">
                         <div class="class-info">
@@ -1806,21 +1822,21 @@ class TeacherDashboard {
             if (!authContext?.payload?.user?.idNv) {
                 return;
             }
-            
+
             // Load recent assignments
             const baiTaps = await this.api.getBaiTapByGiaoVien(authContext.payload.user.idNv);
-            
+
             // Sort by date and take recent 3
             const recentBaiTaps = baiTaps
                 .sort((a, b) => new Date(b.ngayBatDau || 0) - new Date(a.ngayBatDau || 0))
                 .slice(0, 3);
-            
+
             const activities = recentBaiTaps.map(bt => ({
                 type: 'assignment',
                 message: `Đã tạo ${window.getLoaiBaiTapLabel ? window.getLoaiBaiTapLabel(bt.loaiBt) : bt.loaiBt}: ${bt.tieuDe}`,
                 time: bt.ngayBatDau ? this.getTimeAgo(new Date(bt.ngayBatDau)) : 'Chưa có'
             }));
-            
+
             const activitiesContainer = document.getElementById('recentActivities');
             if (activitiesContainer) {
                 if (activities.length === 0) {
@@ -1843,14 +1859,14 @@ class TeacherDashboard {
             console.error('Error loading recent activities:', error);
         }
     }
-    
+
     getTimeAgo(date) {
         const now = new Date();
         const diff = now - date;
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
-        
+
         if (days > 0) return `${days} ngày trước`;
         if (hours > 0) return `${hours} giờ trước`;
         if (minutes > 0) return `${minutes} phút trước`;
@@ -1863,13 +1879,13 @@ class TeacherDashboard {
             if (!authContext?.payload?.user?.idNv) {
                 return;
             }
-            
+
             // Load today's schedule
             const buoiHocs = await this.api.getBuoiHocByGiaoVien(authContext.payload.user.idNv);
-            
+
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
+
             // Filter upcoming classes for today
             const upcomingClasses = buoiHocs
                 .filter(bh => {
@@ -1880,7 +1896,7 @@ class TeacherDashboard {
                 })
                 .sort((a, b) => new Date(a.gioBatDau) - new Date(b.gioBatDau))
                 .slice(0, 3);
-            
+
             const upcomingContainer = document.getElementById('upcomingClasses');
             if (upcomingContainer) {
                 if (upcomingClasses.length === 0) {
@@ -1889,7 +1905,7 @@ class TeacherDashboard {
                     upcomingContainer.innerHTML = upcomingClasses.map(bh => {
                         const gioBatDau = bh.gioBatDau ? new Date(bh.gioBatDau) : null;
                         const timeStr = gioBatDau ? gioBatDau.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Chưa có';
-                        
+
                         return `
                             <div class="upcoming-class">
                                 <div class="class-time">${timeStr}</div>
@@ -1923,16 +1939,16 @@ class TeacherDashboard {
         const now = new Date();
         const timeElement = document.getElementById('currentTime');
         const dateElement = document.getElementById('currentDate');
-        
+
         if (timeElement) {
-            const timeString = now.toLocaleTimeString('vi-VN', { 
-                hour: '2-digit', 
+            const timeString = now.toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
                 minute: '2-digit',
-                hour12: false 
+                hour12: false
             });
             timeElement.textContent = timeString;
         }
-        
+
         if (dateElement) {
             dateElement.textContent = now.toLocaleDateString('vi-VN');
         }
@@ -1959,22 +1975,22 @@ class TeacherDashboard {
         };
         return icons[type] || 'info-circle';
     }
-    
+
     async loadClassFilterOptions() {
         try {
             const authContext = getAuthContext();
             if (!authContext?.payload?.user?.idNv) {
                 return;
             }
-            
+
             const classes = await this.api.getTeacherClasses(authContext.payload.user.idNv);
             const classFilter = document.getElementById('classFilter');
-            
+
             if (classFilter && classes) {
                 const currentValue = classFilter.value;
-                classFilter.innerHTML = '<option value="">Tất cả lớp</option>' + 
+                classFilter.innerHTML = '<option value="">Tất cả lớp</option>' +
                     classes.map(c => `<option value="${c.idLh}">${c.tenLop}</option>`).join('');
-                
+
                 if (currentValue) {
                     classFilter.value = currentValue;
                 }
@@ -2064,45 +2080,45 @@ class RealTimeSchedule {
     updateCurrentTime() {
         const now = new Date();
         const currentTime = now.getHours() * 60 + now.getMinutes();
-        
+
         if (!this.scheduleData || !Array.isArray(this.scheduleData)) {
             return;
         }
-        
+
         this.scheduleData.forEach(item => {
             // Validate item.time exists and is a string
             if (!item || !item.time || typeof item.time !== 'string') {
                 return; // Skip invalid items
             }
-            
+
             try {
                 // Support both '8:00-9:30' and '8:00 - 9:30' formats
-                const timeParts = item.time.includes(' - ') 
-                    ? item.time.split(' - ') 
+                const timeParts = item.time.includes(' - ')
+                    ? item.time.split(' - ')
                     : item.time.split('-');
                 if (timeParts.length !== 2) {
                     return; // Skip invalid time format
                 }
-                
+
                 const [startTime, endTime] = timeParts;
                 const startParts = startTime.split(':');
                 const endParts = endTime.split(':');
-                
+
                 if (startParts.length !== 2 || endParts.length !== 2) {
                     return; // Skip invalid time format
                 }
-                
+
                 const [startHour, startMin] = startParts.map(Number);
                 const [endHour, endMin] = endParts.map(Number);
-                
+
                 // Validate numbers are valid
                 if (isNaN(startHour) || isNaN(startMin) || isNaN(endHour) || isNaN(endMin)) {
                     return; // Skip invalid numbers
                 }
-                
+
                 const startMinutes = startHour * 60 + startMin;
                 const endMinutes = endHour * 60 + endMin;
-                
+
                 if (currentTime >= startMinutes && currentTime <= endMinutes) {
                     item.status = 'active';
                 } else if (currentTime < startMinutes) {
@@ -2123,21 +2139,21 @@ class RealTimeSchedule {
 // ===== CLASS MANAGEMENT FUNCTIONS =====
 window.openClassManagement = function(classId) {
     console.log('Opening class management for class:', classId);
-    
+
     const classNames = {
         1: 'Toán 10A1',
         2: 'Toán 11B2',
         3: 'Toán 12C1'
     };
-    
+
     const className = classNames[classId] || `Lớp ${classId}`;
     const modal = document.getElementById('classManagementModal');
     const titleElement = document.getElementById('classManagementTitle');
-    
+
     if (titleElement) {
         titleElement.textContent = `Quản lý lớp học - ${className}`;
     }
-    
+
     if (modal) {
         modal.classList.add('active');
         // Load data after modal is shown
@@ -2149,36 +2165,36 @@ window.openClassManagement = function(classId) {
 
 window.loadClassManagementData = function(classId) {
     console.log('Loading class management data for class:', classId);
-    
+
     // Load attendance data
     loadAttendanceData(classId);
-    
-    // Load grading data  
+
+    // Load grading data
     loadGradingData(classId);
-    
+
     // Load evaluation data
     loadEvaluationData(classId);
-    
+
     // Set default active tab
     showManagementTab('attendance');
 };
 
 window.showManagementTab = function(tabName) {
     console.log('Switching to tab:', tabName);
-    
+
     // Update button states
     const buttons = document.querySelectorAll('.management-tabs .tab-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    
+
     const activeButton = document.querySelector(`[onclick="showManagementTab('${tabName}')"]`);
     if (activeButton) {
         activeButton.classList.add('active');
     }
-    
+
     // Update content visibility
     const contents = document.querySelectorAll('.tab-content');
     contents.forEach(content => content.style.display = 'none');
-    
+
     const activeContent = document.getElementById(`${tabName}Tab`);
     if (activeContent) {
         activeContent.style.display = 'block';
@@ -2187,16 +2203,16 @@ window.showManagementTab = function(tabName) {
 
 window.loadAttendanceData = function(classId) {
     console.log('Loading attendance data for class:', classId);
-    
+
     const classNames = {
         1: 'Toán 10A1',
-        2: 'Toán 11B2', 
+        2: 'Toán 11B2',
         3: 'Toán 12C1'
     };
-    
+
     const className = classNames[classId] || `Lớp ${classId}`;
     const attendanceContainer = document.getElementById('attendanceList');
-    
+
     if (attendanceContainer) {
         const students = [
             { id: 1, name: 'Nguyễn Văn An', studentId: 'HS001', status: 'present', time: '08:00', note: '' },
@@ -2210,7 +2226,7 @@ window.loadAttendanceData = function(classId) {
             { id: 9, name: 'Ngô Văn Ích', studentId: 'HS009', status: 'present', time: '08:00', note: '' },
             { id: 10, name: 'Đinh Thị Kim', studentId: 'HS010', status: 'present', time: '08:01', note: '' }
         ];
-        
+
         const html = `
             <div class="attendance-header">
                 <h3>Điểm danh lớp ${className} - ${new Date().toLocaleDateString('vi-VN')}</h3>
@@ -2256,8 +2272,8 @@ window.loadAttendanceData = function(classId) {
                 ${students.map(student => `
                     <div class="table-row">
                         <div class="col-checkbox">
-                            <input type="checkbox" class="student-checkbox" 
-                                   ${student.status === 'present' ? 'checked' : ''} 
+                            <input type="checkbox" class="student-checkbox"
+                                   ${student.status === 'present' ? 'checked' : ''}
                                    onchange="toggleAttendance(${student.id})">
                         </div>
                         <div class="col-name">
@@ -2268,43 +2284,43 @@ window.loadAttendanceData = function(classId) {
                         <div class="col-id">${student.studentId}</div>
                         <div class="col-status">
                             <span class="status-badge ${student.status}">
-                                ${student.status === 'present' ? 'Có mặt' : 
+                                ${student.status === 'present' ? 'Có mặt' :
                                   student.status === 'absent' ? 'Vắng mặt' : 'Đi muộn'}
                             </span>
                         </div>
                         <div class="col-time">${student.time}</div>
                         <div class="col-note">
-                            <input type="text" class="note-input" value="${student.note}" 
+                            <input type="text" class="note-input" value="${student.note}"
                                    placeholder="Ghi chú...">
                         </div>
                     </div>
                 `).join('')}
             </div>
         `;
-        
+
         attendanceContainer.innerHTML = html;
     }
 };
 
 window.loadGradingData = function(classId) {
     console.log('Loading grading data for class:', classId);
-    
+
     const classNames = {
         1: 'Toán 10A1',
         2: 'Toán 11B2',
         3: 'Toán 12C1'
     };
-    
+
     const className = classNames[classId] || `Lớp ${classId}`;
     const gradingContainer = document.getElementById('gradingList');
-    
+
     if (gradingContainer) {
         const assignments = [
             { id: 1, name: 'Bài tập 1: Phương trình bậc hai', dueDate: '15/10/2025', totalStudents: 10, graded: 8 },
             { id: 2, name: 'Bài tập 2: Hệ phương trình', dueDate: '20/10/2025', totalStudents: 10, graded: 5 },
             { id: 3, name: 'Bài kiểm tra 15 phút', dueDate: '25/10/2025', totalStudents: 10, graded: 0 }
         ];
-        
+
         const students = [
             { id: 1, name: 'Nguyễn Văn An', studentId: 'HS001' },
             { id: 2, name: 'Trần Thị Bình', studentId: 'HS002' },
@@ -2312,7 +2328,7 @@ window.loadGradingData = function(classId) {
             { id: 4, name: 'Phạm Thị Dung', studentId: 'HS004' },
             { id: 5, name: 'Hoàng Văn Em', studentId: 'HS005' }
         ];
-        
+
         const html = `
             <div class="grading-header">
                 <h3>Chấm điểm lớp ${className} - ${new Date().toLocaleDateString('vi-VN')}</h3>
@@ -2380,23 +2396,23 @@ window.loadGradingData = function(classId) {
                 </div>
             </div>
         `;
-        
+
         gradingContainer.innerHTML = html;
     }
 };
 
 window.loadEvaluationData = function(classId) {
     console.log('Loading evaluation data for class:', classId);
-    
+
     const classNames = {
         1: 'Toán 10A1',
         2: 'Toán 11B2',
         3: 'Toán 12C1'
     };
-    
+
     const className = classNames[classId] || `Lớp ${classId}`;
     const evaluationContainer = document.getElementById('evaluationList');
-    
+
     if (evaluationContainer) {
         const evaluations = [
             { id: 1, student: 'Nguyễn Văn An', type: 'positive', content: 'Học tập tích cực, tham gia phát biểu nhiều', date: '10/10/2025' },
@@ -2405,7 +2421,7 @@ window.loadEvaluationData = function(classId) {
             { id: 4, student: 'Phạm Thị Dung', type: 'positive', content: 'Kết quả học tập tốt, có tiến bộ', date: '12/10/2025' },
             { id: 5, student: 'Hoàng Văn Em', type: 'improvement', content: 'Cần tập trung hơn trong giờ học', date: '09/10/2025' }
         ];
-        
+
         const students = [
             { id: 1, name: 'Nguyễn Văn An', evaluations: 3, lastEvaluation: '12/10/2025' },
             { id: 2, name: 'Trần Thị Bình', evaluations: 2, lastEvaluation: '08/10/2025' },
@@ -2413,7 +2429,7 @@ window.loadEvaluationData = function(classId) {
             { id: 4, name: 'Phạm Thị Dung', evaluations: 4, lastEvaluation: '12/10/2025' },
             { id: 5, name: 'Hoàng Văn Em', evaluations: 2, lastEvaluation: '09/10/2025' }
         ];
-        
+
         const html = `
             <div class="evaluation-header">
                 <h3>Đánh giá lớp ${className} - ${new Date().toLocaleDateString('vi-VN')}</h3>
@@ -2491,7 +2507,7 @@ window.loadEvaluationData = function(classId) {
                 </div>
             </div>
         `;
-        
+
         evaluationContainer.innerHTML = html;
     }
 };
@@ -2514,7 +2530,7 @@ window.markAllAbsent = function() {
 
 window.exportAttendance = function(classId) {
     console.log('Exporting attendance for class:', classId);
-    
+
     // Tạo dữ liệu CSV cho điểm danh
     const csvContent = `Lớp Toán 11B2 - Báo cáo điểm danh ${new Date().toLocaleDateString('vi-VN')}
 STT,Họ và tên,Mã học sinh,Trạng thái,Thời gian,Ghi chú
@@ -2531,11 +2547,11 @@ STT,Họ và tên,Mã học sinh,Trạng thái,Thời gian,Ghi chú
 
 Tổng kết:
 - Có mặt: 8 học sinh
-- Vắng mặt: 2 học sinh  
+- Vắng mặt: 2 học sinh
 - Đi muộn: 1 học sinh
 - Tổng số: 10 học sinh
 - Tỷ lệ có mặt: 80%`;
-    
+
     // Tạo và tải file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -2546,7 +2562,7 @@ Tổng kết:
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     showNotification('Đã xuất báo cáo điểm danh thành công!', 'success');
 };
 
@@ -2590,23 +2606,23 @@ window.exportEvaluations = function() {
 // ===== CLASS DETAILS FUNCTIONS =====
 window.viewClassDetails = function(classId) {
     console.log('Viewing class details for:', classId);
-    
+
     const classNames = {
         1: 'Toán 10A1',
         2: 'Toán 11B2',
         3: 'Toán 12C1'
     };
-    
+
     const className = classNames[classId] || `Lớp ${classId}`;
     const titleElement = document.getElementById('classDetailsTitle');
-    
+
     if (titleElement) {
         titleElement.textContent = `Chi tiết lớp học - ${className}`;
     }
-    
+
     // Load sessions data
     loadSessionsData(classId);
-    
+
     // Show modal
     const modal = document.getElementById('classDetailsModal');
     if (modal) {
@@ -2616,7 +2632,7 @@ window.viewClassDetails = function(classId) {
 
 window.loadSessionsData = function(classId) {
     console.log('Loading sessions data for class:', classId);
-    
+
     const sessionsList = document.getElementById('sessionsList');
     if (sessionsList) {
         const sessions = [
@@ -2624,7 +2640,7 @@ window.loadSessionsData = function(classId) {
             { id: 2, date: '14/10/2025', time: '8:00-9:30', topic: 'Hệ phương trình', status: 'upcoming' },
             { id: 3, date: '16/10/2025', time: '8:00-9:30', topic: 'Bất phương trình', status: 'upcoming' }
         ];
-        
+
         sessionsList.innerHTML = sessions.map(session => `
             <div class="session-item">
                 <div class="session-date">${session.date}</div>
@@ -2643,25 +2659,25 @@ window.loadSessionsData = function(classId) {
 
 window.showClassTab = function(tabName) {
     console.log('Switching to class tab:', tabName);
-    
+
     // Update button states
     const buttons = document.querySelectorAll('.class-tabs .tab-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    
+
     const activeButton = document.querySelector(`[onclick="showClassTab('${tabName}')"]`);
     if (activeButton) {
         activeButton.classList.add('active');
     }
-    
+
     // Update content visibility
     const contents = document.querySelectorAll('.class-tab-content');
     contents.forEach(content => content.style.display = 'none');
-    
+
     const activeContent = document.getElementById(`${tabName}Content`);
     if (activeContent) {
         activeContent.style.display = 'block';
     }
-    
+
     // Load data for the tab
     if (tabName === 'students') {
         loadClassStudentsData();
@@ -2672,7 +2688,7 @@ window.showClassTab = function(tabName) {
 
 window.loadClassStudentsData = function() {
     console.log('Loading class students data');
-    
+
     const studentsList = document.getElementById('studentsList');
     if (studentsList) {
         const students = [
@@ -2684,7 +2700,7 @@ window.loadClassStudentsData = function() {
             { id: 6, name: 'Vũ Thị Phương', studentId: 'HS006', grade: 8.8, attendance: 92 },
             { id: 7, name: 'Đặng Văn Giang', studentId: 'HS007', grade: 6.9, attendance: 80 }
         ];
-        
+
         studentsList.innerHTML = `
             <div class="students-header">
                 <h4>Danh sách học sinh (${students.length} học sinh)</h4>
@@ -2738,7 +2754,7 @@ window.loadClassStudentsData = function() {
 
 window.loadClassAssignmentsData = function() {
     console.log('Loading class assignments data');
-    
+
     const assignmentsList = document.getElementById('assignmentsList');
     if (assignmentsList) {
         const assignments = [
@@ -2748,7 +2764,7 @@ window.loadClassAssignmentsData = function() {
             { id: 4, name: 'Bài tập 3: Bất phương trình', dueDate: '30/10/2025', progress: 0, status: 'upcoming' },
             { id: 5, name: 'Bài tập 4: Ôn tập chương', dueDate: '05/11/2025', progress: 0, status: 'upcoming' }
         ];
-        
+
         assignmentsList.innerHTML = `
             <div class="assignments-header">
                 <h4>Danh sách bài tập (${assignments.length} bài tập)</h4>
@@ -2761,7 +2777,7 @@ window.loadClassAssignmentsData = function() {
                     <div class="assignment-card ${assignment.status}">
                         <div class="assignment-type">
                             <i class="fas fa-file-alt"></i>
-                            ${assignment.status === 'active' ? 'Đang hoạt động' : 
+                            ${assignment.status === 'active' ? 'Đang hoạt động' :
                               assignment.status === 'upcoming' ? 'Sắp tới' : 'Hoàn thành'}
                         </div>
                         <h5>${assignment.name}</h5>
@@ -2788,44 +2804,86 @@ window.loadClassAssignmentsData = function() {
 };
 
 // ===== SESSION FUNCTIONS =====
-window.viewSessionDetails = function(sessionId) {
-    console.log('Viewing session details:', sessionId);
-    
-    const modal = document.getElementById('sessionDetailsModal');
-    if (modal) {
-        modal.classList.add('active');
-        
-        // Load session data
-        const sessionContent = document.getElementById('sessionContent');
-        if (sessionContent) {
-            sessionContent.innerHTML = `
-                <div class="session-info">
-                    <h3>Buổi học: Phương trình bậc hai</h3>
-                    <p><strong>Ngày:</strong> 12/10/2025</p>
-                    <p><strong>Thời gian:</strong> 8:00 - 9:30</p>
-                    <p><strong>Lớp:</strong> Toán 11B2</p>
-                </div>
-                
-                <div class="session-comments">
-                    <h4>Nhận xét buổi học</h4>
-                    <div class="comment-item">
-                        <p>Học sinh tham gia tích cực, hiểu bài tốt. Cần chú ý thêm về cách giải phương trình có tham số.</p>
-                        <span class="comment-date">12/10/2025 9:30</span>
-                    </div>
-                </div>
-                
-                <div class="session-homework">
-                    <h4>Bài tập về nhà</h4>
-                    <div class="homework-item">
-                        <p>Làm bài tập 1, 2, 3 trang 45-46 sách giáo khoa</p>
-                        <p>Chuẩn bị bài mới: Hệ phương trình</p>
-                        <span class="homework-date">Giao ngày: 12/10/2025</span>
-                    </div>
-                </div>
-            `;
+window.viewSessionDetails = async function(sessionId) {
+    try {
+        const api = new TeacherAPI();
+        const detail = await api.getSessionDetail(sessionId);
+
+        if (!detail || !detail.session) {
+            showNotification('Không tìm thấy thông tin buổi học.', 'warning');
+            return;
         }
+
+        const session = detail.session;
+        const modal = document.getElementById('sessionDetailsModal');
+        if (!modal) return;
+        modal.classList.add('active');
+
+        const title = document.getElementById('sessionDetailsTitle');
+        if (title) {
+            title.textContent = `${session.className || 'Buổi học'} - ${session.tenCaHoc || ''}`.trim();
+        }
+
+        const sessionDate = session.ngayHoc || session.gioBatDau;
+        const dateText = sessionDate ? new Date(sessionDate).toLocaleDateString('vi-VN') : 'Chưa cập nhật';
+        const timeText = session.gioBatDau && session.gioKetThuc
+            ? `${new Date(session.gioBatDau).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${new Date(session.gioKetThuc).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+            : 'Chưa cập nhật';
+
+        setTextSafe('sessionDate', dateText);
+        setTextSafe('sessionTime', timeText);
+        setTextSafe('sessionTopic', session.tenCaHoc || 'Chưa có');
+
+        const statusInfo = resolveSessionStatus(
+            session.gioBatDau ? new Date(session.gioBatDau) : null,
+            session.gioKetThuc ? new Date(session.gioKetThuc) : null
+        );
+        setTextSafe('sessionStatus', statusInfo.label);
+
+        const commentsContainer = document.getElementById('sessionComments');
+        if (commentsContainer) {
+            if (!detail.sessionEvaluations || detail.sessionEvaluations.length === 0) {
+                commentsContainer.innerHTML = '<p>Chưa có nhận xét nào cho buổi học.</p>';
+            } else {
+                commentsContainer.innerHTML = detail.sessionEvaluations.map(ev => `
+                    <div class="comment-item">
+                        <p>${ev.comment || 'Không có nội dung'}</p>
+                        <div class="comment-meta">
+                            <span>${ev.studentName || 'Học sinh'}</span>
+                            <span>${formatDateTime(ev.createdAt)}</span>
+                            <span>${ev.score ?? '-'} / 10</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        const homeworkList = document.getElementById('homeworkList');
+        if (homeworkList) {
+            if (!detail.assignments || detail.assignments.length === 0) {
+                homeworkList.innerHTML = '<p>Chưa giao bài tập cho buổi học này.</p>';
+            } else {
+                homeworkList.innerHTML = detail.assignments.map(bt => `
+                    <div class="homework-item">
+                        <strong>${bt.tieuDe || 'Bài tập'}</strong>
+                        <p>${bt.moTa || ''}</p>
+                        <span>Hạn nộp: ${bt.ngayKetThuc ? new Date(bt.ngayKetThuc).toLocaleString('vi-VN') : 'Chưa có'}</span>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading session detail:', error);
+        showNotification('Không thể tải chi tiết buổi học. Vui lòng thử lại sau.', 'error');
     }
 };
+
+function setTextSafe(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value || '';
+    }
+}
 
 window.addSessionComment = function() {
     console.log('Adding session comment');

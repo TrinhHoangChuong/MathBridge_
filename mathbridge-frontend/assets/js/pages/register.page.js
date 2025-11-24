@@ -1,5 +1,5 @@
 // file: assets/js/pages/register.page.js
-import { enrollCourse } from "../api/courses.api.js";
+import { enrollCourse } from "../api/courses.api.js?v=20251130";
 
 document.addEventListener("DOMContentLoaded", () => {
   // Đợi một chút để đảm bảo DOM đã render xong
@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function initRegisterForm() {
   const form = document.getElementById("mb-register-form");
   const errorBox = document.getElementById("register-error");
-  
+
   if (!form) {
     console.warn("Register form not found");
     return;
@@ -141,7 +141,7 @@ function initRegisterForm() {
       diaChi: diaChi || null,
       // courseId: null - không gửi courseId nếu không có
     };
-    
+
     // Debug: log payload
     console.log("Register payload:", payload);
 
@@ -153,14 +153,14 @@ function initRegisterForm() {
       }
 
       const result = await enrollCourse(payload);
-      
+
       // Debug: log response để kiểm tra
       console.log("Register response:", result);
 
       if (result?.success) {
         // Đăng ký thành công - logic giống hệt courses.page.js
         hideError();
-        
+
         // Lấy email và password từ response (DangKyLHResponse có email và password)
         // Response từ backend: {success: true, message: "...", data: {email, password, ...}}
         const responseData = result.data || {};

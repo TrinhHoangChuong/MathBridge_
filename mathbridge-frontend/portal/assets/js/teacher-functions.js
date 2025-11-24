@@ -1258,7 +1258,10 @@ window.viewClassDetails = async function(classId) {
         
         // Load sessions (buoi hoc)
         const buoiHocs = await api.getBuoiHocByLopHoc(classId);
-        
+
+        // Load class evaluations
+        const classEvaluations = await api.getClassEvaluations(classId);
+
         // Update students tab
         const classStudentsList = document.getElementById('classStudentsList');
         if (classStudentsList) {
@@ -1292,7 +1295,7 @@ window.viewClassDetails = async function(classId) {
                 }).join('');
             }
         }
-        
+
         // Update assignments tab
         const classAssignmentsList = document.getElementById('classAssignmentsList');
         if (classAssignmentsList) {
@@ -1304,9 +1307,9 @@ window.viewClassDetails = async function(classId) {
                     const endDate = bt.ngayKetThuc ? new Date(bt.ngayKetThuc) : null;
                     const startStr = startDate ? startDate.toLocaleDateString('vi-VN') : 'Chưa có';
                     const endStr = endDate ? endDate.toLocaleDateString('vi-VN') : 'Chưa có';
-                    
+
                     const progress = bt.soBaiNop > 0 ? Math.round((bt.soBaiDaCham / bt.soBaiNop) * 100) : 0;
-                    
+
                     return `
                         <div class="assignment-card">
                             <div class="assignment-header">
@@ -1336,7 +1339,7 @@ window.viewClassDetails = async function(classId) {
                 }).join('');
             }
         }
-        
+
         // Update sessions tab
         const sessionsList = document.getElementById('sessionsList');
         if (sessionsList) {
@@ -1347,21 +1350,28 @@ window.viewClassDetails = async function(classId) {
                     const ngayHoc = bh.ngayHoc ? new Date(bh.ngayHoc) : null;
                     const gioBatDau = bh.gioBatDau ? new Date(bh.gioBatDau) : null;
                     const gioKetThuc = bh.gioKetThuc ? new Date(bh.gioKetThuc) : null;
-                    
+
                     const dateStr = ngayHoc ? ngayHoc.toLocaleDateString('vi-VN') : 'Chưa có';
-                    const timeStr = gioBatDau && gioKetThuc 
+                    const timeStr = gioBatDau && gioKetThuc
                         ? `${gioBatDau.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${gioKetThuc.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
                         : 'Chưa có';
-                    
+
+                    const statusInfo = resolveSessionStatus(gioBatDau, gioKetThuc);
+
                     return `
                         <div class="session-item">
                             <div class="session-info">
-                                <div class="session-date">${dateStr}</div>
-                                <div class="session-time">${timeStr}</div>
-                                <div class="session-topic">${bh.tenCaHoc || 'Chưa có tên'}</div>
-                                <div class="session-room">${bh.tenPhong || 'Chưa có phòng'}</div>
+                                <div>
+                                    <div class="session-date">${dateStr}</div>
+                                    <div class="session-time">${timeStr}</div>
+                                </div>
+                                <div>
+                                    <div class="session-topic">${bh.tenCaHoc || 'Chưa có tên'}</div>
+                                    <div class="session-room"><i class="fas fa-door-closed"></i> ${bh.tenPhong || 'Chưa có phòng'}</div>
+                                </div>
                             </div>
                             <div class="session-actions">
+                                <span class="status-badge ${statusInfo.className}">${statusInfo.label}</span>
                                 <button class="btn btn-sm btn-primary" onclick="viewSessionDetails('${bh.idBh}')">
                                     <i class="fas fa-eye"></i> Xem
                                 </button>
@@ -1371,7 +1381,38 @@ window.viewClassDetails = async function(classId) {
                 }).join('');
             }
         }
-        
+
+        const classEvaluationsList = document.getElementById('classEvaluationsList');
+        if (classEvaluationsList) {
+            if (!classEvaluations || classEvaluations.length === 0) {
+                classEvaluationsList.innerHTML = `
+                    <div class="empty-state" style="margin-top: 1rem;">
+                        <p>Chưa có nhận xét nào cho lớp này.</p>
+                    </div>
+                `;
+            } else {
+                classEvaluationsList.innerHTML = `
+                    <div class="evaluations-header">
+                        <h4>Nhận xét lớp học (${classEvaluations.length})</h4>
+                    </div>
+                    <div class="evaluations-list">
+                        ${classEvaluations.slice(0, 5).map(ev => `
+                            <div class="evaluation-card">
+                                <div class="evaluation-head">
+                                    <div>
+                                        <strong>${ev.studentName || 'Học sinh'}</strong>
+                                        <span class="evaluation-date">${formatDateTime(ev.createdAt)}</span>
+                                    </div>
+                                    <span class="score-badge">${ev.score ?? '-'}/10</span>
+                                </div>
+                                <p class="evaluation-comment">${ev.comment || 'Không có nhận xét'}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
         // Show modal
         const modal = document.getElementById('classDetailsModal');
         if (modal) {
@@ -1386,7 +1427,7 @@ window.viewClassDetails = async function(classId) {
 // Create assignment
 window.createAssignment = async function(existingAssignment = null) {
     console.log(existingAssignment ? 'editAssignment modal' : 'createAssignment called');
-    
+
     const isEdit = !!existingAssignment;
     const editingId = isEdit ? String(existingAssignment.idBt ?? existingAssignment.id ?? existingAssignment.maBt ?? existingAssignment.assignmentId) : null;
     if (isEdit && (!editingId || editingId === 'undefined' || editingId === 'null')) {
@@ -1398,7 +1439,7 @@ window.createAssignment = async function(existingAssignment = null) {
     // Close any existing modal FIRST (but preserve edit state if editing)
     const preservedEditState = window.__currentAssignmentEdit;
     closeAssignmentModal({ preserveDraft: false, keepEditState: true });
-    
+
     // Set edit state with explicit ID
     // If isEdit is true, use the editingId. Otherwise, preserve existing state if it exists.
     if (isEdit && editingId) {
@@ -1547,9 +1588,9 @@ D. Vịnh Hạ Long - Đúng"></textarea>
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     // Load classes for dropdown
     try {
         const api = new TeacherAPI();
@@ -1557,7 +1598,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
         const classes = await api.getTeacherClasses(authContext.payload.user.idNv);
         const classSelect = document.getElementById('assignmentClass');
         if (classSelect && classes) {
-            classSelect.innerHTML = '<option value="">Chọn lớp</option>' + 
+            classSelect.innerHTML = '<option value="">Chọn lớp</option>' +
                 classes.map(c => `<option value="${c.idLh}">${c.tenLop}</option>`).join('');
             if (isEdit) {
                 const preselected = existingAssignment?.idLh
@@ -1570,7 +1611,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
             } else if (window.__assignmentDraft?.classId) {
                 classSelect.value = String(window.__assignmentDraft.classId);
             }
-            
+
             // Add event listener to load students when class is selected (for edit mode)
             if (isEdit) {
                 classSelect.addEventListener('change', async (e) => {
@@ -1593,7 +1634,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
     const now = new Date();
     const soon = new Date(now.getTime() + 60 * 60 * 1000);
     const formattedNow = formatDateForInput(now);
-    
+
     // Function to update end date min based on start date
     const updateEndDateMin = () => {
         if (!startInput || !endInput) return;
@@ -1610,7 +1651,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
             endInput.min = formattedNow;
         }
     };
-    
+
     if (startInput) {
         if (isEdit) {
             // For edit mode, don't set default values yet, wait for existing data
@@ -1623,7 +1664,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
         startInput.addEventListener('change', updateEndDateMin);
         startInput.addEventListener('input', updateEndDateMin);
     }
-    
+
     if (endInput) {
         if (isEdit) {
             // For edit mode, min will be set after loading existing data
@@ -1656,7 +1697,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
         if (endInput && endDate && isFinite(endDate)) {
             endInput.value = formatDateForInput(endDate);
         }
-        
+
         // Update end date min based on start date (after setting values)
         // This ensures "Hạn nộp" is always >= "Ngày bắt đầu" + 5 minutes
         updateEndDateMin();
@@ -1675,7 +1716,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
         const restrictStudentsCheckbox = document.getElementById('assignmentRestrictStudents');
         const studentSelectionGroup = document.getElementById('studentSelectionGroup');
         const classSelectForStudents = document.getElementById('assignmentClass');
-        
+
         if (restrictStudentsCheckbox && studentSelectionGroup) {
             // Parse existing student IDs if assignment already has restricted students
             let existingStudentIds = [];
@@ -1692,7 +1733,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
                     existingStudentIds = [];
                 }
             }
-            
+
             // If assignment already has restricted students, show the group and load students
             if (existingStudentIds && existingStudentIds.length > 0) {
                 restrictStudentsCheckbox.checked = true;
@@ -1705,7 +1746,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
                     console.warn('No class ID found for loading existing students');
                 }
             }
-            
+
             // Add event listener for checkbox change
             restrictStudentsCheckbox.addEventListener('change', async (e) => {
                 if (e.target.checked) {
@@ -1726,7 +1767,7 @@ D. Vịnh Hạ Long - Đúng"></textarea>
                 }
             });
         }
-        
+
         // Also listen to class selection change to reload students if restriction is enabled
         if (classSelectForStudents && restrictStudentsCheckbox) {
             classSelectForStudents.addEventListener('change', async (e) => {
@@ -1779,14 +1820,14 @@ window.saveAssignment = async function() {
         form.reportValidity();
         return;
     }
-    
+
     try {
         const api = new TeacherAPI();
-        
+
         // Get datetime values and convert to ISO format for backend
         const startDateValue = document.getElementById('assignmentStartDate').value;
         const endDateValue = document.getElementById('assignmentEndDate').value;
-        
+
         // Convert datetime-local format (YYYY-MM-DDTHH:mm) to ISO 8601 format
         const formatDateTimeForBackend = (dateTimeLocal) => {
             if (!dateTimeLocal) return null;
@@ -1800,7 +1841,7 @@ window.saveAssignment = async function() {
             }
             return dateTimeLocal;
         };
-        
+
         const assignmentData = {
             tieuDe: document.getElementById('assignmentTitle').value,
             loaiBt: document.getElementById('assignmentType').value,
@@ -1830,7 +1871,7 @@ window.saveAssignment = async function() {
         }
         // Tự động nộp khi hết giờ mặc định là true
         assignmentData.tuDongNop = true;
-        
+
         // Add retake and student restriction options if in edit mode
         const editId = window.__currentAssignmentEdit?.id;
         if (editId) {
@@ -1866,16 +1907,16 @@ window.saveAssignment = async function() {
         if (questionsPayload) {
             assignmentData.questions = questionsPayload;
         }
-        
+
         console.log('Saving assignment data:', {
             ...assignmentData,
             questions: questionsPayload ? `${questionsPayload.length} questions` : 'no questions'
         });
-        
+
         const editIdValue = window.__currentAssignmentEdit?.id;
         const editIdStr = editIdValue ? String(editIdValue).trim() : null;
         console.log('saveAssignment - editId:', editIdStr, 'currentEdit:', window.__currentAssignmentEdit);
-        
+
         // Check if we have a valid edit ID
         if (editIdStr && editIdStr !== 'undefined' && editIdStr !== 'null' && editIdStr.length > 0) {
             console.log('Updating assignment with ID:', editIdStr);
@@ -1899,19 +1940,19 @@ window.saveAssignment = async function() {
                 throw createError;
             }
         }
-        
+
         // Clear edit state AFTER successful save
         const wasEdit = !!window.__currentAssignmentEdit;
         window.__currentAssignmentEdit = null;
-        
+
         // Close modal
         closeAssignmentModal({ preserveDraft: false, clearDraft: true });
-        
+
         // Clear cache and refresh assignments section
         if (window.__teacherAssignmentsById) {
             window.__teacherAssignmentsById.clear();
         }
-        
+
         // Force refresh with a small delay to ensure backend has processed
         setTimeout(() => {
             if (window.teacherDashboard) {
@@ -1934,11 +1975,11 @@ window.saveAssignment = async function() {
 // View assignment details and grade
 window.gradeAssignment = async function(assignmentId) {
     console.log('gradeAssignment called with:', assignmentId);
-    
+
     try {
         const api = new TeacherAPI();
         const baiNops = await api.getBaiNopByBaiTap(assignmentId);
-        
+
         const modal = document.createElement('div');
         modal.className = 'modal active';
         modal.innerHTML = `
@@ -1978,7 +2019,7 @@ window.gradeAssignment = async function(assignmentId) {
                                         const now = new Date();
                                         const ngayKetThuc = bn.ngayKetThuc ? new Date(bn.ngayKetThuc) : null;
                                         const isExpired = ngayKetThuc && now > ngayKetThuc;
-                                        
+
                                         // Determine status: if IN_PROGRESS but expired, show "Hết hạn"
                                         let statusClass, statusText;
                                         if (bn.trangThai === 'DA_CHAM' || bn.trangThai === 'GRADED_AUTO') {
@@ -1994,7 +2035,7 @@ window.gradeAssignment = async function(assignmentId) {
                                             statusClass = 'pending';
                                             statusText = 'Chờ chấm';
                                         }
-                                        
+
                                         const avatar = (bn.hoTen || 'HS').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                                         return `
                                             <tr class="grading-row ${statusClass}">
@@ -2018,14 +2059,14 @@ window.gradeAssignment = async function(assignmentId) {
                                                 </td>
                                                 <td class="col-score">
                                                     <div class="score-input-wrapper">
-                                                        <input type="number" class="grade-input-modern" id="grade_${bn.idBn}" 
-                                                               value="${bn.diemSo || ''}" min="0" max="10" step="0.1" 
+                                                        <input type="number" class="grade-input-modern" id="grade_${bn.idBn}"
+                                                               value="${bn.diemSo || ''}" min="0" max="10" step="0.1"
                                                                placeholder="0.0">
                                                         <span class="score-max">/ 10</span>
                                                     </div>
                                                 </td>
                                                 <td class="col-comment">
-                                                    <textarea class="comment-input-modern" id="comment_${bn.idBn}" 
+                                                    <textarea class="comment-input-modern" id="comment_${bn.idBn}"
                                                               rows="2" placeholder="Nhập nhận xét...">${escapeHtml(bn.nhanXet || '')}</textarea>
                                                 </td>
                                                 <td class="col-status">
@@ -2067,9 +2108,9 @@ window.gradeAssignment = async function(assignmentId) {
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(modal);
-        
+
         // Add enter key support for quick grading and input change handlers
         modal.querySelectorAll('.grade-input-modern').forEach(input => {
             // Enter key to save
@@ -2080,27 +2121,27 @@ window.gradeAssignment = async function(assignmentId) {
                     saveGrade(baiNopId);
                 }
             });
-            
+
             // Real-time validation and visual feedback
             input.addEventListener('input', (e) => {
                 const value = parseFloat(e.target.value);
                 const baiNopId = input.id.replace('grade_', '');
                 const row = input.closest('tr');
-                
+
                 // Remove previous validation classes
                 input.classList.remove('input-invalid', 'input-valid');
-                
+
                 if (e.target.value.trim() === '') {
                     return; // Empty input is OK
                 }
-                
+
                 if (isNaN(value) || value < 0 || value > 10) {
                     input.classList.add('input-invalid');
                 } else {
                     input.classList.add('input-valid');
                 }
             });
-            
+
             // Blur event to auto-save if value changed
             let originalValue = input.value;
             input.addEventListener('blur', (e) => {
@@ -2125,9 +2166,9 @@ function formatDateTime(dateString) {
     if (!dateString) return '';
     try {
         const date = new Date(dateString);
-        return date.toLocaleString('vi-VN', { 
-            day: '2-digit', 
-            month: '2-digit', 
+        return date.toLocaleString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
@@ -2143,21 +2184,21 @@ window.saveGrade = async function(baiNopId) {
         const api = new TeacherAPI();
         const gradeInput = document.getElementById(`grade_${baiNopId}`);
         const commentInput = document.getElementById(`comment_${baiNopId}`);
-        
+
         if (!gradeInput) {
             showNotification('Không tìm thấy ô nhập điểm!', 'error');
             return;
         }
-        
+
         const diemSoValue = gradeInput.value.trim();
         const nhanXet = commentInput ? commentInput.value.trim() : '';
-        
+
         // Allow saving comment even without score
         if (!diemSoValue && !nhanXet) {
             showNotification('Vui lòng nhập điểm số hoặc nhận xét!', 'error');
             return;
         }
-        
+
         // Validate score if provided
         let diemSo = null;
         if (diemSoValue) {
@@ -2168,9 +2209,9 @@ window.saveGrade = async function(baiNopId) {
                 return;
             }
         }
-        
+
         await api.chamDiemBaiNop(baiNopId, diemSo, nhanXet);
-        
+
         // Update status badge and input styling
         const row = gradeInput.closest('tr');
         if (row) {
@@ -2184,7 +2225,7 @@ window.saveGrade = async function(baiNopId) {
                     statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Đã chấm';
                 }
             }
-            
+
             // Update input styling to show it's saved
             if (diemSo != null) {
                 gradeInput.classList.remove('input-invalid', 'input-valid');
@@ -2192,9 +2233,9 @@ window.saveGrade = async function(baiNopId) {
                 gradeInput.dataset.savedValue = diemSoValue;
             }
         }
-        
-        const message = diemSo != null 
-            ? 'Đã lưu điểm và nhận xét thành công!' 
+
+        const message = diemSo != null
+            ? 'Đã lưu điểm và nhận xét thành công!'
             : 'Đã lưu nhận xét thành công!';
         showNotification(message, 'success');
     } catch (error) {
@@ -2209,33 +2250,33 @@ window.bulkSaveGrades = async function(assignmentId) {
         const api = new TeacherAPI();
         const gradeInputs = document.querySelectorAll('.grade-input-modern');
         const rows = document.querySelectorAll('.grading-row');
-        
+
         if (gradeInputs.length === 0) {
             showNotification('Không có điểm nào để lưu!', 'warning');
             return;
         }
-        
+
         let savedCount = 0;
         let errorCount = 0;
         const errors = [];
-        
+
         // Show loading
         const saveAllBtn = document.querySelector('.btn-save-all');
         const originalText = saveAllBtn.innerHTML;
         saveAllBtn.disabled = true;
         saveAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
-        
+
         for (const input of gradeInputs) {
             const baiNopId = input.id.replace('grade_', '');
             const commentInput = document.getElementById(`comment_${baiNopId}`);
             const diemSoValue = input.value.trim();
             const nhanXet = commentInput ? commentInput.value.trim() : '';
-            
+
             // Skip if both score and comment are empty
             if (!diemSoValue && !nhanXet) {
                 continue;
             }
-            
+
             // Validate score if provided
             let diemSo = null;
             if (diemSoValue) {
@@ -2246,11 +2287,11 @@ window.bulkSaveGrades = async function(assignmentId) {
                     continue;
                 }
             }
-            
+
             try {
                 await api.chamDiemBaiNop(baiNopId, diemSo, nhanXet);
                 savedCount++;
-                
+
                 // Update status badge only if score is provided
                 const row = input.closest('tr');
                 if (row && diemSo != null) {
@@ -2267,29 +2308,29 @@ window.bulkSaveGrades = async function(assignmentId) {
                 errors.push(error.message || `Lỗi khi lưu cho học sinh: ${input.closest('tr')?.querySelector('.student-name')?.textContent || 'N/A'}`);
             }
         }
-        
+
         // Restore button
         saveAllBtn.disabled = false;
         saveAllBtn.innerHTML = originalText;
-        
+
         if (savedCount > 0) {
             showNotification(`Đã lưu thành công ${savedCount} điểm số!${errorCount > 0 ? ` (${errorCount} lỗi)` : ''}`, 'success');
         }
-        
+
         if (errorCount > 0 && errors.length > 0) {
             console.error('Errors during bulk save:', errors);
             if (savedCount === 0) {
                 showNotification(`Không thể lưu điểm. ${errors[0]}`, 'error');
             }
         }
-        
+
         if (savedCount === 0 && errorCount === 0) {
             showNotification('Không có điểm nào để lưu!', 'warning');
         }
     } catch (error) {
         console.error('Error in bulk save:', error);
         showNotification('Không thể lưu tất cả điểm. Vui lòng thử lại sau.', 'error');
-        
+
         // Restore button
         const saveAllBtn = document.querySelector('.btn-save-all');
         if (saveAllBtn) {
@@ -2344,21 +2385,21 @@ window.filterGradesByClass = async function(classId) {
 window.updateDiemSo = async function(classId, studentId, loaiDiem, diemSo) {
     try {
         const api = new TeacherAPI();
-        
+
         // Allow empty value to clear the score (will be sent as null)
         let diem = null;
         if (diemSo !== null && diemSo !== undefined && diemSo !== '') {
             diem = parseFloat(diemSo);
-            
+
             if (Number.isNaN(diem) || diem < 0 || diem > 10) {
                 showNotification('Điểm số phải từ 0 đến 10!', 'error');
                 return;
             }
         }
-        
+
         await api.updateDiemSo(classId, studentId, loaiDiem, diem);
         showNotification('Đã cập nhật điểm số!', 'success');
-        
+
         if (window.teacherDashboard) {
             await window.teacherDashboard.loadGradesSection(classId, { preserveSelection: true });
         }
@@ -2375,25 +2416,25 @@ window.editGrade = async function(studentId, classId, event) {
         event.preventDefault();
         event.stopPropagation();
     }
-    
+
     try {
         const api = new TeacherAPI();
-        
+
         // Get current grades for this student
         const diemSos = await api.getDiemSoByLopHoc(classId);
         const studentGrade = diemSos?.find(ds => ds.idHs === studentId || String(ds.idHs) === String(studentId));
-        
+
         if (!studentGrade) {
             showNotification('Không tìm thấy thông tin điểm của học sinh này.', 'warning');
             return;
         }
-        
+
         // Get student info
         const hocSinhs = await api.getHocSinhByLopHoc(classId);
         const student = hocSinhs?.find(hs => hs.idHs === studentId || String(hs.idHs) === String(studentId));
         const hoTen = student ? ((student.ho || '') + ' ' + (student.tenDem || '') + ' ' + (student.ten || '')).trim() : (studentGrade.hoTen || 'Học sinh');
         const avatar = student ? `${(student.ho || '').charAt(0)}${(student.ten || '').charAt(0)}`.trim().toUpperCase() : hoTen.substring(0, 2).toUpperCase();
-        
+
         // Create edit modal
         const modal = document.createElement('div');
         modal.className = 'modal active';
@@ -2420,11 +2461,11 @@ window.editGrade = async function(studentId, classId, event) {
                         <label for="editDiem15" style="font-weight: 600; color: #0f172a; margin-bottom: 0.5rem; display: block;">
                             <i class="fas fa-clock" style="margin-right: 0.5rem; color: #e11d48;"></i>Điểm kiểm tra 15 phút
                         </label>
-                        <input type="number" 
-                               id="editDiem15" 
-                               class="form-input" 
+                        <input type="number"
+                               id="editDiem15"
+                               class="form-input"
                                value="${studentGrade.diem15Phut ?? studentGrade.diem15p ?? ''}"
-                               min="0" max="10" step="0.1" 
+                               min="0" max="10" step="0.1"
                                placeholder="0.0"
                                style="font-size: 1rem; padding: 0.75rem;">
                     </div>
@@ -2432,11 +2473,11 @@ window.editGrade = async function(studentId, classId, event) {
                         <label for="editDiem45" style="font-weight: 600; color: #0f172a; margin-bottom: 0.5rem; display: block;">
                             <i class="fas fa-file-alt" style="margin-right: 0.5rem; color: #e11d48;"></i>Điểm kiểm tra 1 tiết
                         </label>
-                        <input type="number" 
-                               id="editDiem45" 
-                               class="form-input" 
+                        <input type="number"
+                               id="editDiem45"
+                               class="form-input"
                                value="${studentGrade.diem45Phut ?? studentGrade.diem45p ?? ''}"
-                               min="0" max="10" step="0.1" 
+                               min="0" max="10" step="0.1"
                                placeholder="0.0"
                                style="font-size: 1rem; padding: 0.75rem;">
                     </div>
@@ -2444,11 +2485,11 @@ window.editGrade = async function(studentId, classId, event) {
                         <label for="editDiemHK" style="font-weight: 600; color: #0f172a; margin-bottom: 0.5rem; display: block;">
                             <i class="fas fa-graduation-cap" style="margin-right: 0.5rem; color: #e11d48;"></i>Điểm thi học kỳ
                         </label>
-                        <input type="number" 
-                               id="editDiemHK" 
-                               class="form-input" 
+                        <input type="number"
+                               id="editDiemHK"
+                               class="form-input"
                                value="${studentGrade.diemThiHK ?? studentGrade.diemThiHocKy ?? studentGrade.diemThi ?? ''}"
-                               min="0" max="10" step="0.1" 
+                               min="0" max="10" step="0.1"
                                placeholder="0.0"
                                style="font-size: 1rem; padding: 0.75rem;">
                     </div>
@@ -2476,21 +2517,21 @@ window.editGrade = async function(studentId, classId, event) {
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(modal);
-        
+
         // Calculate average on input change
         const diem15Input = document.getElementById('editDiem15');
         const diem45Input = document.getElementById('editDiem45');
         const diemHKInput = document.getElementById('editDiemHK');
         const diemTBDisplay = document.getElementById('editDiemTB');
         const xepLoaiDisplay = document.getElementById('editXepLoai');
-        
+
         const calculateAverage = () => {
             const diem15 = parseFloat(diem15Input.value) || 0;
             const diem45 = parseFloat(diem45Input.value) || 0;
             const diemHK = parseFloat(diemHKInput.value) || 0;
-            
+
             // Weighted average: 15p (20%), 45p (30%), HK (50%)
             let total = 0;
             let weight = 0;
@@ -2506,10 +2547,10 @@ window.editGrade = async function(studentId, classId, event) {
                 total += diemHK * 0.5;
                 weight += 0.5;
             }
-            
+
             const diemTB = weight > 0 ? (total / weight).toFixed(2) : null;
             diemTBDisplay.textContent = diemTB || '-';
-            
+
             // Update classification
             if (diemTB) {
                 const tb = parseFloat(diemTB);
@@ -2523,11 +2564,11 @@ window.editGrade = async function(studentId, classId, event) {
                 xepLoaiDisplay.textContent = 'Chưa có';
             }
         };
-        
+
         diem15Input.addEventListener('input', calculateAverage);
         diem45Input.addEventListener('input', calculateAverage);
         diemHKInput.addEventListener('input', calculateAverage);
-        
+
     } catch (error) {
         console.error('Error opening edit grade modal:', error);
         showNotification('Không thể mở form chỉnh sửa điểm. Vui lòng thử lại sau.', 'error');
@@ -2538,20 +2579,20 @@ window.editGrade = async function(studentId, classId, event) {
 window.saveEditGrade = async function(studentId, classId) {
     try {
         const api = new TeacherAPI();
-        
+
         const diem15Input = document.getElementById('editDiem15');
         const diem45Input = document.getElementById('editDiem45');
         const diemHKInput = document.getElementById('editDiemHK');
-        
+
         // Get values (allow empty/null to clear scores)
         const diem15Val = diem15Input.value.trim();
         const diem45Val = diem45Input.value.trim();
         const diemHKVal = diemHKInput.value.trim();
-        
+
         const diem15 = diem15Val === '' ? null : parseFloat(diem15Val);
         const diem45 = diem45Val === '' ? null : parseFloat(diem45Val);
         const diemHK = diemHKVal === '' ? null : parseFloat(diemHKVal);
-        
+
         // Validate scores (if provided, must be between 0 and 10)
         if ((diem15 !== null && (isNaN(diem15) || diem15 < 0 || diem15 > 10)) ||
             (diem45 !== null && (isNaN(diem45) || diem45 < 0 || diem45 > 10)) ||
@@ -2559,20 +2600,20 @@ window.saveEditGrade = async function(studentId, classId) {
             showNotification('Điểm số phải từ 0 đến 10!', 'error');
             return;
         }
-        
+
         // Update all three scores (including 0 and null)
         await api.updateDiemSo(classId, studentId, '15P', diem15);
         await api.updateDiemSo(classId, studentId, '45P', diem45);
         await api.updateDiemSo(classId, studentId, 'HK', diemHK);
-        
+
         // Close modal
         const modal = document.getElementById('editGradeModal');
         if (modal) {
             modal.remove();
         }
-        
+
         showNotification('Đã cập nhật điểm số thành công!', 'success');
-        
+
         // Refresh grades section
         if (window.teacherDashboard) {
             await window.teacherDashboard.loadGradesSection(classId, { preserveSelection: true });
@@ -2590,31 +2631,31 @@ function updateDiemTBForStudent(studentId) {
         const diem15Input = document.querySelector(`.grade-input-small[data-student-id="${studentId}"][data-loai-diem="15P"]`);
         const diem45Input = document.querySelector(`.grade-input-small[data-student-id="${studentId}"][data-loai-diem="45P"]`);
         const diemHKInput = document.querySelector(`.grade-input-small[data-student-id="${studentId}"][data-loai-diem="HK"]`);
-        
+
         if (!diem15Input || !diem45Input || !diemHKInput) {
             return; // Không tìm thấy đủ 3 input
         }
-        
+
         // Get values from inputs
         const diem15 = parseFloat(diem15Input.value) || 0;
         const diem45 = parseFloat(diem45Input.value) || 0;
         const diemHK = parseFloat(diemHKInput.value) || 0;
-        
+
         // Tính điểm TB: (15p + 45p + thi) / 3 (chỉ tính các điểm > 0)
         const scores = [diem15, diem45, diemHK].filter(s => s > 0);
         let diemTB = null;
-        
+
         if (scores.length > 0) {
             const sum = scores.reduce((a, b) => a + b, 0);
             diemTB = (sum / scores.length).toFixed(2);
         }
-        
+
         // Update DiemTB cell
         const diemTBCell = document.querySelector(`.diem-tb-cell[data-student-id="${studentId}"]`);
         if (diemTBCell) {
             diemTBCell.textContent = diemTB ? parseFloat(diemTB).toFixed(1) : '-';
         }
-        
+
         // Update XepLoai badge
         const row = document.querySelector(`tr[data-student-id="${studentId}"]`);
         if (row && diemTB && window.teacherDashboard) {
@@ -2626,7 +2667,7 @@ function updateDiemTBForStudent(studentId) {
                 xepLoaiCell.className = `badge ${badgeClass}`;
             }
         }
-        
+
         console.log(`Updated DiemTB for ${studentId}: ${diemTB} (15p: ${diem15}, 45p: ${diem45}, HK: ${diemHK})`);
     } catch (error) {
         console.error('Error updating DiemTB for student:', error);
@@ -2641,19 +2682,19 @@ function updateDiemTBForStudent(studentId) {
 window.exportGrades = async function() {
     const classFilter = document.getElementById('classFilter');
     const classId = classFilter && classFilter.value ? classFilter.value : window.teacherDashboard?.currentGradeClassId;
-    
+
     if (!classId) {
         showNotification('Vui lòng chọn lớp học!', 'warning');
         return;
     }
-    
+
     try {
         const api = new TeacherAPI();
         const diemSos = await api.getDiemSoByLopHoc(classId);
         const classInfo = window.teacherDashboard?.getClassInfo?.(classId);
         const classLabel = classInfo?.tenLop || `Lớp ${classId}`;
         const dateStr = new Date().toLocaleDateString('vi-VN');
-        
+
         // Show export options modal
         const modal = document.createElement('div');
         modal.className = 'modal active';
@@ -2701,13 +2742,13 @@ window.exportGradesAsExcel = async function(classId) {
         const classInfo = window.teacherDashboard?.getClassInfo?.(classId);
         const classLabel = classInfo?.tenLop || `Lớp ${classId}`;
         const dateStr = new Date().toLocaleDateString('vi-VN');
-        
+
         // Create Excel content (CSV format for simplicity, can be enhanced with proper Excel library)
         let csvContent = '\uFEFF'; // BOM for UTF-8
         csvContent += `BÁO CÁO ĐIỂM SỐ - ${classLabel}\n`;
         csvContent += `Ngày xuất: ${dateStr}\n\n`;
         csvContent += `STT,Họ và tên,Email,Điểm KT 15 phút,Điểm KT 1 tiết,Điểm thi HK,Điểm trung bình,Xếp loại\n`;
-        
+
         (diemSos || []).forEach((ds, index) => {
             const safeName = (ds.hoTen || '').replace(/"/g, '""');
             const safeEmail = (ds.email || '').replace(/"/g, '""');
@@ -2718,7 +2759,7 @@ window.exportGradesAsExcel = async function(classId) {
             const diemTB = ds.diemTrungBinh ?? ds.diemTB ?? '-';
             csvContent += `${index + 1},"${safeName}","${safeEmail}",${diem15},${diem45},${diemHK},${diemTB},"${safeRank}"\n`;
         });
-        
+
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -2728,11 +2769,11 @@ window.exportGradesAsExcel = async function(classId) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Close modal
         const modal = document.getElementById('exportGradesModal');
         if (modal) modal.remove();
-        
+
         showNotification('Đã xuất báo cáo Excel thành công!', 'success');
     } catch (error) {
         console.error('Error exporting Excel:', error);
@@ -2748,7 +2789,7 @@ window.exportGradesAsPDF = async function(classId) {
         const classInfo = window.teacherDashboard?.getClassInfo?.(classId);
         const classLabel = classInfo?.tenLop || `Lớp ${classId}`;
         const dateStr = new Date().toLocaleDateString('vi-VN');
-        
+
         // Create HTML table for PDF
         let htmlContent = `
             <!DOCTYPE html>
@@ -2788,7 +2829,7 @@ window.exportGradesAsPDF = async function(classId) {
                     </thead>
                     <tbody>
         `;
-        
+
         (diemSos || []).forEach((ds, index) => {
             const diem15 = ds.diem15Phut ?? ds.diem15p ?? '-';
             const diem45 = ds.diem45Phut ?? ds.diem45p ?? '-';
@@ -2812,28 +2853,28 @@ window.exportGradesAsPDF = async function(classId) {
                         </tr>
             `;
         });
-        
+
         htmlContent += `
                     </tbody>
                 </table>
             </body>
             </html>
         `;
-        
+
         // Open in new window and print to PDF
         const printWindow = window.open('', '_blank');
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        
+
         // Wait for content to load, then print
         setTimeout(() => {
             printWindow.print();
         }, 250);
-        
+
         // Close modal
         const modal = document.getElementById('exportGradesModal');
         if (modal) modal.remove();
-        
+
         showNotification('Đã mở báo cáo PDF. Vui lòng chọn "Lưu dưới dạng PDF" trong hộp thoại in.', 'info');
     } catch (error) {
         console.error('Error exporting PDF:', error);
@@ -3046,36 +3087,36 @@ window.editAssignment = async function(assignmentId) {
             showNotification('Không xác định được bài tập cần chỉnh sửa.', 'warning');
             return;
         }
-        
+
         console.log('editAssignment called with ID:', idKey);
-        
+
         const assignment = await resolveAssignmentById(idKey);
         if (!assignment) {
             showNotification('Không tìm thấy bài tập để chỉnh sửa.', 'warning');
             return;
         }
-        
+
         // Ensure assignment has idBt for editing - try multiple fields
         const actualId = String(
-            assignment.idBt ?? 
-            assignment.id ?? 
-            assignment.maBt ?? 
-            assignment.assignmentId ?? 
+            assignment.idBt ??
+            assignment.id ??
+            assignment.maBt ??
+            assignment.assignmentId ??
             idKey
         );
-        
+
         if (!actualId || actualId === 'undefined' || actualId === 'null') {
             showNotification('Không xác định được ID bài tập.', 'warning');
             return;
         }
-        
+
         // Set the ID explicitly in the assignment object
         assignment.idBt = actualId;
-        
+
         // CRITICAL: Set edit state BEFORE calling createAssignment
         window.__currentAssignmentEdit = { id: actualId };
         console.log('Set __currentAssignmentEdit to:', window.__currentAssignmentEdit);
-        
+
         console.log('Editing assignment with ID:', actualId);
         await window.createAssignment(assignment);
     } catch (error) {
@@ -3121,116 +3162,115 @@ window.loadScheduleSection = async function() {
         if (!authContext?.payload?.user?.idNv) {
             return;
         }
-        
+
         const api = new TeacherAPI();
-        
-        // Get all classes
-        const classes = await api.getTeacherClasses(authContext.payload.user.idNv);
-        
-        // Filter classes with enough students (e.g., >= 2)
-        const activeClasses = classes.filter(c => (c.soHocSinh || 0) >= 2);
-        
-        // Get all sessions for active classes
-        const allSessions = [];
-        for (const cls of activeClasses) {
-            try {
-                const sessions = await api.getBuoiHocByLopHoc(cls.idLh);
-                if (sessions && sessions.length > 0) {
-                    allSessions.push(...sessions.map(s => ({ ...s, tenLop: cls.tenLop })));
-                }
-            } catch (error) {
-                console.error(`Error loading sessions for class ${cls.idLh}:`, error);
-            }
-        }
-        
-        // Sort by date
-        allSessions.sort((a, b) => {
-            const dateA = a.ngayHoc ? new Date(a.ngayHoc) : new Date(0);
-            const dateB = b.ngayHoc ? new Date(b.ngayHoc) : new Date(0);
-            return dateA - dateB;
-        });
-        
-        // Update today's schedule
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const todaySessions = allSessions.filter(s => {
-            if (!s.ngayHoc) return false;
-            const sessionDate = new Date(s.ngayHoc);
-            sessionDate.setHours(0, 0, 0, 0);
-            return sessionDate.getTime() === today.getTime();
-        });
-        
-        const scheduleList = document.querySelector('.schedule-list');
-        if (scheduleList) {
-            if (todaySessions.length === 0) {
-                scheduleList.innerHTML = '<div class="empty-state"><p>Không có lịch dạy hôm nay</p></div>';
-            } else {
-                scheduleList.innerHTML = todaySessions.map(session => {
-                    const gioBatDau = session.gioBatDau ? new Date(session.gioBatDau) : null;
-                    const gioKetThuc = session.gioKetThuc ? new Date(session.gioKetThuc) : null;
-                    const now = new Date();
-                    
-                    let statusClass = 'completed';
-                    let statusText = 'Đã hoàn thành';
-                    
-                    if (gioBatDau && gioKetThuc) {
-                        if (now >= gioBatDau && now <= gioKetThuc) {
-                            statusClass = 'active';
-                            statusText = 'Đang dạy';
-                        } else if (now < gioBatDau) {
-                            statusClass = 'upcoming';
-                            statusText = 'Sắp tới';
-                        }
-                    }
-                    
-                    const timeStr = gioBatDau && gioKetThuc
-                        ? `${gioBatDau.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${gioKetThuc.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
-                        : 'Chưa có';
-                    
-                    return `
-                        <div class="schedule-item">
-                            <div class="schedule-time">
-                                <span class="time">${timeStr}</span>
-                                <span class="duration">${gioBatDau && gioKetThuc ? Math.round((gioKetThuc - gioBatDau) / 60000) + ' phút' : ''}</span>
-                            </div>
-                            <div class="schedule-details">
-                                <h4>${session.tenLop || 'Chưa có tên'} - ${session.tenCaHoc || 'Chưa có'}</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> ${session.tenPhong || 'Chưa có phòng'}</p>
-                                <p><i class="fas fa-users"></i> ${session.soHocSinh || 0} học sinh</p>
-                                <span class="status-badge ${statusClass}">${statusText}</span>
-                            </div>
-                            <div class="schedule-actions">
-                                <button class="btn btn-sm btn-primary" onclick="startClass('${session.idBh}')">
-                                    <i class="fas fa-play"></i> Bắt đầu
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="viewSessionDetails('${session.idBh}')">
-                                    <i class="fas fa-info"></i> Chi tiết
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
+        const dateParam = today.toISOString().split('T')[0];
+
+        const response = await api.getTeacherSchedule(authContext.payload.user.idNv, { date: dateParam, days: 1 });
+        const sessions = Array.isArray(response?.sessions) ? response.sessions : [];
+
+        const headerDate = document.getElementById('scheduleHeaderDate');
+        if (headerDate) {
+            headerDate.textContent = today.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
         }
+
+        const scheduleList = document.querySelector('.schedule-list');
+        if (!scheduleList) return;
+
+        if (sessions.length === 0) {
+            scheduleList.innerHTML = '<div class="empty-state"><p>Không có lịch dạy hôm nay</p></div>';
+            return;
+        }
+
+        scheduleList.innerHTML = sessions.map(session => {
+            const start = session.gioBatDau ? new Date(session.gioBatDau) : null;
+            const end = session.gioKetThuc ? new Date(session.gioKetThuc) : null;
+            const duration = session.durationMinutes || (start && end ? Math.round((end - start) / 60000) : null);
+            const timeStr = start && end
+                ? `${start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+                : 'Chưa có';
+
+            const statusMap = {
+                LIVE: { label: 'Đang dạy', className: 'active' },
+                UPCOMING: { label: 'Sắp tới', className: 'upcoming' },
+                COMPLETED: { label: 'Đã học', className: 'completed' }
+            };
+            const status = statusMap[session.status] || statusMap.UPCOMING;
+
+            const conflictBadge = session.conflict
+                ? `<span class="status-badge warning" title="Trùng phòng/giờ với ${session.conflictSessionIds?.length || 0} lịch khác">Xung đột</span>`
+                : '';
+
+            return `
+                <div class="schedule-item">
+                    <div class="schedule-time">
+                        <span class="time">${timeStr}</span>
+                        <span class="duration">${duration ? `${duration} phút` : ''}</span>
+                    </div>
+                    <div class="schedule-details">
+                        <h4>${session.className || 'Chưa xác định'} - ${session.tenCaHoc || 'Chưa đặt tên'}</h4>
+                        <p><i class="fas fa-map-marker-alt"></i> ${session.roomName || 'Chưa có phòng'}</p>
+                        <p><i class="fas fa-users"></i> ${session.soHocSinh ?? 0} học sinh • ĐTB buổi: ${formatScore(session.sessionAverageScore)} (${session.sessionReviewCount || 0} đánh giá)</p>
+                        <span class="status-badge ${status.className}">${status.label}</span>
+                        ${conflictBadge}
+                    </div>
+                    <div class="schedule-actions">
+                        <button class="btn btn-sm btn-primary" onclick="startClass('${session.idBh}')">
+                            <i class="fas fa-play"></i> Bắt đầu
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="viewSessionDetails('${session.idBh}')">
+                            <i class="fas fa-info"></i> Chi tiết
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
     } catch (error) {
         console.error('Error loading schedule:', error);
         showNotification('Không thể tải lịch dạy. Vui lòng thử lại sau.', 'error');
     }
 };
 
+function formatScore(score) {
+    if (score === undefined || score === null || Number.isNaN(score)) {
+        return 'N/A';
+    }
+    return Number(score).toFixed(1);
+}
+
+function resolveSessionStatus(start, end) {
+    const now = new Date();
+    if (!start || !end) {
+        return { label: 'Sắp tới', className: 'upcoming' };
+    }
+    if (now < start) {
+        return { label: 'Chưa học', className: 'upcoming' };
+    }
+    if (now > end) {
+        return { label: 'Đã học', className: 'completed' };
+    }
+    return { label: 'Đang học', className: 'active' };
+}
+
+function formatDateTime(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    return `${date.toLocaleDateString('vi-VN')} ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
+}
+
 // Load students for a class using API
 async function loadClassStudents(classId, preselectedStudentIds = []) {
     const studentListContainer = document.getElementById('assignmentStudentList');
     if (!studentListContainer) return;
-    
+
     try {
         studentListContainer.innerHTML = '<p style="color: #64748b; font-size: 0.875rem; text-align: center; padding: 1rem;"><i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>Đang tải danh sách học sinh...</p>';
-        
+
         const api = new TeacherAPI();
         // Use API to get students by class ID (only students who have registered for this class)
         const hocSinhs = await api.getHocSinhByLopHoc(classId);
-        
+
         if (!hocSinhs || !Array.isArray(hocSinhs) || hocSinhs.length === 0) {
             studentListContainer.innerHTML = `
                 <div style="text-align: center; padding: 2rem; color: #64748b;">
@@ -3240,13 +3280,13 @@ async function loadClassStudents(classId, preselectedStudentIds = []) {
             `;
             return;
         }
-        
+
         // Filter only approved students (trangThaiDangKy === 'approved')
         const approvedStudents = hocSinhs.filter(hs => {
             const status = (hs.trangThaiDangKy || '').toLowerCase();
             return status === 'approved';
         });
-        
+
         if (approvedStudents.length === 0) {
             studentListContainer.innerHTML = `
                 <div style="text-align: center; padding: 2rem; color: #f59e0b;">
@@ -3256,18 +3296,18 @@ async function loadClassStudents(classId, preselectedStudentIds = []) {
             `;
             return;
         }
-        
+
         studentListContainer.innerHTML = approvedStudents.map((student, index) => {
             const studentId = student.idHs || student.id;
             const isChecked = preselectedStudentIds.includes(studentId) || preselectedStudentIds.includes(String(studentId));
             const hoTen = ((student.ho || '') + ' ' + (student.tenDem || '') + ' ' + (student.ten || '')).trim() || 'Chưa có tên';
             const avatar = `${(student.ho || '').charAt(0)}${(student.ten || '').charAt(0)}`.trim().toUpperCase() || hoTen.substring(0, 2).toUpperCase();
-            
+
             return `
-                <label class="student-selection-item" style="display: flex; align-items: center; padding: 0.75rem; margin-bottom: 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: ${isChecked ? '#fef2f2' : '#ffffff'};" 
-                       onmouseover="this.style.background='${isChecked ? '#fee2e2' : '#f8fafc'}'; this.style.borderColor='#e11d48';" 
+                <label class="student-selection-item" style="display: flex; align-items: center; padding: 0.75rem; margin-bottom: 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: ${isChecked ? '#fef2f2' : '#ffffff'};"
+                       onmouseover="this.style.background='${isChecked ? '#fee2e2' : '#f8fafc'}'; this.style.borderColor='#e11d48';"
                        onmouseout="this.style.background='${isChecked ? '#fef2f2' : '#ffffff'}'; this.style.borderColor='#e2e8f0';">
-                    <input type="checkbox" value="${studentId}" ${isChecked ? 'checked' : ''} 
+                    <input type="checkbox" value="${studentId}" ${isChecked ? 'checked' : ''}
                            style="margin-right: 0.75rem; cursor: pointer; width: 18px; height: 18px; accent-color: #e11d48;"
                            onchange="this.closest('label').style.background = this.checked ? '#fef2f2' : '#ffffff';">
                     <div style="display: flex; align-items: center; flex: 1;">
@@ -3283,7 +3323,7 @@ async function loadClassStudents(classId, preselectedStudentIds = []) {
                 </label>
             `;
         }).join('');
-        
+
     } catch (error) {
         console.error('Error loading students:', error);
         studentListContainer.innerHTML = `
@@ -3294,4 +3334,3 @@ async function loadClassStudents(classId, preselectedStudentIds = []) {
         `;
     }
 }
-

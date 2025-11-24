@@ -21,7 +21,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/portal/payment/momo")
-@CrossOrigin(origins = "*")
 public class PaymentMomoController {
 
     @Autowired

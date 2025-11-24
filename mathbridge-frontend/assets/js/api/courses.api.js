@@ -200,13 +200,53 @@ export async function createMomoPayment(courseId, months) {
   }
 }
 
+export async function createCashInvoice(courseId, months) {
+  const url = `${CONFIG.BASE_URL}/api/portal/payment/cash`;
+  const token = getToken();
+
+  if (!token) {
+    return {
+      success: false,
+      message: "Bạn cần đăng nhập để thanh toán.",
+    };
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ courseId, months }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data.message || "Không thể ghi nhận hóa đơn tiền mặt.",
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error("createCashInvoice error:", error);
+    return {
+      success: false,
+      message: "Không thể kết nối máy chủ. Vui lòng thử lại.",
+    };
+  }
+}
+
 // BE endpoint: /api/portal/payment/momo/manual-update (cho testing)
 export async function updatePaymentStatusManually(orderId, status = "success") {
   const url = `${CONFIG.BASE_URL}/api/portal/payment/momo/manual-update?orderId=${encodeURIComponent(orderId)}&status=${encodeURIComponent(status)}`;
 
   try {
     console.log("[updatePaymentStatusManually] Calling API:", url);
-    
+
     const res = await fetch(url, {
       method: "POST",
       headers: {
