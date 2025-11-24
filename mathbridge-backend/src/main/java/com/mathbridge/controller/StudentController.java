@@ -8,7 +8,9 @@ import com.mathbridge.dto.PortalStudentDTO.UpdateStudentProfileDTO;
 import com.mathbridge.dto.PortalStudentDTO.RateSessionDTO;
 import com.mathbridge.dto.PortalStudentDTO.RateClassDTO;
 import com.mathbridge.dto.PortalStudentDTO.StudentAttendedClassDTO;
+import com.mathbridge.dto.PortalStudentDTO.SessionGradeDTO;
 
+import java.util.Collections;
 import java.util.List;
 import com.mathbridge.service.PortalStudent.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,33 +36,33 @@ public class StudentController {
 
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<StudentDashboardDTO>(
-                    false,
-                    "Không thể xác định ID người dùng từ token",
-                    null
+                        false,
+                        "Không thể xác định ID người dùng từ token",
+                        null
                 ));
             }
 
             StudentDashboardDTO dashboard = studentService.getStudentDashboard(userId);
 
             return ResponseEntity.ok(new ApiResponse<StudentDashboardDTO>(
-                true,
-                "Lấy dữ liệu dashboard thành công",
-                dashboard
+                    true,
+                    "Lấy dữ liệu dashboard thành công",
+                    dashboard
             ));
 
         } catch (RuntimeException e) {
             e.printStackTrace(); // Log for debugging
             return ResponseEntity.badRequest().body(new ApiResponse<StudentDashboardDTO>(
-                false,
-                e.getMessage() != null ? e.getMessage() : "Lỗi khi lấy dữ liệu dashboard",
-                null
+                    false,
+                    e.getMessage() != null ? e.getMessage() : "Lỗi khi lấy dữ liệu dashboard",
+                    null
             ));
         } catch (Exception e) {
             e.printStackTrace(); // Log for debugging
             return ResponseEntity.internalServerError().body(new ApiResponse<StudentDashboardDTO>(
-                false,
-                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
-                null
+                    false,
+                    "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                    null
             ));
         }
     }
@@ -131,33 +133,33 @@ public class StudentController {
 
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false,
-                    "Không thể xác định ID người dùng từ token",
-                    null
+                        false,
+                        "Không thể xác định ID người dùng từ token",
+                        null
                 ));
             }
 
             studentService.updateStudentProfile(userId, profileDTO);
 
             return ResponseEntity.ok(new ApiResponse<>(
-                true,
-                "Cập nhật hồ sơ thành công",
-                "Profile updated successfully"
+                    true,
+                    "Cập nhật hồ sơ thành công",
+                    "Profile updated successfully"
             ));
 
         } catch (RuntimeException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(new ApiResponse<>(
-                false,
-                e.getMessage() != null ? e.getMessage() : "Lỗi khi cập nhật hồ sơ",
-                null
+                    false,
+                    e.getMessage() != null ? e.getMessage() : "Lỗi khi cập nhật hồ sơ",
+                    null
             ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                false,
-                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
-                null
+                    false,
+                    "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                    null
             ));
         }
     }
@@ -173,92 +175,42 @@ public class StudentController {
 
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false,
-                    "Không thể xác định ID người dùng từ token",
-                    null
+                        false,
+                        "Không thể xác định ID người dùng từ token",
+                        null
                 ));
             }
 
             // Validate rating
             if (rateDTO.getRating() == null || rateDTO.getRating() < 1 || rateDTO.getRating() > 5) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false,
-                    "Đánh giá phải từ 1 đến 5 sao",
-                    null
+                        false,
+                        "Đánh giá phải từ 1 đến 5 sao",
+                        null
                 ));
             }
 
             studentService.rateSession(userId, rateDTO);
 
             return ResponseEntity.ok(new ApiResponse<>(
-                true,
-                "Đánh giá buổi học đã được lưu thành công",
-                "Session rated successfully"
-            ));
-
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(new ApiResponse<>(
-                false,
-                e.getMessage() != null ? e.getMessage() : "Lỗi khi lưu đánh giá",
-                null
-            ));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                false,
-                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
-                null
-            ));
-        }
-    }
-
-    @GetMapping("/session-rating/{sessionId}")
-    public ResponseEntity<?> getSessionRating(
-            @PathVariable String sessionId,
-            Authentication authentication) {
-        try {
-            // Extract user ID from JWT token
-            Jwt jwt = (Jwt) authentication.getPrincipal();
-            String userId = jwt.getClaimAsString("uid");
-
-            if (userId == null) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false,
-                    "Không thể xác định ID người dùng từ token",
-                    null
-                ));
-            }
-
-            RateSessionDTO rating = studentService.getSessionRating(userId, sessionId);
-
-            if (rating == null) {
-                return ResponseEntity.ok(new ApiResponse<>(
                     true,
-                    "Chưa có đánh giá cho buổi học này",
-                    null
-                ));
-            }
-
-            return ResponseEntity.ok(new ApiResponse<>(
-                true,
-                "Lấy đánh giá thành công",
-                rating
+                    "Đánh giá buổi học đã được lưu thành công",
+                    "Session rated successfully"
             ));
 
         } catch (RuntimeException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(new ApiResponse<>(
-                false,
-                e.getMessage() != null ? e.getMessage() : "Lỗi khi lấy đánh giá",
-                null
+                    false,
+                    e.getMessage() != null ? e.getMessage() : "Lỗi khi lưu đánh giá",
+                    null
             ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                false,
-                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
-                null
+                    false,
+                    "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                    null
             ));
         }
     }
@@ -274,42 +226,42 @@ public class StudentController {
 
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false,
-                    "Không thể xác định ID người dùng từ token",
-                    null
+                        false,
+                        "Không thể xác định ID người dùng từ token",
+                        null
                 ));
             }
 
             // Validate rating
             if (rateDTO.getRating() == null || rateDTO.getRating() < 1 || rateDTO.getRating() > 5) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false,
-                    "Đánh giá phải từ 1 đến 5 sao",
-                    null
+                        false,
+                        "Đánh giá phải từ 1 đến 5 sao",
+                        null
                 ));
             }
 
             studentService.rateClass(userId, rateDTO);
 
             return ResponseEntity.ok(new ApiResponse<>(
-                true,
-                "Đánh giá lớp học đã được lưu thành công",
-                "Class rated successfully"
+                    true,
+                    "Đánh giá lớp học đã được lưu thành công",
+                    "Class rated successfully"
             ));
 
         } catch (RuntimeException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(new ApiResponse<>(
-                false,
-                e.getMessage() != null ? e.getMessage() : "Lỗi khi lưu đánh giá",
-                null
+                    false,
+                    e.getMessage() != null ? e.getMessage() : "Lỗi khi lưu đánh giá",
+                    null
             ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                false,
-                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
-                null
+                    false,
+                    "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                    null
             ));
         }
     }
@@ -323,34 +275,77 @@ public class StudentController {
 
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>(
-                    false,
-                    "Không thể xác định ID người dùng từ token",
-                    null
+                        false,
+                        "Không thể xác định ID người dùng từ token",
+                        null
                 ));
             }
 
-            // Get schedule from BuoiHocChiTiet
+            // Get student schedule from service
             List<StudentAttendedClassDTO> schedule = studentService.getStudentSchedule(userId);
 
             return ResponseEntity.ok(new ApiResponse<>(
-                true,
-                "Lấy lịch học thành công",
-                schedule
+                    true,
+                    "Lấy lịch học thành công",
+                    schedule
             ));
 
         } catch (RuntimeException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(new ApiResponse<>(
-                false,
-                e.getMessage() != null ? e.getMessage() : "Lỗi khi lấy lịch học",
-                null
+                    false,
+                    e.getMessage() != null ? e.getMessage() : "Lỗi khi lấy lịch học",
+                    null
             ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(new ApiResponse<>(
-                false,
-                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
-                null
+                    false,
+                    "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                    null
+            ));
+        }
+    }
+
+    @GetMapping("/grades")
+    public ResponseEntity<?> getGrades(
+            @RequestParam(required = false) String classId,
+            Authentication authentication) {
+        try {
+            // Extract user ID from JWT token
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String userId = jwt.getClaimAsString("uid");
+
+            if (userId == null) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                        false,
+                        "Không thể xác định ID người dùng từ token",
+                        null
+                ));
+            }
+
+            // Get grades by session from service - filter by classId if provided
+            List<SessionGradeDTO> sessionGrades = studentService.getStudentGradesBySession(userId, classId);
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                    true,
+                    "Lấy điểm số thành công",
+                    sessionGrades
+            ));
+
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false,
+                    e.getMessage() != null ? e.getMessage() : "Lỗi khi lấy điểm số",
+                    null
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                    false,
+                    "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                    null
             ));
         }
     }

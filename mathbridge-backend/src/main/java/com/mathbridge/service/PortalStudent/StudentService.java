@@ -35,34 +35,34 @@ public class StudentService {
 
     @Autowired
     private HocSinhRepository hocSinhRepository;
-    
+
     @Autowired
     private DangKyLHStudentRepository dangKyLHStudentRepository;
-    
+
     @Autowired
     private BaiTapStudentRepository baiTapStudentRepository;
-    
+
     @Autowired
     private BaiNopStudentRepository baiNopStudentRepository;
-    
+
     @Autowired
     private KetQuaHocTapStudentRepository ketQuaHocTapStudentRepository;
-    
+
     @Autowired
     private BuoiHocChiTietStudentRepository buoiHocChiTietStudentRepository;
-    
+
     @Autowired
     private YeuCauHoTroStudentRepository yeuCauHoTroStudentRepository;
-    
+
     @Autowired
     private LopHocRepository lopHocRepository;
-    
+
     @Autowired
     private DanhGiaLopHocStudentRepository danhGiaLopHocStudentRepository;
-    
+
     @Autowired
     private DanhGiaBuoiHocStudentRepository danhGiaBuoiHocStudentRepository;
-    
+
     @Autowired
     private HoaDonRepository hoaDonRepository;
 
@@ -113,7 +113,7 @@ public class StudentService {
         dashboard.setRegistrations(getStudentRegistrations(studentId));
         dashboard.setAttendedClasses(getStudentAttendedClasses(studentId));
         dashboard.setSupportRequests(getSupportRequests(studentId));
-        
+
         // Calculate stats from real data
         dashboard.setStats(calculateStats(dashboard));
 
@@ -180,7 +180,7 @@ public class StudentService {
         }
 
         BaiNop submission = baiNopStudentRepository.findFirstByIdBnAndHocSinh_IdHs(
-                submissionDTO.getSubmissionId(), student.getIdHs())
+                        submissionDTO.getSubmissionId(), student.getIdHs())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiên làm bài hợp lệ."));
 
         int duration = resolveDurationMinutes(assignment);
@@ -193,72 +193,72 @@ public class StudentService {
     private List<StudentClassDTO> getStudentClasses(String studentId) {
         List<DangKyLH> registrations = dangKyLHStudentRepository.findByHocSinhId(studentId);
         List<StudentClassDTO> classes = new ArrayList<>();
-        
+
         for (DangKyLH dk : registrations) {
             LopHoc lopHoc = dk.getLopHoc();
             if (lopHoc == null) continue;
-            
+
             StudentClassDTO classDTO = new StudentClassDTO();
             classDTO.setClassId(lopHoc.getIdLh());
             classDTO.setClassName(lopHoc.getTenLop());
-            
+
             // Get teacher name from database
             if (lopHoc.getNhanVien() != null) {
                 NhanVien nv = lopHoc.getNhanVien();
-                String teacherName = nv.getHo() + " " + 
-                    (nv.getTenDem() != null ? nv.getTenDem() + " " : "") + nv.getTen();
+                String teacherName = nv.getHo() + " " +
+                        (nv.getTenDem() != null ? nv.getTenDem() + " " : "") + nv.getTen();
                 classDTO.setTeacherName(teacherName.trim());
             } else {
                 classDTO.setTeacherName("Chưa có giáo viên");
             }
-            
+
             // Build schedule from actual BuoiHocChiTiet data
             List<BuoiHocChiTiet> sessions = buoiHocChiTietStudentRepository.findByLopHoc_IdLh(lopHoc.getIdLh());
             String schedule = buildScheduleFromSessions(sessions, lopHoc);
             classDTO.setSchedule(schedule);
-            
+
             // Get room from BuoiHocChiTiet - prioritize upcoming sessions, then most recent
             String roomName = getRoomFromSessions(sessions);
             classDTO.setRoom(roomName);
-            
+
             // Count students in class from database
             long studentCount = dangKyLHStudentRepository.countByLopHocId(lopHoc.getIdLh());
             classDTO.setStudentCount((int) studentCount);
-            
+
             // Calculate average grade for this class from BaiNop (real data)
             double avgGrade = calculateAverageGradeForClass(studentId, lopHoc.getIdLh());
             classDTO.setAverageGrade(avgGrade);
-            
+
             // Calculate attendance percentage from real data
             int attendancePercentage = calculateAttendancePercentage(studentId, lopHoc.getIdLh(), sessions);
             classDTO.setAttendancePercentage(attendancePercentage);
-            
+
             // Set status from LopHoc (DangKyLH currently has no status column)
             classDTO.setStatus(lopHoc.getTrangThai() != null ? lopHoc.getTrangThai() : "active");
-            
+
             classes.add(classDTO);
         }
-        
+
         return classes;
     }
-    
+
     private String buildScheduleFromSessions(List<BuoiHocChiTiet> sessions, LopHoc lopHoc) {
         if (sessions == null || sessions.isEmpty()) {
             // Fallback to LoaiNgay and SoBuoi if no sessions
             return lopHoc.getLoaiNgay() + " (" + lopHoc.getSoBuoi() + " buổi)";
         }
-        
+
         // Build schedule from actual session times
-        
+
         // Group sessions by day of week and time
         Map<String, List<String>> scheduleMap = new HashMap<>();
-        
+
         for (BuoiHocChiTiet session : sessions) {
             if (session.getNgayHoc() != null && session.getGioBatDau() != null && session.getGioKetThuc() != null) {
                 String dayOfWeek = getDayOfWeekVietnamese(session.getNgayHoc().getDayOfWeek());
-                String timeRange = formatTimeRange(session.getGioBatDau().toLocalTime(), 
-                                                  session.getGioKetThuc().toLocalTime());
-                
+                String timeRange = formatTimeRange(session.getGioBatDau().toLocalTime(),
+                        session.getGioKetThuc().toLocalTime());
+
                 if (!scheduleMap.containsKey(dayOfWeek)) {
                     scheduleMap.put(dayOfWeek, new ArrayList<>());
                 }
@@ -267,12 +267,12 @@ public class StudentService {
                 }
             }
         }
-        
+
         if (scheduleMap.isEmpty()) {
             // Fallback
             return lopHoc.getLoaiNgay() + " (" + lopHoc.getSoBuoi() + " buổi)";
         }
-        
+
         // Build schedule string
         List<String> scheduleParts = new ArrayList<>();
         for (Map.Entry<String, List<String>> entry : scheduleMap.entrySet()) {
@@ -280,10 +280,10 @@ public class StudentService {
             String times = String.join(", ", entry.getValue());
             scheduleParts.add(day + " (" + times + ")");
         }
-        
+
         return String.join(" • ", scheduleParts);
     }
-    
+
     private String getDayOfWeekVietnamese(java.time.DayOfWeek dayOfWeek) {
         Map<java.time.DayOfWeek, String> dayMap = new HashMap<>();
         dayMap.put(java.time.DayOfWeek.MONDAY, "Thứ 2");
@@ -295,12 +295,12 @@ public class StudentService {
         dayMap.put(java.time.DayOfWeek.SUNDAY, "Chủ nhật");
         return dayMap.getOrDefault(dayOfWeek, dayOfWeek.toString());
     }
-    
+
     private String formatTimeRange(java.time.LocalTime start, java.time.LocalTime end) {
-        return String.format("%02d:%02d-%02d:%02d", start.getHour(), start.getMinute(), 
-                            end.getHour(), end.getMinute());
+        return String.format("%02d:%02d-%02d:%02d", start.getHour(), start.getMinute(),
+                end.getHour(), end.getMinute());
     }
-    
+
     /**
      * Get room name from BuoiHocChiTiet sessions for a class
      * Priority: 1) Upcoming sessions, 2) Most recent past session, 3) First session
@@ -309,9 +309,9 @@ public class StudentService {
         if (sessions == null || sessions.isEmpty()) {
             return "N/A";
         }
-        
+
         LocalDateTime now = LocalDateTime.now();
-        
+
         // First, try to find an upcoming session (future session)
         for (BuoiHocChiTiet session : sessions) {
             if (session.getNgayHoc() != null && session.getNgayHoc().isAfter(now)) {
@@ -320,7 +320,7 @@ public class StudentService {
                 }
             }
         }
-        
+
         // If no upcoming session, get the most recent past session
         BuoiHocChiTiet mostRecent = null;
         for (BuoiHocChiTiet session : sessions) {
@@ -330,37 +330,37 @@ public class StudentService {
                 }
             }
         }
-        
-        if (mostRecent != null && mostRecent.getPhong() != null && 
-            mostRecent.getPhong().getTenPhong() != null) {
+
+        if (mostRecent != null && mostRecent.getPhong() != null &&
+                mostRecent.getPhong().getTenPhong() != null) {
             return mostRecent.getPhong().getTenPhong();
         }
-        
+
         // Fallback: get from first session with room
         for (BuoiHocChiTiet session : sessions) {
             if (session.getPhong() != null && session.getPhong().getTenPhong() != null) {
                 return session.getPhong().getTenPhong();
             }
         }
-        
+
         return "N/A";
     }
 
     private List<StudentAssignmentDTO> getStudentAssignments(String studentId) {
         List<BaiTap> baiTaps = baiTapStudentRepository.findByHocSinhId(studentId);
         List<StudentAssignmentDTO> assignments = new ArrayList<>();
-        
+
         for (BaiTap baiTap : baiTaps) {
             StudentAssignmentDTO assignmentDTO = new StudentAssignmentDTO();
             assignmentDTO.setAssignmentId(baiTap.getIdBt());
             assignmentDTO.setTitle(baiTap.getTieuDe());
             assignmentDTO.setDescription(baiTap.getMoTa());
-            
-            if (baiTap.getBuoiHocChiTiet() != null && 
-                baiTap.getBuoiHocChiTiet().getLopHoc() != null) {
+
+            if (baiTap.getBuoiHocChiTiet() != null &&
+                    baiTap.getBuoiHocChiTiet().getLopHoc() != null) {
                 assignmentDTO.setClassName(baiTap.getBuoiHocChiTiet().getLopHoc().getTenLop());
             }
-            
+
             if (baiTap.getNgayKetThuc() != null) {
                 assignmentDTO.setDueDate(baiTap.getNgayKetThuc().format(DATE_TIME_FORMATTER));
             }
@@ -373,11 +373,11 @@ public class StudentService {
             boolean allowRetry = Boolean.TRUE.equals(baiTap.getChoPhepLamBai());
             assignmentDTO.setAllowRetry(allowRetry);
             long attemptCount = baiNopStudentRepository.countByBaiTap_IdBtAndHocSinh_IdHs(
-                baiTap.getIdBt(), studentId);
+                    baiTap.getIdBt(), studentId);
             assignmentDTO.setAttemptCount((int) attemptCount);
-            
-        Optional<BaiNop> baiNopOpt = baiNopStudentRepository
-                .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByIdBnDesc(baiTap.getIdBt(), studentId);
+
+            Optional<BaiNop> baiNopOpt = baiNopStudentRepository
+                    .findTopByBaiTap_IdBtAndHocSinh_IdHsOrderByIdBnDesc(baiTap.getIdBt(), studentId);
 
             BaiNop submission = baiNopOpt
                     .map(bn -> autoFinalizeIfExpired(baiTap, bn, durationMinutes))
@@ -387,7 +387,7 @@ public class StudentService {
             assignmentDTO.setCanRetry(canRetryAssignment(allowRetry, submission, baiTap));
             assignments.add(assignmentDTO);
         }
-        
+
         return assignments;
     }
 
@@ -395,52 +395,201 @@ public class StudentService {
         // Get grades from BaiNop (assignment grades)
         List<BaiNop> baiNops = baiNopStudentRepository.findAllByHocSinhId(studentId);
         List<StudentGradeDTO> grades = new ArrayList<>();
-        
+
         for (BaiNop baiNop : baiNops) {
             if (baiNop.getDiemSo() == null) continue; // Skip if not graded
-            
+
             StudentGradeDTO gradeDTO = new StudentGradeDTO();
             gradeDTO.setGradeId(baiNop.getIdBn());
             gradeDTO.setScore(baiNop.getDiemSo().doubleValue());
             gradeDTO.setFeedback(baiNop.getNhanXet());
-            
+
             if (baiNop.getBaiTap() != null) {
                 gradeDTO.setGradeType("Bài tập");
                 gradeDTO.setSubject("Toán học"); // Default, can be enhanced
-                
+
                 if (baiNop.getBaiTap().getBuoiHocChiTiet() != null &&
-                    baiNop.getBaiTap().getBuoiHocChiTiet().getLopHoc() != null) {
+                        baiNop.getBaiTap().getBuoiHocChiTiet().getLopHoc() != null) {
                     gradeDTO.setClassName(baiNop.getBaiTap().getBuoiHocChiTiet().getLopHoc().getTenLop());
                 }
             }
-            
+
             grades.add(gradeDTO);
         }
-        
+
         // Also get grades from KetQuaHocTap
         List<KetQuaHocTap> ketQuaHocTaps = ketQuaHocTapStudentRepository.findByHocSinh_IdHs(studentId);
         for (KetQuaHocTap kq : ketQuaHocTaps) {
             StudentGradeDTO gradeDTO = new StudentGradeDTO();
             gradeDTO.setGradeId(kq.getIdKq());
             // Use DiemTrungBinh or DiemTongKet instead of DiemSo
-            BigDecimal score = kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : 
-                              (kq.getDiemTongKet() != null ? kq.getDiemTongKet() : 
-                               (kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : BigDecimal.ZERO));
+            BigDecimal score = kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() :
+                    (kq.getDiemTongKet() != null ? kq.getDiemTongKet() :
+                            (kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : BigDecimal.ZERO));
             gradeDTO.setScore(score.doubleValue());
             gradeDTO.setGradeType("Kết quả học tập");
             gradeDTO.setSubject("Toán học");
             gradeDTO.setFeedback(kq.getXepLoai());
             grades.add(gradeDTO);
         }
-        
+
         return grades;
     }
 
+    @Transactional(readOnly = true)
+    public List<SessionGradeDTO> getStudentGradesBySession(String userId, String classId) {
+        // Find student by account ID
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
+        if (!studentOpt.isPresent()) {
+            throw new RuntimeException("Không tìm thấy học sinh");
+        }
+        HocSinh student = studentOpt.get();
+        String studentId = student.getIdHs();
+        List<SessionGradeDTO> sessionGrades = new ArrayList<>();
+
+        // Get all sessions that the student has attended (via DangKyLH -> LopHoc)
+        // If classId is provided, filter by class
+        List<BuoiHocChiTiet> sessions;
+        if (classId != null && !classId.trim().isEmpty()) {
+            // Filter sessions by classId
+            sessions = buoiHocChiTietStudentRepository.findByHocSinhId(studentId).stream()
+                    .filter(session -> session.getLopHoc() != null &&
+                            session.getLopHoc().getIdLh().equals(classId))
+                    .collect(java.util.stream.Collectors.toList());
+        } else {
+            sessions = buoiHocChiTietStudentRepository.findByHocSinhId(studentId);
+        }
+
+        // Get all KetQuaHocTap for this student (mapped by class, not session)
+        List<KetQuaHocTap> ketQuaHocTaps = ketQuaHocTapStudentRepository.findByHocSinh_IdHs(studentId);
+        Map<String, KetQuaHocTap> ketQuaByClassId = new HashMap<>();
+        for (KetQuaHocTap kq : ketQuaHocTaps) {
+            // KetQuaHocTap doesn't have classId directly, but we can map it via student
+            // Since KetQuaHocTap is per student, we'll need to map it by class later
+            // For now, we'll get it per class from the sessions
+        }
+
+        // Get all BaiNop for this student
+        List<BaiNop> allBaiNops = baiNopStudentRepository.findAllByHocSinhId(studentId);
+        Map<String, List<BaiNop>> baiNopBySessionId = new HashMap<>();
+
+        // Group BaiNop by session (via BaiTap -> BuoiHocChiTiet)
+        for (BaiNop baiNop : allBaiNops) {
+            if (baiNop.getBaiTap() != null &&
+                    baiNop.getBaiTap().getBuoiHocChiTiet() != null) {
+                String sessionId = baiNop.getBaiTap().getBuoiHocChiTiet().getIdBh();
+                baiNopBySessionId.computeIfAbsent(sessionId, k -> new ArrayList<>()).add(baiNop);
+            }
+        }
+
+        // Process each session
+        for (BuoiHocChiTiet session : sessions) {
+            SessionGradeDTO sessionGradeDTO = new SessionGradeDTO();
+            sessionGradeDTO.setSessionId(session.getIdBh());
+            sessionGradeDTO.setSessionNumber(session.getThuTuBuoiHoc());
+            sessionGradeDTO.setSessionDate(formatDateTime(session.getNgayHoc()));
+
+            if (session.getLopHoc() != null) {
+                sessionGradeDTO.setClassId(session.getLopHoc().getIdLh());
+                sessionGradeDTO.setClassName(session.getLopHoc().getTenLop());
+            }
+
+            // Get assignments for this session
+            List<BaiTap> assignments = baiTapStudentRepository.findByBuoiHocChiTiet_IdBh(session.getIdBh());
+
+            // Get BaiNop for this session
+            List<BaiNop> sessionBaiNops = baiNopBySessionId.getOrDefault(session.getIdBh(), new ArrayList<>());
+
+            // Build assignment grades list
+            List<AssignmentGradeDTO> assignmentGrades = new ArrayList<>();
+            double totalGrade = 0.0;
+            int gradedCount = 0;
+
+            for (BaiTap assignment : assignments) {
+                // Find the graded BaiNop for this assignment
+                Optional<BaiNop> gradedBaiNop = sessionBaiNops.stream()
+                        .filter(bn -> bn.getBaiTap() != null &&
+                                bn.getBaiTap().getIdBt().equals(assignment.getIdBt()) &&
+                                bn.getDiemSo() != null)
+                        .findFirst();
+
+                if (gradedBaiNop.isPresent()) {
+                    BaiNop baiNop = gradedBaiNop.get();
+                    AssignmentGradeDTO assignmentGradeDTO = new AssignmentGradeDTO();
+                    assignmentGradeDTO.setAssignmentId(assignment.getIdBt());
+                    assignmentGradeDTO.setAssignmentTitle(assignment.getTieuDe());
+                    assignmentGradeDTO.setGrade(baiNop.getDiemSo().doubleValue());
+                    assignmentGradeDTO.setGradedAt(formatDateTime(baiNop.getThoiGianNop()));
+                    assignmentGradeDTO.setFeedback(baiNop.getNhanXet());
+                    assignmentGrades.add(assignmentGradeDTO);
+
+                    totalGrade += baiNop.getDiemSo().doubleValue();
+                    gradedCount++;
+                }
+            }
+
+            sessionGradeDTO.setAssignmentGrades(assignmentGrades);
+
+            // Calculate average assignment grade
+            if (gradedCount > 0) {
+                double averageGrade = totalGrade / gradedCount;
+                sessionGradeDTO.setAverageAssignmentGrade(averageGrade);
+            } else {
+                sessionGradeDTO.setAverageAssignmentGrade(null);
+            }
+
+            // Get teacher grade from KetQuaHocTap (mapped by class)
+            // Since KetQuaHocTap is per student and class, we'll get it for the class
+            if (session.getLopHoc() != null) {
+                // Find KetQuaHocTap for this student and class
+                // Note: KetQuaHocTap doesn't have classId, so we'll use the first one found
+                // or we can map it differently - for now, we'll use the first KetQuaHocTap
+                // In a real scenario, you might need to add classId to KetQuaHocTap or use a different mapping
+                Optional<KetQuaHocTap> ketQuaOpt = ketQuaHocTaps.stream().findFirst();
+                if (ketQuaOpt.isPresent()) {
+                    KetQuaHocTap kq = ketQuaOpt.get();
+                    BigDecimal teacherScore = kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() :
+                            (kq.getDiemTongKet() != null ? kq.getDiemTongKet() : null);
+                    if (teacherScore != null) {
+                        sessionGradeDTO.setTeacherGrade(teacherScore.doubleValue());
+                    }
+                }
+            }
+
+            // Calculate final grade
+            Double averageAssignmentGrade = sessionGradeDTO.getAverageAssignmentGrade();
+            Double teacherGrade = sessionGradeDTO.getTeacherGrade();
+
+            if (averageAssignmentGrade != null && teacherGrade != null) {
+                // Average of both
+                sessionGradeDTO.setFinalGrade((averageAssignmentGrade + teacherGrade) / 2.0);
+            } else if (averageAssignmentGrade != null) {
+                sessionGradeDTO.setFinalGrade(averageAssignmentGrade);
+            } else if (teacherGrade != null) {
+                sessionGradeDTO.setFinalGrade(teacherGrade);
+            } else {
+                sessionGradeDTO.setFinalGrade(null);
+            }
+
+            sessionGrades.add(sessionGradeDTO);
+        }
+
+        // Sort by session date (most recent first)
+        sessionGrades.sort((a, b) -> {
+            if (a.getSessionDate() == null && b.getSessionDate() == null) return 0;
+            if (a.getSessionDate() == null) return 1;
+            if (b.getSessionDate() == null) return -1;
+            return b.getSessionDate().compareTo(a.getSessionDate());
+        });
+
+        return sessionGrades;
+    }
+
     private void applySubmissionToAssignmentDTO(StudentAssignmentDTO dto, BaiNop submission,
-                                               BaiTap assignment, int durationMinutes) {
+                                                BaiTap assignment, int durationMinutes) {
         if (submission == null) {
             if (assignment.getNgayKetThuc() != null &&
-                assignment.getNgayKetThuc().isBefore(LocalDateTime.now())) {
+                    assignment.getNgayKetThuc().isBefore(LocalDateTime.now())) {
                 dto.setStatus("overdue");
             } else {
                 dto.setStatus("pending");
@@ -528,7 +677,7 @@ public class StudentService {
     private int resolveDurationMinutes(BaiTap assignment) {
         // Read directly from BaiTap (moved from BaiTapNoiDung)
         if (assignment.getThoiLuongPhut() != null &&
-            assignment.getThoiLuongPhut() > 0) {
+                assignment.getThoiLuongPhut() > 0) {
             return assignment.getThoiLuongPhut();
         }
 
@@ -659,7 +808,7 @@ public class StudentService {
 
     private String extractClassId(BaiTap assignment) {
         if (assignment.getBuoiHocChiTiet() != null &&
-            assignment.getBuoiHocChiTiet().getLopHoc() != null) {
+                assignment.getBuoiHocChiTiet().getLopHoc() != null) {
             return assignment.getBuoiHocChiTiet().getLopHoc().getIdLh();
         }
         return null;
@@ -685,7 +834,7 @@ public class StudentService {
         if (assignment.getNgayKetThuc() != null && now.isAfter(assignment.getNgayKetThuc())) {
             throw new RuntimeException("Bài tập đã hết hạn. Không thể làm lại bài sau khi hết hạn.");
         }
-        
+
         if (submission != null) {
             if ("IN_PROGRESS".equalsIgnoreCase(submission.getTrangThai())) {
                 return submission;
@@ -704,13 +853,13 @@ public class StudentService {
 
         // Generate ID FIRST - before creating entity
         String submissionId = "BN" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        
+
         // Validate ID format - ensure it's exactly 10 characters
         if (submissionId == null || submissionId.trim().isEmpty() || submissionId.length() < 3) {
             submissionId = "BN" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
         }
         submissionId = submissionId.trim();
-        
+
         // Ensure ID is exactly 10 characters (BN + 8 chars = 10)
         if (submissionId.length() > 10) {
             submissionId = submissionId.substring(0, 10);
@@ -720,23 +869,23 @@ public class StudentService {
                 submissionId += "0";
             }
         }
-        
+
         System.out.println("=== Creating BaiNop ===");
         System.out.println("Generated ID: '" + submissionId + "' (length: " + submissionId.length() + ")");
-        
+
         // Create entity using constructor to avoid Lombok @Builder issues
         BaiNop newSubmission = new BaiNop();
-        
+
         // Set ID IMMEDIATELY - BEFORE any other operations
         newSubmission.setIdBn(submissionId);
-        
+
         // Verify ID is set correctly
         String verifyId = newSubmission.getIdBn();
         if (verifyId == null || verifyId.trim().isEmpty()) {
             throw new RuntimeException("ERROR: ID không được set sau khi gọi setIdBn()");
         }
         System.out.println("ID_BN after setIdBn(): '" + verifyId + "' (length: " + verifyId.length() + ")");
-        
+
         // Set other required fields
         newSubmission.setIdBt(assignment.getIdBt());
         newSubmission.setBaiTap(assignment);
@@ -746,7 +895,7 @@ public class StudentService {
         newSubmission.setSoCauDung(0);
         newSubmission.setTrangThai("IN_PROGRESS");
         newSubmission.setThoiGianBatDau(LocalDateTime.now());
-        
+
         // Final check before save - verify ID is still set
         String finalId = newSubmission.getIdBn();
         if (finalId == null || finalId.trim().isEmpty()) {
@@ -754,24 +903,24 @@ public class StudentService {
         }
         System.out.println("ID_BN before save(): '" + finalId + "' (length: " + finalId.length() + ")");
         System.out.println("Entity state before save - idBn: " + finalId + ", idBt: " + newSubmission.getIdBt() + ", idHs: " + newSubmission.getIdHs());
-        
+
         // Save entity
         try {
             System.out.println("Calling repository.save()...");
             BaiNop saved = baiNopStudentRepository.save(newSubmission);
             System.out.println("Save() completed, returned entity: " + (saved != null ? "NOT NULL" : "NULL"));
-            
+
             if (saved == null) {
                 throw new RuntimeException("ERROR: save() trả về null!");
             }
-            
+
             String savedId = saved.getIdBn();
             System.out.println("ID after save(): '" + (savedId != null ? savedId : "NULL") + "' (length: " + (savedId != null ? savedId.length() : 0) + ")");
-            
+
             if (savedId == null || savedId.trim().isEmpty()) {
                 throw new RuntimeException("ERROR: ID bị mất sau khi save()! Original was: '" + finalId + "'");
             }
-            
+
             System.out.println("=== BaiNop created successfully with ID: " + savedId + " ===");
             return saved;
         } catch (Exception e) {
@@ -858,7 +1007,7 @@ public class StudentService {
             if ("MULTIPLE_CHOICE".equals(type)) {
                 String submitted = extractAnswerValue(answer);
                 if (submitted != null && question.getCorrectAnswer() != null &&
-                    question.getCorrectAnswer().trim().equalsIgnoreCase(submitted.trim())) {
+                        question.getCorrectAnswer().trim().equalsIgnoreCase(submitted.trim())) {
                     correct++;
                     earned += question.getPoints() != null ? question.getPoints() : 1d;
                 }
@@ -906,44 +1055,44 @@ public class StudentService {
         // Bước 1: Tìm ID_HS và ID_LH từ DangKyLH
         List<DangKyLH> registrations = dangKyLHStudentRepository.findByHocSinhId(studentId);
         List<StudentRegistrationDTO> registrationDTOs = new ArrayList<>();
-        
+
         for (DangKyLH dk : registrations) {
             // Lấy ID_HS và ID_LH từ DangKyLH
             String idLh = dk.getId().getIdLh();
-            
+
             // Bước 2: Tìm LopHoc theo ID_LH và trích xuất thông tin từ entity LopHoc
             Optional<LopHoc> lopHocOpt = lopHocRepository.findById(idLh);
             if (!lopHocOpt.isPresent()) {
                 continue;
             }
-            
+
             LopHoc lopHoc = lopHocOpt.get();
-            
+
             StudentRegistrationDTO regDTO = new StudentRegistrationDTO();
             regDTO.setId(dk.getId().getIdHs() + "_" + idLh);
             regDTO.setClassId(idLh);
             regDTO.setClassName(lopHoc.getTenLop());
-            
+
             // Lấy thông tin giáo viên từ LopHoc
             if (lopHoc.getNhanVien() != null) {
                 NhanVien nv = lopHoc.getNhanVien();
-                String teacherName = nv.getHo() + " " + 
-                    (nv.getTenDem() != null ? nv.getTenDem() + " " : "") + nv.getTen();
+                String teacherName = nv.getHo() + " " +
+                        (nv.getTenDem() != null ? nv.getTenDem() + " " : "") + nv.getTen();
                 regDTO.setTeacherName(teacherName.trim());
             } else {
                 regDTO.setTeacherName("Chưa có giáo viên");
             }
-            
+
             // Lấy ngày đăng ký từ DangKyLH (nếu có) hoặc ngày bắt đầu từ LopHoc
             if (lopHoc.getNgayBatDau() != null) {
                 regDTO.setRegistrationDate(lopHoc.getNgayBatDau().format(DATE_TIME_FORMATTER));
             }
-            
+
             regDTO.setStatus(lopHoc.getTrangThai() != null ? lopHoc.getTrangThai() : "pending");
-            
+
             // Lấy mô tả từ LopHoc entity
             regDTO.setDescription(lopHoc.getMoTa() != null ? lopHoc.getMoTa() : "");
-            
+
             // Lấy thông tin từ LopHoc entity
             regDTO.setLoaiNgay(lopHoc.getLoaiNgay());
             regDTO.setSoBuoi(lopHoc.getSoBuoi());
@@ -952,14 +1101,14 @@ public class StudentService {
                 regDTO.setMucGiaThang(lopHoc.getMucGiaThang().toString());
             }
             regDTO.setTrangThaiLop(lopHoc.getTrangThai());
-            
+
             // Bước 3: Tìm hóa đơn từ HoaDon entity (tìm hóa đơn theo ID_HS và ID_LH)
             List<HoaDon> hoaDons = hoaDonRepository.findByHocSinhIdAndLopHocId(studentId, idLh);
-            
+
             if (!hoaDons.isEmpty()) {
                 // Lấy hóa đơn đầu tiên (hoặc có thể lấy hóa đơn mới nhất)
                 HoaDon hoaDon = hoaDons.get(0);
-                
+
                 // Trích xuất thông tin từ HoaDon entity
                 regDTO.setInvoiceId(hoaDon.getIdHoaDon());
                 if (hoaDon.getNgayDangKy() != null) {
@@ -977,7 +1126,7 @@ public class StudentService {
                 }
                 regDTO.setTrangThaiHoaDon(hoaDon.getTrangThai());
             }
-            
+
             // Lấy đánh giá lớp học từ DanhGiaLopHoc entity (nếu có)
             Optional<DanhGiaLopHoc> danhGiaOpt = danhGiaLopHocStudentRepository.findByHocSinhIdAndLopHocId(studentId, idLh);
             if (danhGiaOpt.isPresent()) {
@@ -985,26 +1134,39 @@ public class StudentService {
                 regDTO.setRating(danhGia.getDiemDanhGia());
                 regDTO.setRatingComment(danhGia.getNhanXet());
             }
-            
+
             registrationDTOs.add(regDTO);
         }
-        
+
         return registrationDTOs;
     }
+    @Transactional(readOnly = true)
+    public List<StudentAttendedClassDTO> getStudentSchedule(String userId) {
+        // Find student by account ID
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
 
+        if (!studentOpt.isPresent()) {
+            throw new RuntimeException("Student not found");
+        }
+
+        HocSinh student = studentOpt.get();
+        String studentId = student.getIdHs();
+
+        return getStudentAttendedClasses(studentId);
+    }
     private List<StudentAttendedClassDTO> getStudentAttendedClasses(String studentId) {
         List<BuoiHocChiTiet> sessions = buoiHocChiTietStudentRepository.findByHocSinhId(studentId);
-        
+
         // Use Map to store unique sessions by classId + sessionNumber
         // Key: classId + "_" + sessionNumber, Value: StudentAttendedClassDTO (keep the most recent one)
         Map<String, StudentAttendedClassDTO> uniqueSessionsMap = new HashMap<>();
-        
+
         for (BuoiHocChiTiet session : sessions) {
             if (session.getLopHoc() == null) continue;
-            
+
             LopHoc lopHoc = session.getLopHoc();
             String classId = lopHoc.getIdLh();
-            
+
             // Safely parse session number
             int sessionNumber = 0;
             try {
@@ -1015,16 +1177,16 @@ public class StudentService {
                 // Skip sessions with invalid session number
                 continue;
             }
-            
+
             // Skip if sessionNumber is 0 or invalid
             if (sessionNumber <= 0) continue;
-            
+
             // Create unique key: classId + sessionNumber
             String uniqueKey = classId + "_" + sessionNumber;
-            
+
             // Check if we already have this session
             StudentAttendedClassDTO existingDTO = uniqueSessionsMap.get(uniqueKey);
-            
+
             // If we don't have this session yet, or if this session is more recent, add/update it
             boolean shouldAdd = false;
             if (existingDTO == null) {
@@ -1041,83 +1203,80 @@ public class StudentService {
                     // If date parsing fails, keep existing
                 }
             }
-            
+
             if (shouldAdd) {
                 StudentAttendedClassDTO attendedDTO = new StudentAttendedClassDTO();
                 attendedDTO.setId(session.getIdBh());
                 attendedDTO.setClassId(classId);
                 attendedDTO.setClassName(lopHoc.getTenLop());
-                
+
                 // Get teacher name from LopHoc
                 if (lopHoc.getNhanVien() != null) {
                     NhanVien nv = lopHoc.getNhanVien();
-                    String teacherName = nv.getHo() + " " + 
-                        (nv.getTenDem() != null ? nv.getTenDem() + " " : "") + nv.getTen();
+                    String teacherName = nv.getHo() + " " +
+                            (nv.getTenDem() != null ? nv.getTenDem() + " " : "") + nv.getTen();
                     attendedDTO.setTeacherName(teacherName.trim());
                 } else {
                     attendedDTO.setTeacherName("Chưa có giáo viên");
                 }
-                
+
                 attendedDTO.setSessionNumber(sessionNumber);
-                
+
                 if (session.getNgayHoc() != null) {
                     attendedDTO.setSessionDate(session.getNgayHoc().format(DATE_TIME_FORMATTER));
                 }
-                
+
                 if (session.getGioBatDau() != null) {
                     attendedDTO.setStartTime(session.getGioBatDau().toLocalTime().toString());
                 }
-                
+
                 if (session.getGioKetThuc() != null) {
                     attendedDTO.setEndTime(session.getGioKetThuc().toLocalTime().toString());
                 }
-                
+
                 if (session.getPhong() != null) {
                     attendedDTO.setRoom(session.getPhong().getTenPhong());
                 }
-                
+
                 attendedDTO.setContent(session.getNoiDung());
-                
+
+                // Load rating information for this session
+                Optional<DanhGiaBuoiHoc> ratingOpt = danhGiaBuoiHocStudentRepository
+                        .findByHocSinhIdAndBuoiHocChiTietId(studentId, session.getIdBh());
+
+                if (ratingOpt.isPresent()) {
+                    DanhGiaBuoiHoc rating = ratingOpt.get();
+                    attendedDTO.setHasRated(true);
+                    attendedDTO.setRating(rating.getDiemDanhGia());
+                    attendedDTO.setRatingComment(rating.getNhanXet());
+                } else {
+                    attendedDTO.setHasRated(false);
+                }
+
                 uniqueSessionsMap.put(uniqueKey, attendedDTO);
             }
         }
-        
+
         // Convert map values to list
         return new ArrayList<>(uniqueSessionsMap.values());
-    }
-
-    @Transactional(readOnly = true)
-    public List<StudentAttendedClassDTO> getStudentSchedule(String userId) {
-        // Find student by account ID
-        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
-
-        if (!studentOpt.isPresent()) {
-            throw new RuntimeException("Student not found");
-        }
-
-        HocSinh student = studentOpt.get();
-        String studentId = student.getIdHs();
-
-        // Get schedule from BuoiHocChiTiet
-        return getStudentAttendedClasses(studentId);
     }
 
     private List<StudentSupportRequestDTO> getSupportRequests(String studentId) {
         // Get support requests for classes that student is registered in
         List<DangKyLH> registrations = dangKyLHStudentRepository.findByHocSinhId(studentId);
         List<String> classIds = registrations.stream()
-            .map(dk -> dk.getLopHoc().getIdLh())
-            .collect(Collectors.toList());
-        
+                .map(dk -> dk.getLopHoc().getIdLh())
+                .collect(Collectors.toList());
+
         List<StudentSupportRequestDTO> supportRequests = new ArrayList<>();
-        
+
         for (String classId : classIds) {
             // Get all support requests and filter by class
             List<YeuCauHoTro> allRequests = yeuCauHoTroStudentRepository.findAll();
             List<YeuCauHoTro> yeuCaus = allRequests.stream()
-                .filter(yc -> yc.getLopHoc() != null && yc.getLopHoc().getIdLh().equals(classId))
-                .collect(Collectors.toList());
-            
+                    .filter(yc -> yc.getLopHoc() != null && yc.getLopHoc().getIdLh().equals(classId))
+                    .collect(Collectors.toList());
+
             for (YeuCauHoTro yc : yeuCaus) {
                 StudentSupportRequestDTO requestDTO = new StudentSupportRequestDTO();
                 requestDTO.setId(yc.getIdYc());
@@ -1125,19 +1284,19 @@ public class StudentService {
                 requestDTO.setTitle(yc.getTieuDe());
                 requestDTO.setDescription(yc.getNoiDung());
                 requestDTO.setStatus(yc.getTrangThai());
-                
+
                 if (yc.getLopHoc() != null) {
                     requestDTO.setClassName(yc.getLopHoc().getTenLop());
                 }
-                
+
                 if (yc.getThoiDiemTao() != null) {
                     requestDTO.setCreatedAt(yc.getThoiDiemTao().format(DATE_TIME_FORMATTER));
                 }
-                
+
                 supportRequests.add(requestDTO);
             }
         }
-        
+
         return supportRequests;
     }
 
@@ -1150,17 +1309,17 @@ public class StudentService {
 
         if (dashboard.getAssignments() != null) {
             stats.setPendingAssignments((int) dashboard.getAssignments().stream()
-                .filter(a -> "pending".equals(a.getStatus())).count());
+                    .filter(a -> "pending".equals(a.getStatus())).count());
             stats.setCompletedAssignments((int) dashboard.getAssignments().stream()
-                .filter(a -> "submitted".equals(a.getStatus()) || "graded".equals(a.getStatus())).count());
+                    .filter(a -> "submitted".equals(a.getStatus()) || "graded".equals(a.getStatus())).count());
             stats.setTotalAssignments(dashboard.getAssignments().size());
         }
 
         if (dashboard.getGrades() != null && !dashboard.getGrades().isEmpty()) {
             double avgGrade = dashboard.getGrades().stream()
-                .mapToDouble(StudentGradeDTO::getScore)
-                .average()
-                .orElse(0.0);
+                    .mapToDouble(StudentGradeDTO::getScore)
+                    .average()
+                    .orElse(0.0);
             stats.setAverageGrade(avgGrade);
             stats.setTotalGrades(dashboard.getGrades().size());
         }
@@ -1170,27 +1329,27 @@ public class StudentService {
         long todayClasses = 0;
         if (dashboard.getAttendedClasses() != null) {
             todayClasses = dashboard.getAttendedClasses().stream()
-                .filter(ac -> {
-                    try {
-                        if (ac.getSessionDate() == null || ac.getSessionDate().isEmpty()) {
+                    .filter(ac -> {
+                        try {
+                            if (ac.getSessionDate() == null || ac.getSessionDate().isEmpty()) {
+                                return false;
+                            }
+                            LocalDateTime sessionDate = LocalDateTime.parse(ac.getSessionDate(), DATE_TIME_FORMATTER);
+                            return sessionDate.toLocalDate().equals(now.toLocalDate());
+                        } catch (Exception e) {
                             return false;
                         }
-                        LocalDateTime sessionDate = LocalDateTime.parse(ac.getSessionDate(), DATE_TIME_FORMATTER);
-                        return sessionDate.toLocalDate().equals(now.toLocalDate());
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .count();
+                    })
+                    .count();
         }
         stats.setTodayClasses((int) todayClasses);
 
         // Calculate attendance rate (simplified)
         if (dashboard.getClasses() != null && !dashboard.getClasses().isEmpty()) {
             double avgAttendance = dashboard.getClasses().stream()
-                .mapToInt(StudentClassDTO::getAttendancePercentage)
-                .average()
-                .orElse(0.0);
+                    .mapToInt(StudentClassDTO::getAttendancePercentage)
+                    .average()
+                    .orElse(0.0);
             stats.setAttendanceRate((int) avgAttendance);
         } else {
             stats.setAttendanceRate(0);
@@ -1201,52 +1360,52 @@ public class StudentService {
 
     private double calculateAverageGradeForClass(String studentId, String classId) {
         List<BaiNop> baiNops = baiNopStudentRepository.findAllByHocSinhId(studentId);
-        
+
         return baiNops.stream()
-            .filter(bn -> bn.getBaiTap() != null && 
-                         bn.getBaiTap().getBuoiHocChiTiet() != null &&
-                         bn.getBaiTap().getBuoiHocChiTiet().getLopHoc() != null &&
-                         bn.getBaiTap().getBuoiHocChiTiet().getLopHoc().getIdLh().equals(classId) &&
-                         bn.getDiemSo() != null)
-            .mapToDouble(bn -> bn.getDiemSo().doubleValue())
-            .average()
-            .orElse(0.0);
+                .filter(bn -> bn.getBaiTap() != null &&
+                        bn.getBaiTap().getBuoiHocChiTiet() != null &&
+                        bn.getBaiTap().getBuoiHocChiTiet().getLopHoc() != null &&
+                        bn.getBaiTap().getBuoiHocChiTiet().getLopHoc().getIdLh().equals(classId) &&
+                        bn.getDiemSo() != null)
+                .mapToDouble(bn -> bn.getDiemSo().doubleValue())
+                .average()
+                .orElse(0.0);
     }
 
     private int calculateAttendancePercentage(String studentId, String classId, List<BuoiHocChiTiet> allSessions) {
         if (allSessions == null || allSessions.isEmpty()) {
             return 0;
         }
-        
+
         LocalDateTime now = LocalDateTime.now();
-        
+
         // Count total sessions that have already occurred (past sessions)
         long totalPastSessions = allSessions.stream()
-            .filter(session -> session.getNgayHoc() != null && session.getNgayHoc().isBefore(now))
-            .count();
-        
+                .filter(session -> session.getNgayHoc() != null && session.getNgayHoc().isBefore(now))
+                .count();
+
         if (totalPastSessions == 0) {
             // No past sessions yet, return 100% or 0% based on registration status
             return 100; // Student is registered, considered as ready to attend
         }
-        
+
         // Estimate attendance based on assignments submitted
         // If student has submitted assignments for this class, they likely attended
         List<BaiNop> baiNops = baiNopStudentRepository.findAllByHocSinhId(studentId);
         long assignmentsForClass = baiNops.stream()
-            .filter(bn -> bn.getBaiTap() != null && 
-                         bn.getBaiTap().getBuoiHocChiTiet() != null &&
-                         bn.getBaiTap().getBuoiHocChiTiet().getLopHoc() != null &&
-                         bn.getBaiTap().getBuoiHocChiTiet().getLopHoc().getIdLh().equals(classId))
-            .count();
-        
+                .filter(bn -> bn.getBaiTap() != null &&
+                        bn.getBaiTap().getBuoiHocChiTiet() != null &&
+                        bn.getBaiTap().getBuoiHocChiTiet().getLopHoc() != null &&
+                        bn.getBaiTap().getBuoiHocChiTiet().getLopHoc().getIdLh().equals(classId))
+                .count();
+
         // Calculate percentage: if student has assignments, estimate attendance
         // This is an approximation since we don't have DiemDanh table
         if (assignmentsForClass > 0) {
             // Estimate: if student has done assignments, they likely attended most sessions
             // Use a ratio based on assignments vs total sessions
-            double estimatedAttendance = Math.min(95.0, 
-                (assignmentsForClass * 100.0 / totalPastSessions) * 1.2); // 1.2 factor for estimation
+            double estimatedAttendance = Math.min(95.0,
+                    (assignmentsForClass * 100.0 / totalPastSessions) * 1.2); // 1.2 factor for estimation
             return (int) Math.round(estimatedAttendance);
         } else {
             // No assignments yet, but registered - assume they will attend
@@ -1283,7 +1442,7 @@ public class StudentService {
     public void updateStudentProfile(String userId, UpdateStudentProfileDTO profileDTO) {
         // Find student by account ID
         Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
-        
+
         if (!studentOpt.isPresent()) {
             throw new RuntimeException("Không tìm thấy học sinh");
         }
@@ -1350,7 +1509,7 @@ public class StudentService {
 
         String classId = session.getLopHoc().getIdLh();
         boolean isRegistered = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
-            .anyMatch(dk -> dk.getLopHoc() != null && dk.getLopHoc().getIdLh().equals(classId));
+                .anyMatch(dk -> dk.getLopHoc() != null && dk.getLopHoc().getIdLh().equals(classId));
 
         if (!isRegistered) {
             throw new RuntimeException("Bạn chưa đăng ký lớp học này");
@@ -1359,7 +1518,7 @@ public class StudentService {
         // Lưu đánh giá vào DanhGiaBuoiHoc entity thay vì BuoiHocChiTiet
         // Kiểm tra xem đã có đánh giá cho buổi học này chưa
         Optional<DanhGiaBuoiHoc> existingRatingOpt = danhGiaBuoiHocStudentRepository.findByHocSinhIdAndBuoiHocChiTietId(studentId, rateDTO.getSessionId());
-        
+
         DanhGiaBuoiHoc danhGia;
         if (existingRatingOpt.isPresent()) {
             // Cập nhật đánh giá đã có
@@ -1369,63 +1528,30 @@ public class StudentService {
             danhGia = new DanhGiaBuoiHoc();
             String newId = generateNextDanhGiaBuoiHocId();
             danhGia.setIdDgbh(newId);
-            // Set các trường ID trực tiếp (vì relationship có insertable = false)
-            danhGia.setIdBh(session.getIdBh());
-            danhGia.setIdHs(studentId);
-            // Set relationship để có thể truy cập sau này
+            danhGia.setIdBh(session.getIdBh()); // Set ID_BH directly
+            danhGia.setIdHs(studentId); // Set ID_HS directly
             danhGia.setHocSinh(student);
             danhGia.setBuoiHocChiTiet(session);
         }
-        
+
         // Update rating: 5 sao = 5 DiemDanhGia
         danhGia.setDiemDanhGia(rateDTO.getRating());
-        
+
         // Update comment if provided
         if (rateDTO.getComment() != null && !rateDTO.getComment().trim().isEmpty()) {
             String comment = rateDTO.getComment().trim();
-            // Truncate if too long (max 400 characters based on entity)
-            if (comment.length() > 400) {
-                comment = comment.substring(0, 400);
+            // Truncate if too long
+            if (comment.length() > 500) {
+                comment = comment.substring(0, 500);
             }
             danhGia.setNhanXet(comment);
-        } else {
-            // Clear comment if not provided
-            danhGia.setNhanXet(null);
         }
-        
+
         // Update time
         danhGia.setThoiDiemDanhGia(LocalDateTime.now());
 
         // Save to database
         danhGiaBuoiHocStudentRepository.save(danhGia);
-    }
-
-    @Transactional(readOnly = true)
-    public RateSessionDTO getSessionRating(String userId, String sessionId) {
-        // Find student by account ID
-        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
-        if (!studentOpt.isPresent()) {
-            throw new RuntimeException("Không tìm thấy học sinh");
-        }
-
-        HocSinh student = studentOpt.get();
-        String studentId = student.getIdHs();
-
-        // Find the rating for this session
-        Optional<DanhGiaBuoiHoc> ratingOpt = danhGiaBuoiHocStudentRepository.findByHocSinhIdAndBuoiHocChiTietId(studentId, sessionId);
-        
-        if (!ratingOpt.isPresent()) {
-            // Return null if no rating exists
-            return null;
-        }
-
-        DanhGiaBuoiHoc danhGia = ratingOpt.get();
-        RateSessionDTO dto = new RateSessionDTO();
-        dto.setSessionId(sessionId);
-        dto.setRating(danhGia.getDiemDanhGia());
-        dto.setComment(danhGia.getNhanXet());
-        
-        return dto;
     }
 
     @Transactional
@@ -1469,7 +1595,7 @@ public class StudentService {
 
         // Verify student is registered in this class
         boolean isRegistered = dangKyLHStudentRepository.findByHocSinhId(studentId).stream()
-            .anyMatch(dk -> dk.getLopHoc() != null && dk.getLopHoc().getIdLh().equals(idLh));
+                .anyMatch(dk -> dk.getLopHoc() != null && dk.getLopHoc().getIdLh().equals(idLh));
 
         if (!isRegistered) {
             throw new RuntimeException("Bạn chưa đăng ký lớp học này");
@@ -1477,7 +1603,7 @@ public class StudentService {
 
         // Check if student already rated this class
         Optional<DanhGiaLopHoc> existingRatingOpt = danhGiaLopHocStudentRepository.findByHocSinhIdAndLopHocId(studentId, idLh);
-        
+
         DanhGiaLopHoc danhGia;
         if (existingRatingOpt.isPresent()) {
             // Update existing rating
@@ -1493,7 +1619,7 @@ public class StudentService {
 
         // Update rating: 5 sao = 5 DiemDanhGia
         danhGia.setDiemDanhGia(rateDTO.getRating());
-        
+
         // Update comment if provided
         if (rateDTO.getComment() != null && !rateDTO.getComment().trim().isEmpty()) {
             String comment = rateDTO.getComment().trim();

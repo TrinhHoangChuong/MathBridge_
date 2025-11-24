@@ -11,6 +11,9 @@ public class StudentAttendedClassDTO {
     private String endTime;
     private String room;
     private String content;
+    private Boolean hasRated; // Đã đánh giá chưa
+    private Integer rating; // Điểm đánh giá (1-5)
+    private String ratingComment; // Nhận xét đánh giá
 
     // Getters and Setters
     public String getId() { return id; }
@@ -42,4 +45,13 @@ public class StudentAttendedClassDTO {
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
+
+    public Boolean getHasRated() { return hasRated; }
+    public void setHasRated(Boolean hasRated) { this.hasRated = hasRated; }
+
+    public Integer getRating() { return rating; }
+    public void setRating(Integer rating) { this.rating = rating; }
+
+    public String getRatingComment() { return ratingComment; }
+    public void setRatingComment(String ratingComment) { this.ratingComment = ratingComment; }
 }
