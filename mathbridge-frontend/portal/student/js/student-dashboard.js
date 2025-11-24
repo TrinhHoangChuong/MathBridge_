@@ -5075,9 +5075,30 @@ class StudentDashboard {
     }
 
     // Rate Session Method (for learning history)
-    rateSession(sessionId, className, sessionNumber) {
+    async rateSession(sessionId, className, sessionNumber) {
+        // Load existing rating first
+        let existingRating = null;
+        try {
+            const response = await this.apiCall(`/api/portal/student/session-rating/${sessionId}`);
+            if (response && response.success && response.data) {
+                existingRating = response.data;
+            }
+        } catch (error) {
+            console.warn('Could not load existing rating:', error);
+            // Continue with empty form if error
+        }
+
+        const hasExistingRating = existingRating && existingRating.rating;
+        const currentRating = hasExistingRating ? existingRating.rating : 0;
+        const currentComment = hasExistingRating ? (existingRating.comment || '') : '';
+
         const modalContent = `
             <div class="rating-modal-content">
+                ${hasExistingRating ? `
+                    <div class="alert alert-info" style="margin-bottom: 1rem; padding: 0.75rem; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;">
+                        <i class="fas fa-info-circle"></i> Bạn đã đánh giá buổi học này. Bạn có thể xem lại và sửa đánh giá.
+                    </div>
+                ` : ''}
                 <div class="form-group">
                     <label>Lớp học: <strong>${this.escapeHtml(className)}</strong></label>
                     <p style="margin-top: 0.5rem; color: var(--text-secondary);">Buổi học số: ${sessionNumber}</p>
@@ -5091,21 +5112,28 @@ class StudentDashboard {
                         <i class="far fa-star" data-rating="4" onclick="dashboard.selectRating(4)" role="button" aria-label="4 sao" tabindex="0"></i>
                         <i class="far fa-star" data-rating="5" onclick="dashboard.selectRating(5)" role="button" aria-label="5 sao" tabindex="0"></i>
                     </div>
-                    <input type="hidden" id="selectedRating" value="0">
+                    <input type="hidden" id="selectedRating" value="${currentRating}">
                 </div>
                 <div class="form-group">
                     <label for="ratingComment">Nhận xét:</label>
-                    <textarea class="form-control" id="ratingComment" rows="4" placeholder="Nhập nhận xét của bạn về buổi học này..."></textarea>
+                    <textarea class="form-control" id="ratingComment" rows="4" placeholder="Nhập nhận xét của bạn về buổi học này...">${this.escapeHtml(currentComment)}</textarea>
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-secondary" onclick="dashboard.closeModal()">Hủy</button>
-                    <button class="btn btn-primary" onclick="dashboard.submitSessionRating('${sessionId}')">Gửi đánh giá</button>
+                    <button class="btn btn-primary" onclick="dashboard.submitSessionRating('${sessionId}', ${hasExistingRating})">
+                        ${hasExistingRating ? '<i class="fas fa-save"></i> Cập nhật đánh giá' : '<i class="fas fa-paper-plane"></i> Gửi đánh giá'}
+                    </button>
                 </div>
             </div>
         `;
         this.showModal('Đánh giá buổi học', modalContent, 'medium-modal');
         this.currentRatingSessionId = sessionId;
-        this.currentRating = 0;
+        this.currentRating = currentRating;
+        
+        // Set initial rating stars if has existing rating
+        if (hasExistingRating) {
+            this.selectRating(currentRating);
+        }
     }
 
     selectRating(rating) {
@@ -5164,7 +5192,7 @@ class StudentDashboard {
         }
     }
 
-    async submitSessionRating(sessionId) {
+    async submitSessionRating(sessionId, isUpdate = false) {
         const rating = this.currentRating || parseInt(document.getElementById('selectedRating')?.value || '0');
         const comment = document.getElementById('ratingComment')?.value.trim() || '';
 
@@ -5187,7 +5215,10 @@ class StudentDashboard {
             });
 
             if (response && (response.success !== false)) {
-                this.showNotification('Đánh giá buổi học đã được gửi thành công!', 'success');
+                this.showNotification(
+                    isUpdate ? 'Đánh giá buổi học đã được cập nhật thành công!' : 'Đánh giá buổi học đã được gửi thành công!', 
+                    'success'
+                );
                 this.closeModal();
                 // Reload attended classes to show updated rating
                 this.loadAttendedClasses();

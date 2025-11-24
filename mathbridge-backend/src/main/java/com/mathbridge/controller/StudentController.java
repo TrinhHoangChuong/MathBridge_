@@ -9,7 +9,6 @@ import com.mathbridge.dto.PortalStudentDTO.RateSessionDTO;
 import com.mathbridge.dto.PortalStudentDTO.RateClassDTO;
 import com.mathbridge.dto.PortalStudentDTO.StudentAttendedClassDTO;
 
-import java.util.Collections;
 import java.util.List;
 import com.mathbridge.service.PortalStudent.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -214,6 +213,56 @@ public class StudentController {
         }
     }
 
+    @GetMapping("/session-rating/{sessionId}")
+    public ResponseEntity<?> getSessionRating(
+            @PathVariable String sessionId,
+            Authentication authentication) {
+        try {
+            // Extract user ID from JWT token
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String userId = jwt.getClaimAsString("uid");
+
+            if (userId == null) {
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    false,
+                    "Không thể xác định ID người dùng từ token",
+                    null
+                ));
+            }
+
+            RateSessionDTO rating = studentService.getSessionRating(userId, sessionId);
+
+            if (rating == null) {
+                return ResponseEntity.ok(new ApiResponse<>(
+                    true,
+                    "Chưa có đánh giá cho buổi học này",
+                    null
+                ));
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Lấy đánh giá thành công",
+                rating
+            ));
+
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(new ApiResponse<>(
+                false,
+                e.getMessage() != null ? e.getMessage() : "Lỗi khi lấy đánh giá",
+                null
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(
+                false,
+                "Lỗi hệ thống: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()),
+                null
+            ));
+        }
+    }
+
     @PostMapping("/rate-class")
     public ResponseEntity<ApiResponse<String>> rateClass(
             @RequestBody RateClassDTO rateDTO,
@@ -280,8 +329,8 @@ public class StudentController {
                 ));
             }
 
-            // TODO: Implement getStudentSchedule method
-            List<StudentAttendedClassDTO> schedule = Collections.emptyList();
+            // Get schedule from BuoiHocChiTiet
+            List<StudentAttendedClassDTO> schedule = studentService.getStudentSchedule(userId);
 
             return ResponseEntity.ok(new ApiResponse<>(
                 true,

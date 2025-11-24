@@ -1086,6 +1086,22 @@ public class StudentService {
         return new ArrayList<>(uniqueSessionsMap.values());
     }
 
+    @Transactional(readOnly = true)
+    public List<StudentAttendedClassDTO> getStudentSchedule(String userId) {
+        // Find student by account ID
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
+
+        if (!studentOpt.isPresent()) {
+            throw new RuntimeException("Student not found");
+        }
+
+        HocSinh student = studentOpt.get();
+        String studentId = student.getIdHs();
+
+        // Get schedule from BuoiHocChiTiet
+        return getStudentAttendedClasses(studentId);
+    }
+
     private List<StudentSupportRequestDTO> getSupportRequests(String studentId) {
         // Get support requests for classes that student is registered in
         List<DangKyLH> registrations = dangKyLHStudentRepository.findByHocSinhId(studentId);
@@ -1353,6 +1369,10 @@ public class StudentService {
             danhGia = new DanhGiaBuoiHoc();
             String newId = generateNextDanhGiaBuoiHocId();
             danhGia.setIdDgbh(newId);
+            // Set các trường ID trực tiếp (vì relationship có insertable = false)
+            danhGia.setIdBh(session.getIdBh());
+            danhGia.setIdHs(studentId);
+            // Set relationship để có thể truy cập sau này
             danhGia.setHocSinh(student);
             danhGia.setBuoiHocChiTiet(session);
         }
@@ -1363,11 +1383,14 @@ public class StudentService {
         // Update comment if provided
         if (rateDTO.getComment() != null && !rateDTO.getComment().trim().isEmpty()) {
             String comment = rateDTO.getComment().trim();
-            // Truncate if too long
-            if (comment.length() > 500) {
-                comment = comment.substring(0, 500);
+            // Truncate if too long (max 400 characters based on entity)
+            if (comment.length() > 400) {
+                comment = comment.substring(0, 400);
             }
             danhGia.setNhanXet(comment);
+        } else {
+            // Clear comment if not provided
+            danhGia.setNhanXet(null);
         }
         
         // Update time
@@ -1375,6 +1398,34 @@ public class StudentService {
 
         // Save to database
         danhGiaBuoiHocStudentRepository.save(danhGia);
+    }
+
+    @Transactional(readOnly = true)
+    public RateSessionDTO getSessionRating(String userId, String sessionId) {
+        // Find student by account ID
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
+        if (!studentOpt.isPresent()) {
+            throw new RuntimeException("Không tìm thấy học sinh");
+        }
+
+        HocSinh student = studentOpt.get();
+        String studentId = student.getIdHs();
+
+        // Find the rating for this session
+        Optional<DanhGiaBuoiHoc> ratingOpt = danhGiaBuoiHocStudentRepository.findByHocSinhIdAndBuoiHocChiTietId(studentId, sessionId);
+        
+        if (!ratingOpt.isPresent()) {
+            // Return null if no rating exists
+            return null;
+        }
+
+        DanhGiaBuoiHoc danhGia = ratingOpt.get();
+        RateSessionDTO dto = new RateSessionDTO();
+        dto.setSessionId(sessionId);
+        dto.setRating(danhGia.getDiemDanhGia());
+        dto.setComment(danhGia.getNhanXet());
+        
+        return dto;
     }
 
     @Transactional
