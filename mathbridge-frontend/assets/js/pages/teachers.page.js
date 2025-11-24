@@ -1,8 +1,8 @@
 // assets/js/pages/teachers.page.js
 //
 // Trang list giáo viên:
-// - gọi API getTeachersFromApi()
-// - render card
+// - gọi getTeachersFromApi() (trả dữ liệu tĩnh)
+// - render card giới thiệu
 // - filter + search
 //
 
@@ -12,12 +12,12 @@ let allTeachers = [];
 let activeFilter = "all";
 let searchQuery = "";
 
-/* utils -------------------------------------------------- */
+/* ========== UTILS ========== */
 function getInitials(fullName = "") {
   return fullName
     .trim()
     .split(/\s+/)
-    .map(part => part[0] || "")
+    .map((part) => part[0] || "")
     .join("")
     .slice(0, 3)
     .toUpperCase();
@@ -40,22 +40,22 @@ function getColorForName(name = "") {
 
 function expText(years) {
   if (years == null) return "Kinh nghiệm: đang cập nhật";
-  return `${years}+ năm kinh nghiệm`;
+  return `${years}+ năm kinh nghiệm giảng dạy`;
 }
 
 function escapeHTML(str) {
   return String(str)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-/* filter ------------------------------------------------- */
+/* ========== FILTER ========== */
 function teacherMatchesFilter(teacher, filterKey) {
   if (filterKey === "all") return true;
   const spec = (teacher.chuyenMon || "").toLowerCase();
 
-  if (filterKey === "9")  return /lớp\s*9\b/.test(spec);
+  if (filterKey === "9") return /lớp\s*9\b/.test(spec);
   if (filterKey === "10") return /lớp\s*10\b/.test(spec);
   if (filterKey === "11") return /lớp\s*11\b/.test(spec);
   if (filterKey === "12") return /lớp\s*12\b/.test(spec);
@@ -64,8 +64,12 @@ function teacherMatchesFilter(teacher, filterKey) {
     return (
       spec.includes("nâng cao") ||
       spec.includes("igcse") ||
-      spec.includes("ib ") || spec.includes(" ib") || spec.includes("ib math") ||
-      spec.includes("ap ") || spec.includes(" ap") || spec.includes("ap calculus") ||
+      spec.includes(" ib") ||
+      spec.includes("ib ") ||
+      spec.includes("ib math") ||
+      spec.includes(" ap") ||
+      spec.includes("ap ") ||
+      spec.includes("ap calculus") ||
       spec.includes("sat")
     );
   }
@@ -79,18 +83,41 @@ function teacherMatchesSearch(teacher, query) {
   return name.includes(query.toLowerCase());
 }
 
-/* render ------------------------------------------------- */
+/* ========== RENDER ========== */
 function createTeacherCardHTML(teacher) {
-  const hoTen = teacher.hoTen || "Giảng viên";
-  const chuyenMon = teacher.chuyenMon || "Chuyên môn đang cập nhật";
+  const hoTen = teacher.hoTen || "Giảng viên MathBridge";
+  const chuyenMon = teacher.chuyenMon || "Toán THPT & các chương trình quốc tế";
   const kn = expText(teacher.kinhNghiem);
+
+  const intro =
+    teacher.intro ||
+    "Tập trung xây nền tảng vững, luyện đề bám sát chuẩn thi, giúp học sinh tự tin với Toán quốc tế.";
+
+  const tags = Array.isArray(teacher.tags) ? teacher.tags : [];
+  const programLabel = teacher.programsLabel || "";
 
   const initials = getInitials(hoTen);
   const avatarColor = getColorForName(hoTen);
 
-  // thêm id vào URL để trang detail gọi được lớp
-  const idParam = teacher.idNv ? `id=${encodeURIComponent(teacher.idNv)}&` : "";
-  const detailUrl = `pages/TeacherDetailClass.html?${idParam}teacher=${encodeURIComponent(hoTen)}`;
+  // Trang đăng ký lớp học — cùng cấp với Teachers.html
+  // base href="../" => href="pages/Courses.html" => mathbridge-frontend/pages/Courses.html
+  const courseUrl = "pages/Courses.html";
+
+  const safeName = escapeHTML(hoTen);
+  const safeSpec = escapeHTML(chuyenMon);
+  const safeExp = escapeHTML(kn);
+  const safeIntro = escapeHTML(intro);
+
+  const tagsHtml = []
+    .concat(programLabel ? [programLabel] : [])
+    .concat(tags)
+    .map(
+      (t) =>
+        `<span class="teacher-card__tag">${escapeHTML(
+          String(t)
+        )}</span>`
+    )
+    .join("");
 
   return `
     <article class="teacher-card" role="listitem" tabindex="0">
@@ -99,14 +126,30 @@ function createTeacherCardHTML(teacher) {
           ${escapeHTML(initials)}
         </div>
         <div class="teacher-card__body">
-          <h3 class="teacher-card__name">${escapeHTML(hoTen)}</h3>
-          <p class="teacher-card__spec">${escapeHTML(chuyenMon)}</p>
-          <p class="teacher-card__exp">${escapeHTML(kn)}</p>
+          <h3 class="teacher-card__name">${safeName}</h3>
+          <p class="teacher-card__spec">${safeSpec}</p>
+          <p class="teacher-card__exp">${safeExp}</p>
         </div>
       </div>
+
+      <p class="teacher-card__intro">
+        ${safeIntro}
+      </p>
+
+      ${
+        tagsHtml
+          ? `<div class="teacher-card__tags">
+              ${tagsHtml}
+            </div>`
+          : ""
+      }
+
       <div class="teacher-card__footer">
-        <a class="teacher-card__ctaBtn" href="${detailUrl}">
-          <i class="ph-pencil-line" aria-hidden="true"></i>
+        <p class="teacher-card__ctaNote">
+          Lộ trình cá nhân hóa, tối đa 5–6 học sinh/lớp.
+        </p>
+        <a class="teacher-card__ctaBtn" href="${courseUrl}">
+          <i class="ph ph-arrow-right" aria-hidden="true"></i>
           <span>Đăng ký lớp học</span>
         </a>
       </div>
@@ -115,15 +158,16 @@ function createTeacherCardHTML(teacher) {
 }
 
 function renderTeachers() {
-  const listEl   = document.querySelector("[data-teacher-list]");
-  const countEl  = document.getElementById("teacherCount");
-  const emptyEl  = document.querySelector("[data-empty-state]");
+  const listEl = document.querySelector("[data-teacher-list]");
+  const countEl = document.getElementById("teacherCount");
+  const emptyEl = document.querySelector("[data-empty-state]");
   if (!listEl) return;
 
-  const visible = allTeachers.filter(t => {
-    return teacherMatchesFilter(t, activeFilter) &&
-           teacherMatchesSearch(t, searchQuery);
-  });
+  const visible = allTeachers.filter(
+    (t) =>
+      teacherMatchesFilter(t, activeFilter) &&
+      teacherMatchesSearch(t, searchQuery)
+  );
 
   if (visible.length === 0) {
     listEl.innerHTML = "";
@@ -138,9 +182,9 @@ function renderTeachers() {
 }
 
 function showLoadingSkeleton() {
-  const listEl   = document.querySelector("[data-teacher-list]");
+  const listEl = document.querySelector("[data-teacher-list]");
   const statusEl = document.querySelector("[data-teacher-status]");
-  const emptyEl  = document.querySelector("[data-empty-state]");
+  const emptyEl = document.querySelector("[data-empty-state]");
 
   if (statusEl) {
     statusEl.textContent = "Đang tải danh sách giảng viên...";
@@ -167,7 +211,7 @@ function hideStatusMessage() {
   }
 }
 
-/* events ------------------------------------------------- */
+/* ========== EVENTS ========== */
 function initFilterChips() {
   const chipsWrap = document.getElementById("filterChips");
   if (!chipsWrap) return;
@@ -180,7 +224,7 @@ function initFilterChips() {
 
     activeFilter = newFilter;
 
-    chipsWrap.querySelectorAll(".chip").forEach(chip => {
+    chipsWrap.querySelectorAll(".chip").forEach((chip) => {
       chip.setAttribute("aria-pressed", chip === btn ? "true" : "false");
     });
 
@@ -198,7 +242,7 @@ function initSearchBox() {
   });
 }
 
-/* init --------------------------------------------------- */
+/* ========== INIT ========== */
 export async function initTeachersPage() {
   showLoadingSkeleton();
 

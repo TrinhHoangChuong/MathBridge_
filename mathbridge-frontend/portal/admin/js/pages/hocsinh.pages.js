@@ -87,12 +87,12 @@ function setupMainTabs() {
         } else if (view === "submissions") {
           if (!submissionsTabInitialized) {
             submissionsTabInitialized = true;
-            // chỉ load khi user bấm "Áp dụng", nên ở đây không cần gọi gì thêm
+            // dữ liệu tab này chỉ tải khi bấm "Áp dụng"
           }
         } else if (view === "results") {
           if (!resultsTabInitialized) {
             resultsTabInitialized = true;
-            // tương tự, chờ user chọn lớp + bấm "Áp dụng"
+            // dữ liệu tab này cũng chờ bấm "Áp dụng"
           }
         }
       } catch (err) {
@@ -164,7 +164,9 @@ async function loadProgramAndClassFilters() {
     }
 
     // --- Tab Bài tập ---
-    const assignProgramSelect = document.getElementById("filter-assign-program");
+    const assignProgramSelect = document.getElementById(
+      "filter-assign-program"
+    );
     const assignClassSelect = document.getElementById("filter-assign-class");
 
     if (assignProgramSelect) {
@@ -206,6 +208,9 @@ async function loadProgramAndClassFilters() {
     if (subClassSelect) {
       renderSubClassOptions();
     }
+
+    // sau khi đã có chương trình + lớp ở tab Bài nộp, load UNIQUE danh sách bài tập cho filter
+    await refreshSubAssignmentOptions();
 
     // --- Tab Đánh giá & Kết quả ---
     const resClassSelect = document.getElementById("filter-res-class");
@@ -440,15 +445,11 @@ async function loadStudentList() {
 // ===============================
 // 3. PANEL CHI TIẾT BÊN PHẢI
 // ===============================
-
-// ✨ ĐÃ SỬA: unwrap payload + kiểm tra success & data
 async function handleViewStudentDetail(idHs) {
   if (!idHs) return;
   try {
     const raw = await apiGetStudentDetail(idHs);
 
-    // Một số trường hợp BE có thể trả { success, message, ... }
-    // hoặc { data: { studentDetail, ... } }
     const payload = raw?.data || raw || {};
     const detail = payload.studentDetail || raw?.studentDetail || null;
     const classes =
@@ -793,6 +794,55 @@ function formatDateRange(from, to) {
 // ===============================
 // 6. TAB BÀI TẬP
 // ===============================
+
+// key UNIQUE cho buổi học của bài tập
+function buildAssignmentSessionKey(a) {
+  const name = a?.tenBuoiHoc || "";
+  const date = a?.ngayHoc || "";
+  if (!name && !date) return "";
+  return `${name}__${date}`;
+}
+
+// fill combo Buổi học theo UNIQUE từ danh sách bài tập
+function populateAssignSessionFilter(items) {
+  const sessionSelect = document.getElementById("filter-assign-session");
+  if (!sessionSelect) return;
+
+  const prevValue = sessionSelect.value || "";
+
+  const map = new Map();
+  (items || []).forEach((a) => {
+    const key = buildAssignmentSessionKey(a);
+    if (!key) return;
+    if (map.has(key)) return;
+
+    const parts = [];
+    if (a.tenBuoiHoc) parts.push(a.tenBuoiHoc);
+    if (a.ngayHoc) parts.push(formatDate(a.ngayHoc));
+    const label = parts.join(" - ") || "Buổi không rõ";
+
+    map.set(key, label);
+  });
+
+  sessionSelect.innerHTML =
+    `<option value="">Tất cả buổi</option>` +
+    Array.from(map.entries())
+      .map(
+        ([value, label]) =>
+          `<option value="${escapeHtml(value)}">${escapeHtml(
+            label
+          )}</option>`
+      )
+      .join("");
+
+  // giữ lại lựa chọn cũ nếu còn trong danh sách
+  if (prevValue && map.has(prevValue)) {
+    sessionSelect.value = prevValue;
+  } else {
+    sessionSelect.value = "";
+  }
+}
+
 function setupAssignmentFilters() {
   const programSelect = document.getElementById("filter-assign-program");
   const btnApply = document.getElementById("btn-assign-apply-filter");
@@ -826,6 +876,7 @@ async function loadAssignmentList() {
   const classSelect = document.getElementById("filter-assign-class");
   const fromInput = document.getElementById("filter-assign-from");
   const toInput = document.getElementById("filter-assign-to");
+  const sessionSelect = document.getElementById("filter-assign-session");
 
   const payload = {
     programId: programSelect?.value || null,
@@ -838,7 +889,18 @@ async function loadAssignmentList() {
     const res = await apiSearchAssignments(payload);
     const items = res?.assignments || [];
 
-    if (!items.length) {
+    // cập nhật combo Buổi học theo UNIQUE
+    populateAssignSessionFilter(items);
+
+    const selectedSessionKey = sessionSelect?.value || "";
+
+    const filteredItems = selectedSessionKey
+      ? items.filter(
+          (a) => buildAssignmentSessionKey(a) === selectedSessionKey
+        )
+      : items;
+
+    if (!filteredItems.length) {
       tbody.innerHTML = `
         <tr class="empty-row">
           <td colspan="7">Chưa có bài tập cho bộ lọc hiện tại.</td>
@@ -847,7 +909,7 @@ async function loadAssignmentList() {
       return;
     }
 
-    tbody.innerHTML = items
+    tbody.innerHTML = filteredItems
       .map((a) => {
         const buoi =
           (a.tenBuoiHoc ? `${a.tenBuoiHoc}` : "") +
@@ -883,13 +945,78 @@ async function loadAssignmentList() {
 // ===============================
 // 7. TAB BÀI NỘP & CHẤM ĐIỂM
 // ===============================
+
+// load UNIQUE danh sách bài tập cho combo filter-sub-assignment
+async function refreshSubAssignmentOptions() {
+  const assignmentSelect = document.getElementById("filter-sub-assignment");
+  if (!assignmentSelect) return;
+
+  const programSelect = document.getElementById("filter-sub-program");
+  const classSelect = document.getElementById("filter-sub-class");
+
+  const payload = {
+    programId: programSelect?.value || null,
+    classId: classSelect?.value || null,
+    fromDate: null,
+    toDate: null,
+  };
+
+  const prevValue = assignmentSelect.value || "";
+
+  try {
+    const res = await apiSearchAssignments(payload);
+    const items = res?.assignments || [];
+
+    const map = new Map();
+    (items || []).forEach((a) => {
+      if (!a.idBt) return;
+      if (map.has(a.idBt)) return;
+      const label = a.tieuDe || a.tenBuoiHoc || a.idBt;
+      map.set(a.idBt, label);
+    });
+
+    assignmentSelect.innerHTML =
+      `<option value="">Tất cả bài tập</option>` +
+      Array.from(map.entries())
+        .map(
+          ([id, label]) =>
+            `<option value="${escapeHtml(id)}">${escapeHtml(label)}</option>`
+        )
+        .join("");
+
+    if (prevValue && map.has(prevValue)) {
+      assignmentSelect.value = prevValue;
+    } else {
+      assignmentSelect.value = "";
+    }
+  } catch (err) {
+    console.error(
+      "Không thể load danh sách bài tập cho bộ lọc Bài nộp:",
+      err
+    );
+    assignmentSelect.innerHTML = `<option value="">Tất cả bài tập</option>`;
+  }
+}
+
 function setupSubmissionFilters() {
   const programSelect = document.getElementById("filter-sub-program");
+  const classSelect = document.getElementById("filter-sub-class");
   const btnApply = document.getElementById("btn-sub-apply-filter");
 
   if (programSelect) {
     programSelect.addEventListener("change", () => {
       renderSubClassOptions();
+      refreshSubAssignmentOptions().catch((err) =>
+        console.error("Lỗi load danh sách bài tập cho bộ lọc Bài nộp:", err)
+      );
+    });
+  }
+
+  if (classSelect) {
+    classSelect.addEventListener("change", () => {
+      refreshSubAssignmentOptions().catch((err) =>
+        console.error("Lỗi load danh sách bài tập cho bộ lọc Bài nộp:", err)
+      );
     });
   }
 
@@ -973,6 +1100,41 @@ async function loadSubmissionList() {
 // ===============================
 // 8. TAB ĐÁNH GIÁ & KẾT QUẢ
 // ===============================
+
+// fill combo Học sinh UNIQUE theo dữ liệu đánh giá & kết quả
+function populateResultStudentFilter(classEvals, classResults) {
+  const select = document.getElementById("filter-res-student");
+  if (!select) return;
+
+  const prevValue = select.value || "";
+
+  const map = new Map();
+  [...(classEvals || []), ...(classResults || [])].forEach((item) => {
+    const id = item.idHs;
+    if (!id) return;
+    if (map.has(id)) return;
+    const name = item.tenHs || id;
+    map.set(id, name);
+  });
+
+  select.innerHTML =
+    `<option value="">Tất cả</option>` +
+    Array.from(map.entries())
+      .map(
+        ([id, name]) =>
+          `<option value="${escapeHtml(id)}">${escapeHtml(
+            `${name} (${id})`
+          )}</option>`
+      )
+      .join("");
+
+  if (prevValue && map.has(prevValue)) {
+    select.value = prevValue;
+  } else {
+    select.value = "";
+  }
+}
+
 function setupResultsFilters() {
   const btnApply = document.getElementById("btn-res-apply-filter");
   if (!btnApply) return;
@@ -986,6 +1148,7 @@ function setupResultsFilters() {
 
 async function loadResultsData() {
   const classSelect = document.getElementById("filter-res-class");
+  const studentSelect = document.getElementById("filter-res-student");
   const classId = classSelect?.value || null;
 
   const ratingTbody = document.querySelector("#tbl-class-rating tbody");
@@ -1025,15 +1188,28 @@ async function loadResultsData() {
     const classEvals = res?.classEvaluations || [];
     const classResults = res?.classResults || [];
 
+    // cập nhật combo Học sinh UNIQUE
+    populateResultStudentFilter(classEvals, classResults);
+    const selectedStudentId = studentSelect?.value || "";
+
+    // lọc theo học sinh nếu có chọn
+    const filteredEvals = selectedStudentId
+      ? classEvals.filter((e) => e.idHs === selectedStudentId)
+      : classEvals;
+
+    const filteredResults = selectedStudentId
+      ? classResults.filter((r) => r.idHs === selectedStudentId)
+      : classResults;
+
     // Đánh giá lớp
-    if (!classEvals.length) {
+    if (!filteredEvals.length) {
       ratingTbody.innerHTML = `
         <tr class="empty-row">
           <td colspan="5">Chưa có đánh giá lớp học.</td>
         </tr>
       `;
     } else {
-      ratingTbody.innerHTML = classEvals
+      ratingTbody.innerHTML = filteredEvals
         .map((e) => {
           const time = e.thoiDiemDanhGia
             ? formatDateTime(e.thoiDiemDanhGia)
@@ -1055,14 +1231,14 @@ async function loadResultsData() {
     }
 
     // Kết quả & xếp loại
-    if (!classResults.length) {
+    if (!filteredResults.length) {
       resultTbody.innerHTML = `
         <tr class="empty-row">
           <td colspan="4">Chưa có kết quả kết thúc khóa.</td>
         </tr>
       `;
     } else {
-      resultTbody.innerHTML = classResults
+      resultTbody.innerHTML = filteredResults
         .map((r) => {
           const lop = r.tenLop || "";
           return `
