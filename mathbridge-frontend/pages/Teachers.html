@@ -35,7 +35,12 @@
                 </h1>
                 <div class="section-strap" aria-hidden="true"></div>
                 <p class="section-sub">
-                    Giáo viên chuyên sâu IGCSE, A-Level, IB, SAT Math và Toán nâng cao THPT — hướng tới giúp học sinh hiểu bản chất và tự tin với đề thi chuẩn quốc tế.
+                    Giáo viên chuyên sâu IGCSE, A-Level, IB, SAT Math và Toán nâng cao THPT — đồng hành cùng học sinh
+                    từ nền tảng đến chinh phục điểm A/A* &amp; 7+.
+                </p>
+                <p class="section-sub helper-text">
+                    Chọn giảng viên phù hợp với phong cách học của bạn, sau đó nhấn
+                    <strong>“Đăng ký lớp học”</strong> để được tư vấn lớp phù hợp nhất tại MathBridge.
                 </p>
             </header>
         </div>
@@ -47,7 +52,7 @@
         <div class="container toolbar-inner">
             <!-- Filters -->
             <div class="filters">
-                <p class="filters-label">Lọc theo:</p>
+                <p class="filters-label">Lọc theo khối &amp; chương trình:</p>
                 <div class="chips" role="group" aria-label="Chọn chương trình" id="filterChips">
                     <button class="chip" data-filter="all" aria-pressed="true">Tất cả</button>
                     <button class="chip" data-filter="9" aria-pressed="false">Lớp 9</button>
@@ -75,9 +80,9 @@
 
             <!-- Meta -->
             <div class="meta">
-        <span class="meta-count">
-          <strong id="teacherCount">0</strong> giảng viên
-        </span>
+                <span class="meta-count">
+                    Đang hiển thị <strong id="teacherCount">0</strong> giảng viên
+                </span>
             </div>
         </div>
     </section>
@@ -104,12 +109,11 @@
 <footer></footer>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // inject
-      includePartials({
-        header: 'partials/header.html',
-        footer: 'partials/footer.html'
-      });
+    document.addEventListener("DOMContentLoaded", () => {
+        includePartials({
+            header: "partials/header.html",
+            footer: "partials/footer.html",
+        });
     });
 </script>
 

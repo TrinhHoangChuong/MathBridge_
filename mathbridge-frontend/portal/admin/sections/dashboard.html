@@ -17,9 +17,6 @@
         </div>
 
         <div class="dashdb-header-right">
-            <div class="dashdb-tagline">
-                Dữ liệu tổng hợp từ các bảng: HocSinh, NhanVien, LopHoc, HoaDon, LichSuThanhToan, ChuongTrinh, DangKyLH, TinTuyenDung, Association_25, YeuCauHoTro, HopDong.
-            </div>
             <button class="dashdb-refresh-btn" type="button" id="dashdb-refresh">
                 <i class="ri-refresh-line"></i>
                 <span>Làm mới dữ liệu</span>
@@ -45,7 +42,6 @@
                         <span class="kpi-badge neutral">FROM LopHoc</span>
                     </div>
                     <div class="kpi-value" data-kpi="lop-dang-mo">--</div>
-                    <div class="kpi-meta">Đếm lớp có TrangThai = 'Đang mở'</div>
                 </div>
 
                 <!-- (1) Học sinh đang hoạt động -->
@@ -55,7 +51,6 @@
                         <span class="kpi-badge neutral">FROM HocSinh</span>
                     </div>
                     <div class="kpi-value" data-kpi="hs-active">--</div>
-                    <div class="kpi-meta">TrangThaiHoatDong = 1</div>
                 </div>
 
                 <!-- (2) Nhân viên đang hoạt động -->
@@ -65,7 +60,6 @@
                         <span class="kpi-badge neutral">FROM NhanVien</span>
                     </div>
                     <div class="kpi-value" data-kpi="nv-active">--</div>
-                    <div class="kpi-meta">TrangThaiHoatDong = 1</div>
                 </div>
 
                 <!-- (4) Tổng doanh thu đã thu -->
@@ -75,7 +69,6 @@
                         <span class="kpi-badge good">FROM HoaDon</span>
                     </div>
                     <div class="kpi-value" data-kpi="revenue-paid-total">--</div>
-                    <div class="kpi-meta">SUM TongTien WHERE TrangThai = 'Da Thanh Toan'</div>
                 </div>
             </div>
         </section>
@@ -106,7 +99,6 @@
                             <span class="pill-value" data-kpi="invoice-unpaid-count">--</span>
                         </div>
                     </div>
-                    <div class="kpi-meta">GROUP BY TrangThai</div>
                 </div>
 
                 <!-- (7) Doanh thu theo PTTT -->
@@ -138,14 +130,12 @@
                             <span class="row-value" data-kpi="pttt-pt005">--</span>
                         </div>
                     </div>
-                    <div class="kpi-meta">SUM TongTien GROUP BY TenPT / ID_PT</div>
                 </div>
 
                 <!-- (6) DANH SÁCH CÔNG NỢ CHI TIẾT -->
                 <div class="panel">
                     <div class="panel-header">
                         <h3>Hóa đơn chưa thanh toán sắp đến hạn</h3>
-                        <span class="panel-sub">FROM HoaDon | 7 ngày tới</span>
                     </div>
                     <div class="table-wrapper">
                         <table class="mb-table">
@@ -182,7 +172,6 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h3>Top lớp theo sĩ số</h3>
-                        <span class="panel-sub">FROM LopHoc + DangKyLH</span>
                     </div>
                     <div class="table-wrapper">
                         <table class="mb-table">
@@ -204,7 +193,6 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h3>Lớp theo chương trình</h3>
-                        <span class="panel-sub">FROM ChuongTrinh + LopHoc</span>
                     </div>
                     <div class="table-wrapper">
                         <table class="mb-table">
@@ -238,7 +226,6 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h3>Tin tuyển dụng & ứng viên</h3>
-                        <span class="panel-sub">FROM TinTuyenDung + Association_25</span>
                     </div>
                     <div class="table-wrapper">
                         <table class="mb-table">
@@ -261,7 +248,6 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h3>Yêu cầu hỗ trợ theo trạng thái</h3>
-                        <span class="panel-sub">FROM YeuCauHoTro</span>
                     </div>
                     <div class="kpi-list">
                         <!-- GROUP BY TrangThai -->
@@ -297,7 +283,6 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h3>Trạng thái hợp đồng giảng viên</h3>
-                        <span class="panel-sub">FROM HopDong</span>
                     </div>
                     <div class="kpi-list">
                         <!-- GROUP BY TrangThai -->
@@ -310,14 +295,12 @@
                             <span class="row-value" data-kpi="contract-expired">--</span>
                         </div>
                     </div>
-                    <div class="kpi-meta">Dựa trên LoaiHopDong, NgayKy, NgayHieuLuc, NgayKetThuc, TrangThai, ChamDutHD.</div>
                 </div>
 
                 <!-- (13) Hợp đồng / Nhân viên -->
                 <div class="panel">
                     <div class="panel-header">
                         <h3>Hợp đồng theo nhân viên</h3>
-                        <span class="panel-sub">FROM HopDong</span>
                     </div>
                     <div class="table-wrapper compact">
                         <table class="mb-table">

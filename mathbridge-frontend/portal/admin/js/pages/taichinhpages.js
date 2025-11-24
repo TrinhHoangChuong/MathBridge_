@@ -26,6 +26,36 @@ let editingHoaDonId = null;
 let editingLsId = null;
 let editingPtId = null;
 
+// ====== CONSTANTS (LABEL MAP CHO TRẠNG THÁI) ======
+
+const INVOICE_STATUS_LABELS = {
+  CHO_THANH_TOAN: "Chờ thanh toán",
+  DA_THANH_TOAN: "Đã thanh toán",
+  QUA_HAN: "Quá hạn",
+};
+
+const PAYMENT_STATUS_LABELS = {
+  DA_THANH_TOAN: "Đã thanh toán",
+  HOAN_TIEN: "Hoàn tiền",
+  HUY: "Hủy",
+};
+
+// ====== HELPER: LỌC UNIQUE THEO 1 KEY (DÙNG CHO TẤT CẢ DROPDOWN) ======
+
+function uniqueBy(list, key) {
+  const seen = new Set();
+  const result = [];
+  (list || []).forEach((item) => {
+    if (!item || item[key] == null) return;
+    const val = item[key];
+    if (!seen.has(val)) {
+      seen.add(val);
+      result.push(item);
+    }
+  });
+  return result;
+}
+
 // ====== UTILS UI ======
 
 function showToast(message) {
@@ -74,10 +104,8 @@ function createStatusChip(status, type = "invoice") {
 
 function safeDateStr(value) {
   if (!value) return "";
-  // BE có thể trả ISO string, date-only... ⇒ show phần yyyy-mm-dd
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    // fallback: cắt chuỗi
     if (typeof value === "string") {
       return value.substring(0, 10);
     }
@@ -86,13 +114,17 @@ function safeDateStr(value) {
   return date.toISOString().substring(0, 10);
 }
 
-// ====== DROPDOWN LOADERS ======
+// ====== DROPDOWN LOADERS (HỌC SINH, LỚP, PHƯƠNG THỨC) ======
 
 async function loadDropdownsForHoaDon() {
-  const [classes, students] = await Promise.all([
+  const [classesRaw, studentsRaw] = await Promise.all([
     apiGetDropdownClasses(),
     apiGetDropdownStudents(),
   ]);
+
+  // Lọc UNIQUE theo idLh / idHs đúng theo CSDL, tránh trùng do join nhiều lần
+  const classes = uniqueBy(classesRaw || [], "idLh");
+  const students = uniqueBy(studentsRaw || [], "idHs");
 
   const filterStudentSelect = document.getElementById(
     "tc-filter-hoadon-student"
@@ -123,12 +155,15 @@ async function loadDropdownsForHoaDon() {
       opt.textContent = item[labelKey];
       select.appendChild(opt);
     });
-    if (currentValue && [...select.options].some((o) => o.value === currentValue)) {
+    if (
+      currentValue &&
+      [...select.options].some((o) => o.value === currentValue)
+    ) {
       select.value = currentValue;
     }
   };
 
-  // gợi ý: classes: [{idLh, tenLop}], students: [{idHs, hoTen}]
+  // classes: [{idLh, tenLop}], students: [{idHs, hoTen}]
   renderOptions(filterStudentSelect, students, "idHs", "hoTen", true);
   renderOptions(filterClassSelect, classes, "idLh", "tenLop", true);
   renderOptions(formStudentSelect, students, "idHs", "hoTen", false);
@@ -136,8 +171,10 @@ async function loadDropdownsForHoaDon() {
 }
 
 async function loadDropdownsForLichSu() {
-  const methods = await apiGetPhuongThucThanhToanList();
-  ptList = methods || [];
+  const methodsRaw = await apiGetPhuongThucThanhToanList();
+
+  // Lọc UNIQUE theo idPt
+  ptList = uniqueBy(methodsRaw || [], "idPt");
 
   const filterMethodSelect = document.getElementById("tc-filter-ls-method");
   const formMethodSelect = document.getElementById("tc-ls-pt");
@@ -158,13 +195,93 @@ async function loadDropdownsForLichSu() {
       opt.textContent = `${pt.tenPt || pt.idPt}`;
       select.appendChild(opt);
     });
-    if (currentValue && [...select.options].some((o) => o.value === currentValue)) {
+    if (
+      currentValue &&
+      [...select.options].some((o) => o.value === currentValue)
+    ) {
       select.value = currentValue;
     }
   };
 
   renderOptions(filterMethodSelect, true);
   renderOptions(formMethodSelect, false);
+}
+
+// ====== REBUILD FILTER OPTIONS THEO UNIQUE TỪ DATA ĐÃ LOAD ======
+
+// Trạng thái hóa đơn
+function rebuildHoaDonStatusFilterFromData() {
+  const statusSelect = document.getElementById("tc-filter-hoadon-status");
+  if (!statusSelect) return;
+
+  const currentValue = statusSelect.value;
+
+  // UNIQUE các giá trị trangThai từ hoaDonList (CSDL trả về)
+  const uniqueStatuses = Array.from(
+    new Set(
+      (hoaDonList || [])
+        .map((hd) => hd.trangThai)
+        .filter((st) => st && typeof st === "string")
+    )
+  );
+
+  statusSelect.innerHTML = "";
+
+  const optAll = document.createElement("option");
+  optAll.value = "";
+  optAll.textContent = "Tất cả";
+  statusSelect.appendChild(optAll);
+
+  uniqueStatuses.forEach((st) => {
+    const opt = document.createElement("option");
+    opt.value = st;
+    opt.textContent = INVOICE_STATUS_LABELS[st] || st;
+    statusSelect.appendChild(opt);
+  });
+
+  if (
+    currentValue &&
+    [...statusSelect.options].some((o) => o.value === currentValue)
+  ) {
+    statusSelect.value = currentValue;
+  }
+}
+
+// Trạng thái lịch sử thanh toán
+function rebuildLichSuStatusFilterFromData() {
+  const statusSelect = document.getElementById("tc-filter-ls-status");
+  if (!statusSelect) return;
+
+  const currentValue = statusSelect.value;
+
+  const uniqueStatuses = Array.from(
+    new Set(
+      (lichSuList || [])
+        .map((ls) => ls.trangThaiThanhToan)
+        .filter((st) => st && typeof st === "string")
+    )
+  );
+
+  statusSelect.innerHTML = "";
+
+  const optAll = document.createElement("option");
+  optAll.value = "";
+  optAll.textContent = "Tất cả";
+  statusSelect.appendChild(optAll);
+
+  uniqueStatuses.forEach((st) => {
+    const opt = document.createElement("option");
+    opt.value = st;
+    opt.textContent = PAYMENT_STATUS_LABELS[st] || st;
+    statusSelect.appendChild(opt);
+  });
+
+  if (
+    currentValue &&
+    [...statusSelect.options].some((o) => o.value === currentValue)
+  ) {
+    statusSelect.value = currentValue;
+  }
 }
 
 // ====== RENDER: HÓA ĐƠN ======
@@ -184,9 +301,9 @@ function renderHoaDonTable() {
       const {
         idHoaDon,
         idHs,
-        tenHocSinh, // gợi ý từ BE
+        tenHocSinh, // từ BE nếu có join
         idLh,
-        tenLop, // gợi ý từ BE
+        tenLop, // từ BE nếu có join
         soThang,
         tongTien,
         ngayDangKy,
@@ -241,7 +358,7 @@ function renderLichSuTable() {
       const {
         idLs,
         idPt,
-        tenPt, // gợi ý: join từ BE
+        tenPt, // join BE
         tongTien,
         trangThaiThanhToan,
         hinhThuc,
@@ -335,6 +452,7 @@ async function loadHoaDonWithFilter() {
   const data = await apiSearchHoaDon(payload);
   hoaDonList = data || [];
   renderHoaDonTable();
+  rebuildHoaDonStatusFilterFromData(); // đảm bảo filter trạng thái là UNIQUE từ CSDL
 }
 
 async function loadLichSuWithFilter() {
@@ -351,11 +469,13 @@ async function loadLichSuWithFilter() {
   const data = await apiSearchLichSuThanhToan(payload);
   lichSuList = data || [];
   renderLichSuTable();
+  rebuildLichSuStatusFilterFromData(); // đảm bảo filter trạng thái là UNIQUE từ CSDL
 }
 
 async function loadPhuongThuc() {
   const data = await apiGetPhuongThucThanhToanList();
-  ptList = data || [];
+  // vẫn đảm bảo UNIQUE khi load bảng => dùng uniqueBy
+  ptList = uniqueBy(data || [], "idPt");
   renderPhuongThucTable();
 }
 
@@ -701,7 +821,7 @@ function initPtHandlers() {
         }
         closeModal("tc-pt-modal");
         await loadPhuongThuc();
-        await loadDropdownsForLichSu(); // cập nhật dropdown phương thức
+        await loadDropdownsForLichSu(); // cập nhật dropdown phương thức (UNIQUE)
       } catch (err) {
         console.error(err);
         showToast("Có lỗi khi lưu phương thức thanh toán.");
