@@ -54,9 +54,15 @@ class TutorAPI {
   // Generic API request method
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
+    // Merge headers properly - options.headers will override default headers
+    const defaultHeaders = this.getHeaders();
+    const mergedHeaders = {
+      ...defaultHeaders,
+      ...(options.headers || {}),
+    };
     const config = {
-      headers: this.getHeaders(),
       ...options,
+      headers: mergedHeaders,
     };
 
     try {
@@ -611,10 +617,44 @@ class TutorAPI {
   }
 
   async getStudentDetails(studentId, idNv = null) {
-    let endpoint = `/assigned-students/${studentId}`;
-    if (idNv) {
-      endpoint += `?idNv=${encodeURIComponent(idNv)}`;
+    // Backend requires idNv as query parameter
+    // If idNv is not provided, try to get it from tutorInfo
+    if (!idNv && window.tutorDashboard) {
+      idNv = window.tutorDashboard.currentTutorId || 
+             (window.tutorDashboard.tutorInfo && window.tutorDashboard.tutorInfo.idNv);
     }
+    
+    // If still no idNv, try to get from auth data
+    if (!idNv) {
+      try {
+        const authData = localStorage.getItem("mb_auth");
+        if (authData) {
+          const data = JSON.parse(authData);
+          const user = data.user || data.account || {};
+          idNv = user.idNv;
+        }
+      } catch (e) {
+        console.error("Error parsing auth data:", e);
+      }
+    }
+    
+    // If idNv looks like an account ID (starts with TK), convert it
+    if (idNv && idNv.startsWith('TK')) {
+      try {
+        const tutorIdResponse = await this.getTutorIdFromAccountId(idNv);
+        if (tutorIdResponse && tutorIdResponse.idNv) {
+          idNv = tutorIdResponse.idNv;
+        }
+      } catch (error) {
+        console.error("Error converting TK to idNv:", error);
+      }
+    }
+    
+    if (!idNv) {
+      throw new Error("Không xác định được ID cố vấn. Vui lòng đăng nhập lại.");
+    }
+    
+    const endpoint = `/assigned-students/${encodeURIComponent(studentId)}?idNv=${encodeURIComponent(idNv)}`;
     return await this.request(endpoint);
   }
 
@@ -655,12 +695,12 @@ class TutorAPI {
   }
 
   async createConsultation(data) {
+    // Ensure headers are properly set
+    const headers = this.getHeaders();
     return await this.request("/consultation-schedule", {
       method: "POST",
       body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: headers,
     });
   }
 
@@ -847,22 +887,38 @@ class TutorAPI {
   handleError(error) {
     console.error("API Error:", error);
 
-    if (error.message.includes("401")) {
+    // Check error status code
+    const status = error.status || (error.response ? error.response.status : null);
+    const errorMessage = error.message || "";
+
+    if (status === 401 || errorMessage.includes("401")) {
       // Unauthorized - redirect to login
       this.logout();
-      window.location.href = "/login";
-    } else if (error.message.includes("403")) {
+      // Redirect to portal login page
+      const currentPath = window.location.pathname;
+      if (currentPath.includes("/portal/tutor/")) {
+        window.location.href = "../LoginPortal.html";
+      } else {
+        window.location.href = "portal/LoginPortal.html";
+      }
+    } else if (status === 403 || errorMessage.includes("403")) {
       // Forbidden - show access denied message
       alert("Bạn không có quyền truy cập vào tài nguyên này.");
-    } else if (error.message.includes("404")) {
-      // Not found
-      alert("Không tìm thấy dữ liệu yêu cầu.");
-    } else if (error.message.includes("500")) {
+    } else if (status === 404 || errorMessage.includes("404")) {
+      // Not found - show specific error message
+      const specificMessage = error.errorData?.message || error.errorData?.error || "Không tìm thấy dữ liệu yêu cầu.";
+      alert(`Lỗi: ${specificMessage}`);
+    } else if (status === 400 || errorMessage.includes("400")) {
+      // Bad request - show validation error
+      const specificMessage = error.errorData?.message || error.errorData?.error || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
+      alert(`Lỗi: ${specificMessage}`);
+    } else if (status === 500 || errorMessage.includes("500")) {
       // Server error
       alert("Lỗi máy chủ. Vui lòng thử lại sau.");
     } else {
-      // Generic error
-      alert("Đã xảy ra lỗi. Vui lòng thử lại.");
+      // Generic error - show more details if available
+      const specificMessage = error.errorData?.message || error.errorData?.error || errorMessage || "Đã xảy ra lỗi. Vui lòng thử lại.";
+      alert(`Lỗi: ${specificMessage}`);
     }
   }
 }

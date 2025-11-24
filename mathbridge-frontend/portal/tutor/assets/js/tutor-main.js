@@ -1076,11 +1076,33 @@ class TutorDashboard {
         break;
       case "consultation-schedule":
         // Use module if available, otherwise fallback to method
-        if (window.consultationScheduleModule && window.consultationScheduleModule.loadData) {
-          window.consultationScheduleModule.loadData();
-        } else {
-          this.initializeConsultationSchedule();
-        }
+        console.log('[loadSectionData] Loading consultation-schedule section...');
+        
+        // Wait for script to load if not available yet
+        const checkModule = (retries = 10) => {
+          if (window.consultationScheduleModule) {
+            console.log('[loadSectionData] consultationScheduleModule found!');
+            if (window.consultationScheduleModule.init) {
+              window.consultationScheduleModule.init();
+            }
+            if (window.consultationScheduleModule.loadData) {
+              // Small delay to ensure DOM is ready
+              setTimeout(() => {
+                window.consultationScheduleModule.loadData();
+              }, 200);
+            }
+          } else if (retries > 0) {
+            console.log(`[loadSectionData] consultationScheduleModule not found, retrying... (${retries} left)`);
+            setTimeout(() => checkModule(retries - 1), 100);
+          } else {
+            console.warn('[loadSectionData] consultationScheduleModule not found after retries, using fallback');
+            if (this.initializeConsultationSchedule) {
+              this.initializeConsultationSchedule();
+            }
+          }
+        };
+        
+        checkModule();
         break;
     }
   }
@@ -1846,6 +1868,58 @@ class TutorDashboard {
     if (modal) {
       modal.style.display = "flex";
       document.body.style.overflow = "hidden"; // Prevent background scrolling
+      
+      // Setup close button event listeners when modal opens (in case they weren't set up before)
+      // Use setTimeout to ensure DOM is ready
+      setTimeout(() => {
+        const closeModalBtn = document.getElementById("closeInvoiceModal");
+        const closeModalBtnFooter = document.getElementById("closeInvoiceModalBtn");
+        
+        // Setup header close button
+        if (closeModalBtn) {
+          // Remove existing listeners by cloning the button
+          const newCloseBtn = closeModalBtn.cloneNode(true);
+          closeModalBtn.parentNode.replaceChild(newCloseBtn, closeModalBtn);
+          newCloseBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.closeInvoiceModal();
+          });
+        }
+        
+        // Setup footer close button
+        if (closeModalBtnFooter) {
+          // Remove existing listeners by cloning the button
+          const newCloseBtnFooter = closeModalBtnFooter.cloneNode(true);
+          closeModalBtnFooter.parentNode.replaceChild(newCloseBtnFooter, closeModalBtnFooter);
+          newCloseBtnFooter.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.closeInvoiceModal();
+          });
+        }
+        
+        // Setup overlay click to close
+        const handleOverlayClick = (e) => {
+          if (e.target === modal) {
+            this.closeInvoiceModal();
+          }
+        };
+        // Remove old listener if exists and add new one
+        modal.removeEventListener("click", this._overlayClickHandler);
+        this._overlayClickHandler = handleOverlayClick;
+        modal.addEventListener("click", handleOverlayClick);
+        
+        // Setup Escape key to close
+        const handleEscapeKey = (e) => {
+          if (e.key === "Escape" && modal.style.display === "flex") {
+            this.closeInvoiceModal();
+          }
+        };
+        document.removeEventListener("keydown", this._escapeKeyHandler);
+        this._escapeKeyHandler = handleEscapeKey;
+        document.addEventListener("keydown", handleEscapeKey);
+      }, 50);
     }
   }
 

@@ -1,8 +1,8 @@
 <section class="content-section" id="consultation-schedule">
     <div class="section-header consultation-header">
         <div>
-            <h2>Lịch tư vấn theo tuần</h2>
-            <p class="section-subtitle">Theo dõi toàn bộ buổi tư vấn của bạn trong tuần, điều hướng nhanh bằng lịch mini.</p>
+            <h2>Lịch tư vấn của tôi</h2>
+            <p class="section-subtitle">Theo dõi toàn bộ buổi tư vấn của bạn, điều hướng nhanh bằng lịch tháng.</p>
         </div>
         <div class="consultation-actions">
             <button class="btn btn-secondary" onclick="(window.consultationScheduleModule && window.consultationScheduleModule.exportSchedule ? window.consultationScheduleModule.exportSchedule() : (typeof exportConsultationSchedule === 'function' ? exportConsultationSchedule() : null))">
@@ -16,40 +16,58 @@
         </div>
     </div>
 
-    <div class="consultation-toolbar">
-        <div class="week-picker">
-            <label for="consultationWeekPicker">Chọn ngày bất kỳ trong tuần</label>
-            <div class="picker-field">
-                <i class="fas fa-calendar-alt"></i>
-                <input type="date" id="consultationWeekPicker">
-            </div>
+
+    <!-- Summary Cards -->
+    <div class="schedule-summary-cards">
+        <div class="summary-card">
+            <div class="summary-label">Tháng</div>
+            <div class="summary-value" id="consultationCurrentMonthDisplay">Tháng 11</div>
+            <div class="summary-year" id="consultationCurrentYearDisplay">2025</div>
         </div>
-        <div class="week-navigation">
-            <button class="btn btn-icon" id="consultationPrevWeek" title="Lùi 1 tuần">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="week-range" id="consultationWeekRange">--</div>
-            <button class="btn btn-icon" id="consultationNextWeek" title="Tiến 1 tuần">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-            <button class="btn btn-secondary" id="consultationTodayBtn">
-                <i class="fas fa-dot-circle"></i>
-                Hiện tại
-            </button>
+        <div class="summary-card">
+            <div class="summary-label">
+                <i class="fas fa-calendar-check"></i> Hôm nay
+            </div>
+            <div class="summary-value" id="consultationTodayCount">0</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">
+                <i class="fas fa-cog"></i> Tháng
+            </div>
+            <div class="summary-value" id="consultationMonthCount">0</div>
+        </div>
+    </div>
+
+    <!-- Month View -->
+    <div class="schedule-view" id="consultationMonthView">
+        <div class="schedule-calendar">
+            <div class="calendar-header">
+                <button class="btn-icon" id="consultationPrevMonth" onclick="window.consultationScheduleModule && window.consultationScheduleModule.changeMonth(-1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h3 id="consultationCurrentMonth">Tháng 12, 2024</h3>
+                <button class="btn-icon" id="consultationNextMonth" onclick="window.consultationScheduleModule && window.consultationScheduleModule.changeMonth(1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="calendar-grid" id="consultationCalendarGrid">
+                <!-- Calendar will be populated by JavaScript -->
+            </div>
         </div>
     </div>
 
 
-    <div class="consultation-week-wrapper">
-        <div class="consultation-week">
-            <div class="week-grid" id="consultationWeekGrid"></div>
-            <div class="schedule-state" id="consultationScheduleLoading">
-                <div class="spinner"></div>
-                <p>Đang tải lịch tư vấn...</p>
+    <!-- Selected Day Schedule Modal -->
+    <div class="schedule-modal" id="consultationScheduleModal">
+        <div class="schedule-modal-content">
+            <div class="schedule-modal-header">
+                <h3 id="consultationModalDateTitle">Lịch tư vấn</h3>
+                <button class="modal-close" onclick="window.consultationScheduleModule && window.consultationScheduleModule.closeScheduleModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="schedule-state error" id="consultationScheduleError" style="display: none;">
-                <i class="fas fa-triangle-exclamation"></i>
-                <p>Không thể tải lịch tư vấn. Vui lòng thử lại sau.</p>
+            <div class="schedule-modal-body" id="consultationScheduleModalBody">
+                <!-- Schedule details will be loaded here -->
             </div>
         </div>
     </div>

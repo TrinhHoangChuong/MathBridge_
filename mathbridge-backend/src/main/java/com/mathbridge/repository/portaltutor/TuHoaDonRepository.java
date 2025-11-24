@@ -10,12 +10,12 @@ import java.util.List;
 @Repository
 public interface TuHoaDonRepository extends JpaRepository<HoaDon, String> {
     
-    // Lấy tất cả hóa đơn chưa thanh toán
-    @Query("SELECT h FROM HoaDon h WHERE h.trangThai = 'Chua Thanh Toan' OR h.ngayThanhToan IS NULL")
+    // Lấy tất cả hóa đơn chưa thanh toán (chỉ lấy khi chưa có ngày thanh toán)
+    @Query("SELECT h FROM HoaDon h WHERE h.ngayThanhToan IS NULL AND (h.trangThai = 'Chua Thanh Toan' OR h.trangThai IS NULL)")
     List<HoaDon> findUnpaidInvoices();
     
     // Lấy hóa đơn chưa thanh toán theo học sinh
-    @Query("SELECT h FROM HoaDon h WHERE (h.trangThai = 'Chua Thanh Toan' OR h.ngayThanhToan IS NULL) AND h.hocSinh.idHs = :idHs")
+    @Query("SELECT h FROM HoaDon h WHERE h.ngayThanhToan IS NULL AND (h.trangThai = 'Chua Thanh Toan' OR h.trangThai IS NULL) AND h.hocSinh.idHs = :idHs")
     List<HoaDon> findUnpaidInvoicesByStudent(String idHs);
     
     // Lấy hóa đơn theo học sinh

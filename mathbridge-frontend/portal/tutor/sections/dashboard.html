@@ -125,30 +125,23 @@
 
     <!-- Secondary Grid -->
     <div class="dashboard-grid-secondary">
-        <!-- Weekly Schedule -->
+        <!-- Upcoming Consultations -->
         <div class="dashboard-card card-large">
             <div class="card-header">
                 <div class="card-header-left">
-                    <h3><i class="fas fa-calendar-week"></i> Lịch làm việc tuần này</h3>
-                    <p class="card-subtitle">Tổng quan các hoạt động trong tuần</p>
+                    <h3><i class="fas fa-calendar-check"></i> Lịch tư vấn sắp tới</h3>
+                    <p class="card-subtitle">Các buổi tư vấn gần nhất</p>
                 </div>
-                <div class="calendar-controls">
-                    <button class="btn-icon" id="prevWeekBtn" onclick="tutorDashboard.navigateWeek(-1)">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="btn-text" id="currentWeekBtn" onclick="tutorDashboard.goToCurrentWeek()">
-                        Tuần này
-                    </button>
-                    <button class="btn-icon" id="nextWeekBtn" onclick="tutorDashboard.navigateWeek(1)">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
+                <button class="btn btn-sm btn-primary" onclick="tutorDashboard.switchSection('consultation-schedule')">
+                    Xem tất cả
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
             <div class="card-content">
-                <div class="weekly-schedule" id="dashboardWeeklySchedule">
+                <div class="upcoming-consultations-list" id="dashboardUpcomingConsultations">
                     <div class="loading-state-small">
                         <div class="spinner-small"></div>
-                        <p>Đang tải lịch làm việc...</p>
+                        <p>Đang tải lịch tư vấn...</p>
                     </div>
                 </div>
             </div>

@@ -42,14 +42,12 @@
 
   // Dashboard Module
   const DashboardModule = {
-    dashboardWeekStart: null,
-
     async loadData() {
       this.updateWelcome();
       await this.loadStats();
       await this.loadRecentStudents();
       await this.loadRecentSupportRequests();
-      await this.loadWeeklySchedule();
+      await this.loadUpcomingConsultations();
       await this.loadRecentActivity();
     },
 
@@ -111,7 +109,61 @@
           window.tutorAPI.getUnpaidInvoices().catch(() => [])
         ]);
 
-        const todayConsultations = 0; // TODO: Add API endpoint
+        // Load today's consultations - load multiple weeks to ensure we get all today's consultations
+        let todayConsultations = 0;
+        try {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const allTodayItems = [];
+
+          // Load consultations for current week and previous week (in case today is early in the week)
+          for (let weekOffset = -1; weekOffset < 2; weekOffset++) {
+            const weekStart = getStartOfWeek(new Date());
+            weekStart.setDate(weekStart.getDate() + (weekOffset * 7));
+            weekStart.setHours(0, 0, 0, 0);
+            const weekStartStr = weekStart.toISOString().split('T')[0];
+            
+            try {
+              const scheduleResponse = await window.tutorAPI.getWeeklySchedule({
+                startDate: weekStartStr
+              });
+              
+              if (scheduleResponse && scheduleResponse.items) {
+                const weekTodayItems = scheduleResponse.items.filter(item => {
+                  if (!item.startTime) return false;
+                  try {
+                    const itemDate = new Date(item.startTime);
+                    if (isNaN(itemDate.getTime())) return false;
+                    const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+                    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    return itemDateOnly.getTime() === todayOnly.getTime();
+                  } catch (e) {
+                    return false;
+                  }
+                });
+                allTodayItems.push(...weekTodayItems);
+              }
+            } catch (error) {
+              console.error(`[Dashboard] Error loading week ${weekOffset} for today count:`, error);
+            }
+          }
+
+          // Remove duplicates based on item ID or startTime
+          const uniqueTodayItems = [];
+          const seen = new Set();
+          allTodayItems.forEach(item => {
+            const key = item.id || item.startTime;
+            if (key && !seen.has(key)) {
+              seen.add(key);
+              uniqueTodayItems.push(item);
+            }
+          });
+
+          todayConsultations = uniqueTodayItems.length;
+          console.log('[Dashboard] Today consultations count:', todayConsultations, 'items:', uniqueTodayItems);
+        } catch (error) {
+          console.error('[Dashboard] Error loading today consultations:', error);
+        }
 
         this.updateStats({
           assignedStudents: assignedCount || 0,
@@ -256,125 +308,183 @@
         .join("");
     },
 
-    async loadWeeklySchedule() {
-      const container = document.getElementById("dashboardWeeklySchedule");
+    async loadUpcomingConsultations() {
+      const container = document.getElementById("dashboardUpcomingConsultations");
       if (!container) return;
 
       try {
-        const idNv = window.tutorDashboard?.currentTutorId || 
-                    (window.tutorDashboard?.tutorInfo && window.tutorDashboard.tutorInfo.idNv);
-        if (!idNv) {
-          container.innerHTML = '<p class="empty-message">Chưa có thông tin cố vấn</p>';
+        console.log('[Dashboard] Loading upcoming consultations...');
+        const now = new Date();
+        const allConsultations = [];
+
+        // Load consultations for current week and next 3 weeks
+        for (let weekOffset = 0; weekOffset < 4; weekOffset++) {
+          const weekStart = getStartOfWeek(new Date());
+          weekStart.setDate(weekStart.getDate() + (weekOffset * 7));
+          const weekStartStr = weekStart.toISOString().split('T')[0];
+
+          try {
+            console.log(`[Dashboard] Loading week ${weekOffset + 1}, startDate: ${weekStartStr}`);
+            const scheduleResponse = await window.tutorAPI.getWeeklySchedule({
+              startDate: weekStartStr
+            });
+
+            console.log(`[Dashboard] Week ${weekOffset + 1} response:`, scheduleResponse);
+
+            if (scheduleResponse && scheduleResponse.items && scheduleResponse.items.length > 0) {
+              allConsultations.push(...scheduleResponse.items);
+              console.log(`[Dashboard] Added ${scheduleResponse.items.length} items from week ${weekOffset + 1}`);
+            }
+          } catch (error) {
+            console.error(`[Dashboard] Error loading week ${weekOffset + 1}:`, error);
+          }
+        }
+
+        console.log(`[Dashboard] Total consultations loaded: ${allConsultations.length}`);
+
+        if (allConsultations.length === 0) {
+          container.innerHTML = '<p class="empty-message">Không có lịch tư vấn sắp tới</p>';
           return;
         }
 
-        const weekStart = this.dashboardWeekStart || getStartOfWeek(new Date());
-        const weekStartStr = weekStart.toISOString().split('T')[0];
+        // Filter upcoming consultations (from now onwards) and sort by time
+        const upcomingConsultations = allConsultations
+          .filter(item => {
+            if (!item.startTime) {
+              console.log('[Dashboard] Item missing startTime:', item);
+              return false;
+            }
+            try {
+              const itemDate = new Date(item.startTime);
+              if (isNaN(itemDate.getTime())) {
+                console.log('[Dashboard] Invalid date:', item.startTime);
+                return false;
+              }
+              const isUpcoming = itemDate >= now;
+              if (!isUpcoming) {
+                console.log(`[Dashboard] Item is in the past: ${item.startTime}, now: ${now}`);
+              }
+              return isUpcoming;
+            } catch (e) {
+              console.error('[Dashboard] Error parsing date:', e, item);
+              return false;
+            }
+          })
+          .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+          .slice(0, 10); // Show up to 10 upcoming consultations
 
-        const schedule = await window.tutorAPI.getWeeklySchedule({
-          startDate: weekStartStr,
-          idNv: idNv
-        });
+        console.log(`[Dashboard] Upcoming consultations after filter: ${upcomingConsultations.length}`);
 
-        this.renderWeeklyCalendar(container, weekStart, schedule || []);
+        if (upcomingConsultations.length === 0) {
+          container.innerHTML = '<p class="empty-message">Không có lịch tư vấn sắp tới</p>';
+          return;
+        }
+
+        console.log('[Dashboard] Rendering consultations:', upcomingConsultations);
+        container.innerHTML = upcomingConsultations
+          .map((consultation) => {
+            try {
+              const startDate = new Date(consultation.startTime);
+              const endDate = consultation.endTime ? new Date(consultation.endTime) : null;
+              const timeStr = startDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+              const endTimeStr = endDate ? endDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '';
+              
+              // Format date - use same logic as counting today's consultations
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const itemDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+              const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+              
+              let dateStr = '';
+              if (itemDateOnly.getTime() === todayOnly.getTime()) {
+                dateStr = 'Hôm nay';
+              } else {
+                const tomorrow = new Date(todayOnly);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                if (itemDateOnly.getTime() === tomorrow.getTime()) {
+                  dateStr = 'Ngày mai';
+                } else {
+                  dateStr = startDate.toLocaleDateString('vi-VN', { weekday: 'short', day: 'numeric', month: 'short' });
+                }
+              }
+
+              const title = this.escapeHtml(consultation.title || consultation.studentName || 'Tư vấn');
+              const studentName = this.escapeHtml(consultation.studentName || 'Học viên');
+              const location = consultation.location ? this.escapeHtml(consultation.location) : '';
+              
+              // Determine status badge
+              const status = consultation.status || 'Chưa xử lý';
+              let statusClass = 'status-pending';
+              let statusIcon = 'fa-clock';
+              const statusLower = status.toLowerCase();
+              if (statusLower.includes('đã') || statusLower.includes('hoàn') || statusLower.includes('xong')) {
+                statusClass = 'status-completed';
+                statusIcon = 'fa-check-circle';
+              } else if (statusLower.includes('đang')) {
+                statusClass = 'status-active';
+                statusIcon = 'fa-spinner';
+              } else if (statusLower.includes('hủy') || statusLower.includes('cancel')) {
+                statusClass = 'status-cancelled';
+                statusIcon = 'fa-times-circle';
+              }
+              const statusText = this.escapeHtml(status);
+
+              return `
+                <div class="consultation-item" onclick="tutorDashboard.switchSection('consultation-schedule')">
+                  <div class="consultation-time">
+                    <div class="consultation-time-main">${timeStr}${endTimeStr ? ` - ${endTimeStr}` : ''}</div>
+                    <div class="consultation-date">${dateStr}</div>
+                  </div>
+                  <div class="consultation-info">
+                    <div class="consultation-title">${title}</div>
+                    <div class="consultation-student">
+                      <i class="fas fa-user-graduate"></i> ${studentName}
+                    </div>
+                    ${location ? `
+                      <div class="consultation-location">
+                        <i class="fas fa-map-marker-alt"></i> ${location}
+                      </div>
+                    ` : ''}
+                  </div>
+                  <div class="consultation-status">
+                    <span class="status-badge ${consultation.online ? 'online' : 'onsite'}">
+                      <i class="fas ${consultation.online ? 'fa-laptop' : 'fa-building'}"></i>
+                      ${consultation.online ? 'Online' : 'Trực tiếp'}
+                    </span>
+                    <span class="status-badge ${statusClass}">
+                      <i class="fas ${statusIcon}"></i>
+                      ${statusText}
+                    </span>
+                  </div>
+                </div>
+              `;
+            } catch (e) {
+              console.error('[Dashboard] Error rendering consultation:', e, consultation);
+              return '';
+            }
+          })
+          .filter(html => html !== '')
+          .join("");
+
+        console.log('[Dashboard] Successfully rendered consultations');
 
       } catch (error) {
-        console.error("Error loading weekly schedule:", error);
-        container.innerHTML = '<p class="empty-message">Không thể tải lịch làm việc</p>';
+        console.error("[Dashboard] Error loading upcoming consultations:", error);
+        container.innerHTML = '<p class="empty-message">Không thể tải lịch tư vấn. Vui lòng thử lại sau.</p>';
       }
     },
 
-    renderWeeklyCalendar(container, weekStart, schedule) {
-      const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      let html = '<div class="calendar-grid">';
-      
-      days.forEach(day => {
-        html += `<div class="calendar-day-header">${day}</div>`;
-      });
-
-      for (let i = 0; i < 7; i++) {
-        const currentDate = new Date(weekStart);
-        currentDate.setDate(weekStart.getDate() + i);
-        const dayNumber = currentDate.getDate();
-        const isToday = currentDate.getTime() === today.getTime();
-        
-        const dayEvents = schedule.filter(event => {
-          if (!event.ngay) return false;
-          const eventDate = new Date(event.ngay);
-          eventDate.setHours(0, 0, 0, 0);
-          return eventDate.getTime() === currentDate.getTime();
-        });
-
-        html += `
-          <div class="calendar-day ${isToday ? 'today' : ''}">
-            <div class="calendar-day-number">${dayNumber}</div>
-            ${dayEvents.length > 0 ? `
-              <div class="calendar-events">
-                ${dayEvents.slice(0, 2).map(event => `
-                  <div class="calendar-event" title="${event.tenHocSinh || 'Tư vấn'}">
-                    ${event.tenHocSinh || 'Tư vấn'}
-                  </div>
-                `).join('')}
-                ${dayEvents.length > 2 ? `<div class="calendar-event-more">+${dayEvents.length - 2}</div>` : ''}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }
-
-      html += '</div>';
-      container.innerHTML = html;
-    },
-
-    navigateWeek(direction) {
-      if (!this.dashboardWeekStart) {
-        this.dashboardWeekStart = getStartOfWeek(new Date());
-      }
-      this.dashboardWeekStart.setDate(this.dashboardWeekStart.getDate() + (direction * 7));
-      this.loadWeeklySchedule();
-      this.updateWeekButton();
-    },
-
-    goToCurrentWeek() {
-      this.dashboardWeekStart = getStartOfWeek(new Date());
-      this.loadWeeklySchedule();
-      this.updateWeekButton();
-    },
-
-    updateWeekButton() {
-      const btn = document.getElementById("currentWeekBtn");
-      if (btn && this.dashboardWeekStart) {
-        const weekEnd = new Date(this.dashboardWeekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        const startStr = this.dashboardWeekStart.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
-        const endStr = weekEnd.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short' });
-        btn.textContent = `${startStr} - ${endStr}`;
-      }
+    escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
   };
 
   // Expose to window
   window.dashboardModule = DashboardModule;
 
-  // Setup event listeners for week navigation
-  document.addEventListener('DOMContentLoaded', () => {
-    const prevBtn = document.getElementById("prevWeekBtn");
-    const nextBtn = document.getElementById("nextWeekBtn");
-    const currentBtn = document.getElementById("currentWeekBtn");
-
-    if (prevBtn) {
-      prevBtn.addEventListener('click', () => DashboardModule.navigateWeek(-1));
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => DashboardModule.navigateWeek(1));
-    }
-    if (currentBtn) {
-      currentBtn.addEventListener('click', () => DashboardModule.goToCurrentWeek());
-    }
-  });
 
   // Auto-initialize when section is loaded
   if (document.getElementById("dashboard")) {

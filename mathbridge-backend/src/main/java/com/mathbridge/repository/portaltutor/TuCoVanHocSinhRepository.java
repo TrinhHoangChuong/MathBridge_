@@ -15,7 +15,7 @@ public interface TuCoVanHocSinhRepository extends JpaRepository<CoVanHocSinh, Co
     
     /**
      * Lấy tất cả học sinh được phân công cho một cố vấn (ID_NV)
-     * Chỉ lấy những học sinh đang được phân công (TrangThai = "Dang phu trach" 
+     * Chỉ lấy những học sinh đang được phân công (TrangThai = "Đang cố vấn" hoặc "Dang phu trach"
      * và (NgayKetThuc IS NULL hoặc NgayKetThuc > hiện tại))
      */
     @Query("SELECT DISTINCT cvhs FROM CoVanHocSinh cvhs " +
@@ -25,11 +25,13 @@ public interface TuCoVanHocSinhRepository extends JpaRepository<CoVanHocSinh, Co
            "LEFT JOIN FETCH dk.lopHoc lh " +
            "LEFT JOIN FETCH lh.chuongTrinh " +
            "WHERE cvhs.id.idNv = :idNv " +
-           "AND (cvhs.trangThai = 'Dang phu trach' OR cvhs.trangThai IS NULL) " +
+           "AND (cvhs.trangThai = :trangThaiDangCoVan OR cvhs.trangThai = :trangThaiDangPhuTrach OR cvhs.trangThai IS NULL) " +
            "AND (cvhs.ngayKetThuc IS NULL OR cvhs.ngayKetThuc > :currentTime) " +
            "ORDER BY cvhs.id.ngayBatDau DESC")
     List<CoVanHocSinh> findActiveStudentsByTutorId(@Param("idNv") String idNv, 
-                                                    @Param("currentTime") LocalDateTime currentTime);
+                                                    @Param("currentTime") LocalDateTime currentTime,
+                                                    @Param("trangThaiDangCoVan") String trangThaiDangCoVan,
+                                                    @Param("trangThaiDangPhuTrach") String trangThaiDangPhuTrach);
     
     /**
      * Lấy tất cả học sinh được phân công (bao gồm cả đã kết thúc)
@@ -80,10 +82,12 @@ public interface TuCoVanHocSinhRepository extends JpaRepository<CoVanHocSinh, Co
      */
     @Query("SELECT COUNT(cvhs) FROM CoVanHocSinh cvhs " +
            "WHERE cvhs.id.idNv = :idNv " +
-           "AND (cvhs.trangThai = 'Dang phu trach' OR cvhs.trangThai IS NULL) " +
+           "AND (cvhs.trangThai = :trangThaiDangCoVan OR cvhs.trangThai = :trangThaiDangPhuTrach OR cvhs.trangThai IS NULL) " +
            "AND (cvhs.ngayKetThuc IS NULL OR cvhs.ngayKetThuc > :currentTime)")
     Long countActiveStudentsByTutorId(@Param("idNv") String idNv, 
-                                        @Param("currentTime") LocalDateTime currentTime);
+                                        @Param("currentTime") LocalDateTime currentTime,
+                                        @Param("trangThaiDangCoVan") String trangThaiDangCoVan,
+                                        @Param("trangThaiDangPhuTrach") String trangThaiDangPhuTrach);
 }
 
  

@@ -105,13 +105,17 @@ public class TuPaymentService {
         HoaDon hoaDon = hoaDonRepository.findById(request.getIdHoaDon())
                 .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
         
+        // Kiểm tra xem hóa đơn đã được thanh toán chưa
+        if (hoaDon.getNgayThanhToan() != null) {
+            throw new RuntimeException("Hóa đơn này đã được thanh toán rồi. Ngày thanh toán: " + hoaDon.getNgayThanhToan());
+        }
+        
         // Lấy phương thức thanh toán
         PhuongThucThanhToan phuongThuc = phuongThucThanhToanRepository.findById(request.getIdPt())
                 .orElseThrow(() -> new RuntimeException("Phương thức thanh toán không tồn tại"));
         
-        // Tạo ID_LS mới
-        int maxLsNumber = lichSuThanhToanRepository.findMaxLsNumber();
-        String newIdLs = String.format("LS%05d", maxLsNumber + 1);
+        // Tạo ID_LS mới với retry logic để tránh race condition
+        String newIdLs = generateUniqueIdLs();
         
         // Tạo lịch sử thanh toán
         LichSuThanhToan lichSuThanhToan = new LichSuThanhToan();
@@ -131,8 +135,26 @@ public class TuPaymentService {
             "Seed từ Hóa đơn " + hoaDon.getIdHoaDon() + ". " + request.getGhiChu() : 
             "Seed từ Hóa đơn " + hoaDon.getIdHoaDon());
         
-        // Lưu lịch sử thanh toán
-        lichSuThanhToan = lichSuThanhToanRepository.save(lichSuThanhToan);
+        // Lưu lịch sử thanh toán với retry nếu bị duplicate key
+        int maxRetries = 5;
+        int retryCount = 0;
+        while (retryCount < maxRetries) {
+            try {
+                lichSuThanhToan = lichSuThanhToanRepository.save(lichSuThanhToan);
+                break; // Success, exit loop
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                if (e.getMessage() != null && e.getMessage().contains("PRIMARY KEY") && retryCount < maxRetries - 1) {
+                    // Duplicate key error, generate new ID and retry
+                    retryCount++;
+                    newIdLs = generateUniqueIdLs();
+                    lichSuThanhToan.setIdLs(newIdLs);
+                    System.out.println("Retry " + retryCount + ": Generated new ID_LS: " + newIdLs);
+                } else {
+                    // Max retries reached or different error, throw exception
+                    throw new RuntimeException("Không thể tạo mã thanh toán. Vui lòng thử lại sau.", e);
+                }
+            }
+        }
         
         // Cập nhật hóa đơn
         LocalDate ngayThanhToan = LocalDate.now();
@@ -262,6 +284,32 @@ public class TuPaymentService {
             
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Generate unique ID_LS with retry logic to handle race conditions
+     */
+    private String generateUniqueIdLs() {
+        int maxLsNumber = lichSuThanhToanRepository.findMaxLsNumber();
+        String newIdLs = String.format("LS%05d", maxLsNumber + 1);
+        
+        // Check if ID already exists (race condition protection)
+        int maxRetries = 10;
+        int retryCount = 0;
+        while (retryCount < maxRetries && lichSuThanhToanRepository.existsById(newIdLs)) {
+            retryCount++;
+            maxLsNumber = lichSuThanhToanRepository.findMaxLsNumber();
+            newIdLs = String.format("LS%05d", maxLsNumber + 1);
+        }
+        
+        if (retryCount >= maxRetries) {
+            // Fallback: use timestamp-based ID to ensure uniqueness
+            long timestamp = System.currentTimeMillis();
+            int random = (int) (timestamp % 100000);
+            newIdLs = String.format("LS%05d", random);
+        }
+        
+        return newIdLs;
     }
 }
 
