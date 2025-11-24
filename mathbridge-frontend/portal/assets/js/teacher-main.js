@@ -558,6 +558,22 @@ class TeacherAPI {
         return this.get(`/public/giaovien/${idNv}/buoihoc`);
     }
 
+    async getTeacherSchedule(idNv, { date, days } = {}) {
+        const params = new URLSearchParams();
+        if (date) params.append('date', date);
+        if (days) params.append('days', days);
+        const query = params.toString();
+        return this.get(`/public/giaovien/${idNv}/schedule${query ? `?${query}` : ''}`);
+    }
+
+    async getSessionDetail(idBh) {
+        return this.get(`/public/giaovien/buoihoc/${idBh}/details`);
+    }
+
+    async getClassEvaluations(idLh) {
+        return this.get(`/public/giaovien/lophoc/${idLh}/danhgia`);
+    }
+
     async createBuoiHoc(buoiHocData) {
         return this.post(`/public/giaovien/buoihoc`, buoiHocData);
     }
@@ -2788,44 +2804,86 @@ window.loadClassAssignmentsData = function() {
 };
 
 // ===== SESSION FUNCTIONS =====
-window.viewSessionDetails = function(sessionId) {
-    console.log('Viewing session details:', sessionId);
-    
-    const modal = document.getElementById('sessionDetailsModal');
-    if (modal) {
-        modal.classList.add('active');
-        
-        // Load session data
-        const sessionContent = document.getElementById('sessionContent');
-        if (sessionContent) {
-            sessionContent.innerHTML = `
-                <div class="session-info">
-                    <h3>Buổi học: Phương trình bậc hai</h3>
-                    <p><strong>Ngày:</strong> 12/10/2025</p>
-                    <p><strong>Thời gian:</strong> 8:00 - 9:30</p>
-                    <p><strong>Lớp:</strong> Toán 11B2</p>
-                </div>
-                
-                <div class="session-comments">
-                    <h4>Nhận xét buổi học</h4>
-                    <div class="comment-item">
-                        <p>Học sinh tham gia tích cực, hiểu bài tốt. Cần chú ý thêm về cách giải phương trình có tham số.</p>
-                        <span class="comment-date">12/10/2025 9:30</span>
-                    </div>
-                </div>
-                
-                <div class="session-homework">
-                    <h4>Bài tập về nhà</h4>
-                    <div class="homework-item">
-                        <p>Làm bài tập 1, 2, 3 trang 45-46 sách giáo khoa</p>
-                        <p>Chuẩn bị bài mới: Hệ phương trình</p>
-                        <span class="homework-date">Giao ngày: 12/10/2025</span>
-                    </div>
-                </div>
-            `;
+window.viewSessionDetails = async function(sessionId) {
+    try {
+        const api = new TeacherAPI();
+        const detail = await api.getSessionDetail(sessionId);
+
+        if (!detail || !detail.session) {
+            showNotification('Không tìm thấy thông tin buổi học.', 'warning');
+            return;
         }
+
+        const session = detail.session;
+        const modal = document.getElementById('sessionDetailsModal');
+        if (!modal) return;
+        modal.classList.add('active');
+
+        const title = document.getElementById('sessionDetailsTitle');
+        if (title) {
+            title.textContent = `${session.className || 'Buổi học'} - ${session.tenCaHoc || ''}`.trim();
+        }
+
+        const sessionDate = session.ngayHoc || session.gioBatDau;
+        const dateText = sessionDate ? new Date(sessionDate).toLocaleDateString('vi-VN') : 'Chưa cập nhật';
+        const timeText = session.gioBatDau && session.gioKetThuc
+            ? `${new Date(session.gioBatDau).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${new Date(session.gioKetThuc).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+            : 'Chưa cập nhật';
+
+        setTextSafe('sessionDate', dateText);
+        setTextSafe('sessionTime', timeText);
+        setTextSafe('sessionTopic', session.tenCaHoc || 'Chưa có');
+
+        const statusInfo = resolveSessionStatus(
+            session.gioBatDau ? new Date(session.gioBatDau) : null,
+            session.gioKetThuc ? new Date(session.gioKetThuc) : null
+        );
+        setTextSafe('sessionStatus', statusInfo.label);
+
+        const commentsContainer = document.getElementById('sessionComments');
+        if (commentsContainer) {
+            if (!detail.sessionEvaluations || detail.sessionEvaluations.length === 0) {
+                commentsContainer.innerHTML = '<p>Chưa có nhận xét nào cho buổi học.</p>';
+            } else {
+                commentsContainer.innerHTML = detail.sessionEvaluations.map(ev => `
+                    <div class="comment-item">
+                        <p>${ev.comment || 'Không có nội dung'}</p>
+                        <div class="comment-meta">
+                            <span>${ev.studentName || 'Học sinh'}</span>
+                            <span>${formatDateTime(ev.createdAt)}</span>
+                            <span>${ev.score ?? '-'} / 10</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        const homeworkList = document.getElementById('homeworkList');
+        if (homeworkList) {
+            if (!detail.assignments || detail.assignments.length === 0) {
+                homeworkList.innerHTML = '<p>Chưa giao bài tập cho buổi học này.</p>';
+            } else {
+                homeworkList.innerHTML = detail.assignments.map(bt => `
+                    <div class="homework-item">
+                        <strong>${bt.tieuDe || 'Bài tập'}</strong>
+                        <p>${bt.moTa || ''}</p>
+                        <span>Hạn nộp: ${bt.ngayKetThuc ? new Date(bt.ngayKetThuc).toLocaleString('vi-VN') : 'Chưa có'}</span>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading session detail:', error);
+        showNotification('Không thể tải chi tiết buổi học. Vui lòng thử lại sau.', 'error');
     }
 };
+
+function setTextSafe(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value || '';
+    }
+}
 
 window.addSessionComment = function() {
     console.log('Adding session comment');

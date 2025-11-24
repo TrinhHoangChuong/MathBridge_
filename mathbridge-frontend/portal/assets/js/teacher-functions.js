@@ -1258,6 +1258,9 @@ window.viewClassDetails = async function(classId) {
         
         // Load sessions (buoi hoc)
         const buoiHocs = await api.getBuoiHocByLopHoc(classId);
+
+        // Load class evaluations
+        const classEvaluations = await api.getClassEvaluations(classId);
         
         // Update students tab
         const classStudentsList = document.getElementById('classStudentsList');
@@ -1352,16 +1355,23 @@ window.viewClassDetails = async function(classId) {
                     const timeStr = gioBatDau && gioKetThuc 
                         ? `${gioBatDau.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${gioKetThuc.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
                         : 'Chưa có';
+
+                    const statusInfo = resolveSessionStatus(gioBatDau, gioKetThuc);
                     
                     return `
                         <div class="session-item">
                             <div class="session-info">
-                                <div class="session-date">${dateStr}</div>
-                                <div class="session-time">${timeStr}</div>
-                                <div class="session-topic">${bh.tenCaHoc || 'Chưa có tên'}</div>
-                                <div class="session-room">${bh.tenPhong || 'Chưa có phòng'}</div>
+                                <div>
+                                    <div class="session-date">${dateStr}</div>
+                                    <div class="session-time">${timeStr}</div>
+                                </div>
+                                <div>
+                                    <div class="session-topic">${bh.tenCaHoc || 'Chưa có tên'}</div>
+                                    <div class="session-room"><i class="fas fa-door-closed"></i> ${bh.tenPhong || 'Chưa có phòng'}</div>
+                                </div>
                             </div>
                             <div class="session-actions">
+                                <span class="status-badge ${statusInfo.className}">${statusInfo.label}</span>
                                 <button class="btn btn-sm btn-primary" onclick="viewSessionDetails('${bh.idBh}')">
                                     <i class="fas fa-eye"></i> Xem
                                 </button>
@@ -1369,6 +1379,37 @@ window.viewClassDetails = async function(classId) {
                         </div>
                     `;
                 }).join('');
+            }
+        }
+
+        const classEvaluationsList = document.getElementById('classEvaluationsList');
+        if (classEvaluationsList) {
+            if (!classEvaluations || classEvaluations.length === 0) {
+                classEvaluationsList.innerHTML = `
+                    <div class="empty-state" style="margin-top: 1rem;">
+                        <p>Chưa có nhận xét nào cho lớp này.</p>
+                    </div>
+                `;
+            } else {
+                classEvaluationsList.innerHTML = `
+                    <div class="evaluations-header">
+                        <h4>Nhận xét lớp học (${classEvaluations.length})</h4>
+                    </div>
+                    <div class="evaluations-list">
+                        ${classEvaluations.slice(0, 5).map(ev => `
+                            <div class="evaluation-card">
+                                <div class="evaluation-head">
+                                    <div>
+                                        <strong>${ev.studentName || 'Học sinh'}</strong>
+                                        <span class="evaluation-date">${formatDateTime(ev.createdAt)}</span>
+                                    </div>
+                                    <span class="score-badge">${ev.score ?? '-'}/10</span>
+                                </div>
+                                <p class="evaluation-comment">${ev.comment || 'Không có nhận xét'}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
             }
         }
         
@@ -3121,103 +3162,102 @@ window.loadScheduleSection = async function() {
         if (!authContext?.payload?.user?.idNv) {
             return;
         }
-        
+
         const api = new TeacherAPI();
-        
-        // Get all classes
-        const classes = await api.getTeacherClasses(authContext.payload.user.idNv);
-        
-        // Filter classes with enough students (e.g., >= 2)
-        const activeClasses = classes.filter(c => (c.soHocSinh || 0) >= 2);
-        
-        // Get all sessions for active classes
-        const allSessions = [];
-        for (const cls of activeClasses) {
-            try {
-                const sessions = await api.getBuoiHocByLopHoc(cls.idLh);
-                if (sessions && sessions.length > 0) {
-                    allSessions.push(...sessions.map(s => ({ ...s, tenLop: cls.tenLop })));
-                }
-            } catch (error) {
-                console.error(`Error loading sessions for class ${cls.idLh}:`, error);
-            }
-        }
-        
-        // Sort by date
-        allSessions.sort((a, b) => {
-            const dateA = a.ngayHoc ? new Date(a.ngayHoc) : new Date(0);
-            const dateB = b.ngayHoc ? new Date(b.ngayHoc) : new Date(0);
-            return dateA - dateB;
-        });
-        
-        // Update today's schedule
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const todaySessions = allSessions.filter(s => {
-            if (!s.ngayHoc) return false;
-            const sessionDate = new Date(s.ngayHoc);
-            sessionDate.setHours(0, 0, 0, 0);
-            return sessionDate.getTime() === today.getTime();
-        });
-        
-        const scheduleList = document.querySelector('.schedule-list');
-        if (scheduleList) {
-            if (todaySessions.length === 0) {
-                scheduleList.innerHTML = '<div class="empty-state"><p>Không có lịch dạy hôm nay</p></div>';
-            } else {
-                scheduleList.innerHTML = todaySessions.map(session => {
-                    const gioBatDau = session.gioBatDau ? new Date(session.gioBatDau) : null;
-                    const gioKetThuc = session.gioKetThuc ? new Date(session.gioKetThuc) : null;
-                    const now = new Date();
-                    
-                    let statusClass = 'completed';
-                    let statusText = 'Đã hoàn thành';
-                    
-                    if (gioBatDau && gioKetThuc) {
-                        if (now >= gioBatDau && now <= gioKetThuc) {
-                            statusClass = 'active';
-                            statusText = 'Đang dạy';
-                        } else if (now < gioBatDau) {
-                            statusClass = 'upcoming';
-                            statusText = 'Sắp tới';
-                        }
-                    }
-                    
-                    const timeStr = gioBatDau && gioKetThuc
-                        ? `${gioBatDau.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${gioKetThuc.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
-                        : 'Chưa có';
-                    
-                    return `
-                        <div class="schedule-item">
-                            <div class="schedule-time">
-                                <span class="time">${timeStr}</span>
-                                <span class="duration">${gioBatDau && gioKetThuc ? Math.round((gioKetThuc - gioBatDau) / 60000) + ' phút' : ''}</span>
-                            </div>
-                            <div class="schedule-details">
-                                <h4>${session.tenLop || 'Chưa có tên'} - ${session.tenCaHoc || 'Chưa có'}</h4>
-                                <p><i class="fas fa-map-marker-alt"></i> ${session.tenPhong || 'Chưa có phòng'}</p>
-                                <p><i class="fas fa-users"></i> ${session.soHocSinh || 0} học sinh</p>
-                                <span class="status-badge ${statusClass}">${statusText}</span>
-                            </div>
-                            <div class="schedule-actions">
-                                <button class="btn btn-sm btn-primary" onclick="startClass('${session.idBh}')">
-                                    <i class="fas fa-play"></i> Bắt đầu
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="viewSessionDetails('${session.idBh}')">
-                                    <i class="fas fa-info"></i> Chi tiết
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
+        const dateParam = today.toISOString().split('T')[0];
+
+        const response = await api.getTeacherSchedule(authContext.payload.user.idNv, { date: dateParam, days: 1 });
+        const sessions = Array.isArray(response?.sessions) ? response.sessions : [];
+
+        const headerDate = document.getElementById('scheduleHeaderDate');
+        if (headerDate) {
+            headerDate.textContent = today.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
         }
+
+        const scheduleList = document.querySelector('.schedule-list');
+        if (!scheduleList) return;
+
+        if (sessions.length === 0) {
+            scheduleList.innerHTML = '<div class="empty-state"><p>Không có lịch dạy hôm nay</p></div>';
+            return;
+        }
+
+        scheduleList.innerHTML = sessions.map(session => {
+            const start = session.gioBatDau ? new Date(session.gioBatDau) : null;
+            const end = session.gioKetThuc ? new Date(session.gioKetThuc) : null;
+            const duration = session.durationMinutes || (start && end ? Math.round((end - start) / 60000) : null);
+            const timeStr = start && end
+                ? `${start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+                : 'Chưa có';
+
+            const statusMap = {
+                LIVE: { label: 'Đang dạy', className: 'active' },
+                UPCOMING: { label: 'Sắp tới', className: 'upcoming' },
+                COMPLETED: { label: 'Đã học', className: 'completed' }
+            };
+            const status = statusMap[session.status] || statusMap.UPCOMING;
+
+            const conflictBadge = session.conflict
+                ? `<span class="status-badge warning" title="Trùng phòng/giờ với ${session.conflictSessionIds?.length || 0} lịch khác">Xung đột</span>`
+                : '';
+
+            return `
+                <div class="schedule-item">
+                    <div class="schedule-time">
+                        <span class="time">${timeStr}</span>
+                        <span class="duration">${duration ? `${duration} phút` : ''}</span>
+                    </div>
+                    <div class="schedule-details">
+                        <h4>${session.className || 'Chưa xác định'} - ${session.tenCaHoc || 'Chưa đặt tên'}</h4>
+                        <p><i class="fas fa-map-marker-alt"></i> ${session.roomName || 'Chưa có phòng'}</p>
+                        <p><i class="fas fa-users"></i> ${session.soHocSinh ?? 0} học sinh • ĐTB buổi: ${formatScore(session.sessionAverageScore)} (${session.sessionReviewCount || 0} đánh giá)</p>
+                        <span class="status-badge ${status.className}">${status.label}</span>
+                        ${conflictBadge}
+                    </div>
+                    <div class="schedule-actions">
+                        <button class="btn btn-sm btn-primary" onclick="startClass('${session.idBh}')">
+                            <i class="fas fa-play"></i> Bắt đầu
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="viewSessionDetails('${session.idBh}')">
+                            <i class="fas fa-info"></i> Chi tiết
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
     } catch (error) {
         console.error('Error loading schedule:', error);
         showNotification('Không thể tải lịch dạy. Vui lòng thử lại sau.', 'error');
     }
 };
+
+function formatScore(score) {
+    if (score === undefined || score === null || Number.isNaN(score)) {
+        return 'N/A';
+    }
+    return Number(score).toFixed(1);
+}
+
+function resolveSessionStatus(start, end) {
+    const now = new Date();
+    if (!start || !end) {
+        return { label: 'Sắp tới', className: 'upcoming' };
+    }
+    if (now < start) {
+        return { label: 'Chưa học', className: 'upcoming' };
+    }
+    if (now > end) {
+        return { label: 'Đã học', className: 'completed' };
+    }
+    return { label: 'Đang học', className: 'active' };
+}
+
+function formatDateTime(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    return `${date.toLocaleDateString('vi-VN')} ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
+}
 
 // Load students for a class using API
 async function loadClassStudents(classId, preselectedStudentIds = []) {

@@ -17,5 +17,8 @@ public interface BaiTapStudentRepository extends JpaRepository<BaiTap, String> {
 
     @Query("SELECT bt FROM BaiTap bt WHERE bt.buoiHocChiTiet.lopHoc.idLh = :idLH")
     List<BaiTap> findByLopHocId(@Param("idLH") String idLH);
+
+    @Query("SELECT bt FROM BaiTap bt WHERE bt.buoiHocChiTiet.idBh = :idBh")
+    List<BaiTap> findByBuoiHocChiTiet_IdBh(@Param("idBh") String idBh);
 }
 

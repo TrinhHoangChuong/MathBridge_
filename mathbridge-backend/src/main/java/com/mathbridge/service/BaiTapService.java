@@ -9,6 +9,7 @@ import java.util.List;
 public interface BaiTapService {
     List<BaiTapDTO> getBaiTapByLopHoc(String idLh);
     List<BaiTapDTO> getBaiTapByGiaoVien(String idNv);
+    List<BaiTapDTO> getBaiTapByBuoiHoc(String idBh);
     BaiTapDTO createBaiTap(BaiTapDTO baiTapDTO);
     BaiTapDTO updateBaiTap(String idBt, BaiTapDTO baiTapDTO);
     void deleteBaiTap(String idBt);
