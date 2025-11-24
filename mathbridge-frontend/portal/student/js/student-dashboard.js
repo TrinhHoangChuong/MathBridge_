@@ -1,389 +1,4 @@
-/*
-    renderAssignmentWorkspace(detail) {
-        const questions = detail.questions || [];
-        if (!questions.length) {
-            this.renderAssignmentPreview(detail);
-            return;
-        }
 
-        const questionsHtml = questions.map((question, index) => {
-            const stored = this.assignmentAnswers[question.questionId] || {};
-            return `
-                <div class="assignment-question-card" data-question-id="${question.questionId}" data-question-type="${question.type || 'ESSAY'}">
-                    <div class="question-header">
-                        <span>Câu ${index + 1}</span>
-                        ${question.points ? `<span class="question-points">${question.points} điểm</span>` : ''}
-                    </div>
-                    <p class="question-content">${question.content || ''}</p>
-                    ${this.renderQuestionInput(question, stored)}
-                </div>
-            `;
-        }).join('');
-
-        const warning = detail.warningMessage || 'Thời gian bắt đầu tính khi bạn vào bài. Hết giờ hệ thống sẽ tự động nộp.';
-        const warningHtml = warning.replace(/\n/g, '<br>');
-
-        const content = `
-            <div class="assignment-live-header">
-                <div>
-                    <p class="assignment-class">${detail.className || ''}</p>
-                    <p class="assignment-warning">${warningHtml}</p>
-                </div>
-                <div class="assignment-countdown-container">
-                    <span><i class="fas fa-clock"></i> Thời gian còn lại</span>
-                    <strong id="assignmentCountdown">--:--</strong>
-                </div>
-            </div>
-            <div class="assignment-question-wrapper">
-                ${questionsHtml}
-            </div>
-            <div class="assignment-modal-actions">
-                <button class="btn btn-secondary" id="assignmentSaveDraft">
-                    <i class="fas fa-save"></i> Lưu nháp
-                </button>
-                <button class="btn btn-warning" id="assignmentClose">
-                    <i class="fas fa-door-open"></i> Thoát
-                </button>
-                <button class="btn btn-success" id="assignmentSubmit">
-                    <i class="fas fa-paper-plane"></i> Nộp bài
-                </button>
-            </div>
-        `;
-
-        this.showModal(`Làm bài: ${detail.title}`, content, 'assignment-modal');
-        this.bindAssignmentEvents(detail);
-    }
-
-    renderQuestionInput(question, storedAnswer = {}) {
-        const type = (question.type || '').toUpperCase();
-        if (type === 'MULTIPLE_CHOICE' && Array.isArray(question.options)) {
-            return `
-                <div class="assignment-options">
-                    ${question.options.map((option, idx) => {
-                        const optionId = `q_${question.questionId}_${idx}`;
-                        const checked = storedAnswer.answer === option ? 'checked' : '';
-                        return `
-                            <label class="assignment-option" for="${optionId}">
-                                <input type="radio" name="q_${question.questionId}" id="${optionId}" value="${option}" ${checked}>
-                                <span>${option}</span>
-                            </label>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-
-        return `
-            <textarea class="assignment-answer-textarea" rows="4" data-question-text="${question.questionId}"
-                placeholder="Nhập câu trả lời...">${storedAnswer.answerText || ''}</textarea>
-        `;
-    }
-
-    bindAssignmentEvents(detail) {
-        const modal = document.querySelector('.modal.assignment-modal');
-        if (!modal) return;
-
-        // Prevent closing modal by clicking overlay when assignment is active
-        const overlay = modal.querySelector('.modal-overlay');
-        if (overlay) {
-            overlay.style.pointerEvents = 'none';
-        }
-
-        // Add beforeunload warning when assignment is active (for closing tab/window)
-        const beforeUnloadHandler = (e) => {
-            if (this.activeAssignmentSession) {
-                e.preventDefault();
-                e.returnValue = 'Bạn đang làm bài tập. Nếu rời trang, thời gian vẫn tiếp tục chạy và bài làm có thể bị mất. Bạn có chắc chắn muốn rời trang?';
-                return e.returnValue;
-            }
-        };
-        window.addEventListener('beforeunload', beforeUnloadHandler);
-        
-        // Add visibilitychange warning when switching tabs
-        const visibilityChangeHandler = () => {
-            if (this.activeAssignmentSession && document.hidden) {
-                // Show notification when tab becomes hidden
-                this.showNotification('⚠️ Bạn đã chuyển sang tab khác. Thời gian làm bài vẫn tiếp tục chạy!', 'warning', 5000);
-            }
-        };
-        document.addEventListener('visibilitychange', visibilityChangeHandler);
-        
-        // Store handler references for cleanup
-        modal.dataset.beforeUnloadHandler = 'active';
-        modal._beforeUnloadHandler = beforeUnloadHandler;
-        modal._visibilityChangeHandler = visibilityChangeHandler;
-
-        modal.querySelectorAll('.assignment-option input').forEach(input => {
-            input.addEventListener('change', (event) => {
-                const card = event.target.closest('.assignment-question-card');
-                const questionId = card.dataset.questionId;
-                this.assignmentAnswers[questionId] = {
-                    questionId,
-                    answer: event.target.value
-                };
-                this.persistAssignmentSession();
-            });
-        });
-
-        modal.querySelectorAll('.assignment-answer-textarea').forEach(textarea => {
-            textarea.addEventListener('input', (event) => {
-                const questionId = event.target.getAttribute('data-question-text');
-                this.assignmentAnswers[questionId] = {
-                    questionId,
-                    answerText: event.target.value
-                };
-                this.persistAssignmentSession();
-            });
-        });
-
-        const saveDraftBtn = modal.querySelector('#assignmentSaveDraft');
-        if (saveDraftBtn) {
-            saveDraftBtn.addEventListener('click', () => this.saveDraft());
-        }
-
-        const submitBtn = modal.querySelector('#assignmentSubmit');
-        if (submitBtn) {
-            submitBtn.addEventListener('click', () => this.submitAssignment());
-        }
-
-        const closeBtn = modal.querySelector('#assignmentClose');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                if (this.activeAssignmentSession) {
-                    const confirmed = window.confirm('Bạn đang làm bài tập. Nếu thoát, thời gian vẫn tiếp tục chạy. Bạn có chắc chắn muốn thoát?');
-                    if (!confirmed) {
-                        return;
-                    }
-                }
-                // Remove beforeunload and visibilitychange handlers when closing
-                const beforeUnloadHandler = modal._beforeUnloadHandler;
-                if (beforeUnloadHandler) {
-                    window.removeEventListener('beforeunload', beforeUnloadHandler);
-                    delete modal._beforeUnloadHandler;
-                }
-                const visibilityChangeHandler = modal._visibilityChangeHandler;
-                if (visibilityChangeHandler) {
-                    document.removeEventListener('visibilitychange', visibilityChangeHandler);
-                    delete modal._visibilityChangeHandler;
-                }
-                this.persistAssignmentSession();
-                this.closeModal();
-            });
-        }
-    }
-
-    startAssignmentCountdown(expiresAt) {
-        this.stopAssignmentCountdown();
-        if (!expiresAt) return;
-        const endTime = new Date(expiresAt).getTime();
-        if (Number.isNaN(endTime)) return;
-
-        this.assignmentCountdownInterval = setInterval(() => {
-            const now = Date.now();
-            const diff = Math.max(0, endTime - now);
-            const countdownEl = document.getElementById('assignmentCountdown');
-            if (countdownEl) {
-                const minutes = String(Math.floor(diff / 60000)).padStart(2, '0');
-                const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-                countdownEl.textContent = `${minutes}:${seconds}`;
-                countdownEl.classList.toggle('urgent', diff < 60000);
-            }
-
-            if (diff <= 0) {
-                this.stopAssignmentCountdown();
-                this.autoSubmitAssignment();
-            }
-        }, 1000);
-    }
-
-    stopAssignmentCountdown() {
-        if (this.assignmentCountdownInterval) {
-            clearInterval(this.assignmentCountdownInterval);
-            this.assignmentCountdownInterval = null;
-        }
-    }
-
-    async autoSubmitAssignment() {
-        if (!this.activeAssignmentSession) {
-            return;
-        }
-        this.showNotification('Đã hết giờ, hệ thống đang tự động nộp bài...', 'warning');
-        await this.submitAssignment(true);
-    }
-
-    async submitAssignment(autoSubmit = false) {
-        if (!this.activeAssignmentSession) {
-            this.showNotification('Không tìm thấy phiên làm bài.', 'warning');
-            return;
-        }
-
-        const answersPayload = Object.values(this.assignmentAnswers || {});
-        if (!answersPayload.length && !autoSubmit) {
-            this.showNotification('Vui lòng trả lời ít nhất một câu hỏi.', 'warning');
-            return;
-        }
-
-        try {
-            this.showLoading();
-            const session = this.activeAssignmentSession;
-            const response = await this.apiCall(`/api/portal/student/assignments/${session.assignmentId}/submit`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    submissionId: session.submissionId,
-                    answers: answersPayload
-                })
-            });
-            const detail = response.data || response;
-            this.showNotification(autoSubmit ? 'Hệ thống đã tự động nộp bài.' : 'Đã nộp bài thành công!', 'success');
-            this.clearAssignmentSession(session.assignmentId);
-            
-            // Remove beforeunload and visibilitychange handlers after submission
-            const modal = document.querySelector('.modal.assignment-modal');
-            if (modal) {
-                if (modal._beforeUnloadHandler) {
-                    window.removeEventListener('beforeunload', modal._beforeUnloadHandler);
-                    delete modal._beforeUnloadHandler;
-                }
-                if (modal._visibilityChangeHandler) {
-                    document.removeEventListener('visibilitychange', modal._visibilityChangeHandler);
-                    delete modal._visibilityChangeHandler;
-                }
-            }
-            
-            this.closeModal();
-            this.stopAssignmentCountdown();
-            this.renderAssignmentPreview(detail);
-            this.loadDashboardData();
-        } catch (error) {
-            console.error('Submit assignment error:', error);
-            this.showNotification(error.message || 'Không thể nộp bài', 'error');
-        } finally {
-            this.hideLoading();
-        }
-    }
-
-    saveDraft() {
-        this.persistAssignmentSession();
-        this.showNotification('Đã lưu nháp bài làm!', 'success');
-    }
-
-    persistAssignmentSession() {
-        if (!this.activeAssignmentSession) return;
-        this.activeAssignmentSession.answers = this.assignmentAnswers;
-        this.saveAssignmentSession();
-    }
-
-    saveAssignmentSession() {
-        if (!this.activeAssignmentSession) return;
-        const key = `mb_assignment_session_${this.activeAssignmentSession.assignmentId}`;
-        localStorage.setItem(key, JSON.stringify(this.activeAssignmentSession));
-    }
-
-    loadAssignmentSession(assignmentId) {
-        const key = `mb_assignment_session_${assignmentId}`;
-        try {
-            const raw = localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : null;
-        } catch (error) {
-            console.warn('Failed to parse assignment session:', error);
-            return null;
-        }
-    }
-
-    clearAssignmentSession(assignmentId) {
-        const key = `mb_assignment_session_${assignmentId}`;
-        localStorage.removeItem(key);
-        if (this.activeAssignmentSession && this.activeAssignmentSession.assignmentId === assignmentId) {
-            this.activeAssignmentSession = null;
-            this.assignmentAnswers = {};
-        }
-    }
-
-    resumeStoredAssignmentSession() {
-        const keys = Object.keys(localStorage).filter(k => k.startsWith('mb_assignment_session_'));
-        if (!keys.length) return;
-        try {
-            const session = JSON.parse(localStorage.getItem(keys[0]));
-            if (session && session.assignmentId) {
-                const expiresAt = new Date(session.expiresAt || '');
-                if (expiresAt && expiresAt > new Date()) {
-                    this.assignmentAnswers = session.answers || {};
-                    this.activeAssignmentSession = session;
-                    this.fetchAssignmentDetail(session.assignmentId, { resume: true });
-                } else {
-                    localStorage.removeItem(keys[0]);
-                }
-            }
-        } catch (error) {
-            console.warn('Failed to restore assignment session:', error);
-        }
-    }
-
-    restoreAssignmentSession() {
-        if (this.activeAssignmentSession) {
-            return;
-        }
-        this.resumeStoredAssignmentSession();
-    }
-
-    renderAssignmentPreview(assignment) {
-        const statusBadge = `<span class="status-badge ${assignment.status}">${this.getAssignmentStatusText(assignment.status)}</span>`;
-        const content = `
-            <div class="assignment-detail-modal">
-                <h3>${assignment.title}</h3>
-                <div class="assignment-detail-content">
-                    <div class="detail-section">
-                        <h4>Thông tin bài tập</h4>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <label>Lớp:</label>
-                                <span>${assignment.className || '-'}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Hạn nộp:</label>
-                                <span>${this.formatDate(assignment.dueDate)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Trạng thái:</label>
-                                ${statusBadge}
-                            </div>
-                            <div class="detail-item">
-                                <label>Thời lượng:</label>
-                                <span>${assignment.durationMinutes ? `${assignment.durationMinutes} phút` : 'Không giới hạn'}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="detail-section">
-                        <h4>Mô tả</h4>
-                        <p>${assignment.description || 'Không có mô tả.'}</p>
-                    </div>
-                    ${assignment.warningMessage ? `
-                        <div class="detail-section">
-                            <h4>Cảnh báo</h4>
-                            <p>${assignment.warningMessage.replace(/\n/g, '<br>')}</p>
-                        </div>
-                    ` : ''}
-                    ${assignment.grade ? `
-                        <div class="detail-section">
-                            <h4>Điểm số</h4>
-                            <p><strong>${assignment.grade}/10</strong></p>
-                            ${assignment.feedback ? `<p><strong>Nhận xét:</strong> ${assignment.feedback}</p>` : ''}
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-        this.showModal('Chi tiết bài tập', content, 'assignment-preview-modal');
-    }
-
-    viewSubmission(assignmentId) {
-        this.fetchAssignmentDetail(assignmentId, { viewOnly: true });
-    }
-
-    viewAssignmentDetails(assignmentId) {
-        this.fetchAssignmentDetail(assignmentId, { viewOnly: true });
-    }
-*/
 // Student Dashboard JavaScript
 import { CONFIG } from '../../assets/js/config.js';
 
@@ -401,6 +16,7 @@ class StudentDashboard {
         this.activeAssignmentSession = null;
         this.assignmentCountdownInterval = null;
         this.assignmentAnswers = {};
+        this.sessionGrades = []; // Store session grades for filtering
         // Prefill UI with cached auth profile so header shows name immediately
         this.prefillUserInfoFromAuth();
 
@@ -609,10 +225,8 @@ class StudentDashboard {
         if (assignmentStatusFilter) assignmentStatusFilter.addEventListener('change', () => this.filterAssignments());
 
         // Grade filters
-        const gradeSubjectFilter = document.getElementById('gradeSubjectFilter');
-        const gradePeriodFilter = document.getElementById('gradePeriodFilter');
-        if (gradeSubjectFilter) gradeSubjectFilter.addEventListener('change', () => this.filterGrades());
-        if (gradePeriodFilter) gradePeriodFilter.addEventListener('change', () => this.filterGrades());
+        const gradeClassFilter = document.getElementById('gradeClassFilter');
+        if (gradeClassFilter) gradeClassFilter.addEventListener('change', () => this.filterGrades());
     }
 
     async loadDashboardData() {
@@ -1707,43 +1321,159 @@ class StudentDashboard {
         }
     }
 
-    loadGrades() {
+    async loadGrades(classId = null) {
         const gradesTableBody = document.getElementById('gradesTableBody');
-        if (!this.studentData?.grades) return;
+        if (!gradesTableBody) return;
 
-        gradesTableBody.innerHTML = this.studentData.grades.map(grade => `
-            <tr>
-                <td>${grade.subject}</td>
-                <td>${grade.className}</td>
-                <td>${grade.gradeType}</td>
-                <td><span class="grade-badge ${this.getGradeBadgeClass(grade.score)}">${grade.score}</span></td>
-                <td>${this.formatDate(grade.gradedAt)}</td>
-                <td>${grade.teacherName}</td>
-                <td>${grade.feedback || 'Không có nhận xét'}</td>
-                <td>
-                    <button class="btn btn-sm btn-info" onclick="dashboard.viewGradeDetails('${grade.gradeId}')">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        try {
+            this.showLoading();
+            
+            // Call new API endpoint for grades by session
+            // If classId is provided, filter by class
+            let endpoint = '/api/portal/student/grades';
+            if (classId) {
+                endpoint += `?classId=${encodeURIComponent(classId)}`;
+            }
+            const response = await this.apiCall(endpoint);
+            
+            let sessionGrades = [];
+            if (response && response.success && response.data) {
+                sessionGrades = response.data;
+            } else if (response && Array.isArray(response)) {
+                sessionGrades = response;
+            } else if (response && response.data) {
+                sessionGrades = response.data;
+            }
 
-        // Update grade statistics
-        this.updateGradeStatistics();
+            if (sessionGrades.length === 0) {
+                gradesTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-inbox" style="font-size: 48px; color: #9ca3af; margin-bottom: 16px;"></i>
+                            <p>Chưa có điểm số nào</p>
+                        </td>
+                    </tr>
+                `;
+                this.updateGradeStatistics([]);
+                return;
+            }
+
+            // Render grades table
+            gradesTableBody.innerHTML = sessionGrades.map(session => {
+                const assignmentGrade = session.averageAssignmentGrade != null 
+                    ? session.averageAssignmentGrade.toFixed(1) 
+                    : 'N/A';
+                const teacherGrade = session.teacherGrade != null 
+                    ? session.teacherGrade.toFixed(1) 
+                    : 'N/A';
+                const finalGrade = session.finalGrade != null 
+                    ? session.finalGrade.toFixed(1) 
+                    : 'N/A';
+                
+                const assignmentCount = session.assignmentGrades ? session.assignmentGrades.length : 0;
+                const expandIcon = assignmentCount > 0 
+                    ? `<i class="fas fa-chevron-down expand-icon" onclick="dashboard.toggleGradeDetails('${session.sessionId}')"></i>`
+                    : '';
+                
+                return `
+                    <tr class="grade-session-row" data-session-id="${session.sessionId}" data-class-id="${session.classId || ''}">
+                        <td style="text-align: center;">${expandIcon}</td>
+                        <td>Buổi ${session.sessionNumber || 'N/A'}</td>
+                        <td>${this.formatDate(session.sessionDate)}</td>
+                        <td>${this.escapeHtml(session.className || 'N/A')}</td>
+                        <td><span class="grade-badge ${this.getGradeBadgeClass(session.averageAssignmentGrade)}">${assignmentGrade}</span></td>
+                        <td><span class="grade-badge ${this.getGradeBadgeClass(session.teacherGrade)}">${teacherGrade}</span></td>
+                        <td><span class="grade-badge ${this.getGradeBadgeClass(session.finalGrade)}">${finalGrade}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="dashboard.viewSessionGradeDetails('${session.sessionId}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    ${assignmentCount > 0 ? `
+                    <tr class="grade-details-row" id="gradeDetails_${session.sessionId}" style="display: none;">
+                        <td colspan="8">
+                            <div class="grade-assignments-details">
+                                <h4>Chi tiết bài tập (${assignmentCount} bài):</h4>
+                                <table class="grade-assignments-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Bài tập</th>
+                                            <th>Điểm</th>
+                                            <th>Ngày chấm</th>
+                                            <th>Nhận xét</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${session.assignmentGrades.map(ag => `
+                                            <tr>
+                                                <td>${this.escapeHtml(ag.assignmentTitle || 'N/A')}</td>
+                                                <td><span class="grade-badge ${this.getGradeBadgeClass(ag.grade)}">${ag.grade != null ? ag.grade.toFixed(1) : 'N/A'}</span></td>
+                                                <td>${this.formatDate(ag.gradedAt)}</td>
+                                                <td>${this.escapeHtml(ag.feedback || 'Không có nhận xét')}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    ` : ''}
+                `;
+            }).join('');
+
+            // Store session grades for filtering
+            this.sessionGrades = sessionGrades;
+
+            // Populate class filter dropdown (only if not already populated or if new classes found)
+            // Don't reset the selected value
+            this.populateGradeClassFilter();
+
+            // Update grade statistics
+            this.updateGradeStatistics(sessionGrades);
+            
+        } catch (error) {
+            console.error('Error loading grades:', error);
+            gradesTableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty-state" style="text-align: center; padding: 40px; color: #ef4444;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <p>Không thể tải điểm số. Vui lòng thử lại.</p>
+                    </td>
+                </tr>
+            `;
+            this.showNotification('Không thể tải điểm số. Vui lòng thử lại.', 'error');
+        } finally {
+            this.hideLoading();
+        }
     }
 
-    updateGradeStatistics() {
-        if (!this.studentData?.grades) return;
+    updateGradeStatistics(sessionGrades) {
+        if (!sessionGrades || sessionGrades.length === 0) {
+            const overallAverageEl = document.getElementById('overallAverage');
+            const totalGradesCountEl = document.getElementById('totalGradesCount');
+            const gradeRankingEl = document.getElementById('gradeRanking');
+            if (overallAverageEl) overallAverageEl.textContent = '0.0';
+            if (totalGradesCountEl) totalGradesCountEl.textContent = '0';
+            if (gradeRankingEl) gradeRankingEl.textContent = 'N/A';
+            return;
+        }
 
-        const grades = this.studentData.grades.map(g => g.score);
-        const average = grades.reduce((a, b) => a + b, 0) / grades.length;
+        // Calculate average from final grades
+        const finalGrades = sessionGrades
+            .map(s => s.finalGrade)
+            .filter(g => g != null);
+        
+        const average = finalGrades.length > 0
+            ? finalGrades.reduce((a, b) => a + b, 0) / finalGrades.length
+            : 0;
 
         const overallAverageEl = document.getElementById('overallAverage');
         const totalGradesCountEl = document.getElementById('totalGradesCount');
         const gradeRankingEl = document.getElementById('gradeRanking');
         
         if (overallAverageEl) overallAverageEl.textContent = average.toFixed(1);
-        if (totalGradesCountEl) totalGradesCountEl.textContent = grades.length;
+        if (totalGradesCountEl) totalGradesCountEl.textContent = sessionGrades.length;
         if (gradeRankingEl) gradeRankingEl.textContent = this.getGradeRanking(average);
     }
 
@@ -1815,6 +1545,7 @@ class StudentDashboard {
     }
 
     getGradeBadgeClass(score) {
+        if (score == null || score === undefined) return '';
         if (score >= 9) return 'excellent';
         if (score >= 8) return 'good';
         if (score >= 6.5) return 'average';
@@ -1822,11 +1553,39 @@ class StudentDashboard {
     }
 
     getGradeRanking(average) {
+        if (average == null || average === undefined || average === 0) return 'N/A';
         if (average >= 9) return 'Xuất sắc';
         if (average >= 8) return 'Giỏi';
         if (average >= 7) return 'Khá';
         if (average >= 6) return 'Trung bình';
         return 'Yếu';
+    }
+
+    toggleGradeDetails(sessionId) {
+        const detailsRow = document.getElementById(`gradeDetails_${sessionId}`);
+        const sessionRow = document.querySelector(`tr[data-session-id="${sessionId}"]`);
+        const expandIcon = sessionRow ? sessionRow.querySelector('.expand-icon') : null;
+        
+        if (!detailsRow) return;
+        
+        if (detailsRow.style.display === 'none') {
+            detailsRow.style.display = 'table-row';
+            if (expandIcon) {
+                expandIcon.classList.remove('fa-chevron-down');
+                expandIcon.classList.add('fa-chevron-up');
+            }
+        } else {
+            detailsRow.style.display = 'none';
+            if (expandIcon) {
+                expandIcon.classList.remove('fa-chevron-up');
+                expandIcon.classList.add('fa-chevron-down');
+            }
+        }
+    }
+
+    viewSessionGradeDetails(sessionId) {
+        // Toggle the details row if it exists
+        this.toggleGradeDetails(sessionId);
     }
 
     formatCurrency(amount) {
@@ -1987,9 +1746,68 @@ class StudentDashboard {
         });
     }
 
-    filterGrades() {
-        // Implementation for grade filtering
-        console.log('Filtering grades...');
+    populateGradeClassFilter() {
+        const gradeClassFilter = document.getElementById('gradeClassFilter');
+        if (!gradeClassFilter) return;
+
+        // Save current selected value
+        const currentValue = gradeClassFilter.value;
+
+        // Get unique classes from sessionGrades
+        const classMap = new Map();
+        if (this.sessionGrades) {
+            this.sessionGrades.forEach(session => {
+                if (session.classId && session.className) {
+                    if (!classMap.has(session.classId)) {
+                        classMap.set(session.classId, session.className);
+                    }
+                }
+            });
+        }
+
+        // Also get classes from studentData if available
+        if (this.studentData?.classes) {
+            this.studentData.classes.forEach(cls => {
+                if (cls.classId && cls.className) {
+                    if (!classMap.has(cls.classId)) {
+                        classMap.set(cls.classId, cls.className);
+                    }
+                }
+            });
+        }
+
+        // Only populate if options don't exist yet (first time) or if classMap changed
+        const existingOptions = Array.from(gradeClassFilter.options).map(opt => opt.value);
+        const newClassIds = Array.from(classMap.keys());
+        const hasAllOptions = existingOptions.length > 1 && 
+                             newClassIds.every(id => existingOptions.includes(id)) &&
+                             existingOptions.every(id => id === 'all' || newClassIds.includes(id));
+
+        if (!hasAllOptions) {
+            // Clear existing options except "Tất cả khóa học"
+            gradeClassFilter.innerHTML = '<option value="all">Tất cả khóa học</option>';
+
+            // Add class options
+            classMap.forEach((className, classId) => {
+                const option = document.createElement('option');
+                option.value = classId;
+                option.textContent = className;
+                gradeClassFilter.appendChild(option);
+            });
+        }
+
+        // Restore selected value if it still exists
+        if (currentValue && Array.from(gradeClassFilter.options).some(opt => opt.value === currentValue)) {
+            gradeClassFilter.value = currentValue;
+        }
+    }
+
+    async filterGrades() {
+        const classFilter = document.getElementById('gradeClassFilter')?.value || 'all';
+        
+        // If "all" is selected, reload all grades
+        // Otherwise, reload grades filtered by classId from backend
+        await this.loadGrades(classFilter === 'all' ? null : classFilter);
     }
 
     // Interactive Action Methods
@@ -2454,9 +2272,6 @@ class StudentDashboard {
         this.filterAssignments();
     }
 
-    filterGrades() {
-        this.filterGrades();
-    }
 
     exportGrades() {
         this.exportGrades();
@@ -2794,180 +2609,7 @@ class StudentDashboard {
         data.stats.recentAverage = Math.round(recentAvg * 10) / 10;
     }
 
-    // Removed getDefaultClasses() - classes are now fetched from API
-    // Data comes from /api/portal/student/dashboard endpoint which queries the database
-
-    getDefaultAssignments() {
-        const now = new Date();
-        const tomorrow = new Date(now);
-        tomorrow.setDate(now.getDate() + 1);
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        const nextWeek = new Date(now);
-        nextWeek.setDate(now.getDate() + 7);
-
-        return [
-            {
-                assignmentId: 'ASS001',
-                title: 'Bài tập về phương trình bậc hai',
-                description: 'Giải các phương trình bậc hai sau: x² - 5x + 6 = 0, 2x² + 3x - 2 = 0, x² - 4 = 0',
-                className: 'Toán học nâng cao 10',
-                dueDate: tomorrow.toISOString(),
-                status: 'pending',
-                grade: null,
-                submittedAt: null,
-                gradedAt: null,
-                feedback: null
-            },
-            {
-                assignmentId: 'ASS002',
-                title: 'Bài tập về giải tích - Đạo hàm',
-                description: 'Tính đạo hàm của các hàm số sau: f(x) = x³ + 2x² - 3x + 1, g(x) = sin(x)cos(x), h(x) = e^x/x',
-                className: 'Giải tích 11',
-                dueDate: nextWeek.toISOString(),
-                status: 'submitted',
-                grade: 8.5,
-                submittedAt: yesterday.toISOString(),
-                gradedAt: yesterday.toISOString(),
-                feedback: 'Bài làm tốt, cần cải thiện phần trình bày đồ thị'
-            },
-            {
-                assignmentId: 'ASS003',
-                title: 'Bài tập về ma trận và định thức',
-                description: 'Giải các bài toán về ma trận và định thức: tính định thức, nghịch đảo ma trận, hệ phương trình tuyến tính',
-                className: 'Đại số tuyến tính 12',
-                dueDate: yesterday.toISOString(),
-                status: 'overdue',
-                grade: null,
-                submittedAt: null,
-                gradedAt: null,
-                feedback: null
-            },
-            {
-                assignmentId: 'ASS004',
-                title: 'Bài tập về giới hạn hàm số',
-                description: 'Tính giới hạn của các hàm số sau: lim(x→0) sin(x)/x, lim(x→∞) (1 + 1/x)^x',
-                className: 'Toán học nâng cao 10',
-                dueDate: nextWeek.toISOString(),
-                status: 'graded',
-                grade: 9.0,
-                submittedAt: yesterday.toISOString(),
-                gradedAt: yesterday.toISOString(),
-                feedback: 'Bài làm xuất sắc, giải thích rõ ràng và logic'
-            }
-        ];
-    }
-
-    getDefaultGrades() {
-        const now = new Date();
-        const lastWeek = new Date(now);
-        lastWeek.setDate(now.getDate() - 7);
-        const twoWeeksAgo = new Date(now);
-        twoWeeksAgo.setDate(now.getDate() - 14);
-        const lastMonth = new Date(now);
-        lastMonth.setMonth(now.getMonth() - 1);
-
-        return [
-            {
-                gradeId: 'G001',
-                subject: 'Toán học',
-                className: 'Toán học nâng cao 10',
-                gradeType: 'Bài kiểm tra giữa kỳ',
-                score: 8.5,
-                gradedAt: lastWeek.toISOString(),
-                teacherName: 'Thầy Nguyễn Văn Minh',
-                feedback: 'Bài làm tốt, cần chú ý cách trình bày'
-            },
-            {
-                gradeId: 'G002',
-                subject: 'Giải tích',
-                className: 'Giải tích 11',
-                gradeType: 'Bài tập đạo hàm',
-                score: 9.0,
-                gradedAt: twoWeeksAgo.toISOString(),
-                teacherName: 'Cô Trần Thị Lan',
-                feedback: 'Giải thích rõ ràng, áp dụng tốt các quy tắc đạo hàm'
-            },
-            {
-                gradeId: 'G003',
-                subject: 'Đại số tuyến tính',
-                className: 'Đại số tuyến tính 12',
-                gradeType: 'Bài kiểm tra cuối kỳ',
-                score: 7.5,
-                gradedAt: lastMonth.toISOString(),
-                teacherName: 'Thầy Lê Văn Hùng',
-                feedback: 'Cần ôn tập thêm về ma trận nghịch đảo và định thức'
-            },
-            {
-                gradeId: 'G004',
-                subject: 'Toán học',
-                className: 'Toán học nâng cao 10',
-                gradeType: 'Bài tập về đạo hàm',
-                score: 8.8,
-                gradedAt: lastWeek.toISOString(),
-                teacherName: 'Thầy Nguyễn Văn Minh',
-                feedback: 'Giải đúng tất cả bài tập, cách làm sáng tạo'
-            },
-            {
-                gradeId: 'G005',
-                subject: 'Giải tích',
-                className: 'Giải tích 11',
-                gradeType: 'Bài tập tích phân',
-                score: 6.5,
-                gradedAt: twoWeeksAgo.toISOString(),
-                teacherName: 'Cô Trần Thị Lan',
-                feedback: 'Cần ôn tập thêm các phương pháp tích phân'
-            }
-        ];
-    }
-
-    getDefaultMessages() {
-        const now = new Date();
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        const twoDaysAgo = new Date(now);
-        twoDaysAgo.setDate(now.getDate() - 2);
-
-        return [
-            {
-                id: 'MSG001',
-                sender: 'Thầy Nguyễn Văn Minh',
-                subject: 'Bài tập phương trình bậc hai',
-                preview: 'Các em đã nộp bài tập chưa? Hạn nộp là ngày mai. Hãy kiểm tra lại đáp án...',
-                sentAt: yesterday.toISOString(),
-                unread: true,
-                type: 'teacher'
-            },
-            {
-                id: 'MSG002',
-                sender: 'Cô Trần Thị Lan',
-                subject: 'Thông báo lịch học tuần sau',
-                preview: 'Tuần sau lớp Vật lý sẽ học ở phòng 203 thay vì phòng 201. Các em chú ý nhé.',
-                sentAt: twoDaysAgo.toISOString(),
-                unread: false,
-                type: 'teacher'
-            },
-            {
-                id: 'MSG003',
-                sender: 'Admin MathBridge',
-                subject: 'Cập nhật hệ thống',
-                preview: 'Hệ thống sẽ bảo trì vào ngày Chủ nhật từ 2:00 - 4:00 AM. Các em thông cảm.',
-                sentAt: twoDaysAgo.toISOString(),
-                unread: false,
-                type: 'admin'
-            },
-            {
-                id: 'MSG004',
-                sender: 'Thầy Lê Văn Hùng',
-                subject: 'Bài tập về nhà hóa học',
-                preview: 'Các em làm bài tập trang 45-46 trong sách giáo khoa. Nộp vào thứ 5 tuần sau.',
-                sentAt: yesterday.toISOString(),
-                unread: true,
-                type: 'teacher'
-            }
-        ];
-    }
-
+    
     getDefaultStats() {
         return {
             totalClasses: 0,
@@ -4596,13 +4238,56 @@ class StudentDashboard {
                 const startTime = session.startTime ? session.startTime.substring(0, 5) : 'N/A';
                 const endTime = session.endTime ? session.endTime.substring(0, 5) : 'N/A';
                 
+                // Check if already rated
+                const hasRated = session.hasRated === true;
+                const rating = session.rating || 0;
+                const ratingComment = session.ratingComment || '';
+                
+                // Rating badge HTML
+                const ratingBadge = hasRated 
+                    ? `<span class="rating-badge rated">
+                        <i class="fas fa-check-circle"></i> Đã đánh giá ${rating}/5 sao
+                       </span>`
+                    : '';
+                
+                // Button HTML - use data attributes to avoid escaping issues
+                const escapedComment = ratingComment.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const actionButton = hasRated
+                    ? `<button class="btn btn-sm btn-success" 
+                               data-session-id="${session.id}" 
+                               data-class-name="${this.escapeHtml(session.className)}"
+                               data-session-number="${session.sessionNumber}"
+                               data-rating="${rating}"
+                               data-comment="${escapedComment}"
+                               onclick="dashboard.viewSessionRating(this)">
+                        <i class="fas fa-eye"></i> Xem đánh giá
+                       </button>
+                       <button class="btn btn-sm btn-primary" 
+                               data-session-id="${session.id}" 
+                               data-class-name="${this.escapeHtml(session.className)}"
+                               data-session-number="${session.sessionNumber}"
+                               data-rating="${rating}"
+                               data-comment="${escapedComment}"
+                               onclick="dashboard.rateSession(this)" 
+                               style="margin-left: 5px;">
+                        <i class="fas fa-edit"></i> Sửa đánh giá
+                       </button>`
+                    : `<button class="btn btn-sm btn-primary" 
+                               data-session-id="${session.id}" 
+                               data-class-name="${this.escapeHtml(session.className)}"
+                               data-session-number="${session.sessionNumber}"
+                               onclick="dashboard.rateSession(this)">
+                        <i class="fas fa-star"></i> Đánh giá
+                       </button>`;
+                
                 return `
                     <div class="session-card">
                         <div class="session-header">
                             <div class="session-number-badge">Buổi ${session.sessionNumber || 'N/A'}</div>
-                            <button class="btn btn-sm btn-primary" onclick="dashboard.rateSession('${session.id}', '${this.escapeHtml(session.className)}', ${session.sessionNumber})">
-                                <i class="fas fa-star"></i> Đánh giá
-                            </button>
+                            <div class="session-actions">
+                                ${ratingBadge}
+                                ${actionButton}
+                            </div>
                         </div>
                         <div class="session-details">
                             <div class="session-info-row">
@@ -5075,12 +4760,35 @@ class StudentDashboard {
     }
 
     // Rate Session Method (for learning history)
-    rateSession(sessionId, className, sessionNumber) {
+    rateSession(buttonOrSessionId, className = null, sessionNumber = null, existingRating = 0, existingComment = '') {
+        // Support both old signature (direct params) and new signature (button element)
+        let sessionId, actualClassName, actualSessionNumber, actualRating, actualComment;
+        
+        if (typeof buttonOrSessionId === 'string') {
+            // Old signature: direct parameters
+            sessionId = buttonOrSessionId;
+            actualClassName = className;
+            actualSessionNumber = sessionNumber;
+            actualRating = existingRating;
+            actualComment = existingComment;
+        } else {
+            // New signature: button element with data attributes
+            const btn = buttonOrSessionId;
+            sessionId = btn.dataset.sessionId;
+            actualClassName = btn.dataset.className || '';
+            actualSessionNumber = parseInt(btn.dataset.sessionNumber) || 0;
+            actualRating = parseInt(btn.dataset.rating) || 0;
+            actualComment = btn.dataset.comment || '';
+        }
+        
+        const isEdit = actualRating > 0;
+        const modalTitle = isEdit ? 'Sửa đánh giá buổi học' : 'Đánh giá buổi học';
+        
         const modalContent = `
             <div class="rating-modal-content">
                 <div class="form-group">
-                    <label>Lớp học: <strong>${this.escapeHtml(className)}</strong></label>
-                    <p style="margin-top: 0.5rem; color: var(--text-secondary);">Buổi học số: ${sessionNumber}</p>
+                    <label>Lớp học: <strong>${this.escapeHtml(actualClassName)}</strong></label>
+                    <p style="margin-top: 0.5rem; color: var(--text-secondary);">Buổi học số: ${actualSessionNumber}</p>
                 </div>
                 <div class="form-group">
                     <label>Đánh giá (1-5 sao):</label>
@@ -5091,21 +4799,77 @@ class StudentDashboard {
                         <i class="far fa-star" data-rating="4" onclick="dashboard.selectRating(4)" role="button" aria-label="4 sao" tabindex="0"></i>
                         <i class="far fa-star" data-rating="5" onclick="dashboard.selectRating(5)" role="button" aria-label="5 sao" tabindex="0"></i>
                     </div>
-                    <input type="hidden" id="selectedRating" value="0">
+                    <input type="hidden" id="selectedRating" value="${actualRating}">
                 </div>
                 <div class="form-group">
                     <label for="ratingComment">Nhận xét:</label>
-                    <textarea class="form-control" id="ratingComment" rows="4" placeholder="Nhập nhận xét của bạn về buổi học này..."></textarea>
+                    <textarea class="form-control" id="ratingComment" rows="4" placeholder="Nhập nhận xét của bạn về buổi học này...">${this.escapeHtml(actualComment)}</textarea>
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-secondary" onclick="dashboard.closeModal()">Hủy</button>
-                    <button class="btn btn-primary" onclick="dashboard.submitSessionRating('${sessionId}')">Gửi đánh giá</button>
+                    <button class="btn btn-primary" onclick="dashboard.submitSessionRating('${sessionId}')">${isEdit ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}</button>
                 </div>
             </div>
         `;
-        this.showModal('Đánh giá buổi học', modalContent, 'medium-modal');
+        this.showModal(modalTitle, modalContent, 'medium-modal');
         this.currentRatingSessionId = sessionId;
-        this.currentRating = 0;
+        this.currentRating = actualRating;
+        
+        // Set existing rating if editing
+        if (actualRating > 0) {
+            this.selectRating(actualRating);
+        }
+    }
+
+    // View Session Rating Method
+    viewSessionRating(button) {
+        const sessionId = button.dataset.sessionId;
+        const className = button.dataset.className || '';
+        const sessionNumber = parseInt(button.dataset.sessionNumber) || 0;
+        const rating = parseInt(button.dataset.rating) || 0;
+        const comment = button.dataset.comment || '';
+        
+        const starsHtml = Array.from({ length: 5 }, (_, i) => {
+            const isFilled = i < rating;
+            return `<i class="${isFilled ? 'fas' : 'far'} fa-star" style="color: ${isFilled ? '#ffc107' : '#ddd'}; font-size: 1.5rem;"></i>`;
+        }).join('');
+        
+        const modalContent = `
+            <div class="rating-view-content">
+                <div class="form-group">
+                    <label>Lớp học: <strong>${this.escapeHtml(className)}</strong></label>
+                    <p style="margin-top: 0.5rem; color: var(--text-secondary);">Buổi học số: ${sessionNumber}</p>
+                </div>
+                <div class="form-group">
+                    <label>Đánh giá của bạn:</label>
+                    <div class="rating-display" style="margin: 1rem 0;">
+                        ${starsHtml}
+                        <span style="margin-left: 1rem; font-size: 1.2rem; font-weight: bold;">${rating}/5 sao</span>
+                    </div>
+                </div>
+                ${comment ? `
+                <div class="form-group">
+                    <label>Nhận xét:</label>
+                    <div class="rating-comment-display" style="padding: 1rem; background: #f5f5f5; border-radius: 4px; margin-top: 0.5rem;">
+                        <p style="margin: 0; white-space: pre-wrap;">${this.escapeHtml(comment)}</p>
+                    </div>
+                </div>
+                ` : '<p style="color: var(--text-secondary);">Bạn chưa có nhận xét cho buổi học này.</p>'}
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="dashboard.closeModal()">Đóng</button>
+                    <button class="btn btn-primary" 
+                            data-session-id="${sessionId}" 
+                            data-class-name="${this.escapeHtml(className)}"
+                            data-session-number="${sessionNumber}"
+                            data-rating="${rating}"
+                            data-comment="${comment.replace(/"/g, '&quot;')}"
+                            onclick="dashboard.closeModal(); setTimeout(() => dashboard.rateSession(this), 100);">
+                        <i class="fas fa-edit"></i> Sửa đánh giá
+                    </button>
+                </div>
+            </div>
+        `;
+        this.showModal('Đánh giá của bạn', modalContent, 'medium-modal');
     }
 
     selectRating(rating) {
@@ -5264,124 +5028,6 @@ class StudentDashboard {
                 this.showNotification('Không thể chia sẻ. Vui lòng sao chép URL thủ công.', 'warning');
             });
         }
-    }
-
-    // Mock Data Methods
-    getDefaultRegistrations() {
-        return [
-            {
-                id: 'DK001',
-                className: 'Toán học nâng cao 10',
-                teacherName: 'Thầy Nguyễn Văn Minh',
-                registrationDate: '2024-09-01T08:00:00',
-                status: 'approved',
-                description: 'Lớp học chuyên sâu về đại số và hình học'
-            },
-            {
-                id: 'DK002',
-                className: 'Giải tích 11',
-                teacherName: 'Cô Trần Thị Lan',
-                registrationDate: '2024-09-05T10:30:00',
-                status: 'approved',
-                description: 'Kiến thức cơ bản về giải tích và đạo hàm'
-            },
-            {
-                id: 'DK003',
-                className: 'Đại số tuyến tính 12',
-                teacherName: 'Thầy Lê Văn Hùng',
-                registrationDate: '2024-08-20T14:00:00',
-                status: 'completed',
-                description: 'Lớp học chuyên sâu về ma trận và định thức'
-            }
-        ];
-    }
-
-    getDefaultAttendedClasses() {
-        return [
-            {
-                id: 'BH001',
-                className: 'Toán học nâng cao 10',
-                sessionNumber: 1,
-                sessionDate: '2024-09-10T08:00:00',
-                startTime: '08:00',
-                endTime: '10:00',
-                room: 'Phòng 101',
-                content: 'Giới thiệu về phương trình bậc hai'
-            },
-            {
-                id: 'BH002',
-                className: 'Toán học nâng cao 10',
-                sessionNumber: 2,
-                sessionDate: '2024-09-12T08:00:00',
-                startTime: '08:00',
-                endTime: '10:00',
-                room: 'Phòng 101',
-                content: 'Giải phương trình bậc hai bằng cách khai phương'
-            },
-            {
-                id: 'BH003',
-                className: 'Giải tích 11',
-                sessionNumber: 1,
-                sessionDate: '2024-09-14T10:30:00',
-                startTime: '10:30',
-                endTime: '12:30',
-                room: 'Phòng 203',
-                content: 'Khái niệm đạo hàm và quy tắc tính đạo hàm'
-            },
-            {
-                id: 'BH004',
-                className: 'Đại số tuyến tính 12',
-                sessionNumber: 5,
-                sessionDate: '2024-08-30T14:00:00',
-                startTime: '14:00',
-                endTime: '16:00',
-                room: 'Phòng 305',
-                content: 'Ma trận nghịch đảo và ứng dụng trong hệ phương trình'
-            }
-        ];
-    }
-
-    getDefaultSupportRequests() {
-        return [
-            {
-                id: 'YC001',
-                type: 'technical',
-                title: 'Không thể tải bài tập',
-                description: 'Tôi không thể tải bài tập về máy. Lỗi hiển thị "File not found".',
-                className: 'Toán học nâng cao 10',
-                status: 'resolved',
-                createdAt: '2024-09-15T09:00:00',
-                response: 'Vấn đề đã được khắc phục. Vui lòng thử lại.',
-                respondedAt: '2024-09-15T11:30:00'
-            },
-            {
-                id: 'YC002',
-                type: 'academic',
-                title: 'Cần hỗ trợ bài tập về phương trình bậc hai',
-                description: 'Tôi không hiểu cách giải phương trình bậc hai có tham số. Có thể giải thích thêm được không?',
-                className: 'Toán học nâng cao 10',
-                status: 'processing',
-                createdAt: '2024-09-18T14:20:00'
-            },
-            {
-                id: 'YC003',
-                type: 'academic',
-                title: 'Hỗ trợ về đạo hàm và quy tắc tính đạo hàm',
-                description: 'Tôi gặp khó khăn trong việc áp dụng quy tắc tính đạo hàm cho các hàm số phức tạp. Có thể hướng dẫn chi tiết hơn không?',
-                className: 'Giải tích 11',
-                status: 'pending',
-                createdAt: '2024-09-20T16:45:00'
-            },
-            {
-                id: 'YC004',
-                type: 'academic',
-                title: 'Ma trận nghịch đảo và định thức',
-                description: 'Tôi không hiểu cách tính định thức của ma trận 3x3 và ứng dụng trong việc tìm ma trận nghịch đảo.',
-                className: 'Đại số tuyến tính 12',
-                status: 'pending',
-                createdAt: '2024-09-22T10:15:00'
-            }
-        ];
     }
 }
 

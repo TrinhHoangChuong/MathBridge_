@@ -11,9 +11,16 @@ import java.util.List;
 @Repository
 public interface BuoiHocChiTietStudentRepository extends JpaRepository<BuoiHocChiTiet, String> {
     
-    List<BuoiHocChiTiet> findByLopHoc_IdLh(String idLH);
+    @Query("SELECT bh FROM BuoiHocChiTiet bh " +
+           "LEFT JOIN FETCH bh.lopHoc " +
+           "LEFT JOIN FETCH bh.phong " +
+           "WHERE bh.lopHoc.idLh = :idLH")
+    List<BuoiHocChiTiet> findByLopHoc_IdLh(@Param("idLH") String idLH);
 
-    @Query("SELECT bh FROM BuoiHocChiTiet bh WHERE bh.lopHoc.idLh IN " +
+    @Query("SELECT bh FROM BuoiHocChiTiet bh " +
+           "LEFT JOIN FETCH bh.lopHoc " +
+           "LEFT JOIN FETCH bh.phong " +
+           "WHERE bh.lopHoc.idLh IN " +
            "(SELECT dk.lopHoc.idLh FROM DangKyLH dk WHERE dk.hocSinh.idHs = :idHS) " +
            "ORDER BY bh.ngayHoc DESC")
     List<BuoiHocChiTiet> findByHocSinhId(@Param("idHS") String idHS);

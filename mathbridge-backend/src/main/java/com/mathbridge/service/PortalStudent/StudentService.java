@@ -436,6 +436,155 @@ public class StudentService {
         return grades;
     }
 
+    @Transactional(readOnly = true)
+    public List<SessionGradeDTO> getStudentGradesBySession(String userId, String classId) {
+        // Find student by account ID
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
+        if (!studentOpt.isPresent()) {
+            throw new RuntimeException("Không tìm thấy học sinh");
+        }
+        HocSinh student = studentOpt.get();
+        String studentId = student.getIdHs();
+        List<SessionGradeDTO> sessionGrades = new ArrayList<>();
+        
+        // Get all sessions that the student has attended (via DangKyLH -> LopHoc)
+        // If classId is provided, filter by class
+        List<BuoiHocChiTiet> sessions;
+        if (classId != null && !classId.trim().isEmpty()) {
+            // Filter sessions by classId
+            sessions = buoiHocChiTietStudentRepository.findByHocSinhId(studentId).stream()
+                .filter(session -> session.getLopHoc() != null && 
+                                  session.getLopHoc().getIdLh().equals(classId))
+                .collect(java.util.stream.Collectors.toList());
+        } else {
+            sessions = buoiHocChiTietStudentRepository.findByHocSinhId(studentId);
+        }
+        
+        // Get all KetQuaHocTap for this student (mapped by class, not session)
+        List<KetQuaHocTap> ketQuaHocTaps = ketQuaHocTapStudentRepository.findByHocSinh_IdHs(studentId);
+        Map<String, KetQuaHocTap> ketQuaByClassId = new HashMap<>();
+        for (KetQuaHocTap kq : ketQuaHocTaps) {
+            // KetQuaHocTap doesn't have classId directly, but we can map it via student
+            // Since KetQuaHocTap is per student, we'll need to map it by class later
+            // For now, we'll get it per class from the sessions
+        }
+        
+        // Get all BaiNop for this student
+        List<BaiNop> allBaiNops = baiNopStudentRepository.findAllByHocSinhId(studentId);
+        Map<String, List<BaiNop>> baiNopBySessionId = new HashMap<>();
+        
+        // Group BaiNop by session (via BaiTap -> BuoiHocChiTiet)
+        for (BaiNop baiNop : allBaiNops) {
+            if (baiNop.getBaiTap() != null && 
+                baiNop.getBaiTap().getBuoiHocChiTiet() != null) {
+                String sessionId = baiNop.getBaiTap().getBuoiHocChiTiet().getIdBh();
+                baiNopBySessionId.computeIfAbsent(sessionId, k -> new ArrayList<>()).add(baiNop);
+            }
+        }
+        
+        // Process each session
+        for (BuoiHocChiTiet session : sessions) {
+            SessionGradeDTO sessionGradeDTO = new SessionGradeDTO();
+            sessionGradeDTO.setSessionId(session.getIdBh());
+            sessionGradeDTO.setSessionNumber(session.getThuTuBuoiHoc());
+            sessionGradeDTO.setSessionDate(formatDateTime(session.getNgayHoc()));
+            
+            if (session.getLopHoc() != null) {
+                sessionGradeDTO.setClassId(session.getLopHoc().getIdLh());
+                sessionGradeDTO.setClassName(session.getLopHoc().getTenLop());
+            }
+            
+            // Get assignments for this session
+            List<BaiTap> assignments = baiTapStudentRepository.findByBuoiHocChiTiet_IdBh(session.getIdBh());
+            
+            // Get BaiNop for this session
+            List<BaiNop> sessionBaiNops = baiNopBySessionId.getOrDefault(session.getIdBh(), new ArrayList<>());
+            
+            // Build assignment grades list
+            List<AssignmentGradeDTO> assignmentGrades = new ArrayList<>();
+            double totalGrade = 0.0;
+            int gradedCount = 0;
+            
+            for (BaiTap assignment : assignments) {
+                // Find the graded BaiNop for this assignment
+                Optional<BaiNop> gradedBaiNop = sessionBaiNops.stream()
+                    .filter(bn -> bn.getBaiTap() != null && 
+                                 bn.getBaiTap().getIdBt().equals(assignment.getIdBt()) &&
+                                 bn.getDiemSo() != null)
+                    .findFirst();
+                
+                if (gradedBaiNop.isPresent()) {
+                    BaiNop baiNop = gradedBaiNop.get();
+                    AssignmentGradeDTO assignmentGradeDTO = new AssignmentGradeDTO();
+                    assignmentGradeDTO.setAssignmentId(assignment.getIdBt());
+                    assignmentGradeDTO.setAssignmentTitle(assignment.getTieuDe());
+                    assignmentGradeDTO.setGrade(baiNop.getDiemSo().doubleValue());
+                    assignmentGradeDTO.setGradedAt(formatDateTime(baiNop.getThoiGianNop()));
+                    assignmentGradeDTO.setFeedback(baiNop.getNhanXet());
+                    assignmentGrades.add(assignmentGradeDTO);
+                    
+                    totalGrade += baiNop.getDiemSo().doubleValue();
+                    gradedCount++;
+                }
+            }
+            
+            sessionGradeDTO.setAssignmentGrades(assignmentGrades);
+            
+            // Calculate average assignment grade
+            if (gradedCount > 0) {
+                double averageGrade = totalGrade / gradedCount;
+                sessionGradeDTO.setAverageAssignmentGrade(averageGrade);
+            } else {
+                sessionGradeDTO.setAverageAssignmentGrade(null);
+            }
+            
+            // Get teacher grade from KetQuaHocTap (mapped by class)
+            // Since KetQuaHocTap is per student and class, we'll get it for the class
+            if (session.getLopHoc() != null) {
+                // Find KetQuaHocTap for this student and class
+                // Note: KetQuaHocTap doesn't have classId, so we'll use the first one found
+                // or we can map it differently - for now, we'll use the first KetQuaHocTap
+                // In a real scenario, you might need to add classId to KetQuaHocTap or use a different mapping
+                Optional<KetQuaHocTap> ketQuaOpt = ketQuaHocTaps.stream().findFirst();
+                if (ketQuaOpt.isPresent()) {
+                    KetQuaHocTap kq = ketQuaOpt.get();
+                    BigDecimal teacherScore = kq.getDiemTrungBinh() != null ? kq.getDiemTrungBinh() : 
+                                             (kq.getDiemTongKet() != null ? kq.getDiemTongKet() : null);
+                    if (teacherScore != null) {
+                        sessionGradeDTO.setTeacherGrade(teacherScore.doubleValue());
+                    }
+                }
+            }
+            
+            // Calculate final grade
+            Double averageAssignmentGrade = sessionGradeDTO.getAverageAssignmentGrade();
+            Double teacherGrade = sessionGradeDTO.getTeacherGrade();
+            
+            if (averageAssignmentGrade != null && teacherGrade != null) {
+                // Average of both
+                sessionGradeDTO.setFinalGrade((averageAssignmentGrade + teacherGrade) / 2.0);
+            } else if (averageAssignmentGrade != null) {
+                sessionGradeDTO.setFinalGrade(averageAssignmentGrade);
+            } else if (teacherGrade != null) {
+                sessionGradeDTO.setFinalGrade(teacherGrade);
+            } else {
+                sessionGradeDTO.setFinalGrade(null);
+            }
+            
+            sessionGrades.add(sessionGradeDTO);
+        }
+        
+        // Sort by session date (most recent first)
+        sessionGrades.sort((a, b) -> {
+            if (a.getSessionDate() == null && b.getSessionDate() == null) return 0;
+            if (a.getSessionDate() == null) return 1;
+            if (b.getSessionDate() == null) return -1;
+            return b.getSessionDate().compareTo(a.getSessionDate());
+        });
+        
+        return sessionGrades;
+    }
+
     private void applySubmissionToAssignmentDTO(StudentAssignmentDTO dto, BaiNop submission,
                                                BaiTap assignment, int durationMinutes) {
         if (submission == null) {
@@ -991,7 +1140,20 @@ public class StudentService {
         
         return registrationDTOs;
     }
-
+@Transactional(readOnly = true)
+    public List<StudentAttendedClassDTO> getStudentSchedule(String userId) {
+        // Find student by account ID
+        Optional<HocSinh> studentOpt = hocSinhRepository.findFirstByTaiKhoan_IdTk(userId);
+        
+        if (!studentOpt.isPresent()) {
+            throw new RuntimeException("Student not found");
+        }
+        
+        HocSinh student = studentOpt.get();
+        String studentId = student.getIdHs();
+        
+        return getStudentAttendedClasses(studentId);
+    }
     private List<StudentAttendedClassDTO> getStudentAttendedClasses(String studentId) {
         List<BuoiHocChiTiet> sessions = buoiHocChiTietStudentRepository.findByHocSinhId(studentId);
         
@@ -1077,6 +1239,19 @@ public class StudentService {
                 }
                 
                 attendedDTO.setContent(session.getNoiDung());
+                
+                // Load rating information for this session
+                Optional<DanhGiaBuoiHoc> ratingOpt = danhGiaBuoiHocStudentRepository
+                    .findByHocSinhIdAndBuoiHocChiTietId(studentId, session.getIdBh());
+                
+                if (ratingOpt.isPresent()) {
+                    DanhGiaBuoiHoc rating = ratingOpt.get();
+                    attendedDTO.setHasRated(true);
+                    attendedDTO.setRating(rating.getDiemDanhGia());
+                    attendedDTO.setRatingComment(rating.getNhanXet());
+                } else {
+                    attendedDTO.setHasRated(false);
+                }
                 
                 uniqueSessionsMap.put(uniqueKey, attendedDTO);
             }
@@ -1353,6 +1528,8 @@ public class StudentService {
             danhGia = new DanhGiaBuoiHoc();
             String newId = generateNextDanhGiaBuoiHocId();
             danhGia.setIdDgbh(newId);
+            danhGia.setIdBh(session.getIdBh()); // Set ID_BH directly
+            danhGia.setIdHs(studentId); // Set ID_HS directly
             danhGia.setHocSinh(student);
             danhGia.setBuoiHocChiTiet(session);
         }

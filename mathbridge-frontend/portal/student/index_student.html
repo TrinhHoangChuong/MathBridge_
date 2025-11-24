@@ -239,16 +239,9 @@
             <div class="section-header">
                 <h2>Điểm số của tôi</h2>
                 <div class="header-actions">
-                    <select class="form-select" id="gradeSubjectFilter" onchange="filterGrades()">
-                        <option value="all">Tất cả môn</option>
-                        <option value="math">Toán học</option>
-                        <option value="physics">Vật lý</option>
-                        <option value="chemistry">Hóa học</option>
-                    </select>
-                    <select class="form-select" id="gradePeriodFilter" onchange="filterGrades()">
-                        <option value="all">Tất cả thời gian</option>
-                        <option value="current">Học kỳ hiện tại</option>
-                        <option value="previous">Học kỳ trước</option>
+                    <select class="form-select" id="gradeClassFilter" onchange="filterGrades()">
+                        <option value="all">Tất cả khóa học</option>
+                        <!-- Options will be populated by JavaScript -->
                     </select>
                 </div>
             </div>
@@ -296,13 +289,13 @@
                     <table class="grades-table" id="gradesTable">
                         <thead>
                         <tr>
-                            <th>Môn học</th>
+                            <th style="width: 50px;"></th>
+                            <th>Buổi học</th>
+                            <th>Ngày học</th>
                             <th>Lớp</th>
-                            <th>Loại điểm</th>
-                            <th>Điểm số</th>
-                            <th>Ngày chấm</th>
-                            <th>Giáo viên</th>
-                            <th>Nhận xét</th>
+                            <th>Điểm bài tập</th>
+                            <th>Điểm giáo viên</th>
+                            <th>Điểm tổng hợp</th>
                             <th>Hành động</th>
                         </tr>
                         </thead>
@@ -347,7 +340,6 @@
                     <div class="summary-label">
                         <i class="fas fa-calendar-check"></i> Hôm nay
                     </div>
-                    <div class="summary-value" id="todayClassesCount">0</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-label">
