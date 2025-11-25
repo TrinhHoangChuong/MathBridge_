@@ -9,6 +9,7 @@ import com.mathbridge.payment.utils.HmacSignatureUtil;
 import com.mathbridge.repository.HoaDonRepository;
 import com.mathbridge.repository.HocSinhRepository;
 import com.mathbridge.repository.LopHocRepository;
+import com.mathbridge.service.HoaDonIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -61,6 +62,9 @@ public class PaymentMomo {
     private HoaDonRepository hoaDonRepository;
 
     @Autowired
+    private HoaDonIdGenerator hoaDonIdGenerator;
+
+    @Autowired
     private RestTemplate restTemplate;
 
     /**
@@ -88,7 +92,7 @@ public class PaymentMomo {
         long amount = mucGiaThang.multiply(BigDecimal.valueOf(req.getMonths())).longValue();
 
         // 4. Tạo ID_HoaDon ngắn (HD###) để phù hợp với DB length = 10
-        String idHoaDon = generateHoaDonId();
+        String idHoaDon = hoaDonIdGenerator.nextId();
 
         // 5. Tạo orderId cho MoMo (có thể dùng ID_HoaDon hoặc tạo riêng)
         // Dùng ID_HoaDon làm orderId để đảm bảo unique và ngắn gọn
@@ -189,27 +193,6 @@ public class PaymentMomo {
 
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi gọi MoMo API: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Tạo ID_HoaDon unique: HD### (HD + 3 số) để phù hợp với DB length = 10
-     * Format: HD001, HD002, ..., HD999
-     * 
-     * @return ID_HoaDon (5 ký tự: HD + 3 số)
-     */
-    private String generateHoaDonId() {
-        // Lấy số lớn nhất hiện có và tăng lên 1
-        int maxNo = hoaDonRepository.findMaxHdNumber();
-        int nextNo = maxNo + 1;
-        
-        // Format: HD### (tối đa HD999, nếu vượt quá thì dùng timestamp ngắn)
-        if (nextNo <= 999) {
-            return String.format("HD%03d", nextNo);
-        } else {
-            // Fallback: dùng timestamp ngắn (8 số cuối) để đảm bảo <= 10 ký tự
-            long timestamp = System.currentTimeMillis() % 100000000L; // 8 số cuối
-            return String.format("HD%08d", timestamp);
         }
     }
 }

@@ -6,11 +6,11 @@ import com.mathbridge.payment.dto.MomoCreatePaymentResponse;
 import com.mathbridge.payment.dto.MomoIpnRequest;
 import com.mathbridge.payment.service.PaymentMomo;
 import com.mathbridge.payment.service.PaymentMomoIpnService;
+import com.mathbridge.service.StudentContextService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -30,7 +30,7 @@ public class PaymentMomoController {
     private PaymentMomoIpnService ipnService;
 
     @Autowired
-    private com.mathbridge.repository.TaiKhoanRepository taiKhoanRepository;
+    private StudentContextService studentContextService;
 
     /**
      * Tạo payment request
@@ -44,7 +44,7 @@ public class PaymentMomoController {
             Authentication authentication) {
         try {
             // Lấy studentId từ JWT token
-            String studentId = extractStudentId(authentication);
+            String studentId = studentContextService.resolveStudentId(authentication);
             if (studentId == null) {
                 return ResponseEntity.status(401)
                         .body(new ApiResponse<>(false, "Không tìm thấy thông tin học sinh trong token", null));
@@ -108,6 +108,22 @@ public class PaymentMomoController {
                     .body(new ApiResponse<>(false, "Lỗi khi kiểm tra trạng thái: " + e.getMessage(), null));
         }
     }
+    
+    /**
+     * Query và update payment status từ MoMo (khi IPN không được gọi)
+     * GET /api/portal/payment/momo/query-status?orderId=HD119
+     * 
+     * Endpoint này sẽ query từ MoMo và update DB nếu cần
+     */
+    @GetMapping("/query-status")
+    public ResponseEntity<?> queryAndUpdatePaymentStatus(@RequestParam String orderId) {
+        try {
+            return ipnService.queryAndUpdatePaymentStatus(orderId);
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(new ApiResponse<>(false, "Lỗi khi query trạng thái: " + e.getMessage(), null));
+        }
+    }
 
     /**
      * Manually update payment status (for testing/debugging)
@@ -115,6 +131,7 @@ public class PaymentMomoController {
      * 
      * Chỉ dùng cho testing khi IPN callback không được gọi
      * Hỗ trợ cả GET và POST để dễ test từ browser
+     * PUBLIC endpoint - không cần authentication
      */
     @RequestMapping(value = "/manual-update", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<?> manualUpdatePaymentStatus(
@@ -128,55 +145,60 @@ public class PaymentMomoController {
                     .body(new ApiResponse<>(false, "Lỗi khi cập nhật trạng thái: " + e.getMessage(), null));
         }
     }
-
+    
     /**
-     * Lấy studentId từ JWT token
-     * JWT có claim "uid" (ID_TK), từ đó lấy idHsRef từ TaiKhoan
+     * Callback endpoint khi user redirect về từ MoMo sau khi thanh toán
+     * GET /api/portal/payment/momo/callback?orderId=HD119&resultCode=0
+     * 
+     * Endpoint này sẽ tự động update payment status và redirect về trang chính
+     * PUBLIC endpoint - không cần authentication
+     * Tự động redirect về frontend sau khi update DB (ẩn việc update)
      */
-    private String extractStudentId(Authentication authentication) {
-        if (authentication == null) {
-            System.out.println("[PaymentMomoController] Authentication is null");
-            return null;
-        }
-        
-        if (!(authentication.getPrincipal() instanceof Jwt)) {
-            System.out.println("[PaymentMomoController] Principal is not Jwt: " + authentication.getPrincipal().getClass().getName());
-            return null;
-        }
-        
-        Jwt jwt = (Jwt) authentication.getPrincipal();
-        
-        // Debug: Log tất cả claims
-        System.out.println("[PaymentMomoController] JWT claims: " + jwt.getClaims().keySet());
-        
-        // Thử lấy uid từ claim
-        String idTk = jwt.getClaimAsString("uid");
-        System.out.println("[PaymentMomoController] idTk from claim 'uid': " + idTk);
-        
-        // Nếu không có uid, thử lấy từ subject (email) và tìm TaiKhoan
-        if (idTk == null) {
-            String email = jwt.getSubject();
-            System.out.println("[PaymentMomoController] Email from subject: " + email);
-            if (email != null) {
-                // Tìm TaiKhoan theo email
-                idTk = taiKhoanRepository.findByEmail(email)
-                        .map(tk -> tk.getIdTk())
-                        .orElse(null);
-                System.out.println("[PaymentMomoController] idTk from email: " + idTk);
+    @GetMapping("/callback")
+    public ResponseEntity<?> paymentCallback(
+            @RequestParam(required = false) String orderId,
+            @RequestParam(required = false) Integer resultCode,
+            @RequestParam(required = false) String message) {
+        try {
+            System.out.println("[PaymentMomoController] ===== Payment Callback =====");
+            System.out.println("[PaymentMomoController] OrderId: " + orderId);
+            System.out.println("[PaymentMomoController] ResultCode: " + resultCode);
+            System.out.println("[PaymentMomoController] Message: " + message);
+            
+            // URL redirect về frontend
+            String redirectUrl = "http://localhost:8000/pages/Courses.html";
+            
+            if (orderId != null && !orderId.isEmpty()) {
+                // Tự động update status dựa trên resultCode (ẩn - không hiển thị cho user)
+                String status = (resultCode != null && resultCode == 0) ? "success" : "failed";
+                try {
+                    ipnService.manualUpdatePaymentStatus(orderId, status);
+                    System.out.println("[PaymentMomoController] Payment status updated successfully for orderId: " + orderId);
+                    // Thêm orderId vào redirect URL để frontend có thể hiển thị thông báo
+                    redirectUrl += "?payment=success&orderId=" + orderId;
+                } catch (Exception updateError) {
+                    System.err.println("[PaymentMomoController] Error updating payment status: " + updateError.getMessage());
+                    // Vẫn redirect về frontend dù có lỗi update
+                    redirectUrl += "?payment=error&orderId=" + orderId;
+                }
+            } else {
+                // Không có orderId, vẫn redirect về trang chính
+                redirectUrl += "?payment=error";
             }
+            
+            // HTTP 302 Redirect về frontend (ẩn việc update DB)
+            return ResponseEntity.status(302)
+                    .header("Location", redirectUrl)
+                    .build();
+            
+        } catch (Exception e) {
+            System.out.println("[PaymentMomoController] Callback Error: " + e.getMessage());
+            e.printStackTrace();
+            // Nếu có lỗi, vẫn redirect về frontend
+            return ResponseEntity.status(302)
+                    .header("Location", "http://localhost:8000/pages/Courses.html?payment=error")
+                    .build();
         }
-        
-        if (idTk == null) {
-            System.out.println("[PaymentMomoController] Cannot find idTk");
-            return null;
-        }
-        
-        // Lấy TaiKhoan và trả về idHsRef
-        String idHsRef = taiKhoanRepository.findById(idTk)
-                .map(tk -> tk.getIdHs())
-                .orElse(null);
-        System.out.println("[PaymentMomoController] idHsRef: " + idHsRef);
-        return idHsRef;
     }
 }
 

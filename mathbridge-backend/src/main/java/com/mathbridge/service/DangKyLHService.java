@@ -301,4 +301,48 @@ public class DangKyLHService {
 
        return new DangKyLHResponse(registrationId, student.getIdHs(), email, password);
    }
+
+   /**
+    * Tự động đăng ký lớp học sau khi thanh toán thành công
+    * @param studentId ID học sinh
+    * @param classId ID lớp học
+    * @return true nếu đăng ký thành công, false nếu đã đăng ký rồi
+    */
+   @Transactional
+   public boolean autoEnrollAfterPayment(String studentId, String classId) {
+       try {
+           System.out.println("[DangKyLHService] Auto enrolling student " + studentId + " to class " + classId);
+           
+           // Kiểm tra học sinh và lớp học tồn tại
+           HocSinh hocSinh = hocSinhRepository.findById(studentId)
+                   .orElseThrow(() -> new RuntimeException("Không tìm thấy học sinh với ID: " + studentId));
+           
+           LopHoc lopHoc = lopHocRepository.findById(classId)
+                   .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học với ID: " + classId));
+           
+           // Kiểm tra xem đã đăng ký chưa
+           DangKyLhId id = new DangKyLhId(studentId, classId);
+           Optional<DangKyLH> existingEnrollment = dangKyLHRepository.findById(id);
+           
+           if (existingEnrollment.isPresent()) {
+               System.out.println("[DangKyLHService] Student already enrolled in class");
+               return false; // Đã đăng ký rồi
+           }
+           
+           // Tạo đăng ký mới
+           DangKyLH enrollment = new DangKyLH();
+           enrollment.setId(id);
+           enrollment.setHocSinh(hocSinh);
+           enrollment.setLopHoc(lopHoc);
+           
+           dangKyLHRepository.save(enrollment);
+           System.out.println("[DangKyLHService] Successfully enrolled student " + studentId + " to class " + classId);
+           
+           return true;
+       } catch (Exception e) {
+           System.err.println("[DangKyLHService] Error auto enrolling: " + e.getMessage());
+           e.printStackTrace();
+           throw new RuntimeException("Lỗi khi tự động đăng ký lớp học: " + e.getMessage(), e);
+       }
+   }
 }

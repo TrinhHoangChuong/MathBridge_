@@ -5,6 +5,7 @@ import com.mathbridge.entity.HoaDon;
 import com.mathbridge.payment.dto.MomoIpnRequest;
 import com.mathbridge.payment.utils.HmacSignatureUtil;
 import com.mathbridge.repository.HoaDonRepository;
+import com.mathbridge.service.DangKyLHService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,9 @@ public class PaymentMomoIpnService {
 
     @Autowired
     private HoaDonRepository hoaDonRepository;
+
+    @Autowired
+    private DangKyLHService dangKyLHService;
 
     /**
      * Xử lý IPN callback từ MoMo
@@ -99,12 +103,30 @@ public class PaymentMomoIpnService {
                 System.out.println("[PaymentMomoIpnService] Payment successful - updating to 'Da Thanh Toan'");
                 hoaDon.setTrangThai("Da Thanh Toan");
                 hoaDon.setNgayThanhToan(LocalDate.now());
-                // TODO: Có thể cập nhật thêm thông tin từ extraData (courseId, months, studentId)
-                // để tự động tạo DangKyLH nếu chưa có
+                hoaDon.setHanThanhToan(null); // Đã thanh toán thì không còn hạn
+                System.out.println("[PaymentMomoIpnService] Set NgayThanhToan: " + hoaDon.getNgayThanhToan());
+                System.out.println("[PaymentMomoIpnService] Set TrangThai: " + hoaDon.getTrangThai());
+                
+                // Tự động đăng ký lớp học sau khi thanh toán thành công
+                try {
+                    String studentId = hoaDon.getIdHs();
+                    String classId = hoaDon.getIdLh();
+                    boolean enrolled = dangKyLHService.autoEnrollAfterPayment(studentId, classId);
+                    if (enrolled) {
+                        System.out.println("[PaymentMomoIpnService] Successfully auto-enrolled student " + studentId + " to class " + classId);
+                    } else {
+                        System.out.println("[PaymentMomoIpnService] Student " + studentId + " already enrolled in class " + classId);
+                    }
+                } catch (Exception enrollError) {
+                    System.err.println("[PaymentMomoIpnService] Error auto-enrolling after payment: " + enrollError.getMessage());
+                    // Không throw exception để không ảnh hưởng đến việc cập nhật HoaDon
+                    enrollError.printStackTrace();
+                }
             } else {
                 // Thanh toán thất bại
                 System.out.println("[PaymentMomoIpnService] Payment failed (resultCode: " + ipn.getResultCode() + ") - updating to 'Chua Thanh Toan'");
                 hoaDon.setTrangThai("Chua Thanh Toan");
+                hoaDon.setNgayThanhToan(null); // Xóa ngày thanh toán nếu thất bại
             }
 
             hoaDonRepository.save(hoaDon);
@@ -141,12 +163,64 @@ public class PaymentMomoIpnService {
             data.put("amount", hoaDon.getTongTien());
             data.put("ngayDangKy", hoaDon.getNgayDangKy());
             data.put("ngayThanhToan", hoaDon.getNgayThanhToan());
+            data.put("hanThanhToan", hoaDon.getHanThanhToan());
             data.put("isPaid", "Da Thanh Toan".equals(hoaDon.getTrangThai()));
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Lấy trạng thái thành công", data));
         } catch (Exception e) {
             return ResponseEntity.status(500)
                     .body(new ApiResponse<>(false, "Lỗi khi kiểm tra trạng thái: " + e.getMessage(), null));
+        }
+    }
+
+    /**
+     * Query payment status từ MoMo API và update DB nếu cần
+     * Dùng khi IPN callback không được gọi (localhost)
+     */
+    @Transactional
+    public ResponseEntity<?> queryAndUpdatePaymentStatus(String orderId) {
+        try {
+            System.out.println("[PaymentMomoIpnService] ===== Query Payment Status from MoMo =====");
+            System.out.println("[PaymentMomoIpnService] OrderId: " + orderId);
+            
+            // 1. Tìm HoaDon trong DB
+            Optional<HoaDon> hoaDonOpt = hoaDonRepository.findById(orderId);
+            if (hoaDonOpt.isEmpty()) {
+                return ResponseEntity.status(404)
+                        .body(new ApiResponse<>(false, "Không tìm thấy đơn hàng với ID: " + orderId, null));
+            }
+
+            HoaDon hoaDon = hoaDonOpt.get();
+            
+            // 2. Nếu đã thanh toán rồi thì không cần query lại
+            if ("Da Thanh Toan".equals(hoaDon.getTrangThai())) {
+                System.out.println("[PaymentMomoIpnService] Payment already completed, skipping query");
+                Map<String, Object> data = new HashMap<>();
+                data.put("orderId", hoaDon.getIdHoaDon());
+                data.put("status", hoaDon.getTrangThai());
+                data.put("ngayThanhToan", hoaDon.getNgayThanhToan());
+                data.put("isPaid", true);
+                return ResponseEntity.ok(new ApiResponse<>(true, "Đơn hàng đã thanh toán", data));
+            }
+            
+            // 3. Query từ MoMo API (cần implement MoMo query API)
+            // Tạm thời: Nếu status là PENDING và đã quá thời gian, có thể user đã thanh toán
+            // Nhưng vì không có MoMo query API trong code hiện tại, ta sẽ dùng manual update
+            // Hoặc frontend có thể gọi manual-update endpoint sau khi user confirm payment
+            
+            Map<String, Object> data = new HashMap<>();
+            data.put("orderId", hoaDon.getIdHoaDon());
+            data.put("status", hoaDon.getTrangThai());
+            data.put("message", "Vui lòng xác nhận thanh toán hoặc dùng manual-update endpoint");
+            data.put("isPaid", false);
+            
+            return ResponseEntity.ok(new ApiResponse<>(true, "Trạng thái hiện tại", data));
+            
+        } catch (Exception e) {
+            System.out.println("[PaymentMomoIpnService] Error querying status: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(new ApiResponse<>(false, "Lỗi khi query trạng thái: " + e.getMessage(), null));
         }
     }
 
@@ -169,20 +243,42 @@ public class PaymentMomoIpnService {
 
             HoaDon hoaDon = hoaDonOpt.get();
             
-            if ("success".equalsIgnoreCase(status) || "paid".equalsIgnoreCase(status)) {
+            if ("success".equalsIgnoreCase(status) || "paid".equalsIgnoreCase(status) || "thanhcong".equalsIgnoreCase(status)) {
                 hoaDon.setTrangThai("Da Thanh Toan");
                 hoaDon.setNgayThanhToan(LocalDate.now());
+                hoaDon.setHanThanhToan(null); // Đã thanh toán thì không còn hạn
                 System.out.println("[PaymentMomoIpnService] Updated to 'Da Thanh Toan'");
-            } else if ("failed".equalsIgnoreCase(status) || "fail".equalsIgnoreCase(status)) {
+                System.out.println("[PaymentMomoIpnService] Set NgayThanhToan: " + hoaDon.getNgayThanhToan());
+                System.out.println("[PaymentMomoIpnService] Set HanThanhToan: null");
+                
+                // Tự động đăng ký lớp học sau khi thanh toán thành công
+                try {
+                    String studentId = hoaDon.getIdHs();
+                    String classId = hoaDon.getIdLh();
+                    boolean enrolled = dangKyLHService.autoEnrollAfterPayment(studentId, classId);
+                    if (enrolled) {
+                        System.out.println("[PaymentMomoIpnService] Successfully auto-enrolled student " + studentId + " to class " + classId);
+                    } else {
+                        System.out.println("[PaymentMomoIpnService] Student " + studentId + " already enrolled in class " + classId);
+                    }
+                } catch (Exception enrollError) {
+                    System.err.println("[PaymentMomoIpnService] Error auto-enrolling after payment: " + enrollError.getMessage());
+                    enrollError.printStackTrace();
+                }
+            } else if ("failed".equalsIgnoreCase(status) || "fail".equalsIgnoreCase(status) || "thatbai".equalsIgnoreCase(status)) {
                 hoaDon.setTrangThai("Chua Thanh Toan");
+                hoaDon.setNgayThanhToan(null); // Xóa ngày thanh toán nếu thất bại
                 System.out.println("[PaymentMomoIpnService] Updated to 'Chua Thanh Toan'");
             } else {
                 return ResponseEntity.status(400)
-                        .body(new ApiResponse<>(false, "Status không hợp lệ. Dùng 'success' hoặc 'failed'", null));
+                        .body(new ApiResponse<>(false, "Status không hợp lệ. Dùng 'success', 'paid', 'thanhcong' hoặc 'failed', 'fail', 'thatbai'", null));
             }
 
-            hoaDonRepository.save(hoaDon);
-            System.out.println("[PaymentMomoIpnService] HoaDon updated successfully. ID: " + hoaDon.getIdHoaDon() + ", TrangThai: " + hoaDon.getTrangThai());
+            HoaDon savedHoaDon = hoaDonRepository.save(hoaDon);
+            System.out.println("[PaymentMomoIpnService] HoaDon updated successfully. ID: " + savedHoaDon.getIdHoaDon() + 
+                             ", TrangThai: " + savedHoaDon.getTrangThai() + 
+                             ", NgayThanhToan: " + savedHoaDon.getNgayThanhToan() +
+                             ", HanThanhToan: " + savedHoaDon.getHanThanhToan());
 
             Map<String, Object> data = new HashMap<>();
             data.put("orderId", hoaDon.getIdHoaDon());
